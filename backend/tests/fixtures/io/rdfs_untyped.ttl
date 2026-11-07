@@ -1,0 +1,12 @@
+# Fixture io : vocabulaire RDFS « pur » (rdfs:Class, rdf:Property non typées) — inférence + warnings
+@prefix auto: <https://example.org/auto#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+auto:Vehicle a rdfs:Class ; rdfs:label "véhicule"@fr .
+auto:Garage a rdfs:Class .
+auto:vin a rdf:Property ; rdfs:domain auto:Vehicle ; rdfs:range xsd:string .
+auto:servicedAt a rdf:Property ; rdfs:domain auto:Vehicle ; rdfs:range auto:Garage .
+auto:note a rdf:Property .
+auto:Car rdfs:subClassOf auto:Vehicle .

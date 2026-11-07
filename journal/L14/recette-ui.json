@@ -1,0 +1,156 @@
+{
+ "ok": 30,
+ "ko": 0,
+ "steps": [
+  {
+   "screen": "01-projets",
+   "ok": true,
+   "detail": "texte=672c erreurs=0"
+  },
+  {
+   "screen": "02-tableau",
+   "ok": true,
+   "detail": "texte=1397c erreurs=0"
+  },
+  {
+   "screen": "03-ontologie-editeur",
+   "ok": true,
+   "detail": "texte=1513c erreurs=0"
+  },
+  {
+   "screen": "04-ontologie-liste",
+   "ok": true,
+   "detail": "texte=1102c erreurs=0"
+  },
+  {
+   "screen": "05-shapes",
+   "ok": true,
+   "detail": "texte=2470c erreurs=0"
+  },
+  {
+   "screen": "06-conformite",
+   "ok": true,
+   "detail": "texte=672c erreurs=0"
+  },
+  {
+   "screen": "07-shacl",
+   "ok": true,
+   "detail": "texte=794c erreurs=0"
+  },
+  {
+   "screen": "08-analyse",
+   "ok": true,
+   "detail": "texte=1858c erreurs=0"
+  },
+  {
+   "screen": "09-modele",
+   "ok": true,
+   "detail": "texte=2154c erreurs=0"
+  },
+  {
+   "screen": "10-exports",
+   "ok": true,
+   "detail": "texte=5077c erreurs=0"
+  },
+  {
+   "screen": "11-requetes",
+   "ok": true,
+   "detail": "texte=1940c erreurs=0"
+  },
+  {
+   "screen": "12-assistant",
+   "ok": true,
+   "detail": "texte=1248c erreurs=0"
+  },
+  {
+   "screen": "13-parametres",
+   "ok": true,
+   "detail": "texte=467c erreurs=0"
+  },
+  {
+   "screen": "A1-editeur : nœuds rendus + Ctrl+Z",
+   "ok": true,
+   "detail": "24 nœuds"
+  },
+  {
+   "screen": "A2-requetes : phrase guidée + NL",
+   "ok": true,
+   "detail": "NL envoyée"
+  },
+  {
+   "screen": "A3-assistant : envoi message",
+   "ok": true,
+   "detail": "message envoyé"
+  },
+  {
+   "screen": "A4-thème sombre / en",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "screen": "m-01-projets",
+   "ok": true,
+   "detail": "texte=650c erreurs=0"
+  },
+  {
+   "screen": "m-02-tableau",
+   "ok": true,
+   "detail": "texte=1434c erreurs=0"
+  },
+  {
+   "screen": "m-03-ontologie-editeur",
+   "ok": true,
+   "detail": "texte=742c erreurs=0"
+  },
+  {
+   "screen": "m-04-ontologie-liste",
+   "ok": true,
+   "detail": "texte=828c erreurs=0"
+  },
+  {
+   "screen": "m-05-shapes",
+   "ok": true,
+   "detail": "texte=2537c erreurs=0"
+  },
+  {
+   "screen": "m-06-conformite",
+   "ok": true,
+   "detail": "texte=650c erreurs=0"
+  },
+  {
+   "screen": "m-07-shacl",
+   "ok": true,
+   "detail": "texte=772c erreurs=0"
+  },
+  {
+   "screen": "m-08-analyse",
+   "ok": true,
+   "detail": "texte=1836c erreurs=0"
+  },
+  {
+   "screen": "m-09-modele",
+   "ok": true,
+   "detail": "texte=2132c erreurs=0"
+  },
+  {
+   "screen": "m-10-exports",
+   "ok": true,
+   "detail": "texte=1576c erreurs=0"
+  },
+  {
+   "screen": "m-11-requetes",
+   "ok": true,
+   "detail": "texte=1303c erreurs=0"
+  },
+  {
+   "screen": "m-12-assistant",
+   "ok": true,
+   "detail": "texte=1057c erreurs=0"
+  },
+  {
+   "screen": "m-13-parametres",
+   "ok": true,
+   "detail": "texte=394c erreurs=0"
+  }
+ ]
+}

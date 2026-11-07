@@ -1,0 +1,212 @@
+{
+  "target": "neo4j",
+  "meta": {"name": "auto-maintenance", "iri": "https://example.org/auto#", "generated_at": "2026-11-02T22:00:00Z", "ontoforge_version": "0.1.0"},
+  "node_types": {
+    "Brand": {
+      "name": "Brand", "labels": ["Brand"], "source": ["https://example.org/auto#Brand"], "key": ["uri"],
+      "description": "Constructeur automobile.",
+      "properties": [
+        {"name": "uri", "type": "String", "required": true, "unique": true, "source": "urn:ontoforge:iri"},
+        {"name": "name", "type": "String", "required": true, "indexed": true, "source": "https://example.org/auto#brandName"}
+      ]
+    },
+    "VehicleModel": {
+      "name": "VehicleModel", "labels": ["VehicleModel"], "source": ["https://example.org/auto#VehicleModel"],
+      "key": ["brandCode", "modelCode"], "description": "Modèle commercial (clé composite owl:hasKey).",
+      "properties": [
+        {"name": "uri", "type": "String", "required": true, "unique": true, "source": "urn:ontoforge:iri"},
+        {"name": "brandCode", "type": "String", "required": true, "source": "https://example.org/auto#brandCode"},
+        {"name": "modelCode", "type": "String", "required": true, "source": "https://example.org/auto#modelCode"},
+        {"name": "modelYear", "type": "Integer", "source": "https://example.org/auto#modelYear", "note": "xsd:gYear → INTEGER (D05)"},
+        {"name": "name", "type": "String", "indexed": true, "source": "https://example.org/auto#modelName"}
+      ]
+    },
+    "Vehicle": {
+      "name": "Vehicle", "labels": ["Vehicle"], "source": ["https://example.org/auto#Vehicle"], "key": ["vin"],
+      "description": "Véhicule identifié par son VIN.",
+      "properties": [
+        {"name": "uri", "type": "String", "required": true, "unique": true, "source": "urn:ontoforge:iri"},
+        {"name": "vin", "type": "String", "required": true, "pattern": "^[A-HJ-NPR-Z0-9]{17}$", "source": "https://example.org/auto#vin"},
+        {"name": "registrationNumber", "type": "String", "unique": true, "source": "https://example.org/auto#registrationNumber"},
+        {"name": "firstRegistrationDate", "type": "Date", "source": "https://example.org/auto#firstRegistrationDate"},
+        {"name": "fuelType", "type": "String", "enum": ["DIESEL", "ELECTRIC", "HYBRID", "PETROL"], "source": "https://example.org/auto#fuelType"},
+        {"name": "tags", "type": "String", "is_list": true, "source": "https://example.org/auto#tag", "note": "non fonctionnelle (D04)"}
+      ]
+    },
+    "ElectricVehicle": {
+      "name": "ElectricVehicle", "labels": ["ElectricVehicle", "Vehicle"], "source": ["https://example.org/auto#ElectricVehicle"],
+      "key": ["vin"], "description": "Véhicule électrique (sous-classe de Vehicle, multi-labels).",
+      "properties": [
+        {"name": "batteryCapacityKwh", "type": "Float", "required": true, "source": "https://example.org/auto#batteryCapacityKwh", "note": "xsd:decimal → FLOAT avec perte (D05)"},
+        {"name": "chargingStandards", "type": "String", "is_list": true, "enum": ["CCS", "CHADEMO", "TYPE2"], "source": "https://example.org/auto#chargingStandard"}
+      ]
+    },
+    "Part": {
+      "name": "Part", "labels": ["Part"], "source": ["https://example.org/auto#Part"], "key": ["partNumber"],
+      "properties": [
+        {"name": "uri", "type": "String", "required": true, "unique": true, "source": "urn:ontoforge:iri"},
+        {"name": "partNumber", "type": "String", "required": true, "source": "https://example.org/auto#partNumber"},
+        {"name": "name_fr", "type": "String", "lang": "fr", "indexed": true, "source": "http://www.w3.org/2000/01/rdf-schema#label"},
+        {"name": "name_en", "type": "String", "lang": "en", "indexed": true, "source": "http://www.w3.org/2000/01/rdf-schema#label"},
+        {"name": "unitPrice", "type": "Float", "source": "https://example.org/auto#unitPrice", "note": "xsd:decimal → FLOAT avec perte (D05)"}
+      ]
+    },
+    "Engine": {
+      "name": "Engine", "labels": ["Engine", "Part"], "source": ["https://example.org/auto#Engine"], "key": ["partNumber"],
+      "properties": [
+        {"name": "engineCode", "type": "String", "indexed": true, "source": "https://example.org/auto#engineCode"},
+        {"name": "displacementCc", "type": "Integer", "source": "https://example.org/auto#displacementCc"}
+      ]
+    },
+    "Garage": {
+      "name": "Garage", "labels": ["Garage"], "source": ["https://example.org/auto#Garage"], "key": ["uri"],
+      "properties": [
+        {"name": "uri", "type": "String", "required": true, "unique": true, "source": "urn:ontoforge:iri"},
+        {"name": "siret", "type": "String", "unique": true, "pattern": "^[0-9]{14}$", "source": "https://example.org/auto#siret"},
+        {"name": "name", "type": "String", "required": true, "indexed": true, "source": "https://example.org/auto#garageName"}
+      ]
+    },
+    "Technician": {
+      "name": "Technician", "labels": ["Technician"], "source": ["https://example.org/auto#Technician"], "key": ["employeeId"],
+      "properties": [
+        {"name": "uri", "type": "String", "required": true, "unique": true, "source": "urn:ontoforge:iri"},
+        {"name": "employeeId", "type": "String", "required": true, "source": "https://example.org/auto#employeeId"},
+        {"name": "fullName", "type": "String", "source": "https://example.org/auto#fullName"}
+      ]
+    },
+    "Customer": {
+      "name": "Customer", "labels": ["Customer"], "source": ["https://example.org/auto#Customer"], "key": ["uri"],
+      "properties": [
+        {"name": "uri", "type": "String", "required": true, "unique": true, "source": "urn:ontoforge:iri"},
+        {"name": "fullName", "type": "String", "source": "https://example.org/auto#fullName"}
+      ]
+    },
+    "RepairOrder": {
+      "name": "RepairOrder", "labels": ["RepairOrder"], "source": ["https://example.org/auto#RepairOrder"], "key": ["orderNumber"],
+      "description": "Ordre de réparation (R01 : 4 liens fonctionnels → nœud conservé).",
+      "properties": [
+        {"name": "uri", "type": "String", "required": true, "unique": true, "source": "urn:ontoforge:iri"},
+        {"name": "orderNumber", "type": "String", "required": true, "source": "https://example.org/auto#orderNumber"},
+        {"name": "openedAt", "type": "DateTime", "required": true, "source": "https://example.org/auto#openedAt"},
+        {"name": "closedAt", "type": "LocalDateTime", "source": "https://example.org/auto#closedAt"},
+        {"name": "status", "type": "String", "enum": ["CLOSED", "IN_PROGRESS", "OPEN"], "default": "OPEN", "source": "https://example.org/auto#status"},
+        {"name": "totalCost", "type": "Float", "source": "https://example.org/auto#totalCost", "note": "xsd:decimal → FLOAT avec perte (D05)"}
+      ]
+    },
+    "ServiceOperation": {
+      "name": "ServiceOperation", "labels": ["ServiceOperation"], "source": ["https://example.org/auto#ServiceOperation"], "key": ["uri"],
+      "properties": [
+        {"name": "uri", "type": "String", "required": true, "unique": true, "source": "urn:ontoforge:iri"},
+        {"name": "operationCode", "type": "String", "indexed": true, "source": "https://example.org/auto#operationCode"},
+        {"name": "laborDuration", "type": "Duration", "source": "https://example.org/auto#laborDuration"},
+        {"name": "startTime", "type": "Time", "source": "https://example.org/auto#startTime"}
+      ]
+    },
+    "DiagnosticTroubleCode": {
+      "name": "DiagnosticTroubleCode", "labels": ["DiagnosticTroubleCode"], "source": ["https://example.org/auto#DiagnosticTroubleCode"], "key": ["code"],
+      "properties": [
+        {"name": "uri", "type": "String", "required": true, "unique": true, "source": "urn:ontoforge:iri"},
+        {"name": "code", "type": "String", "required": true, "pattern": "^[PCBU][0-9]{4}$", "source": "https://example.org/auto#dtcCode"},
+        {"name": "label_fr", "type": "String", "lang": "fr", "source": "http://www.w3.org/2000/01/rdf-schema#label"},
+        {"name": "label_en", "type": "String", "lang": "en", "source": "http://www.w3.org/2000/01/rdf-schema#label"},
+        {"name": "isEmissionRelated", "type": "Boolean", "source": "https://example.org/auto#isEmissionRelated"}
+      ]
+    },
+    "VehicleCoverage": {
+      "name": "VehicleCoverage", "labels": ["VehicleCoverage"], "source": ["https://example.org/auto#VehicleCoverage"], "key": ["uri"],
+      "abstract": true, "description": "Classe abstraite (C04) : label secondaire de Recall et Warranty.",
+      "properties": [
+        {"name": "uri", "type": "String", "required": true, "unique": true, "source": "urn:ontoforge:iri"},
+        {"name": "reference", "type": "String", "required": true, "unique": true, "source": "https://example.org/auto#coverageReference"},
+        {"name": "validFrom", "type": "Date", "source": "https://example.org/auto#validFrom"}
+      ]
+    },
+    "Recall": {
+      "name": "Recall", "labels": ["Recall", "VehicleCoverage"], "source": ["https://example.org/auto#Recall"], "key": ["uri"],
+      "properties": [
+        {"name": "severityLevel", "type": "Integer", "source": "https://example.org/auto#severityLevel"}
+      ]
+    },
+    "Warranty": {
+      "name": "Warranty", "labels": ["Warranty", "VehicleCoverage"], "source": ["https://example.org/auto#Warranty"], "key": ["uri"],
+      "properties": [
+        {"name": "durationMonths", "type": "Integer", "source": "https://example.org/auto#durationMonths"}
+      ]
+    }
+  },
+  "edge_types": [
+    {"name": "OWNS", "from": "Customer", "to": "Vehicle", "source": "https://example.org/auto#owns", "cardinality": {"out": "0..*", "in": "0..*"}},
+    {"name": "HAS_MODEL", "from": "Vehicle", "to": "VehicleModel", "source": "https://example.org/auto#hasModel", "cardinality": {"out": "1", "in": "0..*"}},
+    {"name": "MANUFACTURED_BY", "from": "VehicleModel", "to": "Brand", "source": "https://example.org/auto#manufacturedBy", "cardinality": {"out": "1", "in": "0..*"}},
+    {"name": "INSTALLED_ON", "from": "Part", "to": "Vehicle", "source": "https://example.org/auto#PartInstallation",
+     "description": "Dé-réification de auto:PartInstallation (R01, 2 liens fonctionnels).",
+     "properties": [
+       {"name": "installationId", "type": "String", "unique": true, "source": "https://example.org/auto#installationId"},
+       {"name": "installedAt", "type": "DateTime", "required": true, "source": "https://example.org/auto#installedAt"},
+       {"name": "mileageKm", "type": "Integer", "required": true, "indexed": true, "source": "https://example.org/auto#mileageKm"}
+     ]},
+    {"name": "PART_OF", "from": "Part", "to": "Part", "source": "https://example.org/auto#isPartOf", "note": "transitive (O06), inverse auto:hasPart (O04)"},
+    {"name": "PART_OF_TRANSITIVE", "from": "Part", "to": "Part", "source": "https://example.org/auto#isPartOf", "derived": true, "note": "fermeture transitive matérialisée"},
+    {"name": "CONCERNS_VEHICLE", "from": "RepairOrder", "to": "Vehicle", "source": "https://example.org/auto#concernsVehicle", "cardinality": {"out": "1", "in": "0..*"}},
+    {"name": "PERFORMED_AT", "from": "RepairOrder", "to": "Garage", "source": "https://example.org/auto#performedAt", "cardinality": {"out": "1", "in": "0..*"}},
+    {"name": "HANDLED_BY", "from": "RepairOrder", "to": "Technician", "source": "https://example.org/auto#handledBy", "cardinality": {"out": "1..*", "in": "0..*"}},
+    {"name": "INCLUDES_OPERATION", "from": "RepairOrder", "to": "ServiceOperation", "source": "https://example.org/auto#includesOperation"},
+    {"name": "DIAGNOSED", "from": "RepairOrder", "to": "DiagnosticTroubleCode", "source": "https://example.org/auto#diagnosed"},
+    {"name": "EMPLOYED_BY", "from": "Technician", "to": "Garage", "source": "https://example.org/auto#employedBy", "cardinality": {"out": "0..1", "in": "0..*"}},
+    {"name": "COLLEAGUE_OF", "from": "Technician", "to": "Technician", "source": "https://example.org/auto#colleagueOf", "directed": false, "symmetric": true},
+    {"name": "AFFECTS_MODEL", "from": "Recall", "to": "VehicleModel", "source": "https://example.org/auto#affectsModel"},
+    {"name": "COVERS", "from": "Warranty", "to": "Vehicle", "source": "https://example.org/auto#covers"},
+    {"name": "REPLACED_PART", "from": "ServiceOperation", "to": "Part", "source": "https://example.org/auto#replacedPart", "note": "rdfs:subPropertyOf auto:usesPart (O07)"},
+    {"name": "USES_PART", "from": "ServiceOperation", "to": "Part", "source": "https://example.org/auto#usesPart", "derived": true},
+    {"name": "CONCERNS_MODEL", "from": "RepairOrder", "to": "VehicleModel", "source": "https://example.org/auto#concernsModel", "derived": true, "note": "owl:propertyChainAxiom (O08)"}
+  ],
+  "validations": [
+    {"id": "V01", "kind": "cardinality", "node_type": "RepairOrder", "edge_type": "CONCERNS_VEHICLE", "params": {"min": 1, "max": 1, "target": "Vehicle"}, "description": "Un ordre de réparation concerne exactement un véhicule.", "source": "O09"},
+    {"id": "V02", "kind": "cardinality", "node_type": "RepairOrder", "edge_type": "HANDLED_BY", "params": {"min": 1}, "description": "Au moins un technicien par ordre.", "source": "O10"},
+    {"id": "V03", "kind": "existence", "node_type": "RepairOrder", "edge_type": "PERFORMED_AT", "description": "Un ordre est réalisé dans un garage.", "source": "O10"},
+    {"id": "V04", "kind": "existence", "node_type": "RepairOrder", "property": "openedAt", "description": "Date d'ouverture obligatoire (Community : pas de IS NOT NULL).", "source": "D01"},
+    {"id": "V05", "kind": "disjoint", "node_type": "Recall", "params": {"with": ["Warranty"]}, "description": "Un rappel n'est pas une garantie.", "source": "C07"},
+    {"id": "V06", "kind": "allValuesFrom", "node_type": "Recall", "edge_type": "AFFECTS_MODEL", "params": {"target": "VehicleModel"}, "description": "Un rappel ne vise que des modèles.", "source": "O11"},
+    {"id": "V07", "kind": "enum", "node_type": "Vehicle", "property": "fuelType", "params": {"values": ["DIESEL", "ELECTRIC", "HYBRID", "PETROL"]}, "description": "Énergie dans la liste.", "source": "C08"},
+    {"id": "V08", "kind": "enum", "node_type": "ElectricVehicle", "property": "chargingStandards", "params": {"values": ["CCS", "CHADEMO", "TYPE2"]}, "description": "Standards de recharge connus.", "source": "C08"},
+    {"id": "V09", "kind": "irreflexive", "edge_type": "PART_OF", "description": "Une pièce n'est pas partie d'elle-même.", "source": "O13"},
+    {"id": "V10", "kind": "asymmetric", "edge_type": "PART_OF", "description": "isPartOf est asymétrique.", "source": "O13"},
+    {"id": "V11", "kind": "functional", "node_type": "Technician", "edge_type": "EMPLOYED_BY", "description": "Un technicien a au plus un employeur.", "source": "O09"},
+    {"id": "V12", "kind": "hasValue", "node_type": "ElectricVehicle", "property": "fuelType", "params": {"value": "ELECTRIC"}, "description": "Un VE a fuelType = ELECTRIC.", "source": "O12"},
+    {"id": "V13", "kind": "pattern", "node_type": "Vehicle", "property": "vin", "params": {"pattern": "^[A-HJ-NPR-Z0-9]{17}$"}, "description": "VIN ISO 3779 (17 caractères, sans I/O/Q).", "source": "sh:pattern"},
+    {"id": "V14", "kind": "range", "edge_type": "INSTALLED_ON", "property": "mileageKm", "params": {"min": 0, "max": 2000000}, "description": "Kilométrage d'installation plausible.", "source": "sh:minInclusive", "severity": "Warning"},
+    {"id": "V15", "kind": "closed", "node_type": "DiagnosticTroubleCode", "params": {"allowed": ["code", "isEmissionRelated", "label_en", "label_fr", "uri"]}, "description": "Shape fermée sur les codes défaut.", "source": "sh:closed"},
+    {"id": "V16", "kind": "other", "node_type": "RepairOrder", "description": "closedAt postérieur à openedAt.", "source": "SHACL-SPARQL", "severity": "Warning"}
+  ],
+  "materializations": [
+    {"id": "M01", "kind": "transitiveClosure", "edge_type": "PART_OF_TRANSITIVE", "chain": ["PART_OF"], "description": "Fermeture transitive de isPartOf (moteur ⊑ véhicule).", "source": "O06"},
+    {"id": "M02", "kind": "propertyChain", "edge_type": "CONCERNS_MODEL", "chain": ["CONCERNS_VEHICLE", "HAS_MODEL"], "description": "concernsVehicle o hasModel ⊑ concernsModel.", "source": "O08"},
+    {"id": "M03", "kind": "superProperty", "edge_type": "REPLACED_PART", "parent": "USES_PART", "description": "replacedPart ⊑ usesPart.", "source": "O07"},
+    {"id": "M04", "kind": "classification", "node_type": "HighMileageVehicle", "parent": "Vehicle", "definition": "Vehicle and (lastMileageKm some xsd:integer[>= 200000])", "description": "Classe définie : véhicule à fort kilométrage.", "source": "C06"},
+    {"id": "M05", "kind": "inverse", "edge_type": "PART_OF", "parent": "HAS_PART", "description": "hasPart = inverse de isPartOf (non stocké).", "source": "O04"},
+    {"id": "M06", "kind": "symmetric", "edge_type": "COLLEAGUE_OF", "description": "colleagueOf symétrique.", "source": "O05"}
+  ],
+  "findings": [
+    {"id": "C02:auto:ElectricVehicle", "rule": "C02", "severity": "review", "title": "Sous-classe ElectricVehicle ⊑ Vehicle", "detail": "Héritage simple.", "subject": "https://example.org/auto#ElectricVehicle",
+     "options": [{"id": "multi_label", "label": "Multi-labels", "impact": "", "recommended_for": ["neo4j"]}, {"id": "flatten", "label": "Aplatir", "impact": "", "recommended_for": ["curiosity"]}],
+     "recommended": "multi_label", "chosen": "multi_label"},
+    {"id": "R01:auto:PartInstallation", "rule": "R01", "severity": "review", "title": "Classe de réification PartInstallation", "detail": "2 liens fonctionnels + installedAt, mileageKm.", "subject": "https://example.org/auto#PartInstallation",
+     "options": [{"id": "relationship", "label": "Relation porteuse", "impact": "", "recommended_for": ["neo4j"]}, {"id": "keep_node", "label": "Nœud", "impact": "", "recommended_for": ["curiosity"]}],
+     "recommended": "relationship", "chosen": "relationship"},
+    {"id": "R01:auto:RepairOrder", "rule": "R01", "severity": "review", "title": "Classe de réification RepairOrder", "detail": "4 liens fonctionnels → nœud conservé.", "subject": "https://example.org/auto#RepairOrder",
+     "options": [{"id": "relationship", "label": "Relation porteuse", "impact": ""}, {"id": "keep_node", "label": "Nœud", "impact": "", "recommended_for": ["neo4j", "curiosity"]}],
+     "recommended": "keep_node", "chosen": "keep_node"},
+    {"id": "O06:auto:isPartOf", "rule": "O06", "severity": "lost", "title": "isPartOf transitive", "detail": "Pas d'inférence transitive.", "subject": "https://example.org/auto#isPartOf",
+     "options": [{"id": "var_length_query", "label": "Requête *1..", "impact": ""}, {"id": "materialize_closure", "label": "Matérialiser", "impact": ""}],
+     "recommended": "var_length_query", "chosen": "materialize_closure"},
+    {"id": "C07:auto:Recall:Warranty", "rule": "C07", "severity": "lost", "title": "Recall disjointWith Warranty", "detail": "Pas de contrainte native.", "subject": "https://example.org/auto#Recall",
+     "options": [{"id": "validation", "label": "Validation", "impact": ""}], "recommended": "validation", "chosen": "validation"},
+    {"id": "O07:auto:replacedPart", "rule": "O07", "severity": "lost", "title": "replacedPart ⊑ usesPart", "detail": "", "subject": "https://example.org/auto#replacedPart",
+     "options": [{"id": "most_specific_type", "label": "Type spécifique", "impact": ""}, {"id": "materialize_closure", "label": "Matérialiser le parent", "impact": ""}], "recommended": "most_specific_type", "chosen": "materialize_closure"},
+    {"id": "D05:auto:totalCost", "rule": "D05", "severity": "review", "title": "xsd:decimal totalCost", "detail": "decimal → FLOAT.", "subject": "https://example.org/auto#totalCost",
+     "options": [{"id": "native_type", "label": "FLOAT", "impact": "perte de précision"}], "recommended": "native_type", "chosen": null},
+    {"id": "X00:auto:SafetyCriticalPart", "rule": "X00", "severity": "lost", "title": "unionOf anonyme non traité (it1)", "detail": "", "subject": "https://example.org/auto#SafetyCriticalPart", "options": [], "recommended": null, "chosen": null},
+    {"id": "K02:auto:VehicleModel", "rule": "K02", "severity": "auto", "title": "hasKey (brandCode, modelCode)", "detail": "", "subject": "https://example.org/auto#VehicleModel"}
+  ],
+  "decisions": {"C02:auto:ElectricVehicle": "multi_label", "R01:auto:PartInstallation": "relationship", "R01:auto:RepairOrder": "keep_node", "O06:auto:isPartOf": "materialize", "C07:auto:Recall:Warranty": "validation", "O07:auto:replacedPart": "materialize_parent"}
+}

@@ -1,0 +1,2 @@
+PREFIX am: <https://w3id.org/ontoforge/automaint#>
+SELECT ?sub WHERE { ?p a am:Part ; am:instanceOf ?r . ?r am:manufacturerPartNumber "MPN-001" . ?sub am:partOf+ ?p . }

@@ -1,0 +1,1518 @@
+{
+  "target": "curiosity",
+  "meta": {
+    "name": "auto-maintenance",
+    "iri": "https://example.org/auto",
+    "generated_at": "2026-11-02T23:30:00Z",
+    "ontoforge_version": "0.1.0"
+  },
+  "node_types": {
+    "Vehicle": {
+      "name": "Vehicle",
+      "labels": [
+        "Vehicle"
+      ],
+      "source": [
+        "https://example.org/auto#Vehicle",
+        "https://example.org/auto#Car",
+        "https://example.org/auto#Truck"
+      ],
+      "key": [
+        "Vin"
+      ],
+      "properties": [
+        {
+          "name": "Vin",
+          "type": "String",
+          "is_list": false,
+          "required": true,
+          "unique": true,
+          "indexed": true,
+          "source": "https://example.org/auto#vin",
+          "description": "Numéro d'identification du véhicule (VIN, 17 caractères).",
+          "enum": [],
+          "default": null,
+          "pattern": "^[A-HJ-NPR-Z0-9]{17}$",
+          "lang": null,
+          "note": null
+        },
+        {
+          "name": "VehicleKind",
+          "type": "String",
+          "is_list": false,
+          "required": true,
+          "unique": false,
+          "indexed": false,
+          "source": "https://example.org/auto#Vehicle",
+          "description": null,
+          "enum": [
+            "Car",
+            "Truck"
+          ],
+          "default": null,
+          "pattern": null,
+          "lang": null,
+          "note": "Discriminant (C02) : sous-classe OWL d'origine."
+        },
+        {
+          "name": "RegistrationNumber",
+          "type": "String",
+          "is_list": false,
+          "required": true,
+          "unique": false,
+          "indexed": true,
+          "source": "https://example.org/auto#registrationNumber",
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": null,
+          "note": null
+        },
+        {
+          "name": "FirstRegistrationDate",
+          "type": "Date",
+          "is_list": false,
+          "required": false,
+          "unique": false,
+          "indexed": false,
+          "source": "https://example.org/auto#firstRegistrationDate",
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": null,
+          "note": null
+        },
+        {
+          "name": "NumberOfDoors",
+          "type": "Integer",
+          "is_list": false,
+          "required": false,
+          "unique": false,
+          "indexed": false,
+          "source": "https://example.org/auto#numberOfDoors",
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": null,
+          "note": "Hérité de auto:Car (vide pour Truck)."
+        },
+        {
+          "name": "PayloadCapacityKg",
+          "type": "Float",
+          "is_list": false,
+          "required": false,
+          "unique": false,
+          "indexed": false,
+          "source": "https://example.org/auto#payloadCapacityKg",
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": null,
+          "note": "Hérité de auto:Truck ; xsd:decimal -> double (D05)."
+        },
+        {
+          "name": "LabelFr",
+          "type": "String",
+          "is_list": false,
+          "required": false,
+          "unique": false,
+          "indexed": false,
+          "source": "https://example.org/auto#label",
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": "fr",
+          "note": null
+        },
+        {
+          "name": "LabelEn",
+          "type": "String",
+          "is_list": false,
+          "required": false,
+          "unique": false,
+          "indexed": false,
+          "source": "https://example.org/auto#label",
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": "en",
+          "note": null
+        },
+        {
+          "name": "Type",
+          "type": "String",
+          "is_list": false,
+          "required": false,
+          "unique": false,
+          "indexed": false,
+          "source": "https://example.org/auto#type",
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": null,
+          "note": "Nom réservé Curiosity : doit être renommé par le générateur."
+        }
+      ],
+      "description": "Véhicule immatriculé suivi en maintenance (héritage Car/Truck aplati).",
+      "abstract": false,
+      "discriminator": "VehicleKind",
+      "discriminator_values": [
+        "Car",
+        "Truck"
+      ]
+    },
+    "MaintenanceItem": {
+      "name": "MaintenanceItem",
+      "labels": [
+        "MaintenanceItem"
+      ],
+      "source": [
+        "https://example.org/auto#MaintenanceItem"
+      ],
+      "key": [],
+      "properties": [
+        {
+          "name": "Code",
+          "type": "String",
+          "is_list": false,
+          "required": false,
+          "unique": false,
+          "indexed": false,
+          "source": null,
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": null,
+          "note": null
+        }
+      ],
+      "description": "Classe abstraite (C04).",
+      "abstract": true,
+      "discriminator": null,
+      "discriminator_values": []
+    },
+    "VehicleModel": {
+      "name": "VehicleModel",
+      "labels": [
+        "VehicleModel"
+      ],
+      "source": [
+        "https://example.org/auto#VehicleModel"
+      ],
+      "key": [],
+      "properties": [
+        {
+          "name": "Uri",
+          "type": "String",
+          "is_list": false,
+          "required": true,
+          "unique": true,
+          "indexed": false,
+          "source": "urn:ontoforge:iri",
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": null,
+          "note": null
+        },
+        {
+          "name": "Name",
+          "type": "String",
+          "is_list": false,
+          "required": true,
+          "unique": false,
+          "indexed": false,
+          "source": "https://example.org/auto#modelName",
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": null,
+          "note": null
+        },
+        {
+          "name": "ModelYear",
+          "type": "Integer",
+          "is_list": false,
+          "required": false,
+          "unique": false,
+          "indexed": false,
+          "source": "https://example.org/auto#modelYear",
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": null,
+          "note": "xsd:gYear -> long (D05)."
+        }
+      ],
+      "description": null,
+      "abstract": false,
+      "discriminator": null,
+      "discriminator_values": []
+    },
+    "Brand": {
+      "name": "Brand",
+      "labels": [
+        "Brand"
+      ],
+      "source": [
+        "https://example.org/auto#Brand"
+      ],
+      "key": [
+        "Name"
+      ],
+      "properties": [
+        {
+          "name": "Name",
+          "type": "String",
+          "is_list": false,
+          "required": true,
+          "unique": false,
+          "indexed": false,
+          "source": "https://example.org/auto#brandName",
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": null,
+          "note": null
+        },
+        {
+          "name": "Country",
+          "type": "String",
+          "is_list": false,
+          "required": false,
+          "unique": false,
+          "indexed": false,
+          "source": "https://example.org/auto#country",
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": null,
+          "note": null
+        }
+      ],
+      "description": null,
+      "abstract": false,
+      "discriminator": null,
+      "discriminator_values": []
+    },
+    "Part": {
+      "name": "Part",
+      "labels": [
+        "Part"
+      ],
+      "source": [
+        "https://example.org/auto#Part"
+      ],
+      "key": [
+        "PartNumber"
+      ],
+      "properties": [
+        {
+          "name": "PartNumber",
+          "type": "String",
+          "is_list": false,
+          "required": true,
+          "unique": false,
+          "indexed": false,
+          "source": "https://example.org/auto#partNumber",
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": null,
+          "note": null
+        },
+        {
+          "name": "Name",
+          "type": "String",
+          "is_list": false,
+          "required": false,
+          "unique": false,
+          "indexed": false,
+          "source": "https://example.org/auto#partName",
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": null,
+          "note": null
+        },
+        {
+          "name": "Tags",
+          "type": "String",
+          "is_list": true,
+          "required": false,
+          "unique": false,
+          "indexed": false,
+          "source": "https://example.org/auto#tag",
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": null,
+          "note": "Non fonctionnelle (D04)."
+        },
+        {
+          "name": "UnitPrice",
+          "type": "Float",
+          "is_list": false,
+          "required": false,
+          "unique": false,
+          "indexed": false,
+          "source": "https://example.org/auto#unitPrice",
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": null,
+          "note": null
+        }
+      ],
+      "description": null,
+      "abstract": false,
+      "discriminator": null,
+      "discriminator_values": []
+    },
+    "PartInstallation": {
+      "name": "PartInstallation",
+      "labels": [
+        "PartInstallation"
+      ],
+      "source": [
+        "https://example.org/auto#PartInstallation"
+      ],
+      "key": [
+        "VehicleVin",
+        "PartNumber",
+        "InstalledAt"
+      ],
+      "properties": [
+        {
+          "name": "VehicleVin",
+          "type": "String",
+          "is_list": false,
+          "required": true,
+          "unique": false,
+          "indexed": false,
+          "source": "https://example.org/auto#vin",
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": null,
+          "note": null
+        },
+        {
+          "name": "PartNumber",
+          "type": "String",
+          "is_list": false,
+          "required": true,
+          "unique": false,
+          "indexed": false,
+          "source": "https://example.org/auto#partNumber",
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": null,
+          "note": null
+        },
+        {
+          "name": "InstalledAt",
+          "type": "DateTime",
+          "is_list": false,
+          "required": true,
+          "unique": false,
+          "indexed": false,
+          "source": "https://example.org/auto#installedAt",
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": null,
+          "note": null
+        },
+        {
+          "name": "MileageKm",
+          "type": "Integer",
+          "is_list": false,
+          "required": false,
+          "unique": false,
+          "indexed": false,
+          "source": "https://example.org/auto#mileageKm",
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": null,
+          "note": null
+        },
+        {
+          "name": "LaborHours",
+          "type": "Float",
+          "is_list": false,
+          "required": false,
+          "unique": false,
+          "indexed": false,
+          "source": "https://example.org/auto#laborHours",
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": null,
+          "note": null
+        },
+        {
+          "name": "WarrantyDuration",
+          "type": "Duration",
+          "is_list": false,
+          "required": false,
+          "unique": false,
+          "indexed": false,
+          "source": "https://example.org/auto#warrantyDuration",
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": null,
+          "note": null
+        }
+      ],
+      "description": "Pose d'une pièce sur un véhicule (classe de réification R01 conservée en nœud).",
+      "abstract": false,
+      "discriminator": null,
+      "discriminator_values": []
+    },
+    "RepairOrder": {
+      "name": "RepairOrder",
+      "labels": [
+        "RepairOrder"
+      ],
+      "source": [
+        "https://example.org/auto#RepairOrder"
+      ],
+      "key": [
+        "OrderNumber"
+      ],
+      "properties": [
+        {
+          "name": "OrderNumber",
+          "type": "String",
+          "is_list": false,
+          "required": true,
+          "unique": false,
+          "indexed": false,
+          "source": "https://example.org/auto#orderNumber",
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": null,
+          "note": null
+        },
+        {
+          "name": "OpenedAt",
+          "type": "DateTime",
+          "is_list": false,
+          "required": true,
+          "unique": false,
+          "indexed": false,
+          "source": "https://example.org/auto#openedAt",
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": null,
+          "note": null
+        },
+        {
+          "name": "ClosedAt",
+          "type": "DateTime",
+          "is_list": false,
+          "required": false,
+          "unique": false,
+          "indexed": false,
+          "source": "https://example.org/auto#closedAt",
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": null,
+          "note": null
+        },
+        {
+          "name": "TotalCost",
+          "type": "Float",
+          "is_list": false,
+          "required": false,
+          "unique": false,
+          "indexed": false,
+          "source": "https://example.org/auto#totalCost",
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": null,
+          "note": "xsd:decimal -> double (D05)."
+        },
+        {
+          "name": "AppointmentTime",
+          "type": "Time",
+          "is_list": false,
+          "required": false,
+          "unique": false,
+          "indexed": false,
+          "source": "https://example.org/auto#appointmentTime",
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": null,
+          "note": null
+        }
+      ],
+      "description": null,
+      "abstract": false,
+      "discriminator": null,
+      "discriminator_values": []
+    },
+    "RepairOrderStatus": {
+      "name": "RepairOrderStatus",
+      "labels": [
+        "RepairOrderStatus"
+      ],
+      "source": [
+        "https://example.org/auto#RepairOrderStatus"
+      ],
+      "key": [
+        "Value"
+      ],
+      "properties": [
+        {
+          "name": "Value",
+          "type": "String",
+          "is_list": false,
+          "required": true,
+          "unique": false,
+          "indexed": false,
+          "source": null,
+          "description": null,
+          "enum": [
+            "Open",
+            "InProgress",
+            "Closed",
+            "Cancelled"
+          ],
+          "default": null,
+          "pattern": null,
+          "lang": null,
+          "note": null
+        },
+        {
+          "name": "LabelFr",
+          "type": "String",
+          "is_list": false,
+          "required": false,
+          "unique": false,
+          "indexed": false,
+          "source": null,
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": "fr",
+          "note": null
+        }
+      ],
+      "description": "Énumération owl:oneOf transformée en nœuds de référence (C08, facette liée).",
+      "abstract": false,
+      "discriminator": null,
+      "discriminator_values": []
+    },
+    "Garage": {
+      "name": "Garage",
+      "labels": [
+        "Garage"
+      ],
+      "source": [
+        "https://example.org/auto#Garage"
+      ],
+      "key": [
+        "GarageCode"
+      ],
+      "properties": [
+        {
+          "name": "GarageCode",
+          "type": "String",
+          "is_list": false,
+          "required": true,
+          "unique": false,
+          "indexed": false,
+          "source": "https://example.org/auto#garageCode",
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": null,
+          "note": null
+        },
+        {
+          "name": "Name",
+          "type": "String",
+          "is_list": false,
+          "required": false,
+          "unique": false,
+          "indexed": false,
+          "source": "https://example.org/auto#garageName",
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": null,
+          "note": null
+        },
+        {
+          "name": "City",
+          "type": "String",
+          "is_list": false,
+          "required": false,
+          "unique": false,
+          "indexed": false,
+          "source": "https://example.org/auto#city",
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": null,
+          "note": null
+        }
+      ],
+      "description": null,
+      "abstract": false,
+      "discriminator": null,
+      "discriminator_values": []
+    },
+    "Technician": {
+      "name": "Technician",
+      "labels": [
+        "Technician"
+      ],
+      "source": [
+        "https://example.org/auto#Technician"
+      ],
+      "key": [
+        "EmployeeId"
+      ],
+      "properties": [
+        {
+          "name": "EmployeeId",
+          "type": "String",
+          "is_list": false,
+          "required": true,
+          "unique": false,
+          "indexed": false,
+          "source": "https://example.org/auto#employeeId",
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": null,
+          "note": null
+        },
+        {
+          "name": "FullName",
+          "type": "String",
+          "is_list": false,
+          "required": false,
+          "unique": false,
+          "indexed": false,
+          "source": "https://example.org/auto#fullName",
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": null,
+          "note": null
+        },
+        {
+          "name": "Certifications",
+          "type": "String",
+          "is_list": true,
+          "required": false,
+          "unique": false,
+          "indexed": false,
+          "source": "https://example.org/auto#certification",
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": null,
+          "note": null
+        }
+      ],
+      "description": null,
+      "abstract": false,
+      "discriminator": null,
+      "discriminator_values": []
+    },
+    "DiagnosticTroubleCode": {
+      "name": "DiagnosticTroubleCode",
+      "labels": [
+        "DiagnosticTroubleCode"
+      ],
+      "source": [
+        "https://example.org/auto#DiagnosticTroubleCode"
+      ],
+      "key": [
+        "Code"
+      ],
+      "properties": [
+        {
+          "name": "Code",
+          "type": "String",
+          "is_list": false,
+          "required": true,
+          "unique": false,
+          "indexed": false,
+          "source": "https://example.org/auto#dtcCode",
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": "^[PCBU][0-9]{4}$",
+          "lang": null,
+          "note": null
+        },
+        {
+          "name": "Description",
+          "type": "String",
+          "is_list": false,
+          "required": false,
+          "unique": false,
+          "indexed": false,
+          "source": "https://example.org/auto#dtcDescription",
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": null,
+          "note": null
+        }
+      ],
+      "description": null,
+      "abstract": false,
+      "discriminator": null,
+      "discriminator_values": []
+    },
+    "Recall": {
+      "name": "Recall",
+      "labels": [
+        "Recall"
+      ],
+      "source": [
+        "https://example.org/auto#Recall"
+      ],
+      "key": [
+        "RecallId"
+      ],
+      "properties": [
+        {
+          "name": "RecallId",
+          "type": "String",
+          "is_list": false,
+          "required": true,
+          "unique": false,
+          "indexed": false,
+          "source": "https://example.org/auto#recallId",
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": null,
+          "note": null
+        },
+        {
+          "name": "IssuedOn",
+          "type": "Date",
+          "is_list": false,
+          "required": false,
+          "unique": false,
+          "indexed": false,
+          "source": "https://example.org/auto#issuedOn",
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": null,
+          "note": null
+        },
+        {
+          "name": "Title",
+          "type": "String",
+          "is_list": false,
+          "required": false,
+          "unique": false,
+          "indexed": false,
+          "source": "https://example.org/auto#title",
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": null,
+          "note": null
+        }
+      ],
+      "description": null,
+      "abstract": false,
+      "discriminator": null,
+      "discriminator_values": []
+    },
+    "Warranty": {
+      "name": "Warranty",
+      "labels": [
+        "Warranty"
+      ],
+      "source": [
+        "https://example.org/auto#Warranty"
+      ],
+      "key": [
+        "WarrantyId"
+      ],
+      "properties": [
+        {
+          "name": "WarrantyId",
+          "type": "String",
+          "is_list": false,
+          "required": true,
+          "unique": false,
+          "indexed": false,
+          "source": "https://example.org/auto#warrantyId",
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": null,
+          "note": null
+        },
+        {
+          "name": "ValidUntil",
+          "type": "Date",
+          "is_list": false,
+          "required": false,
+          "unique": false,
+          "indexed": false,
+          "source": "https://example.org/auto#validUntil",
+          "description": null,
+          "enum": [],
+          "default": null,
+          "pattern": null,
+          "lang": null,
+          "note": null
+        }
+      ],
+      "description": null,
+      "abstract": false,
+      "discriminator": null,
+      "discriminator_values": []
+    }
+  },
+  "edge_types": [
+    {
+      "name": "HasPart",
+      "from": "Vehicle",
+      "to": "Part",
+      "reverse": "PartOf",
+      "source": "https://example.org/auto#hasPart",
+      "description": null,
+      "properties": [],
+      "cardinality": {
+        "out": "0..*",
+        "in": "0..*"
+      },
+      "directed": true,
+      "symmetric": false,
+      "derived": false,
+      "note": null
+    },
+    {
+      "name": "HasPart",
+      "from": "Part",
+      "to": "Part",
+      "reverse": "PartOf",
+      "source": "https://example.org/auto#hasPart",
+      "description": null,
+      "properties": [],
+      "cardinality": {
+        "out": "0..*",
+        "in": "0..*"
+      },
+      "directed": true,
+      "symmetric": false,
+      "derived": false,
+      "note": "O03 : même arête pour deux couples de types."
+    },
+    {
+      "name": "HasInstallation",
+      "from": "Vehicle",
+      "to": "PartInstallation",
+      "reverse": "InstallationOf",
+      "source": "https://example.org/auto#installationVehicle",
+      "description": null,
+      "properties": [],
+      "cardinality": {
+        "out": "0..*",
+        "in": "0..*"
+      },
+      "directed": true,
+      "symmetric": false,
+      "derived": false,
+      "note": null
+    },
+    {
+      "name": "InstalledPart",
+      "from": "PartInstallation",
+      "to": "Part",
+      "reverse": "InstalledIn",
+      "source": "https://example.org/auto#installedPart",
+      "description": null,
+      "properties": [],
+      "cardinality": {
+        "out": "1",
+        "in": "0..*"
+      },
+      "directed": true,
+      "symmetric": false,
+      "derived": false,
+      "note": null
+    },
+    {
+      "name": "ConcernsVehicle",
+      "from": "RepairOrder",
+      "to": "Vehicle",
+      "reverse": "HasRepairOrder",
+      "source": "https://example.org/auto#concernsVehicle",
+      "description": null,
+      "properties": [],
+      "cardinality": {
+        "out": "1",
+        "in": "0..*"
+      },
+      "directed": true,
+      "symmetric": false,
+      "derived": false,
+      "note": null
+    },
+    {
+      "name": "PerformedAt",
+      "from": "RepairOrder",
+      "to": "Garage",
+      "reverse": "HasRepairOrder",
+      "source": "https://example.org/auto#performedAt",
+      "description": null,
+      "properties": [],
+      "cardinality": {
+        "out": "1",
+        "in": "0..*"
+      },
+      "directed": true,
+      "symmetric": false,
+      "derived": false,
+      "note": null
+    },
+    {
+      "name": "PerformedBy",
+      "from": "RepairOrder",
+      "to": "Technician",
+      "reverse": "Performed",
+      "source": "https://example.org/auto#performedBy",
+      "description": null,
+      "properties": [],
+      "cardinality": {
+        "out": "0..*",
+        "in": "0..*"
+      },
+      "directed": true,
+      "symmetric": false,
+      "derived": false,
+      "note": null
+    },
+    {
+      "name": "HasStatus",
+      "from": "RepairOrder",
+      "to": "RepairOrderStatus",
+      "reverse": "StatusOf",
+      "source": "https://example.org/auto#hasStatus",
+      "description": null,
+      "properties": [],
+      "cardinality": {
+        "out": "1",
+        "in": "0..*"
+      },
+      "directed": true,
+      "symmetric": false,
+      "derived": false,
+      "note": null
+    },
+    {
+      "name": "RevealedCode",
+      "from": "RepairOrder",
+      "to": "DiagnosticTroubleCode",
+      "reverse": "RevealedIn",
+      "source": "https://example.org/auto#revealedCode",
+      "description": null,
+      "properties": [],
+      "cardinality": {
+        "out": "0..*",
+        "in": "0..*"
+      },
+      "directed": true,
+      "symmetric": false,
+      "derived": false,
+      "note": null
+    },
+    {
+      "name": "WorksAt",
+      "from": "Technician",
+      "to": "Garage",
+      "reverse": "Employs",
+      "source": "https://example.org/auto#worksAt",
+      "description": null,
+      "properties": [],
+      "cardinality": {
+        "out": "0..*",
+        "in": "0..*"
+      },
+      "directed": true,
+      "symmetric": false,
+      "derived": false,
+      "note": null
+    },
+    {
+      "name": "OfModel",
+      "from": "Vehicle",
+      "to": "VehicleModel",
+      "reverse": "ModelOf",
+      "source": "https://example.org/auto#ofModel",
+      "description": null,
+      "properties": [],
+      "cardinality": {
+        "out": "1",
+        "in": "0..*"
+      },
+      "directed": true,
+      "symmetric": false,
+      "derived": false,
+      "note": null
+    },
+    {
+      "name": "MadeBy",
+      "from": "VehicleModel",
+      "to": "Brand",
+      "reverse": "Makes",
+      "source": "https://example.org/auto#madeBy",
+      "description": null,
+      "properties": [],
+      "cardinality": {
+        "out": "0..*",
+        "in": "0..*"
+      },
+      "directed": true,
+      "symmetric": false,
+      "derived": false,
+      "note": null
+    },
+    {
+      "name": "AffectsModel",
+      "from": "Recall",
+      "to": "VehicleModel",
+      "reverse": "AffectedBy",
+      "source": "https://example.org/auto#affectsModel",
+      "description": null,
+      "properties": [],
+      "cardinality": {
+        "out": "0..*",
+        "in": "0..*"
+      },
+      "directed": true,
+      "symmetric": false,
+      "derived": false,
+      "note": null
+    },
+    {
+      "name": "CompatibleWith",
+      "from": "Part",
+      "to": "Part",
+      "reverse": "CompatibleWith",
+      "source": "https://example.org/auto#compatibleWith",
+      "description": null,
+      "properties": [],
+      "cardinality": {
+        "out": "0..*",
+        "in": "0..*"
+      },
+      "directed": false,
+      "symmetric": true,
+      "derived": false,
+      "note": null
+    },
+    {
+      "name": "PartOfAncestor",
+      "from": "Part",
+      "to": "Vehicle",
+      "reverse": "HasPartDescendant",
+      "source": "https://example.org/auto#isPartOf",
+      "description": null,
+      "properties": [],
+      "cardinality": {
+        "out": "0..*",
+        "in": "0..*"
+      },
+      "directed": true,
+      "symmetric": false,
+      "derived": true,
+      "note": "Fermeture transitive matérialisée de isPartOf (O06)."
+    }
+  ],
+  "validations": [
+    {
+      "id": "V01",
+      "kind": "cardinality",
+      "node_type": "RepairOrder",
+      "edge_type": "ConcernsVehicle",
+      "property": null,
+      "params": {
+        "min": 1,
+        "max": 1
+      },
+      "description": "Un ordre de réparation concerne exactement un véhicule.",
+      "source": "https://example.org/auto#RepairOrder",
+      "severity": "Violation"
+    },
+    {
+      "id": "V02",
+      "kind": "existence",
+      "node_type": "RepairOrder",
+      "edge_type": "PerformedAt",
+      "property": null,
+      "params": {
+        "min": 1
+      },
+      "description": "Un ordre de réparation est réalisé dans au moins un garage (some).",
+      "source": "https://example.org/auto#RepairOrder",
+      "severity": "Violation"
+    },
+    {
+      "id": "V03",
+      "kind": "functional",
+      "node_type": "Vehicle",
+      "edge_type": "OfModel",
+      "property": null,
+      "params": {
+        "max": 1
+      },
+      "description": "Un véhicule a au plus un modèle (owl:FunctionalProperty).",
+      "source": "https://example.org/auto#ofModel",
+      "severity": "Violation"
+    },
+    {
+      "id": "V04",
+      "kind": "enum",
+      "node_type": "Vehicle",
+      "edge_type": null,
+      "property": "VehicleKind",
+      "params": {
+        "values": [
+          "Car",
+          "Truck"
+        ]
+      },
+      "description": "Discriminant VehicleKind ∈ {Car, Truck}.",
+      "source": null,
+      "severity": "Violation"
+    },
+    {
+      "id": "V05",
+      "kind": "pattern",
+      "node_type": "DiagnosticTroubleCode",
+      "edge_type": null,
+      "property": "Code",
+      "params": {
+        "pattern": "^[PCBU][0-9]{4}$"
+      },
+      "description": "Code défaut OBD-II : lettre P/C/B/U + 4 chiffres.",
+      "source": "https://example.org/auto#dtcCode",
+      "severity": "Violation"
+    },
+    {
+      "id": "V06",
+      "kind": "disjoint",
+      "node_type": null,
+      "edge_type": null,
+      "property": null,
+      "params": {
+        "targets": [
+          "Recall",
+          "Warranty"
+        ]
+      },
+      "description": "Un rappel n'est pas une garantie (owl:disjointWith).",
+      "source": "https://example.org/auto#Recall",
+      "severity": "Violation"
+    },
+    {
+      "id": "V07",
+      "kind": "irreflexive",
+      "node_type": "Part",
+      "edge_type": "CompatibleWith",
+      "property": null,
+      "params": {},
+      "description": "Une pièce n'est pas compatible avec elle-même.",
+      "source": "https://example.org/auto#compatibleWith",
+      "severity": "Violation"
+    },
+    {
+      "id": "V08",
+      "kind": "asymmetric",
+      "node_type": "Part",
+      "edge_type": "HasPart",
+      "property": null,
+      "params": {},
+      "description": "hasPart est asymétrique.",
+      "source": "https://example.org/auto#hasPart",
+      "severity": "Violation"
+    },
+    {
+      "id": "V09",
+      "kind": "allValuesFrom",
+      "node_type": "RepairOrder",
+      "edge_type": "HasStatus",
+      "property": null,
+      "params": {
+        "targets": [
+          "RepairOrderStatus"
+        ]
+      },
+      "description": "Le statut d'un ordre est un RepairOrderStatus (only).",
+      "source": "https://example.org/auto#RepairOrder",
+      "severity": "Violation"
+    },
+    {
+      "id": "V10",
+      "kind": "range",
+      "node_type": "PartInstallation",
+      "edge_type": null,
+      "property": "MileageKm",
+      "params": {
+        "min": 0
+      },
+      "description": "Kilométrage de pose positif ou nul (xsd:nonNegativeInteger).",
+      "source": "https://example.org/auto#mileageKm",
+      "severity": "Violation"
+    },
+    {
+      "id": "V11",
+      "kind": "existence",
+      "node_type": "Vehicle",
+      "edge_type": null,
+      "property": "RegistrationNumber",
+      "params": {},
+      "description": "Immatriculation obligatoire (SHACL minCount 1).",
+      "source": "https://example.org/auto#registrationNumber",
+      "severity": "Warning"
+    },
+    {
+      "id": "V12",
+      "kind": "pattern",
+      "node_type": "Vehicle",
+      "edge_type": null,
+      "property": "Vin",
+      "params": {
+        "pattern": "^[A-HJ-NPR-Z0-9]{17}$"
+      },
+      "description": "Format du VIN.",
+      "source": "https://example.org/auto#vin",
+      "severity": "Violation"
+    },
+    {
+      "id": "V13",
+      "kind": "other",
+      "node_type": "RepairOrder",
+      "edge_type": null,
+      "property": null,
+      "params": {},
+      "description": "Le coût total est la somme des lignes (règle métier non transposée).",
+      "source": "https://example.org/auto#totalCost",
+      "severity": "Violation"
+    }
+  ],
+  "materializations": [
+    {
+      "id": "M01",
+      "kind": "transitiveClosure",
+      "edge_type": "PartOfAncestor",
+      "chain": [
+        "HasPart"
+      ],
+      "parent": null,
+      "node_type": null,
+      "definition": null,
+      "description": "Fermeture transitive de isPartOf (inverse de hasPart, stockée via l'edge HasPart / son reverse) matérialisée en PartOfAncestor.",
+      "source": "https://example.org/auto#isPartOf"
+    }
+  ],
+  "findings": [
+    {
+      "id": "C02:auto:Car",
+      "rule": "C02",
+      "severity": "review",
+      "title": "Car ⊑ Vehicle",
+      "detail": "Héritage simple.",
+      "subject": "https://example.org/auto#Car",
+      "related": [],
+      "options": [
+        {
+          "id": "flatten",
+          "label": "Aplatir + discriminant",
+          "impact": "Hiérarchie perdue, filtrable via VehicleKind",
+          "recommended_for": [
+            "curiosity"
+          ]
+        },
+        {
+          "id": "multilabel",
+          "label": "Multi-labels",
+          "impact": "Impossible sur Curiosity",
+          "recommended_for": [
+            "neo4j"
+          ]
+        }
+      ],
+      "recommended": "flatten",
+      "chosen": "flatten",
+      "rationale": null
+    },
+    {
+      "id": "R01:auto:PartInstallation",
+      "rule": "R01",
+      "severity": "review",
+      "title": "Classe de réification PartInstallation",
+      "detail": "2 liens fonctionnels + attributs.",
+      "subject": "https://example.org/auto#PartInstallation",
+      "related": [],
+      "options": [
+        {
+          "id": "keep_node",
+          "label": "Garder le nœud",
+          "impact": "Aucune perte",
+          "recommended_for": [
+            "curiosity"
+          ]
+        },
+        {
+          "id": "edge_props",
+          "label": "Relation porteuse",
+          "impact": "Impossible sur Curiosity",
+          "recommended_for": [
+            "neo4j"
+          ]
+        }
+      ],
+      "recommended": "keep_node",
+      "chosen": null,
+      "rationale": null
+    },
+    {
+      "id": "O06:auto:isPartOf",
+      "rule": "O06",
+      "severity": "lost",
+      "title": "isPartOf transitive",
+      "detail": "Pas de fermeture transitive native.",
+      "subject": "https://example.org/auto#isPartOf",
+      "related": [],
+      "options": [
+        {
+          "id": "materialize",
+          "label": "Matérialiser PartOfAncestor",
+          "impact": "Coût d'ingestion",
+          "recommended_for": [
+            "curiosity"
+          ]
+        },
+        {
+          "id": "traverse",
+          "label": "Traverser à la requête",
+          "impact": "Profondeur bornée",
+          "recommended_for": []
+        }
+      ],
+      "recommended": "materialize",
+      "chosen": "materialize",
+      "rationale": null
+    },
+    {
+      "id": "C07:auto:Recall",
+      "rule": "C07",
+      "severity": "lost",
+      "title": "Recall disjoint de Warranty",
+      "detail": "Pas de contrainte de disjonction.",
+      "subject": "https://example.org/auto#Recall",
+      "related": [],
+      "options": [
+        {
+          "id": "validate",
+          "label": "Validation applicative",
+          "impact": "Contrôle dans le connecteur",
+          "recommended_for": [
+            "curiosity",
+            "neo4j"
+          ]
+        }
+      ],
+      "recommended": "validate",
+      "chosen": null,
+      "rationale": null
+    },
+    {
+      "id": "X00:auto:totalCostRule",
+      "rule": "X00",
+      "severity": "lost",
+      "title": "Règle SWRL non traitée",
+      "detail": "Non traité en itération 1.",
+      "subject": "https://example.org/auto#totalCost",
+      "related": [],
+      "options": [],
+      "recommended": null,
+      "chosen": null,
+      "rationale": null
+    },
+    {
+      "id": "K02:auto:PartInstallation",
+      "rule": "K02",
+      "severity": "auto",
+      "title": "Clé composite PartInstallation",
+      "detail": "hasKey (vin, partNumber, installedAt).",
+      "subject": "https://example.org/auto#PartInstallation",
+      "related": [],
+      "options": [],
+      "recommended": null,
+      "chosen": null,
+      "rationale": null
+    }
+  ],
+  "decisions": {
+    "C02:auto:Car": "flatten",
+    "O06:auto:isPartOf": "materialize"
+  }
+}

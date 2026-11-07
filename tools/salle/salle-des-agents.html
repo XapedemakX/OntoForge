@@ -1,0 +1,267 @@
+<title>OntoForge — Salle des agents</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: plateau d'open-space (bureaux pixel) en tête, puis lots, puis fil des échanges — une colonne sur téléphone */
+:root{
+  --bg:#E9EDE8; --panel:#F6F8F4; --ink:#1D2623; --muted:#5E6C66; --line:#C9D2CC;
+  --floor:#CFD8D2; --floor2:#C3CDC6; --desk:#9A6B43; --desk2:#7C5434; --wall:#B9C4BD;
+  --accent:#C9822B; --ok:#2F8A57; --warn:#B7791F; --ko:#C2413A; --info:#2F6FA8;
+  --f-display:"Silkscreen", ui-monospace, monospace;
+  --f-body:"Atkinson Hyperlegible", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121816; --panel:#1A2220; --ink:#E3EAE6; --muted:#93A39C; --line:#2C3834;
+  --floor:#22302B; --floor2:#1D2925; --desk:#7A5232; --desk2:#5C3C24; --wall:#2A3934;
+  --accent:#E3A04B; --ok:#4CB37A; --warn:#D9A13F; --ko:#E0645C; --info:#5B9BD6; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121816; --panel:#1A2220; --ink:#E3EAE6; --muted:#93A39C; --line:#2C3834;
+  --floor:#22302B; --floor2:#1D2925; --desk:#7A5232; --desk2:#5C3C24; --wall:#2A3934;
+  --accent:#E3A04B; --ok:#4CB37A; --warn:#D9A13F; --ko:#E0645C; --info:#5B9BD6; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 40px}
+.wrap{max-width:1120px;margin:0 auto;display:grid;gap:28px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 20px}
+h1{font-family:var(--f-display);font-weight:400;font-size:clamp(20px,4vw,28px);margin:0;letter-spacing:.02em;text-wrap:balance}
+h1 span{color:var(--accent)}
+h2{font-family:var(--f-display);font-weight:400;font-size:15px;letter-spacing:.06em;margin:0 0 12px;color:var(--muted)}
+.sub{color:var(--muted);font-size:14px;margin:4px 0 0;max-width:65ch}
+.live{font-family:var(--f-mono);font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--muted)}
+.live.on .dot{background:var(--ok);box-shadow:0 0 0 3px color-mix(in srgb,var(--ok) 25%,transparent)}
+.headline{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--accent);padding:12px 14px;font-size:15px}
+.headline b{font-family:var(--f-mono);font-weight:600;font-size:12px;color:var(--muted);display:block;margin-bottom:2px;letter-spacing:.04em}
+
+/* Plateau */
+.floor{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.desk{position:relative;background:var(--panel);border:1px solid var(--line);padding:8px 8px 10px;display:grid;gap:6px;min-width:0}
+.desk canvas{width:100%;aspect-ratio:4/3;image-rendering:pixelated;image-rendering:crisp-edges;display:block;background:var(--floor)}
+.who{display:flex;justify-content:space-between;align-items:center;gap:6px}
+.who strong{font-size:14px;line-height:1.2}
+.role{font-size:12px;color:var(--muted);line-height:1.3}
+.task{font-size:12.5px;line-height:1.35;color:var(--ink);min-height:2.7em;overflow-wrap:anywhere}
+.pill{font-family:var(--f-mono);font-size:10.5px;padding:2px 6px;border:1px solid currentColor;white-space:nowrap;letter-spacing:.03em;text-transform:uppercase}
+.s-working{color:var(--info)} .s-reviewing{color:var(--accent)} .s-waiting{color:var(--muted)}
+.s-blocked{color:var(--ko)} .s-done{color:var(--ok)} .s-idle{color:var(--muted)} .s-fixing{color:var(--warn)}
+.bubble{position:absolute;left:12px;right:12px;top:10px;background:var(--panel);border:2px solid var(--ink);padding:5px 7px;
+  font-size:11.5px;line-height:1.3;max-height:5.4em;overflow:hidden;box-shadow:3px 3px 0 var(--ink);transition:opacity .4s}
+.bubble[hidden]{display:none}
+
+/* Lots */
+.lots{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.lot{background:var(--panel);border:1px solid var(--line);padding:10px 12px;display:grid;gap:6px;min-width:0}
+.lot .top{display:flex;justify-content:space-between;gap:6px;align-items:center}
+.lot .id{font-family:var(--f-display);font-size:14px}
+.lot .t{font-size:13.5px;line-height:1.3}
+.bar{height:6px;background:var(--floor2);position:relative}
+.bar i{position:absolute;inset:0 auto 0 0;background:var(--accent)}
+.lot.done .bar i{background:var(--ok)}
+.lot .meta{font-family:var(--f-mono);font-size:11px;color:var(--muted);display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap}
+
+/* Fil */
+.feedhead{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-bottom:10px}
+.feedhead h2{margin:0}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.filters button{font:inherit;font-size:12.5px;background:transparent;color:var(--ink);border:1px solid var(--line);padding:4px 9px;cursor:pointer}
+.filters button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.filters button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.feed{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.ev{display:grid;grid-template-columns:52px 1fr;gap:4px 12px;padding:10px 2px;border-bottom:1px solid var(--line)}
+.ev time{font-family:var(--f-mono);font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;padding-top:2px}
+.ev .body{min-width:0}
+.ev .line1{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px}
+.ev .from{font-weight:700}
+.ev .arrow{color:var(--muted)}
+.ev .txt{font-size:14px;margin-top:2px;overflow-wrap:anywhere;white-space:pre-wrap}
+.k{font-family:var(--f-mono);font-size:10.5px;padding:1px 5px;text-transform:uppercase;letter-spacing:.03em;border:1px solid currentColor}
+.k-review_ok,.k-done{color:var(--ok)} .k-review_ko,.k-blocked{color:var(--ko)} .k-fix{color:var(--warn)}
+.k-message,.k-question{color:var(--info)} .k-decision{color:var(--accent)} .k-start,.k-progress{color:var(--muted)}
+.empty{color:var(--muted);font-size:14px;padding:18px 0}
+.note{font-family:var(--f-mono);font-size:12px;color:var(--warn)}
+@media (prefers-reduced-motion: reduce){.bubble{transition:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>OntoForge <span>/</span> Salle des agents</h1>
+      <p class="sub">L'équipe qui construit OntoForge : qui travaille sur quoi, qui relit qui, et où en sont les lots.</p>
+    </div>
+    <div class="live" id="live"><span class="dot"></span><span id="liveTxt">Connexion…</span></div>
+  </header>
+
+  <div class="headline" id="headline"><b>EN CE MOMENT</b><span id="headTxt">Le tableau se remplit dès que les agents démarrent.</span></div>
+
+  <section aria-labelledby="h-floor">
+    <h2 id="h-floor">LE PLATEAU</h2>
+    <div class="floor" id="floor"></div>
+  </section>
+
+  <section aria-labelledby="h-lots">
+    <h2 id="h-lots">LES LOTS</h2>
+    <div class="lots" id="lots"><p class="empty">Aucun lot publié pour l'instant. Le chef de projet les ajoute au cadrage (L0).</p></div>
+  </section>
+
+  <section aria-labelledby="h-feed">
+    <div class="feedhead">
+      <h2 id="h-feed">ÉCHANGES ET ÉVÉNEMENTS</h2>
+      <div class="filters" id="filters" role="group" aria-label="Filtrer le fil"></div>
+    </div>
+    <ul class="feed" id="feed"><li class="empty">Les échanges entre agents (revues, corrections, décisions) apparaîtront ici.</li></ul>
+  </section>
+</div>
+
+<script>
+const ROSTER = [
+  {id:'chef', name:'Chef de projet', role:'Backlog, contrats de lot, arbitrages, recette', hair:'#3B2A20', shirt:'#C9822B'},
+  {id:'lead', name:'Lead dev', role:'Moteur de mapping, front, intégration', hair:'#1F1F1F', shirt:'#5A6B7A'},
+  {id:'w3c', name:'Expert W3C', role:'Conformité RDF, OWL 2, RDFS, SKOS', hair:'#7A4E2D', shirt:'#2F6FA8'},
+  {id:'shacl', name:'Expert SHACL', role:'Shapes, validation, SHACL → contraintes', hair:'#C8A15A', shirt:'#6C4FA0'},
+  {id:'query', name:'Expert requêtage', role:'SPARQL, Cypher, GraphQL', hair:'#2B2B3A', shirt:'#2F8A7A'},
+  {id:'curiosity', name:'Expert Curiosity', role:'Schéma et connecteurs Curiosity', hair:'#5A3A22', shirt:'#B5473E'},
+  {id:'neo4j', name:'Expert Neo4j', role:'Contraintes, index, ingestion Neo4j 5', hair:'#9A9A9A', shirt:'#2E7D4F'},
+  {id:'doc', name:'Documentaliste', role:'Guide, architecture, API, règles expliquées', hair:'#6B3E26', shirt:'#8A6D3B'},
+  {id:'scout', name:'Éclaireur produit', role:'Veille, idées et fonctionnalités', hair:'#D9B77A', shirt:'#3B7A99'},
+];
+const STATUS_FR = {working:'au travail', reviewing:'en revue', fixing:'corrige', waiting:'attend', blocked:'bloqué', done:'terminé', idle:'au repos'};
+const LOT_FR = {todo:'à faire', in_progress:'en cours', review:'en revue', fix:'correction', done:'clos', blocked:'bloqué'};
+const KIND_FR = {start:'démarre', progress:'avance', message:'message', review_ok:'revue OK', review_ko:'revue KO', fix:'correction', decision:'décision', done:'terminé', blocked:'bloqué', question:'question'};
+
+const state = { agents:{}, lots:[], events:[], filter:'all' };
+const byId = Object.fromEntries(ROSTER.map(a=>[a.id,a]));
+const nameOf = id => (byId[id] && byId[id].name) || id || '—';
+const $ = s => document.querySelector(s);
+const el = (tag, cls, txt) => { const e=document.createElement(tag); if(cls) e.className=cls; if(txt!=null) e.textContent=txt; return e; };
+
+/* ---------- Plateau pixel ---------- */
+const desks = {};
+function buildFloor(){
+  const floor = $('#floor');
+  for (const a of ROSTER){
+    const d = el('article','desk'); d.setAttribute('aria-label', a.name);
+    const c = document.createElement('canvas'); c.width=64; c.height=48;
+    const bubble = el('div','bubble'); bubble.hidden = true;
+    const who = el('div','who'); const n = el('strong',null,a.name); const p = el('span','pill s-idle','au repos');
+    who.append(n,p);
+    const role = el('div','role',a.role);
+    const task = el('div','task','—');
+    d.append(c,bubble,who,role,task); floor.append(d);
+    desks[a.id] = {canvas:c, ctx:c.getContext('2d'), pill:p, task, bubble, bubbleUntil:0, lastEv:null};
+  }
+}
+function tokens(){ const s=getComputedStyle(document.documentElement); const g=n=>s.getPropertyValue(n).trim();
+  return {floor:g('--floor'),floor2:g('--floor2'),desk:g('--desk'),desk2:g('--desk2'),wall:g('--wall'),ok:g('--ok'),ko:g('--ko'),accent:g('--accent'),info:g('--info'),ink:g('--ink'),muted:g('--muted')}; }
+let TK = null;
+function px(ctx,x,y,w,h,c){ ctx.fillStyle=c; ctx.fillRect(x,y,w,h); }
+function drawDesk(id, t){
+  const a = byId[id], D = desks[id], ctx = D.ctx, st = (state.agents[id]||{}).status || 'idle';
+  // sol + mur
+  px(ctx,0,0,64,16,TK.wall); for(let x=0;x<64;x+=8) for(let y=16;y<48;y+=8) px(ctx,x,y,8,8,((x+y)/8)%2?TK.floor:TK.floor2);
+  // fenêtre au mur
+  px(ctx,40,3,18,9,TK.floor2); px(ctx,41,4,16,7,st==='idle'?TK.muted:TK.info); px(ctx,49,4,1,7,TK.wall);
+  // plante
+  px(ctx,4,10,5,6,TK.desk2); px(ctx,3,5,7,6,TK.ok); px(ctx,5,3,3,3,TK.ok);
+  const present = st !== 'idle' || (Math.floor(t/4000)%3!==0);
+  const bob = (st==='working'||st==='fixing') ? (Math.floor(t/180)%2) : 0;
+  // chaise
+  px(ctx,25,22,14,10,TK.desk2);
+  if (present){
+    // personnage (derrière le bureau)
+    const hx=27, hy=15 + (st==='waiting'?1:0);
+    px(ctx,hx,hy,10,9,'#E5B48E'); px(ctx,hx,hy,10,3,a.hair); px(ctx,hx-1,hy+1,1,4,a.hair); px(ctx,hx+10,hy+1,1,4,a.hair);
+    px(ctx,hx+2,hy+5,2,1,'#2A2A2A'); px(ctx,hx+6,hy+5,2,1,'#2A2A2A');
+    px(ctx,hx-2,hy+9,14,8,a.shirt);
+    // bras
+    if (st==='reviewing'){ px(ctx,hx-4,hy+10,4,3,a.shirt); px(ctx,hx-7,hy+7,6,8,'#F4F1E6'); px(ctx,hx-6,hy+9,4,1,TK.muted); px(ctx,hx-6,hy+11,4,1,TK.muted); }
+    else { px(ctx,hx-3,hy+12+bob,3,3,a.shirt); px(ctx,hx+10,hy+12+(1-bob)*(bob||st==='working'||st==='fixing'?1:0),3,3,a.shirt); }
+  }
+  // bureau
+  px(ctx,10,31,44,5,TK.desk); px(ctx,10,36,44,2,TK.desk2); px(ctx,12,38,3,10,TK.desk2); px(ctx,49,38,3,10,TK.desk2);
+  // écran
+  const scr = st==='blocked'?TK.ko : st==='done'?TK.ok : st==='reviewing'?TK.accent : st==='idle'?TK.muted : TK.info;
+  px(ctx,16,21,14,10,'#2A2F2D'); px(ctx,17,22,12,8,scr); px(ctx,22,31,4,1,'#2A2F2D');
+  if (st==='working'||st==='fixing'){ const o=Math.floor(t/250)%4; for(let i=0;i<3;i++) px(ctx,18,23+((i*2+o)%7),4+((i+o)%3)*2,1,'#EAF2F7'); }
+  // clavier + mug
+  px(ctx,32,30,12,2,'#3A3F3D'); px(ctx,47,27,4,4,'#EDEDED'); px(ctx,51,28,1,2,'#EDEDED');
+  if (st==='waiting'){ const s=Math.floor(t/300)%3; px(ctx,48,25-s,1,1,TK.muted); px(ctx,49,23-s,1,1,TK.muted); }
+  // signes au-dessus de la tête
+  if (st==='blocked' && Math.floor(t/400)%2){ px(ctx,31,4,2,6,TK.ko); px(ctx,31,11,2,2,TK.ko); }
+  if (st==='done'){ px(ctx,28,8,2,2,TK.ok); px(ctx,30,10,2,2,TK.ok); px(ctx,32,8,2,2,TK.ok); px(ctx,34,6,2,2,TK.ok); px(ctx,36,4,2,2,TK.ok); }
+  if (st==='idle' && present){ const z=Math.floor(t/600)%3; px(ctx,40,12-z*3,3,1,TK.muted); px(ctx,42,13-z*3,1,1,TK.muted); px(ctx,40,14-z*3,3,1,TK.muted); }
+}
+function loop(t){ if(!TK) TK=tokens(); for (const a of ROSTER) drawDesk(a.id,t);
+  const now=Date.now(); for (const id in desks){ const D=desks[id]; if(!D.bubble.hidden && now>D.bubbleUntil) D.bubble.hidden=true; }
+  requestAnimationFrame(loop); }
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{TK=null});
+new MutationObserver(()=>{TK=null}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+
+/* ---------- Rendu ---------- */
+function renderAgents(){
+  for (const a of ROSTER){
+    const s = state.agents[a.id] || {status:'idle'}; const D = desks[a.id];
+    D.pill.className = 'pill s-' + (s.status||'idle'); D.pill.textContent = STATUS_FR[s.status] || s.status || 'au repos';
+    D.task.textContent = s.task ? (s.lot ? s.lot + ' · ' : '') + s.task : '—';
+  }
+}
+function renderLots(){
+  const box = $('#lots'); if (!state.lots.length) return;
+  box.replaceChildren(...state.lots.map(l=>{
+    const c = el('div','lot'+(l.status==='done'?' done':''));
+    const top = el('div','top'); top.append(el('span','id',l.id), el('span','pill s-'+({done:'done',blocked:'blocked',review:'reviewing',fix:'fixing',in_progress:'working'}[l.status]||'idle'), LOT_FR[l.status]||l.status));
+    const bar = el('div','bar'); const i = document.createElement('i'); i.style.width = Math.max(0,Math.min(100,+l.progress||0))+'%'; bar.append(i);
+    const meta = el('div','meta'); meta.append(el('span',null,'pilote : '+nameOf(l.owner)), el('span',null,(l.iteration?('itération '+l.iteration+' · '):'')+(Math.round(+l.progress||0))+' %'));
+    c.append(top, el('div','t',l.title||''), bar, meta);
+    if (l.reviewers && l.reviewers.length) c.append(el('div','meta','relecteurs : '+l.reviewers.map(nameOf).join(', ')));
+    return c;
+  }));
+}
+function fmtTime(ts){ const d=new Date(ts); if(isNaN(d)) return ''; const today=new Date().toDateString()===d.toDateString();
+  return today ? d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) : d.toLocaleDateString('fr-FR',{weekday:'short'})+' '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}); }
+function renderFilters(){
+  const f = $('#filters'); const opts = [['all','Tout'],['talk','Échanges'],...ROSTER.map(a=>[a.id,a.name.replace('Expert ','')])];
+  f.replaceChildren(...opts.map(([k,lab])=>{ const b=el('button',null,lab); b.type='button'; b.id='f-'+k; b.setAttribute('aria-pressed', String(state.filter===k));
+    b.onclick=()=>{ state.filter=k; try{localStorage.setItem('salle.filter',k)}catch(e){} renderFilters(); renderFeed(); }; return b; }));
+}
+function renderFeed(){
+  const ul = $('#feed'); let evs = state.events;
+  if (state.filter==='talk') evs = evs.filter(e=>e.to || ['review_ok','review_ko','message','question','decision','fix'].includes(e.type));
+  else if (state.filter!=='all') evs = evs.filter(e=>e.agent===state.filter || e.to===state.filter);
+  if (!evs.length){ ul.replaceChildren(el('li','empty', state.events.length?'Rien pour ce filtre.':'Les échanges entre agents (revues, corrections, décisions) apparaîtront ici.')); return; }
+  ul.replaceChildren(...evs.slice(0,120).map(e=>{
+    const li = el('li','ev'); const tm = el('time',null,fmtTime(e.ts)); tm.dateTime = e.ts;
+    const body = el('div','body'); const l1 = el('div','line1');
+    l1.append(el('span','from',nameOf(e.agent)));
+    if (e.to){ l1.append(el('span','arrow','→'), el('span','from',nameOf(e.to))); }
+    l1.append(el('span','k k-'+e.type, KIND_FR[e.type]||e.type)); if (e.lot) l1.append(el('span','k',e.lot));
+    body.append(l1, el('div','txt',e.text||'')); li.append(tm, body); return li;
+  }));
+}
+function bubbleFor(ev){
+  const D = desks[ev.agent]; if (!D || D.lastEv===ev.id) return; D.lastEv = ev.id;
+  if (Date.now() - new Date(ev.ts).getTime() > 15*60*1000) return;
+  D.bubble.textContent = (ev.to ? '→ '+nameOf(ev.to)+' : ' : '') + (ev.text||'');
+  D.bubble.hidden = false; D.bubbleUntil = Date.now() + 9000;
+}
+
+/* ---------- Données ---------- */
+function setLive(on, txt){ $('#live').classList.toggle('on',on); $('#liveTxt').textContent = txt; }
+async function start(){
+  buildFloor(); try{ state.filter = localStorage.getItem('salle.filter') || 'all'; }catch(e){}
+  renderFilters(); requestAnimationFrame(loop);
+  const db = window.claude ? await window.claude.use('db') : null;
+  if (!db){ setLive(false,'Hors ligne : ouvre la page sur claude.ai'); return; }
+  let got = false; const timer = setTimeout(()=>{ if(!got) setLive(false,'Données injoignables pour le moment'); },10000);
+  const fresh = s => { if (!s.metadata || !s.metadata.fromCache){ got=true; clearTimeout(timer); setLive(true,'En direct · '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})); } };
+  const err = e => { clearTimeout(timer); setLive(false,'Flux interrompu ('+(e&&e.code||'erreur')+')'); };
+  db.collection('lots').onSnapshot(s=>{ state.lots = s.docs.map(d=>Object.assign({id:d.id},d.data())); renderLots(); fresh(s); }, err);
+  db.collection('events').orderBy('ts','desc').limit(150).onSnapshot(s=>{
+    state.events = s.docs.map(d=>Object.assign({id:d.id},d.data())); renderFeed();
+    state.agents = {}; for (const e of state.events){ if (e.agent && e.status && !state.agents[e.agent]) state.agents[e.agent] = {status:e.status, task:e.task||e.text, lot:e.lot}; } renderAgents();
+    const seen = new Set(); for (const e of state.events){ if(!seen.has(e.agent)){ seen.add(e.agent); bubbleFor(e); } } fresh(s); }, err);
+  db.doc('meta/summary').onSnapshot(s=>{ const d=s.data&&s.data(); if(d&&d.headline) $('#headTxt').textContent = d.headline; }, ()=>{});
+}
+start();
+</script>

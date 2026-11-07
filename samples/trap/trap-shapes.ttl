@@ -1,0 +1,85 @@
+# OntoForge — shapes SHACL Core de l'ontologie piège (maintenance automobile)
+# Propriétaire : w3c (L0). Vérification :
+#   pyshacl -s samples/trap/trap-shapes.ttl samples/trap/trap-data.ttl   → violations listées dans trap-data.ttl
+#   pyshacl -s samples/trap/trap-shapes.ttl -i rdfs samples/trap/trap.ttl → EXACTEMENT 1 violation, voulue :
+#     le relevé anonyme (nœud blanc) de am:veh_001 viole sh:closed sur am:mileageKm, triplet ENTAILLÉ par
+#     rdfs:subPropertyOf (readingMileageKm ⊑ mileageKm). Piège D11 × sh:closed : une forme fermée doit lister
+#     les super-propriétés ou être validée sans inférence (cf. expected-findings.yaml, shacl_interplay).
+# Constructs exercés : sh:minCount/maxCount, sh:datatype, sh:pattern (VIN), sh:in, sh:closed,
+# sh:qualifiedValueShape, sh:inversePath, sh:or, sh:lessThan (dates), sh:class, sh:minInclusive.
+
+@prefix am:   <https://w3id.org/ontoforge/automaint#> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+# Contrats de shapes : https://w3id.org/ontoforge/automaint-shapes
+am:VehicleShape a sh:NodeShape ;
+    sh:targetClass am:Vehicle ;
+    rdfs:label "Vehicle shape"@en , "Forme véhicule"@fr ;
+    sh:property [
+        sh:path am:vin ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:pattern "^[A-HJ-NPR-Z0-9]{17}$" ;
+        sh:message "VIN: 17 ISO 3779 characters, without I, O or Q."@en , "VIN : 17 caractères ISO 3779, sans I, O ni Q."@fr
+    ] , [
+        sh:path am:ofModel ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:class am:VehicleModel
+    ] , [
+        sh:path am:usesFuel ;
+        sh:minCount 1 ;
+        sh:in ( am:Petrol am:Diesel am:Electricity am:LPG am:Hydrogen )
+    ] , [
+        sh:path am:hasOwner ;
+        sh:or ( [ sh:class am:Person ] [ sh:class am:Company ] )
+    ] .
+
+am:RepairOrderShape a sh:NodeShape ;
+    sh:targetClass am:RepairOrder ;
+    rdfs:label "Repair order shape"@en , "Forme ordre de réparation"@fr ;
+    sh:property [
+        sh:path am:openedAt ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:datatype xsd:dateTime ;
+        sh:lessThan am:closedAt
+    ] , [
+        sh:path am:closedAt ;
+        sh:maxCount 1
+    ] , [
+        sh:path am:performedBy ;
+        sh:minCount 1 ;
+        sh:class am:Technician
+    ] , [
+        sh:path am:includesOperation ;
+        sh:qualifiedValueShape [ sh:class am:MaintenanceOperation ] ;
+        sh:qualifiedMinCount 1
+    ] .
+
+am:GarageShape a sh:NodeShape ;
+    sh:targetClass am:Garage ;
+    rdfs:label "Garage shape"@en , "Forme garage"@fr ;
+    sh:property [
+        sh:path [ sh:inversePath am:worksAt ] ;
+        sh:minCount 1 ;
+        sh:class am:Technician ;
+        sh:message "A garage must have at least one technician attached."@en , "Un garage doit avoir au moins un technicien rattaché."@fr
+    ] .
+
+am:MileageReadingShape a sh:NodeShape ;
+    sh:targetClass am:MileageReading ;
+    rdfs:label "Mileage reading shape"@en , "Forme relevé kilométrique"@fr ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type ) ;
+    sh:property [
+        sh:path am:readingMileageKm ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:datatype xsd:decimal ;
+        sh:minInclusive 0
+    ] , [
+        sh:path am:readingDate ;
+        sh:minCount 1 ; sh:maxCount 1 ;
+        sh:datatype xsd:dateTime
+    ] .

@@ -1,0 +1,1 @@
+- [curiosity] PGType : ajouter `Decimal` (Curiosity FieldType.Decimal) ; optionnel `Language`. Aujourd'hui xsd:decimal -> Float avec perte signalée. Non bloquant.

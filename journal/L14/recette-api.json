@@ -1,0 +1,234 @@
+{
+ "ok": 38,
+ "ko": 0,
+ "steps": [
+  {
+   "step": "00 santé + exemples",
+   "ok": true,
+   "detail": "{'status': 'ok', 'version': '0.1.0'} samples=['automaint', 'trap']",
+   "s": 0.0
+  },
+  {
+   "step": "01 créer projet depuis automaint",
+   "ok": true,
+   "detail": "id=recette-c804e0 classes=24 shapes=0",
+   "s": 0.14
+  },
+  {
+   "step": "02 SHACL automaint-demo-data.ttl (0 violation)",
+   "ok": true,
+   "detail": "conforms=True results=0",
+   "s": 0.31
+  },
+  {
+   "step": "03 SHACL automaint-data.ttl (4 violations)",
+   "ok": true,
+   "detail": "conforms=False results=4",
+   "s": 0.03
+  },
+  {
+   "step": "04 conformité OWL (DL vrai)",
+   "ok": true,
+   "detail": "profiles={'DL': True, 'EL': False, 'QL': False, 'RL': False, 'RDFS': False} issues=1 errors=0",
+   "s": 0.4
+  },
+  {
+   "step": "05 édition : ajout classe Pneu",
+   "ok": true,
+   "detail": "ok=True errors=[] can_undo=True",
+   "s": 0.05
+  },
+  {
+   "step": "06 édition : Pneu sous-classe de Part",
+   "ok": true,
+   "detail": "ok=True errors=[]",
+   "s": 0.09
+  },
+  {
+   "step": "07 édition : propriété objet monteSur (Pneu → Vehicle)",
+   "ok": true,
+   "detail": "ok=True errors=[]",
+   "s": 0.06
+  },
+  {
+   "step": "08 undo puis redo",
+   "ok": true,
+   "detail": "history_keys=['undo', 'redo', 'limit', 'can_undo', 'can_redo'] undo_removed=True redo_restored=True",
+   "s": 0.12
+  },
+  {
+   "step": "09 erreur de validation attendue sur un cycle (Part ⊑ Pneu)",
+   "ok": true,
+   "detail": "ok=False errors=[{\"index\": 0, \"message\": \"Cycle de sous-classes : https://w3id.org/ontoforge/automaint#Pneu descend déjà de https://w3id.org/ontoforge/automaint#Part\"}]",
+   "s": 0.02
+  },
+  {
+   "step": "10 graphe (GET /graph)",
+   "ok": true,
+   "detail": "keys=['nodes', 'edges', 'skipped'] nodes=25 edges=42",
+   "s": 0.01
+  },
+  {
+   "step": "11 périmètre « Maintenance » + aperçu",
+   "ok": true,
+   "detail": "id=maintenance counts={'classes': 9, 'object_properties': 9, 'datatype_properties': 9, 'individuals': 0} excluded=19",
+   "s": 0.09
+  },
+  {
+   "step": "12 analyse restreinte au périmètre (constats info)",
+   "ok": true,
+   "detail": "restreint=78 dont info=19 ; complet=162 ; node_types=6 vs 18 (complet)",
+   "s": 0.06
+  },
+  {
+   "step": "13 analyse curiosity (projet entier)",
+   "ok": true,
+   "detail": "{'auto': 119, 'review': 42, 'lost': 1, 'info': 0} X00=0 node_types=18 edge_types=25",
+   "s": 0.06
+  },
+  {
+   "step": "14 accepter les recommandations curiosity (sauf perdus)",
+   "ok": true,
+   "detail": "review en attente=0 ; perdus acceptés par recommandation=0 ; perdus restants=1 (l'API n'accepte plus les perdus par défaut : D-L14-02)",
+   "s": 0.08
+  },
+  {
+   "step": "15 générer curiosity + zip",
+   "ok": true,
+   "detail": "fichiers=['Connector.cs', 'Edges.cs', 'README-curiosity.md', 'README-graphql.md', 'RegisterSchema.cs', 'Schema.cs', 'rapport-transposition.md', 'schema.graphql'] zip=8 entrées 30417 o missing=[]",
+   "s": 0.09
+  },
+  {
+   "step": "13 analyse neo4j (projet entier)",
+   "ok": true,
+   "detail": "{'auto': 116, 'review': 45, 'lost': 4, 'info': 0} X00=0 node_types=25 edge_types=24",
+   "s": 0.06
+  },
+  {
+   "step": "14 accepter les recommandations neo4j (sauf perdus)",
+   "ok": true,
+   "detail": "review en attente=0 ; perdus acceptés par recommandation=0 ; perdus restants=4 (l'API n'accepte plus les perdus par défaut : D-L14-02)",
+   "s": 0.07
+  },
+  {
+   "step": "15 générer neo4j + zip",
+   "ok": true,
+   "detail": "fichiers=['README-graphql.md', 'README-neo4j.md', 'ingest.cypher', 'model.mmd', 'rapport-transposition.md', 'schema.cypher', 'schema.graphql', 'validation.cypher'] zip=8 entrées 25023 o missing=[]",
+   "s": 0.1
+  },
+  {
+   "step": "16 historique des générations",
+   "ok": true,
+   "detail": "2 entrées ; cibles=['neo4j', 'curiosity'] ; premier={\"target\": \"neo4j\", \"perimeter\": null, \"at\": \"2026-11-04T16:44:48+00:00\", \"files\": [\"README-graphql.md\", \"README-neo4j.md\", \"ingest.cypher\", \"model.mmd\", \"rappo",
+   "s": 0.01
+  },
+  {
+   "step": "17 traduction de requête + questions de compétence",
+   "ok": true,
+   "detail": "cypher='MATCH (v)\\nRETURN v.uri AS v\\nLIMIT 5' competency=9",
+   "s": 0.19
+  },
+  {
+   "step": "20 paramètres : fournisseur mock + secret jamais renvoyé",
+   "ok": true,
+   "detail": "has_key=True test=True Connexion réussie au modèle « mock » en 0 ms. fuite_clé=False",
+   "s": 0.03
+  },
+  {
+   "step": "21 paramètres : secret chiffré sur disque",
+   "ok": true,
+   "detail": "settings.json existe=True clé en clair=False",
+   "s": 0.0
+  },
+  {
+   "step": "22 paramètres : endpoint SPARQL local + test + activation",
+   "ok": true,
+   "detail": "id=local-demo triples serveur=4136 test={'ok': True, 'latency_ms': 123, 'message': 'Endpoint SPARQL joignable (HTTP 200) en 123 ms.'}",
+   "s": 0.14
+  },
+  {
+   "step": "23 requête guidée Véhicule → ordre → technicien (≥ 1 ligne)",
+   "ok": true,
+   "detail": "lignes=20 vars=None graphe nodes=46 cypher='MATCH (o:RepairOrder)-[:ASSIGNED_TO]->(t:Technician), (v)<-[:CONCERNS]'",
+   "s": 0.21
+  },
+  {
+   "step": "24 requête sauvegardée (CRUD)",
+   "ok": true,
+   "detail": "créée=ad32bebdd98c liste=1 suppr={'deleted': 'ad32bebdd98c'}",
+   "s": 0.03
+  },
+  {
+   "step": "25 autocomplétion de valeurs (/query/values)",
+   "ok": true,
+   "detail": "20 valeurs ex=[{'value': 'https://w3id.org/ontoforge/automaint#tech_11', 'label': 'Anaïs Henry', 'is_iri': True, 'datatype': None, 'lang': None}, {'value': 'https://w3id.org/ontoforge/automaint#tech_12', 'label': 'Andrea Rousseau', 'is_iri': True, 'datatype': None, 'lang': None}]",
+   "s": 1.04
+  },
+  {
+   "step": "26 langage naturel : quels véhicules ont eu une réparation par le tec",
+   "ok": true,
+   "detail": "mode=deterministic conf=0.95 unmatched=[] lignes=41 sparql_ok=True",
+   "s": 0.83
+  },
+  {
+   "step": "26 langage naturel : liste des garages à Toulouse",
+   "ok": true,
+   "detail": "mode=deterministic conf=0.95 unmatched=[] lignes=1 sparql_ok=True",
+   "s": 0.07
+  },
+  {
+   "step": "26 langage naturel : ordres de réparation ouverts après le 1er octobr",
+   "ok": true,
+   "detail": "mode=deterministic conf=0.95 unmatched=[] lignes=5 sparql_ok=True",
+   "s": 0.13
+  },
+  {
+   "step": "27 questions de compétence guidées",
+   "ok": true,
+   "detail": "10 questions dont 3 convertibles",
+   "s": 0.09
+  },
+  {
+   "step": "30 assistant : statut",
+   "ok": true,
+   "detail": "{'provider': 'mock', 'model': 'mock', 'configured': True, 'default_provider_id': 'mock-recette', 'providers': [{'id': 'mock', 'name': 'Mock (démonstration)', 'kind': 'mock', 'model': 'mock', 'configured': True, 'default': False}, {'id': 'mock-recette', 'name': 'Mock recette', 'kind': 'mock', 'model': 'mock', 'configured': True, 'default': True}]}",
+   "s": 0.01
+  },
+  {
+   "step": "31 assistant : chat (mock)",
+   "ok": true,
+   "detail": "{\"reply\": \"Voici une proposition de modèle de maintenance automobile ; à relire élément par élément.\", \"proposal\": {\"meta\": {\"iri\": \"https://w3id.org/ontoforge/automaint\", \"labels\": {\"fr\": \"Maintenance automobile\", \"en\": \"Car maintenance\"}, \"comments\": {\"fr\": ",
+   "s": 0.01
+  },
+  {
+   "step": "32 assistant : upload CSV + chat avec pièce jointe + draft",
+   "ok": true,
+   "detail": "upload kind=csv cols=['id', 'immatriculation', 'marque', 'modele'] ; chat clés=['reply', 'proposal', 'warnings', 'actions'] ; draft classes=1 warnings=['Nom de classe déduit du nom du fichier « vehicules.csv » (ou ajoutez une première ligne « # table: nom »).'] ; projet inchangé=25",
+   "s": 0.02
+  },
+  {
+   "step": "33 assistant : explain d'un constat",
+   "ok": true,
+   "detail": "{\"text\": \"Constat C02 — Héritage simple\\n\\nCe que cela signifie : Hiérarchie de am:Engine : 2 sous-classe(s) à parent unique (am:ElectricMotor, am:InternalCombustionEngine) ; une décision pour toute l",
+   "s": 0.06
+  },
+  {
+   "step": "34 exports ontologie (xml) et shapes",
+   "ok": true,
+   "detail": "onto 200 46111 o ; shapes 200 3497 o",
+   "s": 0.13
+  },
+  {
+   "step": "35 projet rechargé : décisions + périmètre persistés",
+   "ok": true,
+   "detail": "décisions={'curiosity': 42, 'neo4j': 45} périmètres=['Maintenance']",
+   "s": 0.01
+  },
+  {
+   "step": "36 projet piège : conformité + SHACL 8 violations",
+   "ok": true,
+   "detail": "violations=8 (attendu 8 = tests unitaires ; inférence none ; extra=[]) DL=True",
+   "s": 0.92
+  }
+ ]
+}

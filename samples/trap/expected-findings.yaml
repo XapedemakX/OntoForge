@@ -1,0 +1,279 @@
+# OntoForge — oracle des constats attendus sur samples/trap/trap.ttl
+# Propriétaire : w3c (L0). Consommateurs : tests L2 (conformance), L3 (moteur de mapping), L4 (générateurs).
+#
+# Sémantique de l'oracle
+#  - `findings` est un ensemble MINIMAL : le moteur doit produire au moins un Finding pour chaque entrée,
+#    avec la règle, le sujet et la sévérité indiqués. Des constats supplémentaires sont tolérés
+#    (ex. O09 sur chaque propriété fonctionnelle), sauf ceux listés dans `must_not`.
+#  - `subject` : IRI complète (préfixe am: = https://w3id.org/ontoforge/automaint#). Pour un construct
+#    anonyme (nœud blanc), `subject` est l'IRI nommée à laquelle il se rattache (`anchor`), et `bnode`
+#    décrit le construct. Le test compare (rule, subject) ; `bnode` est indicatif.
+#  - `severity` ∈ {auto, review, lost} — catalogue corrigé par journal/L0/review-w3c-catalogue.md
+#    (K02 et C05 passent en review ; 30 règles ajoutées).
+#  - `curiosity` / `neo4j` : `severity` facultatif = sévérité propre à la cible (sinon `severity` commune) ;
+#    `recommended` = identifiant d'option (vocabulaire ci-dessous) que le moteur
+#    doit marquer `recommended` pour cette cible. `note` est indicatif (non testé).
+#
+# Vocabulaire d'options proposé (à reprendre tel quel dans mapping/rules, cf. revue §5) :
+#   node_type, label, multi_label, flatten_into_leaves, primary_parent_discriminator, secondary_label,
+#   merge_into_leaves, merge_types, computed_label, materialize_at_ingest, validation, doc_only,
+#   reference_nodes, enum_property, uri_key, node_key, unique_constraint, key_concat, generated_key,
+#   materialize_key, property, attach_to_users, duplicate_per_type, list_property, scalar,
+#   native_type, string_lexical, per_language_property, string_property, intersection_domain,
+#   most_specific_type, relationship, edge_pair, single_direction, undirected_query, self_reverse,
+#   var_length_query, materialize_closure, path_query, resolve_named_inverse, reverse_traversal,
+#   ignore, merge_relationship_types, keep_node, dereify_relationship, schema_metadata,
+#   provenance_property, report, exclude, flag_deprecated, load_closure_offline, external_reference,
+#   merge_nodes, same_as_edge, noop_una, rename
+
+version: 1
+ontology: samples/trap/trap.ttl
+ontology_iri: https://w3id.org/ontoforge/automaint
+prefixes:
+  am: https://w3id.org/ontoforge/automaint#
+
+conformance:            # oracle L2 (conformance/profiles.py, lint.py)
+  owl2_dl: true         # sous réserve de la fermeture d'import PROV-O (signaler l'import non résolu)
+  profiles: { EL: false, QL: false, RL: false }
+  profile_reasons:
+    EL: [ObjectInverseOf (am:Garage), ObjectUnionOf (am:Owner), cardinalités (am:RepairOrder), InverseFunctional (am:hasRepairOrder)]
+    QL: [owl:hasKey (am:Vehicle), owl:propertyChainAxiom (am:vehicleBrand), TransitiveProperty (am:isComponentOf), cardinalités]
+    RL: [ObjectSomeValuesFrom en super-classe (am:ElectricVehicle), ObjectUnionOf en super-classe (am:ServiceProvider), owl:minQualifiedCardinality 4 (am:Car), ReflexiveProperty (am:interchangeableWith), DataRange à facettes (am:ModelYear)]
+  non_simple_properties: [am:isComponentOf, am:vehicleBrand]
+  consistent: true      # sans le bug owlrl ci-dessous
+  known_tool_issues:
+    - tool: owlrl 7.1.2
+      rule: prp-key
+      issue: "OWLRL.py boucle `range(0, len(pis) - 1)` : la dernière propriété de clé est ignorée ; avec owl:hasKey (am:vin) tous les am:Vehicle deviennent owl:sameAs → fausses violations de NegativePropertyAssertion."
+      workaround: "retirer les axiomes owl:hasKey du graphe avant DeductiveClosure et implémenter prp-key soi-même (ou HermiT)."
+  # Codes proposés (lint.py, codes stables) : W3C-001..007 = règles W01..W07 de la revue L0 §3.2 ;
+  # BP-001 label fr/en manquant, BP-002 versionIRI absente, BP-003 entité dépréciée, BP-004 import non résolu,
+  # BP-005 nom hors convention, BP-006 collision de noms après normalisation.
+  issues:               # ensemble attendu (L2 A2) : (code, subject, severity) ; aucune issue `error`
+    - { code: BP-004, subject: "http://www.w3.org/ns/prov-o", severity: warning }
+    - { code: BP-003, subject: am:ServiceBooklet, severity: info }
+    - { code: BP-005, subject: am:dtc_code, severity: warning }
+    - { code: BP-006, subject: am:warranty, related: am:Warranty, severity: warning }
+  issues_must_not:
+    - { severity: error, why: "trap.ttl est OWL 2 DL : toute issue error (W3C-001..006) est un faux positif" }
+    - { code: W3C-003, subject: am:Car, why: "hasPart est simple (aucune sous-propriété/inverse transitif) : min 4 Wheel est légal" }
+
+shacl:                  # oracle L2 A4 (shacl/validate.py, inference="none") : ensemble EXACT
+  shapes: samples/trap/trap-shapes.ttl
+  data: samples/trap/trap-data.ttl
+  inference: none
+  conforms: false
+  violations:
+    - { focusNode: am:veh_bad_vin,   path: am:vin,                    constraint: sh:PatternConstraintComponent }
+    - { focusNode: am:veh_no_model,  path: am:ofModel,                constraint: sh:MinCountConstraintComponent }
+    - { focusNode: am:veh_bad_fuel,  path: am:usesFuel,               constraint: sh:InConstraintComponent }
+    - { focusNode: am:veh_bad_owner, path: am:hasOwner,               constraint: sh:OrConstraintComponent }
+    - { focusNode: am:ro_bad_dates,  path: am:openedAt,               constraint: sh:LessThanConstraintComponent }
+    - { focusNode: am:ro_no_op,      path: am:includesOperation,      constraint: sh:QualifiedMinCountConstraintComponent }
+    - { focusNode: am:garage_empty,  path: "[sh:inversePath am:worksAt]", constraint: sh:MinCountConstraintComponent }
+    - { focusNode: am:reading_extra, path: am:note,                   constraint: sh:ClosedConstraintComponent }
+
+shacl_interplay:        # cas complémentaire (piège D11 × sh:closed)
+  - command: "pyshacl -s samples/trap/trap-shapes.ttl -i rdfs samples/trap/trap.ttl"   # inference=rdfs
+    conforms: false
+    violations: 1       # sh:closed × sous-propriété entaillée (D11) sur le relevé anonyme de am:veh_001
+
+findings:
+  # ---------------- Classes ----------------
+  - { id: f-C01, rule: C01, subject: am:MotorVehicle, severity: auto,
+      curiosity: { recommended: node_type }, neo4j: { recommended: label } }
+  - { id: f-C02, rule: C02, subject: am:Vehicle, severity: review,
+      curiosity: { recommended: flatten_into_leaves, note: "propriétés de MotorVehicle recopiées + discriminant vehicleKind" },
+      neo4j: { recommended: multi_label } }
+  - { id: f-C03, rule: C03, subject: am:HybridVehicle, severity: review,
+      curiosity: { recommended: primary_parent_discriminator, note: "parent principal ElectricVehicle, isCombustion=true" },
+      neo4j: { recommended: multi_label } }
+  - { id: f-C04a, rule: C04, subject: am:MotorVehicle, severity: review,
+      curiosity: { recommended: merge_into_leaves }, neo4j: { recommended: secondary_label } }
+  - { id: f-C04b, rule: C04, subject: am:Party, severity: review,
+      curiosity: { recommended: merge_into_leaves }, neo4j: { recommended: secondary_label } }
+  - { id: f-C05, rule: C05, subject: am:Car, related: [am:PassengerCar], severity: review,
+      curiosity: { recommended: merge_types, note: "nom canonique Car, alias PassengerCar" },
+      neo4j: { recommended: merge_types } }
+  - { id: f-C06, rule: C06, subject: am:OverdueVehicle, severity: lost,
+      curiosity: { recommended: materialize_at_ingest, note: "propriété booléenne isOverdue ou discriminant" },
+      neo4j: { recommended: computed_label, note: "job : MATCH (v:Vehicle)-[:HAS_OPEN_RECALL]->(:Recall) SET v:OverdueVehicle" } }
+  - { id: f-C06b, rule: C06, subject: am:SelfEmployedTechnician, severity: lost,
+      curiosity: { recommended: materialize_at_ingest }, neo4j: { recommended: computed_label } }
+  - { id: f-C07a, rule: C07, subject: am:Customer, related: [am:Technician], severity: lost,
+      curiosity: { recommended: validation, severity: auto, note: "L3 it2 (revue w3c) : mono-type Curiosity, disjonction garantie par construction (types distincts / discriminant scalaire) → auto ; validation seulement si fusion" },
+      neo4j: { recommended: validation, note: "aucun nœud ne porte les deux labels" } }
+  - { id: f-C07b, rule: C07, subject: am:Vehicle, bnode: "AllDisjointClasses(Vehicle Part Party Garage RepairOrder PartReference)", severity: lost,
+      curiosity: { recommended: validation, severity: auto }, neo4j: { recommended: validation } }
+  - { id: f-C08, rule: C08, subject: am:FuelType, severity: review,
+      curiosity: { recommended: reference_nodes }, neo4j: { recommended: reference_nodes } }
+  - { id: f-C09a, rule: C09, subject: am:Owner, bnode: "equivalentClass unionOf(Person Company)", severity: lost,
+      curiosity: { recommended: doc_only }, neo4j: { recommended: secondary_label, note: "option : label Owner calculé" } }
+  - { id: f-C09b, rule: C09, subject: am:ServiceProvider, bnode: "subClassOf unionOf(Garage MobileMechanicService)", severity: lost,
+      curiosity: { recommended: doc_only }, neo4j: { recommended: doc_only } }
+  - { id: f-C10, rule: C10, subject: am:MaintenanceOperation, severity: review,
+      curiosity: { recommended: primary_parent_discriminator, note: "un node type MaintenanceOperation + enum operationKind {Preventive, Corrective} obligatoire" },
+      neo4j: { recommended: multi_label, note: "+ validation : exactement un des labels enfants" } }
+  - { id: f-C11, rule: C11, subject: am:NonElectricVehicle, severity: lost,
+      curiosity: { recommended: materialize_at_ingest }, neo4j: { recommended: computed_label } }
+  - { id: f-C12, rule: C12, subject: am:TimingBelt, severity: review,
+      curiosity: { recommended: reference_nodes, note: "node type TimingBelt (classe) ET nœud PartCategory key=TimingBelt (individu) : nommer distinctement" },
+      neo4j: { recommended: reference_nodes } }
+  - { id: f-C13, rule: C13, subject: am:RequiresDPFCheck, bnode: "GCI (Vehicle ⊓ ∃hasEngine.DieselEngine) ⊑ RequiresDPFCheck", severity: lost,
+      curiosity: { recommended: materialize_at_ingest }, neo4j: { recommended: computed_label } }
+
+  # ---------------- Identité / clés ----------------
+  - { id: f-K01, rule: K01, subject: am:veh_001, severity: auto,
+      curiosity: { recommended: uri_key }, neo4j: { recommended: unique_constraint, note: "propriété uri" } }
+  - { id: f-K02, rule: K02, subject: am:Vehicle, key: [am:vin], severity: review,
+      curiosity: { recommended: uri_key, note: "option [Key]=vin ; hasKey n'impose ni existence ni unicité en OWL (il infère sameAs)" },
+      neo4j: { recommended: node_key, note: "NODE KEY ajoute l'existence obligatoire : renforcement à faire valider" } }
+  - { id: f-K03, rule: K03, subject: am:MileageReading, severity: review,
+      curiosity: { recommended: generated_key }, neo4j: { recommended: generated_key } }
+  - { id: f-K04, rule: K04, subject: am:veh_001, bnode: "hasMileageReading [ a MileageReading ]", severity: review,
+      curiosity: { recommended: generated_key, note: "clé = hash(propriétaire + propriété + valeurs) ou IRI skolem .well-known/genid" },
+      neo4j: { recommended: generated_key } }
+  - { id: f-K05, rule: K05, subject: am:PartReference, key: [am:manufacturerPartNumber, am:hasManufacturer], severity: review,
+      curiosity: { recommended: key_concat, note: "manufacturerPartNumber + '|' + clé du Brand" },
+      neo4j: { recommended: materialize_key, note: "copier la clé du Brand en propriété manufacturerKey puis NODE KEY (mpn, manufacturerKey)" } }
+
+  # ---------------- Propriétés de données ----------------
+  - { id: f-D01, rule: D01, subject: am:vin, severity: auto,
+      curiosity: { recommended: property }, neo4j: { recommended: property } }
+  - { id: f-D02, rule: D02, subject: am:mileageKm, severity: review,
+      curiosity: { recommended: attach_to_users, note: "utilisée via ses sous-propriétés seulement : option ignore" },
+      neo4j: { recommended: attach_to_users } }
+  - { id: f-D03, rule: D03, subject: am:phoneNumber, severity: review,
+      curiosity: { recommended: duplicate_per_type }, neo4j: { recommended: duplicate_per_type } }
+  - { id: f-D04, rule: D04, subject: am:commercialName, severity: review,
+      curiosity: { recommended: list_property }, neo4j: { recommended: list_property } }
+  - { id: f-D05a, rule: D05, subject: am:mileageKm, datatype: xsd:decimal, severity: review,
+      curiosity: { absent: true, note: "L13 : xsd:decimal -> Decimal (C# decimal) sans perte, aucun constat D05" },
+      neo4j: { recommended: native_type, note: "Float ; option String pour précision exacte" } }
+  - { id: f-D05b, rule: D05, subject: am:ecuFirmwareChecksum, datatype: xsd:hexBinary, severity: review,
+      curiosity: { recommended: string_lexical }, neo4j: { recommended: string_lexical } }
+  - { id: f-D05c, rule: D05, subject: am:closedAt, datatype: xsd:dateTimeStamp, severity: review,
+      curiosity: { recommended: native_type, note: "DateTimeOffset" }, neo4j: { recommended: native_type, note: "ZONED DATETIME" } }
+  - { id: f-D06, rule: D06, subject: am:operationDescription, datatype: rdf:PlainLiteral, severity: review,
+      curiosity: { recommended: per_language_property }, neo4j: { recommended: per_language_property } }
+  - { id: f-D07, rule: D07, subject: am:vin, severity: auto,
+      curiosity: { recommended: scalar }, neo4j: { recommended: scalar } }
+  - { id: f-D08, rule: D08, subject: am:emissionStandard, severity: review,
+      curiosity: { recommended: enum_property, note: "string + validation des 4 valeurs" },
+      neo4j: { recommended: enum_property, note: "propriété String + validation applicative (pas de contrainte d'énumération Cypher)" } }
+  - { id: f-D09a, rule: D09, subject: am:ModelYear, severity: review,
+      curiosity: { recommended: validation, note: "int + contrôle 1886..2100" }, neo4j: { recommended: validation, note: "INTEGER + contrôle de bornes" } }
+  - { id: f-D09b, rule: D09, subject: am:VINString, severity: review,
+      curiosity: { recommended: validation, note: "string + regex" }, neo4j: { recommended: validation } }
+  - { id: f-D10, rule: D10, subject: am:legacyCode, severity: review,
+      curiosity: { recommended: string_property }, neo4j: { recommended: string_property } }
+  - { id: f-D11, rule: D11, subject: am:readingMileageKm, related: [am:mileageKm], severity: lost,
+      curiosity: { recommended: most_specific_type }, neo4j: { recommended: most_specific_type } }
+  - { id: f-D11b, rule: D11, subject: am:installMileageKm, related: [am:mileageKm], severity: lost,
+      curiosity: { recommended: most_specific_type }, neo4j: { recommended: most_specific_type } }
+  - { id: f-D12, rule: D12, subject: am:warrantyDurationMonths, severity: review,
+      curiosity: { recommended: native_type, note: "int ≥ 0 (intersection nonNegativeInteger ∩ int)" },
+      neo4j: { recommended: native_type, note: "INTEGER + validation ≥ 0" } }
+  - { id: f-D13, rule: D13, subject: am:RepairOrder, property: am:openedAt, severity: review,
+      curiosity: { recommended: validation, note: "propriété obligatoire" }, neo4j: { recommended: validation, note: "contrainte IS NOT NULL (édition Enterprise) sinon validation" } }
+
+  # ---------------- Propriétés objet ----------------
+  - { id: f-O01, rule: O01, subject: am:worksAt, severity: auto,
+      curiosity: { recommended: edge_pair }, neo4j: { recommended: relationship } }
+  - { id: f-O02, rule: O02, subject: am:interchangeableWith, severity: review,
+      curiosity: { recommended: edge_pair, note: "domaine/portée résolus depuis les assertions : PartReference→PartReference" },
+      neo4j: { recommended: relationship } }
+  - { id: f-O03, rule: O03, subject: am:hasOwner, severity: review,
+      curiosity: { recommended: edge_pair, note: "un edge par paire : Vehicle→Person, Vehicle→Company" },
+      neo4j: { recommended: relationship, note: "HAS_OWNER, deux paires de labels" } }
+  - { id: f-O04, rule: O04, subject: am:hasPart, related: [am:partOf], severity: auto,
+      curiosity: { recommended: edge_pair }, neo4j: { recommended: single_direction } }
+  - { id: f-O05, rule: O05, subject: am:interchangeableWith, severity: review,
+      curiosity: { recommended: self_reverse }, neo4j: { recommended: undirected_query } }
+  - { id: f-O06, rule: O06, subject: am:isComponentOf, severity: lost,
+      curiosity: { recommended: materialize_closure }, neo4j: { recommended: var_length_query } }
+  - { id: f-O07, rule: O07, subject: am:hasEngine, related: [am:hasPart], severity: lost,
+      curiosity: { recommended: most_specific_type }, neo4j: { recommended: most_specific_type } }
+  - { id: f-O08, rule: O08, subject: am:vehicleBrand, severity: lost,
+      curiosity: { recommended: materialize_closure }, neo4j: { recommended: path_query } }
+  - { id: f-O09a, rule: O09, subject: am:ofModel, severity: review,
+      curiosity: { recommended: validation }, neo4j: { recommended: validation } }
+  - { id: f-O09b, rule: O09, subject: am:RepairOrder, property: am:performedAt, severity: review,
+      curiosity: { recommended: validation }, neo4j: { recommended: validation } }
+  - { id: f-O10, rule: O10, subject: am:RepairOrder, property: am:includesOperation, severity: review,
+      curiosity: { recommended: validation }, neo4j: { recommended: validation } }
+  - { id: f-O10b, rule: O10, subject: am:ElectricVehicle, property: am:hasPart, severity: review,
+      curiosity: { recommended: validation }, neo4j: { recommended: validation } }
+  - { id: f-O11, rule: O11, subject: am:RepairOrder, property: am:performedBy, severity: lost,
+      curiosity: { recommended: validation }, neo4j: { recommended: validation } }
+  - { id: f-O12, rule: O12, subject: am:ElectricVehicle, property: am:usesFuel, severity: review,
+      curiosity: { recommended: validation, note: "edge usesFuel → Electricity obligatoire, option valeur par défaut à l'ingestion" },
+      neo4j: { recommended: validation } }
+  - { id: f-O13a, rule: O13, subject: am:interchangeableWith, characteristic: reflexive, severity: lost,
+      curiosity: { recommended: ignore, note: "réflexivité globale : ne pas matérialiser de boucles" }, neo4j: { recommended: ignore } }
+  - { id: f-O13b, rule: O13, subject: am:supersedes, characteristic: [asymmetric, irreflexive], severity: lost,
+      curiosity: { recommended: validation }, neo4j: { recommended: validation } }
+  - { id: f-O14, rule: O14, subject: am:Garage, bnode: "∃ inverse(worksAt).Technician", severity: review,
+      curiosity: { recommended: reverse_traversal, note: "via le reverse de l'edge worksAt" },
+      neo4j: { recommended: reverse_traversal, note: "(g:Garage)<-[:WORKS_AT]-(:Technician)" } }
+  - { id: f-O15, rule: O15, subject: am:hasRepairOrder, severity: review,
+      curiosity: { recommended: validation }, neo4j: { recommended: validation, note: "au plus une relation entrante par RepairOrder" } }
+  - { id: f-O16, rule: O16, subject: am:Car, property: am:hasPart, on_class: am:Wheel, severity: review,
+      curiosity: { recommended: validation }, neo4j: { recommended: validation } }
+  - { id: f-O17, rule: O17, subject: am:SelfEmployedTechnician, property: am:employedBy, severity: lost,
+      curiosity: { recommended: materialize_at_ingest, note: "booléen isSelfEmployed" }, neo4j: { recommended: validation } }
+  - { id: f-O18, rule: O18, subject: am:relatedTo, severity: auto,
+      curiosity: { recommended: ignore }, neo4j: { recommended: ignore } }
+  - { id: f-O19, rule: O19, subject: am:ownedBy, related: [am:hasOwner], severity: review,
+      curiosity: { recommended: merge_relationship_types }, neo4j: { recommended: merge_relationship_types } }
+  - { id: f-O20, rule: O20, subject: am:performedBy, related: [am:checkedBy], severity: lost,
+      curiosity: { recommended: validation }, neo4j: { recommended: validation } }
+  - { id: f-O21, rule: O21, subject: am:reportsFaultCode, severity: review,
+      curiosity: { recommended: intersection_domain, note: "domaine = RepairOrder ⊓ DiagnosticSession : probable erreur de modélisation, à arbitrer" },
+      neo4j: { recommended: intersection_domain } }
+
+  # ---------------- Réification ----------------
+  - { id: f-R01, rule: R01, subject: am:PartInstallation, severity: review,
+      curiosity: { recommended: keep_node }, neo4j: { recommended: dereify_relationship, note: "(:Part)-[:INSTALLED_ON {installationDate, installMileageKm}]->(:Vehicle)" } }
+  - { id: f-R02, rule: R02, subject: am:WarrantyClaim, severity: review,
+      curiosity: { recommended: keep_node }, neo4j: { recommended: keep_node } }
+
+  # ---------------- Annotations, métadonnées ----------------
+  - { id: f-A01, rule: A01, subject: am:Vehicle, severity: auto,
+      curiosity: { recommended: schema_metadata }, neo4j: { recommended: schema_metadata } }
+  - { id: f-A02, rule: A02, subject: am:Vehicle, bnode: "owl:Axiom sur SubClassOf(Vehicle MotorVehicle)", severity: review,
+      curiosity: { recommended: report }, neo4j: { recommended: report } }
+  - { id: f-A03, rule: A03, subject: am:ServiceBooklet, severity: auto,
+      curiosity: { recommended: exclude }, neo4j: { recommended: exclude } }
+  - { id: f-M01, rule: M01, subject: "https://w3id.org/ontoforge/automaint", severity: auto,
+      curiosity: { recommended: schema_metadata }, neo4j: { recommended: schema_metadata } }
+  - { id: f-M02, rule: M02, subject: "https://w3id.org/ontoforge/automaint", import: "http://www.w3.org/ns/prov-o", severity: review,
+      curiosity: { recommended: external_reference }, neo4j: { recommended: external_reference } }
+  - { id: f-G01, rule: G01, subject: am:tech_leroy, bnode: "ClassAssertion(ObjectHasValue(worksAt garage_tln_nord) tech_leroy) → OntoModel.unmapped", severity: lost,
+      curiosity: { recommended: report }, neo4j: { recommended: report } }
+  - { id: f-N01a, rule: N01, subject: am:dtc_code, severity: auto,
+      curiosity: { recommended: rename, note: "DtcCode" }, neo4j: { recommended: rename, note: "dtcCode" } }
+  - { id: f-N01b, rule: N01, subject: am:warranty, related: [am:Warranty], severity: auto,
+      curiosity: { recommended: rename, note: "collision PascalCase Warranty (node type) / Warranty (edge) : renommer l'edge HasWarranty" },
+      neo4j: { recommended: rename, note: "pas de collision (WARRANTY vs :Warranty) mais renommer HAS_WARRANTY conseillé" } }
+
+  # ---------------- Individus ----------------
+  - { id: f-I02, rule: I02, subject: am:garage_TLN01, related: [am:garage_tln_nord], severity: lost,
+      curiosity: { recommended: merge_nodes, note: "clé canonique + alias" }, neo4j: { recommended: merge_nodes } }
+  - { id: f-I03, rule: I03, subject: am:Petrol, bnode: "AllDifferent(Petrol Diesel Electricity LPG Hydrogen)", severity: auto,
+      curiosity: { recommended: noop_una }, neo4j: { recommended: noop_una } }
+  - { id: f-I04, rule: I04, subject: am:veh_002, property: am:hasOpenRecall, severity: lost,
+      curiosity: { recommended: validation }, neo4j: { recommended: validation } }
+  - { id: f-I04b, rule: I04, subject: am:veh_002, property: am:vin, severity: lost,
+      curiosity: { recommended: validation }, neo4j: { recommended: validation } }
+  - { id: f-I05, rule: I05, subject: am:veh_001, types: [am:HybridVehicle, am:FleetVehicle], severity: review,
+      curiosity: { recommended: primary_parent_discriminator }, neo4j: { recommended: multi_label } }
+
+must_not:               # constats qui signalent une erreur sémantique du moteur
+  - { rule: I01, subject: am:Petrol, why: "membre d'un owl:oneOf déjà traité par C08 (nœuds de référence) : pas de doublon I01 (L13)" }
+  - { rule: K02, severity: auto, why: "hasKey n'impose ni existence ni unicité (OWL 2 Structural Spec §9.5)" }
+  - { rule: O03, subject: am:reportsFaultCode, why: "deux rdfs:domain = intersection, pas union → O21" }
+  - { rule: D03, subject: am:warrantyDurationMonths, why: "deux rdfs:range = intersection → D12" }
+  - { rule: R01, subject: am:WarrantyClaim, why: "4 rôles : n-aire → R02, non dé-réifiable en relation" }
+  - { rule: O16, subject: am:isComponentOf, why: "propriété transitive : aucune cardinalité ne doit être générée (non simple)" }
+  - { rule: K01, subject: am:veh_001, bnode: "hasMileageReading", why: "un nœud blanc n'a pas d'IRI → K04" }

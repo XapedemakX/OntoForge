@@ -1,0 +1,31 @@
+/* Composants du kit */
+.btn { font-weight: 500; transition: background .12s, border-color .12s; }
+.btn.iconly { padding: 4px 8px; }
+.btn.ghost:hover:not(:disabled) { background: var(--panel2); border-color: transparent; }
+.toolbar { display: flex; align-items: center; gap: var(--s2); flex-wrap: wrap; padding: var(--s2) var(--s3); background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-md); }
+.sev { display: inline-flex; align-items: center; gap: 5px; padding: 1px 8px; border-radius: 10px; font-size: var(--fs-xs); font-weight: 500; white-space: nowrap; }
+.sev b { font-family: var(--mono); font-weight: 500; }
+.sev.auto { background: var(--auto-soft); color: var(--auto); }
+.sev.review { background: var(--review-soft); color: var(--review); }
+.sev.lost { background: var(--lost-soft); color: var(--lost); }
+.sev.info { background: var(--info-soft); color: var(--info); }
+.card.tone-review { border-left: 3px solid var(--review-edge); }
+.card.tone-lost { border-left: 3px solid var(--lost); }
+.card.tone-auto { border-left: 3px solid var(--auto); }
+.card { border-radius: var(--r-md); }
+.kpanel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-md); }
+.kpanel > header { display: flex; align-items: center; gap: var(--s2); padding: 2px var(--s2); }
+.kpanel > header > button { flex: 1; display: flex; align-items: center; gap: var(--s2); background: none; border: 0; padding: 7px 4px; cursor: pointer; text-align: left; }
+.kpanel > header i { width: 12px; color: var(--muted); font-size: 11px; }
+.kpanel h3 { font-size: var(--fs-sm); font-weight: 600; }
+.kpanel-body { padding: var(--s2) var(--s3) var(--s3); border-top: 1px solid var(--line); }
+.empty-state { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 24px 18px; }
+.empty-state p { margin: 0; max-width: 46ch; }
+.empty-state b { margin: 4px 0 0; }
+.krakie { display: inline-block; flex: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .krakie.float { animation: krakie-float 3.6s ease-in-out infinite; }
+  @keyframes krakie-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+  .toast { animation: toast-in .18s ease-out; }
+  @keyframes toast-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+}

@@ -1,0 +1,2 @@
+PREFIX am: <https://w3id.org/ontoforge/automaint#>
+SELECT ?v ?vin WHERE { ?v a am:ElectricVehicle ; am:vin ?vin . FILTER(?vin != "X") }

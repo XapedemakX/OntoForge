@@ -1,0 +1,2351 @@
+{
+ "meta": {
+  "iri": "https://w3id.org/ontoforge/automaint",
+  "labels": {},
+  "comments": {},
+  "annotations": [
+   {
+    "property": "http://purl.org/dc/terms/created",
+    "value": "2026-11-03T00:00:00+00:00",
+    "is_iri": false,
+    "datatype": "http://www.w3.org/2001/XMLSchema#dateTime",
+    "lang": null
+   },
+   {
+    "property": "http://purl.org/dc/terms/description",
+    "value": "Ontologie de démonstration OntoForge : véhicules, ordres de réparation, pièces, rappels et garanties. Données fictives.",
+    "is_iri": false,
+    "datatype": null,
+    "lang": "fr"
+   },
+   {
+    "property": "http://purl.org/dc/terms/title",
+    "value": "AutoMaint — car maintenance ontology",
+    "is_iri": false,
+    "datatype": null,
+    "lang": "en"
+   },
+   {
+    "property": "http://purl.org/dc/terms/title",
+    "value": "AutoMaint — ontologie de maintenance automobile",
+    "is_iri": false,
+    "datatype": null,
+    "lang": "fr"
+   },
+   {
+    "property": "http://www.w3.org/2002/07/owl#versionInfo",
+    "value": "1.0.0",
+    "is_iri": false,
+    "datatype": null,
+    "lang": null
+   }
+  ],
+  "deprecated": false,
+  "version_iri": "https://w3id.org/ontoforge/automaint/1.0.0",
+  "imports": [],
+  "prefixes": {
+   "am": "https://w3id.org/ontoforge/automaint#",
+   "dcterms": "http://purl.org/dc/terms/",
+   "skos": "http://www.w3.org/2004/02/skos/core#"
+  }
+ },
+ "classes": {
+  "https://w3id.org/ontoforge/automaint#ElectricVehicle": {
+   "iri": "https://w3id.org/ontoforge/automaint#ElectricVehicle",
+   "labels": {
+    "en": "Electric vehicle",
+    "fr": "Véhicule électrique"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "sub_class_of": [
+    "https://w3id.org/ontoforge/automaint#Vehicle"
+   ],
+   "restrictions": [
+    {
+     "property": "https://w3id.org/ontoforge/automaint#hasEngine",
+     "inverse": false,
+     "kind": "some",
+     "n": null,
+     "filler": "https://w3id.org/ontoforge/automaint#ElectricMotor",
+     "filler_expr": null,
+     "value": null
+    }
+   ],
+   "super_expressions": [],
+   "equivalent_to": [],
+   "disjoint_with": [
+    "https://w3id.org/ontoforge/automaint#CombustionVehicle"
+   ],
+   "disjoint_union_of": [],
+   "has_keys": [],
+   "one_of": null
+  },
+  "https://w3id.org/ontoforge/automaint#CombustionVehicle": {
+   "iri": "https://w3id.org/ontoforge/automaint#CombustionVehicle",
+   "labels": {
+    "en": "Combustion vehicle",
+    "fr": "Véhicule thermique"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "sub_class_of": [
+    "https://w3id.org/ontoforge/automaint#Vehicle"
+   ],
+   "restrictions": [
+    {
+     "property": "https://w3id.org/ontoforge/automaint#hasEngine",
+     "inverse": false,
+     "kind": "some",
+     "n": null,
+     "filler": "https://w3id.org/ontoforge/automaint#InternalCombustionEngine",
+     "filler_expr": null,
+     "value": null
+    }
+   ],
+   "super_expressions": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "disjoint_union_of": [],
+   "has_keys": [],
+   "one_of": null
+  },
+  "https://w3id.org/ontoforge/automaint#Customer": {
+   "iri": "https://w3id.org/ontoforge/automaint#Customer",
+   "labels": {
+    "en": "Customer",
+    "fr": "Client"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "sub_class_of": [
+    "https://w3id.org/ontoforge/automaint#Person"
+   ],
+   "restrictions": [],
+   "super_expressions": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "disjoint_union_of": [],
+   "has_keys": [],
+   "one_of": null
+  },
+  "https://w3id.org/ontoforge/automaint#ElectricMotor": {
+   "iri": "https://w3id.org/ontoforge/automaint#ElectricMotor",
+   "labels": {
+    "en": "Electric motor",
+    "fr": "Moteur électrique"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "sub_class_of": [
+    "https://w3id.org/ontoforge/automaint#Engine"
+   ],
+   "restrictions": [],
+   "super_expressions": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "disjoint_union_of": [],
+   "has_keys": [],
+   "one_of": null
+  },
+  "https://w3id.org/ontoforge/automaint#InternalCombustionEngine": {
+   "iri": "https://w3id.org/ontoforge/automaint#InternalCombustionEngine",
+   "labels": {
+    "en": "Internal combustion engine",
+    "fr": "Moteur thermique"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "sub_class_of": [
+    "https://w3id.org/ontoforge/automaint#Engine"
+   ],
+   "restrictions": [],
+   "super_expressions": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "disjoint_union_of": [],
+   "has_keys": [],
+   "one_of": null
+  },
+  "https://w3id.org/ontoforge/automaint#Garage": {
+   "iri": "https://w3id.org/ontoforge/automaint#Garage",
+   "labels": {
+    "en": "Garage",
+    "fr": "Garage"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "sub_class_of": [
+    "https://w3id.org/ontoforge/automaint#Organization"
+   ],
+   "restrictions": [],
+   "super_expressions": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "disjoint_union_of": [],
+   "has_keys": [],
+   "one_of": null
+  },
+  "https://w3id.org/ontoforge/automaint#Person": {
+   "iri": "https://w3id.org/ontoforge/automaint#Person",
+   "labels": {
+    "en": "Person",
+    "fr": "Personne"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "sub_class_of": [
+    "https://w3id.org/ontoforge/automaint#Party"
+   ],
+   "restrictions": [],
+   "super_expressions": [],
+   "equivalent_to": [],
+   "disjoint_with": [
+    "https://w3id.org/ontoforge/automaint#Organization"
+   ],
+   "disjoint_union_of": [],
+   "has_keys": [],
+   "one_of": null
+  },
+  "https://w3id.org/ontoforge/automaint#Technician": {
+   "iri": "https://w3id.org/ontoforge/automaint#Technician",
+   "labels": {
+    "en": "Technician",
+    "fr": "Technicien"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "sub_class_of": [
+    "https://w3id.org/ontoforge/automaint#Person"
+   ],
+   "restrictions": [
+    {
+     "property": "https://w3id.org/ontoforge/automaint#worksAt",
+     "inverse": false,
+     "kind": "exactly",
+     "n": 1,
+     "filler": null,
+     "filler_expr": null,
+     "value": null
+    }
+   ],
+   "super_expressions": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "disjoint_union_of": [],
+   "has_keys": [],
+   "one_of": null
+  },
+  "https://w3id.org/ontoforge/automaint#Brand": {
+   "iri": "https://w3id.org/ontoforge/automaint#Brand",
+   "labels": {
+    "en": "Brand",
+    "fr": "Marque"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "sub_class_of": [
+    "https://w3id.org/ontoforge/automaint#Organization"
+   ],
+   "restrictions": [
+    {
+     "property": "https://w3id.org/ontoforge/automaint#brandName",
+     "inverse": false,
+     "kind": "exactly",
+     "n": 1,
+     "filler": null,
+     "filler_expr": null,
+     "value": null
+    }
+   ],
+   "super_expressions": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "disjoint_union_of": [],
+   "has_keys": [
+    [
+     "https://w3id.org/ontoforge/automaint#brandName"
+    ]
+   ],
+   "one_of": null
+  },
+  "https://w3id.org/ontoforge/automaint#DiagnosticTroubleCode": {
+   "iri": "https://w3id.org/ontoforge/automaint#DiagnosticTroubleCode",
+   "labels": {
+    "en": "Diagnostic trouble code",
+    "fr": "Code défaut"
+   },
+   "comments": {},
+   "annotations": [
+    {
+     "property": "http://www.w3.org/2004/02/skos/core#definition",
+     "value": "Code défaut normalisé remonté par le calculateur du véhicule.",
+     "is_iri": false,
+     "datatype": null,
+     "lang": "fr"
+    }
+   ],
+   "deprecated": false,
+   "sub_class_of": [],
+   "restrictions": [
+    {
+     "property": "https://w3id.org/ontoforge/automaint#dtcCode",
+     "inverse": false,
+     "kind": "exactly",
+     "n": 1,
+     "filler": null,
+     "filler_expr": null,
+     "value": null
+    }
+   ],
+   "super_expressions": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "disjoint_union_of": [],
+   "has_keys": [
+    [
+     "https://w3id.org/ontoforge/automaint#dtcCode"
+    ]
+   ],
+   "one_of": null
+  },
+  "https://w3id.org/ontoforge/automaint#Organization": {
+   "iri": "https://w3id.org/ontoforge/automaint#Organization",
+   "labels": {
+    "en": "Organization",
+    "fr": "Organisation"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "sub_class_of": [
+    "https://w3id.org/ontoforge/automaint#Party"
+   ],
+   "restrictions": [],
+   "super_expressions": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "disjoint_union_of": [],
+   "has_keys": [],
+   "one_of": null
+  },
+  "https://w3id.org/ontoforge/automaint#Party": {
+   "iri": "https://w3id.org/ontoforge/automaint#Party",
+   "labels": {
+    "en": "Party",
+    "fr": "Partie"
+   },
+   "comments": {
+    "fr": "Personne ou organisation intervenant dans la maintenance."
+   },
+   "annotations": [],
+   "deprecated": false,
+   "sub_class_of": [],
+   "restrictions": [
+    {
+     "property": "https://w3id.org/ontoforge/automaint#displayName",
+     "inverse": false,
+     "kind": "exactly",
+     "n": 1,
+     "filler": null,
+     "filler_expr": null,
+     "value": null
+    }
+   ],
+   "super_expressions": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "disjoint_union_of": [],
+   "has_keys": [],
+   "one_of": null
+  },
+  "https://w3id.org/ontoforge/automaint#Warranty": {
+   "iri": "https://w3id.org/ontoforge/automaint#Warranty",
+   "labels": {
+    "en": "Warranty",
+    "fr": "Garantie"
+   },
+   "comments": {
+    "fr": "Garantie contractuelle couvrant un véhicule, limitée en durée et en kilométrage."
+   },
+   "annotations": [],
+   "deprecated": false,
+   "sub_class_of": [],
+   "restrictions": [
+    {
+     "property": "https://w3id.org/ontoforge/automaint#covers",
+     "inverse": false,
+     "kind": "exactly",
+     "n": 1,
+     "filler": null,
+     "filler_expr": null,
+     "value": null
+    },
+    {
+     "property": "https://w3id.org/ontoforge/automaint#warrantyDurationMonths",
+     "inverse": false,
+     "kind": "exactly",
+     "n": 1,
+     "filler": null,
+     "filler_expr": null,
+     "value": null
+    },
+    {
+     "property": "https://w3id.org/ontoforge/automaint#warrantyMaxKm",
+     "inverse": false,
+     "kind": "max",
+     "n": 1,
+     "filler": null,
+     "filler_expr": null,
+     "value": null
+    }
+   ],
+   "super_expressions": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "disjoint_union_of": [],
+   "has_keys": [],
+   "one_of": null
+  },
+  "https://w3id.org/ontoforge/automaint#MaintenancePlan": {
+   "iri": "https://w3id.org/ontoforge/automaint#MaintenancePlan",
+   "labels": {
+    "en": "Maintenance plan",
+    "fr": "Plan d'entretien"
+   },
+   "comments": {},
+   "annotations": [
+    {
+     "property": "http://www.w3.org/2004/02/skos/core#definition",
+     "value": "Programme d'entretien préconisé pour un modèle (par kilométrage ou par durée).",
+     "is_iri": false,
+     "datatype": null,
+     "lang": "fr"
+    }
+   ],
+   "deprecated": false,
+   "sub_class_of": [],
+   "restrictions": [
+    {
+     "property": "https://w3id.org/ontoforge/automaint#intervalKm",
+     "inverse": false,
+     "kind": "max",
+     "n": 1,
+     "filler": null,
+     "filler_expr": null,
+     "value": null
+    },
+    {
+     "property": "https://w3id.org/ontoforge/automaint#intervalMonths",
+     "inverse": false,
+     "kind": "max",
+     "n": 1,
+     "filler": null,
+     "filler_expr": null,
+     "value": null
+    },
+    {
+     "property": "https://w3id.org/ontoforge/automaint#plannedFor",
+     "inverse": false,
+     "kind": "exactly",
+     "n": 1,
+     "filler": null,
+     "filler_expr": null,
+     "value": null
+    },
+    {
+     "property": "https://w3id.org/ontoforge/automaint#prescribes",
+     "inverse": false,
+     "kind": "min",
+     "n": 1,
+     "filler": null,
+     "filler_expr": null,
+     "value": null
+    }
+   ],
+   "super_expressions": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "disjoint_union_of": [],
+   "has_keys": [],
+   "one_of": null
+  },
+  "https://w3id.org/ontoforge/automaint#MileageReading": {
+   "iri": "https://w3id.org/ontoforge/automaint#MileageReading",
+   "labels": {
+    "en": "Mileage reading",
+    "fr": "Relevé kilométrique"
+   },
+   "comments": {
+    "fr": "Relevé daté du compteur kilométrique d'un véhicule."
+   },
+   "annotations": [],
+   "deprecated": false,
+   "sub_class_of": [],
+   "restrictions": [
+    {
+     "property": "https://w3id.org/ontoforge/automaint#readingDate",
+     "inverse": false,
+     "kind": "exactly",
+     "n": 1,
+     "filler": null,
+     "filler_expr": null,
+     "value": null
+    },
+    {
+     "property": "https://w3id.org/ontoforge/automaint#readingMileageKm",
+     "inverse": false,
+     "kind": "exactly",
+     "n": 1,
+     "filler": null,
+     "filler_expr": null,
+     "value": null
+    },
+    {
+     "property": "https://w3id.org/ontoforge/automaint#readingOf",
+     "inverse": false,
+     "kind": "exactly",
+     "n": 1,
+     "filler": null,
+     "filler_expr": null,
+     "value": null
+    }
+   ],
+   "super_expressions": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "disjoint_union_of": [],
+   "has_keys": [],
+   "one_of": null
+  },
+  "https://w3id.org/ontoforge/automaint#Recall": {
+   "iri": "https://w3id.org/ontoforge/automaint#Recall",
+   "labels": {
+    "en": "Recall",
+    "fr": "Rappel constructeur"
+   },
+   "comments": {},
+   "annotations": [
+    {
+     "property": "http://www.w3.org/2004/02/skos/core#definition",
+     "value": "Campagne de rappel émise par un constructeur pour un ou plusieurs modèles.",
+     "is_iri": false,
+     "datatype": null,
+     "lang": "fr"
+    }
+   ],
+   "deprecated": false,
+   "sub_class_of": [],
+   "restrictions": [
+    {
+     "property": "https://w3id.org/ontoforge/automaint#appliesToModel",
+     "inverse": false,
+     "kind": "min",
+     "n": 1,
+     "filler": null,
+     "filler_expr": null,
+     "value": null
+    },
+    {
+     "property": "https://w3id.org/ontoforge/automaint#issuedAt",
+     "inverse": false,
+     "kind": "max",
+     "n": 1,
+     "filler": null,
+     "filler_expr": null,
+     "value": null
+    },
+    {
+     "property": "https://w3id.org/ontoforge/automaint#recallNumber",
+     "inverse": false,
+     "kind": "exactly",
+     "n": 1,
+     "filler": null,
+     "filler_expr": null,
+     "value": null
+    }
+   ],
+   "super_expressions": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "disjoint_union_of": [],
+   "has_keys": [
+    [
+     "https://w3id.org/ontoforge/automaint#recallNumber"
+    ]
+   ],
+   "one_of": null
+  },
+  "https://w3id.org/ontoforge/automaint#FuelType": {
+   "iri": "https://w3id.org/ontoforge/automaint#FuelType",
+   "labels": {
+    "en": "Fuel type",
+    "fr": "Carburant"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "sub_class_of": [],
+   "restrictions": [],
+   "super_expressions": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "disjoint_union_of": [],
+   "has_keys": [],
+   "one_of": [
+    "https://w3id.org/ontoforge/automaint#Diesel",
+    "https://w3id.org/ontoforge/automaint#Petrol",
+    "https://w3id.org/ontoforge/automaint#Electric",
+    "https://w3id.org/ontoforge/automaint#Hydrogen"
+   ]
+  },
+  "https://w3id.org/ontoforge/automaint#Part": {
+   "iri": "https://w3id.org/ontoforge/automaint#Part",
+   "labels": {
+    "en": "Part",
+    "fr": "Pièce"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "sub_class_of": [],
+   "restrictions": [
+    {
+     "property": "https://w3id.org/ontoforge/automaint#instanceOf",
+     "inverse": false,
+     "kind": "exactly",
+     "n": 1,
+     "filler": null,
+     "filler_expr": null,
+     "value": null
+    }
+   ],
+   "super_expressions": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "disjoint_union_of": [],
+   "has_keys": [],
+   "one_of": null
+  },
+  "https://w3id.org/ontoforge/automaint#Engine": {
+   "iri": "https://w3id.org/ontoforge/automaint#Engine",
+   "labels": {
+    "en": "Engine",
+    "fr": "Moteur"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "sub_class_of": [],
+   "restrictions": [
+    {
+     "property": "https://w3id.org/ontoforge/automaint#displacementCc",
+     "inverse": false,
+     "kind": "max",
+     "n": 1,
+     "filler": null,
+     "filler_expr": null,
+     "value": null
+    },
+    {
+     "property": "https://w3id.org/ontoforge/automaint#powerKw",
+     "inverse": false,
+     "kind": "max",
+     "n": 1,
+     "filler": null,
+     "filler_expr": null,
+     "value": null
+    }
+   ],
+   "super_expressions": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "disjoint_union_of": [],
+   "has_keys": [],
+   "one_of": null
+  },
+  "https://w3id.org/ontoforge/automaint#PartReference": {
+   "iri": "https://w3id.org/ontoforge/automaint#PartReference",
+   "labels": {
+    "en": "Part reference",
+    "fr": "Référence de pièce"
+   },
+   "comments": {},
+   "annotations": [
+    {
+     "property": "http://www.w3.org/2004/02/skos/core#definition",
+     "value": "Référence catalogue d'une pièce ; une Part est une pièce physique de cette référence.",
+     "is_iri": false,
+     "datatype": null,
+     "lang": "fr"
+    }
+   ],
+   "deprecated": false,
+   "sub_class_of": [],
+   "restrictions": [
+    {
+     "property": "https://w3id.org/ontoforge/automaint#hasManufacturer",
+     "inverse": false,
+     "kind": "exactly",
+     "n": 1,
+     "filler": null,
+     "filler_expr": null,
+     "value": null
+    },
+    {
+     "property": "https://w3id.org/ontoforge/automaint#manufacturerPartNumber",
+     "inverse": false,
+     "kind": "exactly",
+     "n": 1,
+     "filler": null,
+     "filler_expr": null,
+     "value": null
+    },
+    {
+     "property": "https://w3id.org/ontoforge/automaint#unitPrice",
+     "inverse": false,
+     "kind": "max",
+     "n": 1,
+     "filler": null,
+     "filler_expr": null,
+     "value": null
+    }
+   ],
+   "super_expressions": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "disjoint_union_of": [],
+   "has_keys": [],
+   "one_of": null
+  },
+  "https://w3id.org/ontoforge/automaint#ServiceOperation": {
+   "iri": "https://w3id.org/ontoforge/automaint#ServiceOperation",
+   "labels": {
+    "en": "Service operation",
+    "fr": "Opération de service"
+   },
+   "comments": {},
+   "annotations": [
+    {
+     "property": "http://www.w3.org/2004/02/skos/core#definition",
+     "value": "Opération élémentaire d'entretien ou de réparation (vidange, remplacement de plaquettes…).",
+     "is_iri": false,
+     "datatype": null,
+     "lang": "fr"
+    }
+   ],
+   "deprecated": false,
+   "sub_class_of": [],
+   "restrictions": [
+    {
+     "property": "https://w3id.org/ontoforge/automaint#operationCode",
+     "inverse": false,
+     "kind": "exactly",
+     "n": 1,
+     "filler": null,
+     "filler_expr": null,
+     "value": null
+    },
+    {
+     "property": "https://w3id.org/ontoforge/automaint#standardDurationMin",
+     "inverse": false,
+     "kind": "max",
+     "n": 1,
+     "filler": null,
+     "filler_expr": null,
+     "value": null
+    }
+   ],
+   "super_expressions": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "disjoint_union_of": [],
+   "has_keys": [
+    [
+     "https://w3id.org/ontoforge/automaint#operationCode"
+    ]
+   ],
+   "one_of": null
+  },
+  "https://w3id.org/ontoforge/automaint#VehicleModel": {
+   "iri": "https://w3id.org/ontoforge/automaint#VehicleModel",
+   "labels": {
+    "en": "Vehicle model",
+    "fr": "Modèle de véhicule"
+   },
+   "comments": {},
+   "annotations": [
+    {
+     "property": "http://www.w3.org/2004/02/skos/core#definition",
+     "value": "Modèle commercial d'un constructeur (ex. une série et un millésime).",
+     "is_iri": false,
+     "datatype": null,
+     "lang": "fr"
+    }
+   ],
+   "deprecated": false,
+   "sub_class_of": [],
+   "restrictions": [
+    {
+     "property": "https://w3id.org/ontoforge/automaint#madeBy",
+     "inverse": false,
+     "kind": "exactly",
+     "n": 1,
+     "filler": null,
+     "filler_expr": null,
+     "value": null
+    },
+    {
+     "property": "https://w3id.org/ontoforge/automaint#modelName",
+     "inverse": false,
+     "kind": "exactly",
+     "n": 1,
+     "filler": null,
+     "filler_expr": null,
+     "value": null
+    },
+    {
+     "property": "https://w3id.org/ontoforge/automaint#modelYear",
+     "inverse": false,
+     "kind": "max",
+     "n": 1,
+     "filler": null,
+     "filler_expr": null,
+     "value": null
+    }
+   ],
+   "super_expressions": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "disjoint_union_of": [],
+   "has_keys": [],
+   "one_of": null
+  },
+  "https://w3id.org/ontoforge/automaint#RepairOrder": {
+   "iri": "https://w3id.org/ontoforge/automaint#RepairOrder",
+   "labels": {
+    "en": "Repair order",
+    "fr": "Ordre de réparation"
+   },
+   "comments": {},
+   "annotations": [
+    {
+     "property": "http://www.w3.org/2004/02/skos/core#definition",
+     "value": "Document ouvert par un garage décrivant les opérations réalisées sur un véhicule.",
+     "is_iri": false,
+     "datatype": null,
+     "lang": "fr"
+    }
+   ],
+   "deprecated": false,
+   "sub_class_of": [],
+   "restrictions": [
+    {
+     "property": "https://w3id.org/ontoforge/automaint#closedAt",
+     "inverse": false,
+     "kind": "max",
+     "n": 1,
+     "filler": null,
+     "filler_expr": null,
+     "value": null
+    },
+    {
+     "property": "https://w3id.org/ontoforge/automaint#concerns",
+     "inverse": false,
+     "kind": "exactly",
+     "n": 1,
+     "filler": null,
+     "filler_expr": null,
+     "value": null
+    },
+    {
+     "property": "https://w3id.org/ontoforge/automaint#includesOperation",
+     "inverse": false,
+     "kind": "min",
+     "n": 1,
+     "filler": null,
+     "filler_expr": null,
+     "value": null
+    },
+    {
+     "property": "https://w3id.org/ontoforge/automaint#openedAt",
+     "inverse": false,
+     "kind": "exactly",
+     "n": 1,
+     "filler": null,
+     "filler_expr": null,
+     "value": null
+    },
+    {
+     "property": "https://w3id.org/ontoforge/automaint#orderNumber",
+     "inverse": false,
+     "kind": "exactly",
+     "n": 1,
+     "filler": null,
+     "filler_expr": null,
+     "value": null
+    },
+    {
+     "property": "https://w3id.org/ontoforge/automaint#performedAt",
+     "inverse": false,
+     "kind": "exactly",
+     "n": 1,
+     "filler": null,
+     "filler_expr": null,
+     "value": null
+    }
+   ],
+   "super_expressions": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "disjoint_union_of": [],
+   "has_keys": [
+    [
+     "https://w3id.org/ontoforge/automaint#orderNumber"
+    ]
+   ],
+   "one_of": null
+  },
+  "https://w3id.org/ontoforge/automaint#Vehicle": {
+   "iri": "https://w3id.org/ontoforge/automaint#Vehicle",
+   "labels": {
+    "en": "Vehicle",
+    "fr": "Véhicule"
+   },
+   "comments": {
+    "fr": "Véhicule identifié par son VIN, suivi en atelier."
+   },
+   "annotations": [
+    {
+     "property": "http://www.w3.org/2004/02/skos/core#definition",
+     "value": "Véhicule routier identifié de façon unique par son numéro VIN.",
+     "is_iri": false,
+     "datatype": null,
+     "lang": "fr"
+    }
+   ],
+   "deprecated": false,
+   "sub_class_of": [],
+   "restrictions": [
+    {
+     "property": "https://w3id.org/ontoforge/automaint#firstRegistrationDate",
+     "inverse": false,
+     "kind": "max",
+     "n": 1,
+     "filler": null,
+     "filler_expr": null,
+     "value": null
+    },
+    {
+     "property": "https://w3id.org/ontoforge/automaint#ofModel",
+     "inverse": false,
+     "kind": "exactly",
+     "n": 1,
+     "filler": null,
+     "filler_expr": null,
+     "value": null
+    },
+    {
+     "property": "https://w3id.org/ontoforge/automaint#registrationNumber",
+     "inverse": false,
+     "kind": "max",
+     "n": 1,
+     "filler": null,
+     "filler_expr": null,
+     "value": null
+    },
+    {
+     "property": "https://w3id.org/ontoforge/automaint#vin",
+     "inverse": false,
+     "kind": "exactly",
+     "n": 1,
+     "filler": null,
+     "filler_expr": null,
+     "value": null
+    }
+   ],
+   "super_expressions": [],
+   "equivalent_to": [],
+   "disjoint_with": [
+    "https://w3id.org/ontoforge/automaint#Part"
+   ],
+   "disjoint_union_of": [],
+   "has_keys": [
+    [
+     "https://w3id.org/ontoforge/automaint#vin"
+    ]
+   ],
+   "one_of": null
+  }
+ },
+ "object_properties": {
+  "https://w3id.org/ontoforge/automaint#addresses": {
+   "iri": "https://w3id.org/ontoforge/automaint#addresses",
+   "labels": {
+    "en": "addresses code",
+    "fr": "traite le code"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#ServiceOperation"
+   ],
+   "range": [
+    "https://w3id.org/ontoforge/automaint#DiagnosticTroubleCode"
+   ],
+   "domain_union": [],
+   "range_union": [],
+   "domain_expr": null,
+   "range_expr": null,
+   "inverse_of": null,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "chains": [],
+   "characteristics": []
+  },
+  "https://w3id.org/ontoforge/automaint#assignedTo": {
+   "iri": "https://w3id.org/ontoforge/automaint#assignedTo",
+   "labels": {
+    "en": "assigned to",
+    "fr": "affecté à"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#RepairOrder"
+   ],
+   "range": [
+    "https://w3id.org/ontoforge/automaint#Technician"
+   ],
+   "domain_union": [],
+   "range_union": [],
+   "domain_expr": null,
+   "range_expr": null,
+   "inverse_of": null,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "chains": [],
+   "characteristics": []
+  },
+  "https://w3id.org/ontoforge/automaint#concernsPart": {
+   "iri": "https://w3id.org/ontoforge/automaint#concernsPart",
+   "labels": {
+    "en": "concerns part reference",
+    "fr": "concerne la référence"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#Recall"
+   ],
+   "range": [
+    "https://w3id.org/ontoforge/automaint#PartReference"
+   ],
+   "domain_union": [],
+   "range_union": [],
+   "domain_expr": null,
+   "range_expr": null,
+   "inverse_of": null,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "chains": [],
+   "characteristics": []
+  },
+  "https://w3id.org/ontoforge/automaint#hasActiveCode": {
+   "iri": "https://w3id.org/ontoforge/automaint#hasActiveCode",
+   "labels": {
+    "en": "has active code",
+    "fr": "a le code actif"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#Vehicle"
+   ],
+   "range": [
+    "https://w3id.org/ontoforge/automaint#DiagnosticTroubleCode"
+   ],
+   "domain_union": [],
+   "range_union": [],
+   "domain_expr": null,
+   "range_expr": null,
+   "inverse_of": null,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "chains": [],
+   "characteristics": []
+  },
+  "https://w3id.org/ontoforge/automaint#installedIn": {
+   "iri": "https://w3id.org/ontoforge/automaint#installedIn",
+   "labels": {
+    "en": "installed in",
+    "fr": "installée dans"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#Part"
+   ],
+   "range": [
+    "https://w3id.org/ontoforge/automaint#Vehicle"
+   ],
+   "domain_union": [],
+   "range_union": [],
+   "domain_expr": null,
+   "range_expr": null,
+   "inverse_of": null,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "chains": [],
+   "characteristics": []
+  },
+  "https://w3id.org/ontoforge/automaint#ownedBy": {
+   "iri": "https://w3id.org/ontoforge/automaint#ownedBy",
+   "labels": {
+    "en": "owned by",
+    "fr": "appartient à"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#Vehicle"
+   ],
+   "range": [
+    "https://w3id.org/ontoforge/automaint#Customer"
+   ],
+   "domain_union": [],
+   "range_union": [],
+   "domain_expr": null,
+   "range_expr": null,
+   "inverse_of": null,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "chains": [],
+   "characteristics": []
+  },
+  "https://w3id.org/ontoforge/automaint#partOf": {
+   "iri": "https://w3id.org/ontoforge/automaint#partOf",
+   "labels": {
+    "en": "part of",
+    "fr": "composant de"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#Part"
+   ],
+   "range": [
+    "https://w3id.org/ontoforge/automaint#Part"
+   ],
+   "domain_union": [],
+   "range_union": [],
+   "domain_expr": null,
+   "range_expr": null,
+   "inverse_of": null,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "chains": [],
+   "characteristics": [
+    "transitive"
+   ]
+  },
+  "https://w3id.org/ontoforge/automaint#usesFuel": {
+   "iri": "https://w3id.org/ontoforge/automaint#usesFuel",
+   "labels": {
+    "en": "uses fuel",
+    "fr": "utilise le carburant"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#Engine"
+   ],
+   "range": [
+    "https://w3id.org/ontoforge/automaint#FuelType"
+   ],
+   "domain_union": [],
+   "range_union": [],
+   "domain_expr": null,
+   "range_expr": null,
+   "inverse_of": null,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "chains": [],
+   "characteristics": []
+  },
+  "https://w3id.org/ontoforge/automaint#usesPart": {
+   "iri": "https://w3id.org/ontoforge/automaint#usesPart",
+   "labels": {
+    "en": "uses part reference",
+    "fr": "utilise la référence"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#ServiceOperation"
+   ],
+   "range": [
+    "https://w3id.org/ontoforge/automaint#PartReference"
+   ],
+   "domain_union": [],
+   "range_union": [],
+   "domain_expr": null,
+   "range_expr": null,
+   "inverse_of": null,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "chains": [],
+   "characteristics": []
+  },
+  "https://w3id.org/ontoforge/automaint#appliesToModel": {
+   "iri": "https://w3id.org/ontoforge/automaint#appliesToModel",
+   "labels": {
+    "en": "applies to model",
+    "fr": "concerne le modèle"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#Recall"
+   ],
+   "range": [
+    "https://w3id.org/ontoforge/automaint#VehicleModel"
+   ],
+   "domain_union": [],
+   "range_union": [],
+   "domain_expr": null,
+   "range_expr": null,
+   "inverse_of": null,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "chains": [],
+   "characteristics": []
+  },
+  "https://w3id.org/ontoforge/automaint#concerns": {
+   "iri": "https://w3id.org/ontoforge/automaint#concerns",
+   "labels": {
+    "en": "concerns",
+    "fr": "concerne"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#RepairOrder"
+   ],
+   "range": [
+    "https://w3id.org/ontoforge/automaint#Vehicle"
+   ],
+   "domain_union": [],
+   "range_union": [],
+   "domain_expr": null,
+   "range_expr": null,
+   "inverse_of": "https://w3id.org/ontoforge/automaint#hasRepairOrder",
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "chains": [],
+   "characteristics": []
+  },
+  "https://w3id.org/ontoforge/automaint#covers": {
+   "iri": "https://w3id.org/ontoforge/automaint#covers",
+   "labels": {
+    "en": "covers",
+    "fr": "couvre"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#Warranty"
+   ],
+   "range": [
+    "https://w3id.org/ontoforge/automaint#Vehicle"
+   ],
+   "domain_union": [],
+   "range_union": [],
+   "domain_expr": null,
+   "range_expr": null,
+   "inverse_of": null,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "chains": [],
+   "characteristics": []
+  },
+  "https://w3id.org/ontoforge/automaint#hasManufacturer": {
+   "iri": "https://w3id.org/ontoforge/automaint#hasManufacturer",
+   "labels": {
+    "en": "manufactured by",
+    "fr": "fabriquée par"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#PartReference"
+   ],
+   "range": [
+    "https://w3id.org/ontoforge/automaint#Brand"
+   ],
+   "domain_union": [],
+   "range_union": [],
+   "domain_expr": null,
+   "range_expr": null,
+   "inverse_of": null,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "chains": [],
+   "characteristics": []
+  },
+  "https://w3id.org/ontoforge/automaint#hasMileageReading": {
+   "iri": "https://w3id.org/ontoforge/automaint#hasMileageReading",
+   "labels": {},
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#Vehicle"
+   ],
+   "range": [
+    "https://w3id.org/ontoforge/automaint#MileageReading"
+   ],
+   "domain_union": [],
+   "range_union": [],
+   "domain_expr": null,
+   "range_expr": null,
+   "inverse_of": null,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "chains": [],
+   "characteristics": []
+  },
+  "https://w3id.org/ontoforge/automaint#hasRepairOrder": {
+   "iri": "https://w3id.org/ontoforge/automaint#hasRepairOrder",
+   "labels": {
+    "en": "has repair order",
+    "fr": "a pour ordre de réparation"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#Vehicle"
+   ],
+   "range": [
+    "https://w3id.org/ontoforge/automaint#RepairOrder"
+   ],
+   "domain_union": [],
+   "range_union": [],
+   "domain_expr": null,
+   "range_expr": null,
+   "inverse_of": null,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "chains": [],
+   "characteristics": []
+  },
+  "https://w3id.org/ontoforge/automaint#includesOperation": {
+   "iri": "https://w3id.org/ontoforge/automaint#includesOperation",
+   "labels": {
+    "en": "includes operation",
+    "fr": "comprend l'opération"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#RepairOrder"
+   ],
+   "range": [
+    "https://w3id.org/ontoforge/automaint#ServiceOperation"
+   ],
+   "domain_union": [],
+   "range_union": [],
+   "domain_expr": null,
+   "range_expr": null,
+   "inverse_of": null,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "chains": [],
+   "characteristics": []
+  },
+  "https://w3id.org/ontoforge/automaint#instanceOf": {
+   "iri": "https://w3id.org/ontoforge/automaint#instanceOf",
+   "labels": {
+    "en": "instance of",
+    "fr": "est une instance de"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#Part"
+   ],
+   "range": [
+    "https://w3id.org/ontoforge/automaint#PartReference"
+   ],
+   "domain_union": [],
+   "range_union": [],
+   "domain_expr": null,
+   "range_expr": null,
+   "inverse_of": null,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "chains": [],
+   "characteristics": []
+  },
+  "https://w3id.org/ontoforge/automaint#madeBy": {
+   "iri": "https://w3id.org/ontoforge/automaint#madeBy",
+   "labels": {
+    "en": "made by",
+    "fr": "fabriqué par"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#VehicleModel"
+   ],
+   "range": [
+    "https://w3id.org/ontoforge/automaint#Brand"
+   ],
+   "domain_union": [],
+   "range_union": [],
+   "domain_expr": null,
+   "range_expr": null,
+   "inverse_of": null,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "chains": [],
+   "characteristics": []
+  },
+  "https://w3id.org/ontoforge/automaint#ofModel": {
+   "iri": "https://w3id.org/ontoforge/automaint#ofModel",
+   "labels": {
+    "en": "has model",
+    "fr": "a pour modèle"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#Vehicle"
+   ],
+   "range": [
+    "https://w3id.org/ontoforge/automaint#VehicleModel"
+   ],
+   "domain_union": [],
+   "range_union": [],
+   "domain_expr": null,
+   "range_expr": null,
+   "inverse_of": null,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "chains": [],
+   "characteristics": []
+  },
+  "https://w3id.org/ontoforge/automaint#performedAt": {
+   "iri": "https://w3id.org/ontoforge/automaint#performedAt",
+   "labels": {
+    "en": "performed at",
+    "fr": "réalisé dans"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#RepairOrder"
+   ],
+   "range": [
+    "https://w3id.org/ontoforge/automaint#Garage"
+   ],
+   "domain_union": [],
+   "range_union": [],
+   "domain_expr": null,
+   "range_expr": null,
+   "inverse_of": null,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "chains": [],
+   "characteristics": []
+  },
+  "https://w3id.org/ontoforge/automaint#plannedFor": {
+   "iri": "https://w3id.org/ontoforge/automaint#plannedFor",
+   "labels": {
+    "en": "planned for",
+    "fr": "prévu pour"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#MaintenancePlan"
+   ],
+   "range": [
+    "https://w3id.org/ontoforge/automaint#VehicleModel"
+   ],
+   "domain_union": [],
+   "range_union": [],
+   "domain_expr": null,
+   "range_expr": null,
+   "inverse_of": null,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "chains": [],
+   "characteristics": []
+  },
+  "https://w3id.org/ontoforge/automaint#prescribes": {
+   "iri": "https://w3id.org/ontoforge/automaint#prescribes",
+   "labels": {
+    "en": "prescribes",
+    "fr": "prescrit"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#MaintenancePlan"
+   ],
+   "range": [
+    "https://w3id.org/ontoforge/automaint#ServiceOperation"
+   ],
+   "domain_union": [],
+   "range_union": [],
+   "domain_expr": null,
+   "range_expr": null,
+   "inverse_of": null,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "chains": [],
+   "characteristics": []
+  },
+  "https://w3id.org/ontoforge/automaint#readingOf": {
+   "iri": "https://w3id.org/ontoforge/automaint#readingOf",
+   "labels": {
+    "en": "reading of",
+    "fr": "relevé de"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#MileageReading"
+   ],
+   "range": [
+    "https://w3id.org/ontoforge/automaint#Vehicle"
+   ],
+   "domain_union": [],
+   "range_union": [],
+   "domain_expr": null,
+   "range_expr": null,
+   "inverse_of": "https://w3id.org/ontoforge/automaint#hasMileageReading",
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "chains": [],
+   "characteristics": []
+  },
+  "https://w3id.org/ontoforge/automaint#worksAt": {
+   "iri": "https://w3id.org/ontoforge/automaint#worksAt",
+   "labels": {
+    "en": "works at",
+    "fr": "travaille à"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#Technician"
+   ],
+   "range": [
+    "https://w3id.org/ontoforge/automaint#Garage"
+   ],
+   "domain_union": [],
+   "range_union": [],
+   "domain_expr": null,
+   "range_expr": null,
+   "inverse_of": null,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "chains": [],
+   "characteristics": []
+  },
+  "https://w3id.org/ontoforge/automaint#hasEngine": {
+   "iri": "https://w3id.org/ontoforge/automaint#hasEngine",
+   "labels": {
+    "en": "has engine",
+    "fr": "a pour moteur"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#Vehicle"
+   ],
+   "range": [
+    "https://w3id.org/ontoforge/automaint#Engine"
+   ],
+   "domain_union": [],
+   "range_union": [],
+   "domain_expr": null,
+   "range_expr": null,
+   "inverse_of": null,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": [],
+   "chains": [],
+   "characteristics": []
+  }
+ },
+ "datatype_properties": {
+  "https://w3id.org/ontoforge/automaint#closedAt": {
+   "iri": "https://w3id.org/ontoforge/automaint#closedAt",
+   "labels": {
+    "en": "closed at",
+    "fr": "clos le"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#RepairOrder"
+   ],
+   "domain_union": [],
+   "domain_expr": null,
+   "range": [
+    "http://www.w3.org/2001/XMLSchema#dateTime"
+   ],
+   "range_expr": null,
+   "functional": false,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": []
+  },
+  "https://w3id.org/ontoforge/automaint#displacementCc": {
+   "iri": "https://w3id.org/ontoforge/automaint#displacementCc",
+   "labels": {
+    "en": "displacement (cc)",
+    "fr": "cylindrée (cm3)"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#Engine"
+   ],
+   "domain_union": [],
+   "domain_expr": null,
+   "range": [
+    "http://www.w3.org/2001/XMLSchema#integer"
+   ],
+   "range_expr": null,
+   "functional": false,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": []
+  },
+  "https://w3id.org/ontoforge/automaint#displayName": {
+   "iri": "https://w3id.org/ontoforge/automaint#displayName",
+   "labels": {
+    "en": "display name",
+    "fr": "nom affiché"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#Party"
+   ],
+   "domain_union": [],
+   "domain_expr": null,
+   "range": [
+    "http://www.w3.org/2001/XMLSchema#string"
+   ],
+   "range_expr": null,
+   "functional": false,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": []
+  },
+  "https://w3id.org/ontoforge/automaint#firstRegistrationDate": {
+   "iri": "https://w3id.org/ontoforge/automaint#firstRegistrationDate",
+   "labels": {
+    "en": "first registration date",
+    "fr": "date de première mise en circulation"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#Vehicle"
+   ],
+   "domain_union": [],
+   "domain_expr": null,
+   "range": [
+    "http://www.w3.org/2001/XMLSchema#dateTime"
+   ],
+   "range_expr": null,
+   "functional": false,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": []
+  },
+  "https://w3id.org/ontoforge/automaint#intervalKm": {
+   "iri": "https://w3id.org/ontoforge/automaint#intervalKm",
+   "labels": {
+    "en": "interval (km)",
+    "fr": "intervalle (km)"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#MaintenancePlan"
+   ],
+   "domain_union": [],
+   "domain_expr": null,
+   "range": [
+    "http://www.w3.org/2001/XMLSchema#integer"
+   ],
+   "range_expr": null,
+   "functional": false,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": []
+  },
+  "https://w3id.org/ontoforge/automaint#intervalMonths": {
+   "iri": "https://w3id.org/ontoforge/automaint#intervalMonths",
+   "labels": {
+    "en": "interval (months)",
+    "fr": "intervalle (mois)"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#MaintenancePlan"
+   ],
+   "domain_union": [],
+   "domain_expr": null,
+   "range": [
+    "http://www.w3.org/2001/XMLSchema#integer"
+   ],
+   "range_expr": null,
+   "functional": false,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": []
+  },
+  "https://w3id.org/ontoforge/automaint#issuedAt": {
+   "iri": "https://w3id.org/ontoforge/automaint#issuedAt",
+   "labels": {
+    "en": "issued at",
+    "fr": "émis le"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#Recall"
+   ],
+   "domain_union": [],
+   "domain_expr": null,
+   "range": [
+    "http://www.w3.org/2001/XMLSchema#dateTime"
+   ],
+   "range_expr": null,
+   "functional": false,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": []
+  },
+  "https://w3id.org/ontoforge/automaint#manufacturerPartNumber": {
+   "iri": "https://w3id.org/ontoforge/automaint#manufacturerPartNumber",
+   "labels": {
+    "en": "manufacturer part number",
+    "fr": "référence fabricant"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#PartReference"
+   ],
+   "domain_union": [],
+   "domain_expr": null,
+   "range": [
+    "http://www.w3.org/2001/XMLSchema#string"
+   ],
+   "range_expr": null,
+   "functional": false,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": []
+  },
+  "https://w3id.org/ontoforge/automaint#modelName": {
+   "iri": "https://w3id.org/ontoforge/automaint#modelName",
+   "labels": {
+    "en": "model name",
+    "fr": "nom du modèle"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#VehicleModel"
+   ],
+   "domain_union": [],
+   "domain_expr": null,
+   "range": [
+    "http://www.w3.org/2001/XMLSchema#string"
+   ],
+   "range_expr": null,
+   "functional": false,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": []
+  },
+  "https://w3id.org/ontoforge/automaint#modelYear": {
+   "iri": "https://w3id.org/ontoforge/automaint#modelYear",
+   "labels": {
+    "en": "model year",
+    "fr": "année modèle"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#VehicleModel"
+   ],
+   "domain_union": [],
+   "domain_expr": null,
+   "range": [
+    "https://w3id.org/ontoforge/automaint#ModelYear"
+   ],
+   "range_expr": null,
+   "functional": false,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": []
+  },
+  "https://w3id.org/ontoforge/automaint#openedAt": {
+   "iri": "https://w3id.org/ontoforge/automaint#openedAt",
+   "labels": {
+    "en": "opened at",
+    "fr": "ouvert le"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#RepairOrder"
+   ],
+   "domain_union": [],
+   "domain_expr": null,
+   "range": [
+    "http://www.w3.org/2001/XMLSchema#dateTime"
+   ],
+   "range_expr": null,
+   "functional": false,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": []
+  },
+  "https://w3id.org/ontoforge/automaint#powerKw": {
+   "iri": "https://w3id.org/ontoforge/automaint#powerKw",
+   "labels": {
+    "en": "power (kW)",
+    "fr": "puissance (kW)"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#Engine"
+   ],
+   "domain_union": [],
+   "domain_expr": null,
+   "range": [
+    "http://www.w3.org/2001/XMLSchema#decimal"
+   ],
+   "range_expr": null,
+   "functional": false,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": []
+  },
+  "https://w3id.org/ontoforge/automaint#readingDate": {
+   "iri": "https://w3id.org/ontoforge/automaint#readingDate",
+   "labels": {
+    "en": "reading date",
+    "fr": "date du relevé"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#MileageReading"
+   ],
+   "domain_union": [],
+   "domain_expr": null,
+   "range": [
+    "http://www.w3.org/2001/XMLSchema#dateTime"
+   ],
+   "range_expr": null,
+   "functional": false,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": []
+  },
+  "https://w3id.org/ontoforge/automaint#readingMileageKm": {
+   "iri": "https://w3id.org/ontoforge/automaint#readingMileageKm",
+   "labels": {
+    "en": "mileage (km)",
+    "fr": "kilométrage relevé"
+   },
+   "comments": {
+    "fr": "Valeur positive ou nulle exprimée en kilomètres."
+   },
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#MileageReading"
+   ],
+   "domain_union": [],
+   "domain_expr": null,
+   "range": [
+    "http://www.w3.org/2001/XMLSchema#decimal"
+   ],
+   "range_expr": null,
+   "functional": false,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": []
+  },
+  "https://w3id.org/ontoforge/automaint#registrationNumber": {
+   "iri": "https://w3id.org/ontoforge/automaint#registrationNumber",
+   "labels": {
+    "en": "registration number",
+    "fr": "immatriculation"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#Vehicle"
+   ],
+   "domain_union": [],
+   "domain_expr": null,
+   "range": [
+    "http://www.w3.org/2001/XMLSchema#string"
+   ],
+   "range_expr": null,
+   "functional": false,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": []
+  },
+  "https://w3id.org/ontoforge/automaint#standardDurationMin": {
+   "iri": "https://w3id.org/ontoforge/automaint#standardDurationMin",
+   "labels": {
+    "en": "standard duration (min)",
+    "fr": "durée standard (min)"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#ServiceOperation"
+   ],
+   "domain_union": [],
+   "domain_expr": null,
+   "range": [
+    "http://www.w3.org/2001/XMLSchema#integer"
+   ],
+   "range_expr": null,
+   "functional": false,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": []
+  },
+  "https://w3id.org/ontoforge/automaint#unitPrice": {
+   "iri": "https://w3id.org/ontoforge/automaint#unitPrice",
+   "labels": {
+    "en": "unit price",
+    "fr": "prix unitaire"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#PartReference"
+   ],
+   "domain_union": [],
+   "domain_expr": null,
+   "range": [
+    "http://www.w3.org/2001/XMLSchema#decimal"
+   ],
+   "range_expr": null,
+   "functional": false,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": []
+  },
+  "https://w3id.org/ontoforge/automaint#warrantyDurationMonths": {
+   "iri": "https://w3id.org/ontoforge/automaint#warrantyDurationMonths",
+   "labels": {
+    "en": "warranty duration (months)",
+    "fr": "durée de garantie (mois)"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#Warranty"
+   ],
+   "domain_union": [],
+   "domain_expr": null,
+   "range": [
+    "http://www.w3.org/2001/XMLSchema#integer"
+   ],
+   "range_expr": null,
+   "functional": false,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": []
+  },
+  "https://w3id.org/ontoforge/automaint#warrantyMaxKm": {
+   "iri": "https://w3id.org/ontoforge/automaint#warrantyMaxKm",
+   "labels": {
+    "en": "maximum mileage",
+    "fr": "kilométrage maximal"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#Warranty"
+   ],
+   "domain_union": [],
+   "domain_expr": null,
+   "range": [
+    "http://www.w3.org/2001/XMLSchema#integer"
+   ],
+   "range_expr": null,
+   "functional": false,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": []
+  },
+  "https://w3id.org/ontoforge/automaint#brandName": {
+   "iri": "https://w3id.org/ontoforge/automaint#brandName",
+   "labels": {
+    "en": "brand name",
+    "fr": "nom de marque"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#Brand"
+   ],
+   "domain_union": [],
+   "domain_expr": null,
+   "range": [
+    "http://www.w3.org/2001/XMLSchema#string"
+   ],
+   "range_expr": null,
+   "functional": false,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": []
+  },
+  "https://w3id.org/ontoforge/automaint#dtcCode": {
+   "iri": "https://w3id.org/ontoforge/automaint#dtcCode",
+   "labels": {
+    "en": "code",
+    "fr": "code"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#DiagnosticTroubleCode"
+   ],
+   "domain_union": [],
+   "domain_expr": null,
+   "range": [
+    "http://www.w3.org/2001/XMLSchema#string"
+   ],
+   "range_expr": null,
+   "functional": false,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": []
+  },
+  "https://w3id.org/ontoforge/automaint#operationCode": {
+   "iri": "https://w3id.org/ontoforge/automaint#operationCode",
+   "labels": {
+    "en": "operation code",
+    "fr": "code opération"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#ServiceOperation"
+   ],
+   "domain_union": [],
+   "domain_expr": null,
+   "range": [
+    "http://www.w3.org/2001/XMLSchema#string"
+   ],
+   "range_expr": null,
+   "functional": false,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": []
+  },
+  "https://w3id.org/ontoforge/automaint#orderNumber": {
+   "iri": "https://w3id.org/ontoforge/automaint#orderNumber",
+   "labels": {
+    "en": "order number",
+    "fr": "numéro d'ordre"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#RepairOrder"
+   ],
+   "domain_union": [],
+   "domain_expr": null,
+   "range": [
+    "http://www.w3.org/2001/XMLSchema#string"
+   ],
+   "range_expr": null,
+   "functional": false,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": []
+  },
+  "https://w3id.org/ontoforge/automaint#recallNumber": {
+   "iri": "https://w3id.org/ontoforge/automaint#recallNumber",
+   "labels": {
+    "en": "recall number",
+    "fr": "numéro de rappel"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#Recall"
+   ],
+   "domain_union": [],
+   "domain_expr": null,
+   "range": [
+    "http://www.w3.org/2001/XMLSchema#string"
+   ],
+   "range_expr": null,
+   "functional": false,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": []
+  },
+  "https://w3id.org/ontoforge/automaint#vin": {
+   "iri": "https://w3id.org/ontoforge/automaint#vin",
+   "labels": {
+    "en": "VIN",
+    "fr": "VIN"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "domain": [
+    "https://w3id.org/ontoforge/automaint#Vehicle"
+   ],
+   "domain_union": [],
+   "domain_expr": null,
+   "range": [
+    "http://www.w3.org/2001/XMLSchema#string"
+   ],
+   "range_expr": null,
+   "functional": false,
+   "sub_property_of": [],
+   "equivalent_to": [],
+   "disjoint_with": []
+  }
+ },
+ "annotation_properties": {
+  "http://purl.org/dc/terms/created": {
+   "iri": "http://purl.org/dc/terms/created",
+   "labels": {},
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "sub_property_of": [],
+   "domain": [],
+   "range": []
+  },
+  "http://purl.org/dc/terms/description": {
+   "iri": "http://purl.org/dc/terms/description",
+   "labels": {},
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "sub_property_of": [],
+   "domain": [],
+   "range": []
+  },
+  "http://purl.org/dc/terms/title": {
+   "iri": "http://purl.org/dc/terms/title",
+   "labels": {},
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "sub_property_of": [],
+   "domain": [],
+   "range": []
+  },
+  "http://www.w3.org/2004/02/skos/core#definition": {
+   "iri": "http://www.w3.org/2004/02/skos/core#definition",
+   "labels": {},
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "sub_property_of": [],
+   "domain": [],
+   "range": []
+  }
+ },
+ "datatypes": {
+  "https://w3id.org/ontoforge/automaint#ModelYear": {
+   "iri": "https://w3id.org/ontoforge/automaint#ModelYear",
+   "labels": {
+    "en": "model year",
+    "fr": "année modèle"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "definition": {
+    "base": "http://www.w3.org/2001/XMLSchema#integer",
+    "facets": {
+     "http://www.w3.org/2001/XMLSchema#minInclusive": "1886",
+     "http://www.w3.org/2001/XMLSchema#maxInclusive": "2100"
+    },
+    "one_of": [],
+    "union_of": []
+   }
+  }
+ },
+ "individuals": {
+  "https://w3id.org/ontoforge/automaint#Diesel": {
+   "iri": "https://w3id.org/ontoforge/automaint#Diesel",
+   "labels": {
+    "en": "Diesel",
+    "fr": "Diesel"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "types": [
+    "https://w3id.org/ontoforge/automaint#FuelType"
+   ],
+   "facts": [],
+   "same_as": [],
+   "different_from": []
+  },
+  "https://w3id.org/ontoforge/automaint#Electric": {
+   "iri": "https://w3id.org/ontoforge/automaint#Electric",
+   "labels": {
+    "en": "Electricity",
+    "fr": "Électricité"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "types": [
+    "https://w3id.org/ontoforge/automaint#FuelType"
+   ],
+   "facts": [],
+   "same_as": [],
+   "different_from": []
+  },
+  "https://w3id.org/ontoforge/automaint#Hydrogen": {
+   "iri": "https://w3id.org/ontoforge/automaint#Hydrogen",
+   "labels": {
+    "en": "Hydrogen",
+    "fr": "Hydrogène"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "types": [
+    "https://w3id.org/ontoforge/automaint#FuelType"
+   ],
+   "facts": [],
+   "same_as": [],
+   "different_from": []
+  },
+  "https://w3id.org/ontoforge/automaint#Petrol": {
+   "iri": "https://w3id.org/ontoforge/automaint#Petrol",
+   "labels": {
+    "en": "Petrol",
+    "fr": "Essence"
+   },
+   "comments": {},
+   "annotations": [],
+   "deprecated": false,
+   "types": [
+    "https://w3id.org/ontoforge/automaint#FuelType"
+   ],
+   "facts": [],
+   "same_as": [],
+   "different_from": []
+  }
+ },
+ "all_different": [],
+ "unmapped": []
+}

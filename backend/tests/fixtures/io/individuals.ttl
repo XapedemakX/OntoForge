@@ -1,0 +1,39 @@
+# Fixture io : individus et assertions (table 16 : ClassAssertion, Property assertions, Negative*, sameAs…)
+@prefix auto: <https://example.org/auto#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+<https://example.org/auto/individuals> a owl:Ontology .
+
+auto:Vehicle a owl:Class .
+auto:Garage a owl:Class .
+auto:Recall a owl:Class .
+auto:PartCategory a owl:Class .
+auto:TimingBelt a owl:Class , owl:NamedIndividual , auto:PartCategory ;
+    rdfs:label "courroie de distribution"@fr ;
+    auto:replacementKm 120000 .
+auto:vin a owl:DatatypeProperty .
+auto:replacementKm a owl:DatatypeProperty .
+auto:hasOpenRecall a owl:ObjectProperty .
+auto:servicedAt a owl:ObjectProperty .
+auto:nickname a owl:DatatypeProperty .
+
+auto:veh_001 a owl:NamedIndividual , auto:Vehicle ;
+    rdfs:label "Véhicule 001"@fr , "Vehicle 001"@en ;
+    auto:vin "VF1AB000000000001" ;
+    auto:nickname "la grise"@fr , "plain" , "typed"^^xsd:string ;
+    auto:servicedAt auto:garage_a ;
+    auto:hasOpenRecall auto:recall_1 .
+auto:veh_002 a owl:NamedIndividual , auto:Vehicle ; owl:differentFrom auto:veh_001 .
+auto:garage_a a owl:NamedIndividual , auto:Garage .
+auto:garage_b a owl:NamedIndividual ; owl:sameAs auto:garage_a .
+auto:garage_c a owl:NamedIndividual , auto:Garage .
+auto:recall_1 a owl:NamedIndividual , auto:Recall .
+auto:thing_1 a owl:NamedIndividual , owl:Thing .
+
+[] a owl:AllDifferent ; owl:members ( auto:garage_a auto:garage_c ) .
+[] a owl:NegativePropertyAssertion ; owl:sourceIndividual auto:veh_002 ;
+   owl:assertionProperty auto:hasOpenRecall ; owl:targetIndividual auto:recall_1 .
+[] a owl:NegativePropertyAssertion ; owl:sourceIndividual auto:veh_002 ;
+   owl:assertionProperty auto:vin ; owl:targetValue "VF1AB000000000001" .

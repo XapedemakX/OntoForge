@@ -1,0 +1,25 @@
+# OntoForge — données fictives AutoMaint pour automaint-shapes.ttl (validation sans inférence).
+# Violations attendues (exactement 4) :
+#   V1 am:veh_bad_vin   am:vin        sh:PatternConstraintComponent   (VIN contient « O »)
+#   V2 am:veh_no_model  am:ofModel    sh:MinCountConstraintComponent
+#   V3 am:ro_no_garage  am:performedAt sh:MinCountConstraintComponent
+#   V4 am:tech_idle     am:worksAt    sh:MinCountConstraintComponent
+@prefix am:  <https://w3id.org/ontoforge/automaint#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+am:brand_alpha a am:Brand ; am:brandName "Alpha" .
+am:model_alpha_city a am:VehicleModel ; am:madeBy am:brand_alpha ; am:modelYear 2021 .
+am:garage_nord a am:Garage ; am:displayName "Garage Nord" .
+am:op_oil a am:ServiceOperation .
+am:eng_1 a am:Engine .
+
+am:veh_ok a am:Vehicle ; am:vin "VF1ABCDEFGH123456" ; am:ofModel am:model_alpha_city ; am:hasEngine am:eng_1 .
+am:veh_bad_vin a am:Vehicle ; am:vin "VF1ABCDEFGH12O456" ; am:ofModel am:model_alpha_city .
+am:veh_no_model a am:Vehicle ; am:vin "VF1ABCDEFGH654321" .
+
+am:ro_ok a am:RepairOrder ; am:openedAt "2024-03-01T09:00:00"^^xsd:dateTime ; am:closedAt "2024-03-02T17:00:00"^^xsd:dateTime ;
+    am:performedAt am:garage_nord ; am:includesOperation am:op_oil .
+am:ro_no_garage a am:RepairOrder ; am:openedAt "2024-04-01T09:00:00"^^xsd:dateTime ; am:includesOperation am:op_oil .
+
+am:tech_ok a am:Technician ; am:worksAt am:garage_nord .
+am:tech_idle a am:Technician .

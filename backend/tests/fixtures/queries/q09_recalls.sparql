@@ -1,0 +1,2 @@
+PREFIX am: <https://w3id.org/ontoforge/automaint#>
+SELECT ?r ?n WHERE { ?r a am:Recall ; am:recallNumber ?n ; am:appliesToModel ?m . ?v am:ofModel ?m . }

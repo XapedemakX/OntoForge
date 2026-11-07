@@ -1,0 +1,13 @@
+node_modules/
+dist/
+__pycache__/
+.pytest_cache/
+*.egg-info/
+.env
+.venv/
+backend/data/
+journal/L18/video/frames/
+journal/L18/video/check/
+journal/L18/video/chk/
+journal/L18/video/*.mp4
+ref/

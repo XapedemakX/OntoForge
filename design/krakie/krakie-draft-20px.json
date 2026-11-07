@@ -1,0 +1,6 @@
+{
+  "name": "Krakie",
+  "note": "Ébauche validée par Jerem le 3/11 (direction). Grille 20x19, à redessiner en ~32 px dans le même esprit (chibi, contour sombre, ombrage, joues roses, couleur lagon), avec poses à accessoires.",
+  "palette": {"K": "#0B2B33", "B": "#147A77", "L": "#1FA39E", "H": "#7FDCD4", "W": "#FFFFFF", "C": "#F29A8E", "A": "#E0A23B", "a": "#A86E18", "p": "#F5E6C8", "D": "#0B2B33"},
+  "base": ["      KKKKKKKK      ","    KKLLLLLLBBKK    ","   KLHHLLLLLLBBBK   ","  KLHHLLLLLLLLBBBK  ","  KLHLLLLLLLLLLBBK  "," KLLLLLLLLLLLLLLBBK "," KLKKKLLLLLLLKKKLBK "," KKWWDKLLLLLKWWDKBK "," KKWDDKLLLLLKWDDKBK "," KLKKKLLLLLLLKKKLBK "," KCCLLLLLKKLLLLCCBK ","  KLLLLLLLLLLLLLBK  ","  KBLLLLLLLLLLLBBK  "," KBBKBBKBBBBKBBKBBK ","KBK KBK KBBK KBK KBK","KBK KBK KBBK KBK KBK","KBBK KBK KK KBK KBBK"," KBK  KK    KK  KBK ","  KK            KK  "]
+}

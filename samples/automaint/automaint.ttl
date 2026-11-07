@@ -1,0 +1,608 @@
+# OntoForge — export Turtle de <https://w3id.org/ontoforge/automaint>
+@prefix am: <https://w3id.org/ontoforge/automaint#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+dcterms:created a owl:AnnotationProperty .
+
+dcterms:description a owl:AnnotationProperty .
+
+dcterms:title a owl:AnnotationProperty .
+
+skos:definition a owl:AnnotationProperty .
+
+<https://w3id.org/ontoforge/automaint> a owl:Ontology ;
+    dcterms:created "2026-11-03T00:00:00+00:00"^^xsd:dateTime ;
+    dcterms:description "Ontologie de démonstration OntoForge : véhicules, ordres de réparation, pièces, rappels et garanties. Données fictives."@fr ;
+    dcterms:title "AutoMaint — car maintenance ontology"@en,
+        "AutoMaint — ontologie de maintenance automobile"@fr ;
+    owl:versionIRI <https://w3id.org/ontoforge/automaint/1.0.0> ;
+    owl:versionInfo "1.0.0" .
+
+am:ElectricVehicle a owl:Class ;
+    rdfs:label "Electric vehicle"@en,
+        "Véhicule électrique"@fr ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:onProperty am:hasEngine ;
+            owl:someValuesFrom am:ElectricMotor ],
+        am:Vehicle ;
+    owl:disjointWith am:CombustionVehicle .
+
+am:addresses a owl:ObjectProperty ;
+    rdfs:label "addresses code"@en,
+        "traite le code"@fr ;
+    rdfs:domain am:ServiceOperation ;
+    rdfs:range am:DiagnosticTroubleCode .
+
+am:assignedTo a owl:ObjectProperty ;
+    rdfs:label "assigned to"@en,
+        "affecté à"@fr ;
+    rdfs:domain am:RepairOrder ;
+    rdfs:range am:Technician .
+
+am:concernsPart a owl:ObjectProperty ;
+    rdfs:label "concerns part reference"@en,
+        "concerne la référence"@fr ;
+    rdfs:domain am:Recall ;
+    rdfs:range am:PartReference .
+
+am:hasActiveCode a owl:ObjectProperty ;
+    rdfs:label "has active code"@en,
+        "a le code actif"@fr ;
+    rdfs:domain am:Vehicle ;
+    rdfs:range am:DiagnosticTroubleCode .
+
+am:installedIn a owl:ObjectProperty ;
+    rdfs:label "installed in"@en,
+        "installée dans"@fr ;
+    rdfs:domain am:Part ;
+    rdfs:range am:Vehicle .
+
+am:ownedBy a owl:ObjectProperty ;
+    rdfs:label "owned by"@en,
+        "appartient à"@fr ;
+    rdfs:domain am:Vehicle ;
+    rdfs:range am:Customer .
+
+am:partOf a owl:ObjectProperty,
+        owl:TransitiveProperty ;
+    rdfs:label "part of"@en,
+        "composant de"@fr ;
+    rdfs:domain am:Part ;
+    rdfs:range am:Part .
+
+am:usesFuel a owl:ObjectProperty ;
+    rdfs:label "uses fuel"@en,
+        "utilise le carburant"@fr ;
+    rdfs:domain am:Engine ;
+    rdfs:range am:FuelType .
+
+am:usesPart a owl:ObjectProperty ;
+    rdfs:label "uses part reference"@en,
+        "utilise la référence"@fr ;
+    rdfs:domain am:ServiceOperation ;
+    rdfs:range am:PartReference .
+
+am:CombustionVehicle a owl:Class ;
+    rdfs:label "Combustion vehicle"@en,
+        "Véhicule thermique"@fr ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:onProperty am:hasEngine ;
+            owl:someValuesFrom am:InternalCombustionEngine ],
+        am:Vehicle .
+
+am:Customer a owl:Class ;
+    rdfs:label "Customer"@en,
+        "Client"@fr ;
+    rdfs:subClassOf am:Person .
+
+am:Diesel a owl:NamedIndividual,
+        am:FuelType ;
+    rdfs:label "Diesel"@en,
+        "Diesel"@fr .
+
+am:Electric a owl:NamedIndividual,
+        am:FuelType ;
+    rdfs:label "Electricity"@en,
+        "Électricité"@fr .
+
+am:ElectricMotor a owl:Class ;
+    rdfs:label "Electric motor"@en,
+        "Moteur électrique"@fr ;
+    rdfs:subClassOf am:Engine .
+
+am:Hydrogen a owl:NamedIndividual,
+        am:FuelType ;
+    rdfs:label "Hydrogen"@en,
+        "Hydrogène"@fr .
+
+am:InternalCombustionEngine a owl:Class ;
+    rdfs:label "Internal combustion engine"@en,
+        "Moteur thermique"@fr ;
+    rdfs:subClassOf am:Engine .
+
+am:ModelYear a rdfs:Datatype ;
+    rdfs:label "model year"@en,
+        "année modèle"@fr ;
+    owl:equivalentClass [ a rdfs:Datatype ;
+            owl:onDatatype xsd:integer ;
+            owl:withRestrictions ( [ xsd:minInclusive 1886 ] [ xsd:maxInclusive 2100 ] ) ] .
+
+am:Petrol a owl:NamedIndividual,
+        am:FuelType ;
+    rdfs:label "Petrol"@en,
+        "Essence"@fr .
+
+am:appliesToModel a owl:ObjectProperty ;
+    rdfs:label "applies to model"@en,
+        "concerne le modèle"@fr ;
+    rdfs:domain am:Recall ;
+    rdfs:range am:VehicleModel .
+
+am:closedAt a owl:DatatypeProperty ;
+    rdfs:label "closed at"@en,
+        "clos le"@fr ;
+    rdfs:domain am:RepairOrder ;
+    rdfs:range xsd:dateTime .
+
+am:concerns a owl:ObjectProperty ;
+    rdfs:label "concerns"@en,
+        "concerne"@fr ;
+    rdfs:domain am:RepairOrder ;
+    rdfs:range am:Vehicle ;
+    owl:inverseOf am:hasRepairOrder .
+
+am:covers a owl:ObjectProperty ;
+    rdfs:label "covers"@en,
+        "couvre"@fr ;
+    rdfs:domain am:Warranty ;
+    rdfs:range am:Vehicle .
+
+am:displacementCc a owl:DatatypeProperty ;
+    rdfs:label "displacement (cc)"@en,
+        "cylindrée (cm3)"@fr ;
+    rdfs:domain am:Engine ;
+    rdfs:range xsd:integer .
+
+am:displayName a owl:DatatypeProperty ;
+    rdfs:label "display name"@en,
+        "nom affiché"@fr ;
+    rdfs:domain am:Party ;
+    rdfs:range xsd:string .
+
+am:firstRegistrationDate a owl:DatatypeProperty ;
+    rdfs:label "first registration date"@en,
+        "date de première mise en circulation"@fr ;
+    rdfs:domain am:Vehicle ;
+    rdfs:range xsd:dateTime .
+
+am:hasManufacturer a owl:ObjectProperty ;
+    rdfs:label "manufactured by"@en,
+        "fabriquée par"@fr ;
+    rdfs:domain am:PartReference ;
+    rdfs:range am:Brand .
+
+am:hasMileageReading a owl:ObjectProperty ;
+    rdfs:domain am:Vehicle ;
+    rdfs:range am:MileageReading .
+
+am:hasRepairOrder a owl:ObjectProperty ;
+    rdfs:label "has repair order"@en,
+        "a pour ordre de réparation"@fr ;
+    rdfs:domain am:Vehicle ;
+    rdfs:range am:RepairOrder .
+
+am:includesOperation a owl:ObjectProperty ;
+    rdfs:label "includes operation"@en,
+        "comprend l'opération"@fr ;
+    rdfs:domain am:RepairOrder ;
+    rdfs:range am:ServiceOperation .
+
+am:instanceOf a owl:ObjectProperty ;
+    rdfs:label "instance of"@en,
+        "est une instance de"@fr ;
+    rdfs:domain am:Part ;
+    rdfs:range am:PartReference .
+
+am:intervalKm a owl:DatatypeProperty ;
+    rdfs:label "interval (km)"@en,
+        "intervalle (km)"@fr ;
+    rdfs:domain am:MaintenancePlan ;
+    rdfs:range xsd:integer .
+
+am:intervalMonths a owl:DatatypeProperty ;
+    rdfs:label "interval (months)"@en,
+        "intervalle (mois)"@fr ;
+    rdfs:domain am:MaintenancePlan ;
+    rdfs:range xsd:integer .
+
+am:issuedAt a owl:DatatypeProperty ;
+    rdfs:label "issued at"@en,
+        "émis le"@fr ;
+    rdfs:domain am:Recall ;
+    rdfs:range xsd:dateTime .
+
+am:madeBy a owl:ObjectProperty ;
+    rdfs:label "made by"@en,
+        "fabriqué par"@fr ;
+    rdfs:domain am:VehicleModel ;
+    rdfs:range am:Brand .
+
+am:manufacturerPartNumber a owl:DatatypeProperty ;
+    rdfs:label "manufacturer part number"@en,
+        "référence fabricant"@fr ;
+    rdfs:domain am:PartReference ;
+    rdfs:range xsd:string .
+
+am:modelName a owl:DatatypeProperty ;
+    rdfs:label "model name"@en,
+        "nom du modèle"@fr ;
+    rdfs:domain am:VehicleModel ;
+    rdfs:range xsd:string .
+
+am:modelYear a owl:DatatypeProperty ;
+    rdfs:label "model year"@en,
+        "année modèle"@fr ;
+    rdfs:domain am:VehicleModel ;
+    rdfs:range am:ModelYear .
+
+am:ofModel a owl:ObjectProperty ;
+    rdfs:label "has model"@en,
+        "a pour modèle"@fr ;
+    rdfs:domain am:Vehicle ;
+    rdfs:range am:VehicleModel .
+
+am:openedAt a owl:DatatypeProperty ;
+    rdfs:label "opened at"@en,
+        "ouvert le"@fr ;
+    rdfs:domain am:RepairOrder ;
+    rdfs:range xsd:dateTime .
+
+am:performedAt a owl:ObjectProperty ;
+    rdfs:label "performed at"@en,
+        "réalisé dans"@fr ;
+    rdfs:domain am:RepairOrder ;
+    rdfs:range am:Garage .
+
+am:plannedFor a owl:ObjectProperty ;
+    rdfs:label "planned for"@en,
+        "prévu pour"@fr ;
+    rdfs:domain am:MaintenancePlan ;
+    rdfs:range am:VehicleModel .
+
+am:powerKw a owl:DatatypeProperty ;
+    rdfs:label "power (kW)"@en,
+        "puissance (kW)"@fr ;
+    rdfs:domain am:Engine ;
+    rdfs:range xsd:decimal .
+
+am:prescribes a owl:ObjectProperty ;
+    rdfs:label "prescribes"@en,
+        "prescrit"@fr ;
+    rdfs:domain am:MaintenancePlan ;
+    rdfs:range am:ServiceOperation .
+
+am:readingDate a owl:DatatypeProperty ;
+    rdfs:label "reading date"@en,
+        "date du relevé"@fr ;
+    rdfs:domain am:MileageReading ;
+    rdfs:range xsd:dateTime .
+
+am:readingMileageKm a owl:DatatypeProperty ;
+    rdfs:label "mileage (km)"@en,
+        "kilométrage relevé"@fr ;
+    rdfs:comment "Non-negative value expressed in kilometres."@en,
+        "Valeur positive ou nulle exprimée en kilomètres."@fr ;
+    rdfs:domain am:MileageReading ;
+    rdfs:range xsd:decimal .
+
+am:readingOf a owl:ObjectProperty ;
+    rdfs:label "reading of"@en,
+        "relevé de"@fr ;
+    rdfs:domain am:MileageReading ;
+    rdfs:range am:Vehicle ;
+    owl:inverseOf am:hasMileageReading .
+
+am:registrationNumber a owl:DatatypeProperty ;
+    rdfs:label "registration number"@en,
+        "immatriculation"@fr ;
+    rdfs:domain am:Vehicle ;
+    rdfs:range xsd:string .
+
+am:standardDurationMin a owl:DatatypeProperty ;
+    rdfs:label "standard duration (min)"@en,
+        "durée standard (min)"@fr ;
+    rdfs:domain am:ServiceOperation ;
+    rdfs:range xsd:integer .
+
+am:unitPrice a owl:DatatypeProperty ;
+    rdfs:label "unit price"@en,
+        "prix unitaire"@fr ;
+    rdfs:domain am:PartReference ;
+    rdfs:range xsd:decimal .
+
+am:warrantyDurationMonths a owl:DatatypeProperty ;
+    rdfs:label "warranty duration (months)"@en,
+        "durée de garantie (mois)"@fr ;
+    rdfs:domain am:Warranty ;
+    rdfs:range xsd:integer .
+
+am:warrantyMaxKm a owl:DatatypeProperty ;
+    rdfs:label "maximum mileage"@en,
+        "kilométrage maximal"@fr ;
+    rdfs:domain am:Warranty ;
+    rdfs:range xsd:integer .
+
+am:worksAt a owl:ObjectProperty ;
+    rdfs:label "works at"@en,
+        "travaille à"@fr ;
+    rdfs:domain am:Technician ;
+    rdfs:range am:Garage .
+
+am:Garage a owl:Class ;
+    rdfs:label "Garage"@en,
+        "Garage"@fr ;
+    rdfs:subClassOf am:Organization .
+
+am:Person a owl:Class ;
+    rdfs:label "Person"@en,
+        "Personne"@fr ;
+    rdfs:subClassOf am:Party ;
+    owl:disjointWith am:Organization .
+
+am:Technician a owl:Class ;
+    rdfs:label "Technician"@en,
+        "Technicien"@fr ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:cardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty am:worksAt ],
+        am:Person .
+
+am:brandName a owl:DatatypeProperty ;
+    rdfs:label "brand name"@en,
+        "nom de marque"@fr ;
+    rdfs:domain am:Brand ;
+    rdfs:range xsd:string .
+
+am:dtcCode a owl:DatatypeProperty ;
+    rdfs:label "code"@en,
+        "code"@fr ;
+    rdfs:domain am:DiagnosticTroubleCode ;
+    rdfs:range xsd:string .
+
+am:hasEngine a owl:ObjectProperty ;
+    rdfs:label "has engine"@en,
+        "a pour moteur"@fr ;
+    rdfs:domain am:Vehicle ;
+    rdfs:range am:Engine .
+
+am:operationCode a owl:DatatypeProperty ;
+    rdfs:label "operation code"@en,
+        "code opération"@fr ;
+    rdfs:domain am:ServiceOperation ;
+    rdfs:range xsd:string .
+
+am:orderNumber a owl:DatatypeProperty ;
+    rdfs:label "order number"@en,
+        "numéro d'ordre"@fr ;
+    rdfs:domain am:RepairOrder ;
+    rdfs:range xsd:string .
+
+am:recallNumber a owl:DatatypeProperty ;
+    rdfs:label "recall number"@en,
+        "numéro de rappel"@fr ;
+    rdfs:domain am:Recall ;
+    rdfs:range xsd:string .
+
+am:vin a owl:DatatypeProperty ;
+    rdfs:label "VIN"@en,
+        "VIN"@fr ;
+    rdfs:domain am:Vehicle ;
+    rdfs:range xsd:string .
+
+am:Brand a owl:Class ;
+    rdfs:label "Brand"@en,
+        "Marque"@fr ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:cardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty am:brandName ],
+        am:Organization ;
+    owl:hasKey ( am:brandName ) .
+
+am:DiagnosticTroubleCode a owl:Class ;
+    rdfs:label "Diagnostic trouble code"@en,
+        "Code défaut"@fr ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:cardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty am:dtcCode ] ;
+    owl:hasKey ( am:dtcCode ) ;
+    skos:definition "Code défaut normalisé remonté par le calculateur du véhicule."@fr .
+
+am:Organization a owl:Class ;
+    rdfs:label "Organization"@en,
+        "Organisation"@fr ;
+    rdfs:subClassOf am:Party .
+
+am:Party a owl:Class ;
+    rdfs:label "Party"@en,
+        "Partie"@fr ;
+    rdfs:comment "Person or organisation involved in maintenance."@en,
+        "Personne ou organisation intervenant dans la maintenance."@fr ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:cardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty am:displayName ] .
+
+am:Warranty a owl:Class ;
+    rdfs:label "Warranty"@en,
+        "Garantie"@fr ;
+    rdfs:comment "Contractual warranty covering a vehicle, limited in duration and mileage."@en,
+        "Garantie contractuelle couvrant un véhicule, limitée en durée et en kilométrage."@fr ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:maxCardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty am:warrantyMaxKm ],
+        [ a owl:Restriction ;
+            owl:cardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty am:warrantyDurationMonths ],
+        [ a owl:Restriction ;
+            owl:cardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty am:covers ] .
+
+am:MaintenancePlan a owl:Class ;
+    rdfs:label "Maintenance plan"@en,
+        "Plan d'entretien"@fr ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:maxCardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty am:intervalMonths ],
+        [ a owl:Restriction ;
+            owl:maxCardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty am:intervalKm ],
+        [ a owl:Restriction ;
+            owl:cardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty am:plannedFor ],
+        [ a owl:Restriction ;
+            owl:minCardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty am:prescribes ] ;
+    skos:definition "Programme d'entretien préconisé pour un modèle (par kilométrage ou par durée)."@fr .
+
+am:MileageReading a owl:Class ;
+    rdfs:label "Mileage reading"@en,
+        "Relevé kilométrique"@fr ;
+    rdfs:comment "Dated reading of a vehicle's odometer."@en,
+        "Relevé daté du compteur kilométrique d'un véhicule."@fr ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:cardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty am:readingMileageKm ],
+        [ a owl:Restriction ;
+            owl:cardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty am:readingOf ],
+        [ a owl:Restriction ;
+            owl:cardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty am:readingDate ] .
+
+am:Recall a owl:Class ;
+    rdfs:label "Recall"@en,
+        "Rappel constructeur"@fr ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:minCardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty am:appliesToModel ],
+        [ a owl:Restriction ;
+            owl:maxCardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty am:issuedAt ],
+        [ a owl:Restriction ;
+            owl:cardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty am:recallNumber ] ;
+    owl:hasKey ( am:recallNumber ) ;
+    skos:definition "Campagne de rappel émise par un constructeur pour un ou plusieurs modèles."@fr .
+
+am:FuelType a owl:Class ;
+    rdfs:label "Fuel type"@en,
+        "Carburant"@fr ;
+    owl:equivalentClass [ a owl:Class ;
+            owl:oneOf ( am:Diesel am:Petrol am:Electric am:Hydrogen ) ] .
+
+am:Part a owl:Class ;
+    rdfs:label "Part"@en,
+        "Pièce"@fr ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:cardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty am:instanceOf ] .
+
+am:Engine a owl:Class ;
+    rdfs:label "Engine"@en,
+        "Moteur"@fr ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:maxCardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty am:powerKw ],
+        [ a owl:Restriction ;
+            owl:maxCardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty am:displacementCc ] .
+
+am:PartReference a owl:Class ;
+    rdfs:label "Part reference"@en,
+        "Référence de pièce"@fr ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:cardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty am:hasManufacturer ],
+        [ a owl:Restriction ;
+            owl:cardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty am:manufacturerPartNumber ],
+        [ a owl:Restriction ;
+            owl:maxCardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty am:unitPrice ] ;
+    skos:definition "Référence catalogue d'une pièce ; une Part est une pièce physique de cette référence."@fr .
+
+am:ServiceOperation a owl:Class ;
+    rdfs:label "Service operation"@en,
+        "Opération de service"@fr ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:cardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty am:operationCode ],
+        [ a owl:Restriction ;
+            owl:maxCardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty am:standardDurationMin ] ;
+    owl:hasKey ( am:operationCode ) ;
+    skos:definition "Opération élémentaire d'entretien ou de réparation (vidange, remplacement de plaquettes…)."@fr .
+
+am:VehicleModel a owl:Class ;
+    rdfs:label "Vehicle model"@en,
+        "Modèle de véhicule"@fr ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:cardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty am:modelName ],
+        [ a owl:Restriction ;
+            owl:maxCardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty am:modelYear ],
+        [ a owl:Restriction ;
+            owl:cardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty am:madeBy ] ;
+    skos:definition "Modèle commercial d'un constructeur (ex. une série et un millésime)."@fr .
+
+am:RepairOrder a owl:Class ;
+    rdfs:label "Repair order"@en,
+        "Ordre de réparation"@fr ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:cardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty am:concerns ],
+        [ a owl:Restriction ;
+            owl:minCardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty am:includesOperation ],
+        [ a owl:Restriction ;
+            owl:cardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty am:performedAt ],
+        [ a owl:Restriction ;
+            owl:maxCardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty am:closedAt ],
+        [ a owl:Restriction ;
+            owl:cardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty am:openedAt ],
+        [ a owl:Restriction ;
+            owl:cardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty am:orderNumber ] ;
+    owl:hasKey ( am:orderNumber ) ;
+    skos:definition "Document ouvert par un garage décrivant les opérations réalisées sur un véhicule."@fr .
+
+am:Vehicle a owl:Class ;
+    rdfs:label "Vehicle"@en,
+        "Véhicule"@fr ;
+    rdfs:comment "Vehicle identified by its VIN, followed in the workshop."@en,
+        "Véhicule identifié par son VIN, suivi en atelier."@fr ;
+    rdfs:subClassOf [ a owl:Restriction ;
+            owl:cardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty am:ofModel ],
+        [ a owl:Restriction ;
+            owl:maxCardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty am:firstRegistrationDate ],
+        [ a owl:Restriction ;
+            owl:cardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty am:vin ],
+        [ a owl:Restriction ;
+            owl:maxCardinality "1"^^xsd:nonNegativeInteger ;
+            owl:onProperty am:registrationNumber ] ;
+    owl:disjointWith am:Part ;
+    owl:hasKey ( am:vin ) ;
+    skos:definition "Véhicule routier identifié de façon unique par son numéro VIN."@fr .
+

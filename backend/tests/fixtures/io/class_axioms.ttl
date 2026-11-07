@@ -1,0 +1,33 @@
+# Fixture io : expressions et axiomes de classes (OWL 2 Mapping, tables 13 et 16)
+@prefix auto: <https://example.org/auto#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+<https://example.org/auto/classes> a owl:Ontology .
+
+auto:Vehicle a owl:Class ; owl:hasKey ( auto:vin ) .
+auto:Car a owl:Class ; rdfs:subClassOf auto:Vehicle ; owl:equivalentClass auto:PassengerCar .
+auto:PassengerCar a owl:Class .
+auto:ElectricVehicle a owl:Class ; rdfs:subClassOf auto:Vehicle .
+auto:NonElectricVehicle a owl:Class ;
+    owl:equivalentClass [ a owl:Class ; owl:intersectionOf ( auto:Vehicle [ a owl:Class ; owl:complementOf auto:ElectricVehicle ] ) ] .
+auto:Person a owl:Class .
+auto:Company a owl:Class .
+auto:Owner a owl:Class ; owl:equivalentClass [ a owl:Class ; owl:unionOf ( auto:Person auto:Company ) ] .
+auto:ServiceProvider a owl:Class ; rdfs:subClassOf [ a owl:Class ; owl:unionOf ( auto:Garage auto:MobileMechanic ) ] .
+auto:Garage a owl:Class ; owl:disjointWith auto:Person .
+auto:MobileMechanic a owl:Class .
+auto:Operation a owl:Class ; owl:disjointUnionOf ( auto:PreventiveOperation auto:CorrectiveOperation ) .
+auto:PreventiveOperation a owl:Class .
+auto:CorrectiveOperation a owl:Class .
+auto:PartReference a owl:Class ; owl:hasKey ( auto:partNumber auto:hasManufacturer ) .
+auto:FuelType a owl:Class ; owl:equivalentClass [ a owl:Class ; owl:oneOf ( auto:Diesel auto:Petrol auto:Electric ) ] .
+auto:Diesel a owl:NamedIndividual , auto:FuelType .
+auto:Petrol a owl:NamedIndividual , auto:FuelType .
+auto:Electric a owl:NamedIndividual , auto:FuelType .
+auto:Fleet a owl:Class ; rdfs:subClassOf owl:Thing .
+
+auto:vin a owl:DatatypeProperty .
+auto:partNumber a owl:DatatypeProperty .
+auto:hasManufacturer a owl:ObjectProperty .

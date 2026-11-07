@@ -1,0 +1,928 @@
+"""Générateur Curiosity : PGModel -> code C# (Curiosity.Library) + README.
+
+Contrat (docs/CONTRACTS.md §1) : ``generate(pg, onto=None) -> dict[str, str]`` (nom de fichier -> contenu).
+Fichiers : Schema.cs, Edges.cs, RegisterSchema.cs, Connector.cs, README-curiosity.md.
+Sortie déterministe (tri par nom). API vérifiée : voir mapping/profiles/curiosity.py [S1..S7] ;
+tout appel non confirmé porte « // À VÉRIFIER ».
+"""
+from __future__ import annotations
+
+import re
+from collections import OrderedDict
+from typing import Any, Iterable, Optional
+
+from ontoforge.core.pg_model import EdgeType, NodeType, PGModel, PGProperty, Validation
+from ontoforge.mapping.profiles import curiosity as profile
+
+HEADER_TAG = "Généré par OntoForge"
+
+# C# keywords (réservés) — échappés par '@'.
+CS_KEYWORDS = frozenset("""
+abstract as base bool break byte case catch char checked class const continue decimal default delegate do
+double else enum event explicit extern false finally fixed float for foreach goto if implicit in int interface
+internal is lock long namespace new null object operator out override params private protected public readonly
+ref return sbyte sealed short sizeof stackalloc static string struct switch this throw true try typeof uint
+ulong unchecked unsafe ushort using virtual void volatile while
+""".split())
+
+# Noms de classes générées : un type de nœud ne doit pas les masquer.
+GENERATED_CLASSES = frozenset({"Edges", "RegisterSchema", "Connector", "Validations", "Graph", "Node", "Program"})
+
+CS_TYPES = {
+    "String": "string", "Integer": "long", "Float": "double", "Decimal": "decimal", "Boolean": "bool",
+    "Date": "DateTime", "DateTime": "DateTimeOffset", "LocalDateTime": "DateTime",
+    # Pas de type heure ni durée côté Curiosity [S2] : texte ISO 8601.
+    "Time": "string", "Duration": "string",
+}
+TYPE_NOTES = {
+    "Date": "date seule stockée en DateTime (minuit) — FieldType.Time",
+    "Time": "heure stockée en texte HH:mm:ss (pas de type heure Curiosity)",
+    "Duration": "durée stockée en texte ISO 8601 (pas de type durée Curiosity)",
+    "LocalDateTime": "date-heure sans fuseau (DateTime) — imposer une convention (UTC)",
+}
+
+# Points d'API non confirmés par la documentation (repris dans README-curiosity.md).
+TO_VERIFY = [
+    "Type de retour de `Graph.Connect(endpoint, token, connectorName)` nommé `Graph` dans le code généré "
+    "(la doc montre `using var graph = Graph.Connect(...)`).",
+    "`AddOrUpdate<T>` / `TryAdd<T>` renvoient un `Node` utilisable par `Link` (constaté dans le tutoriel "
+    "technical-support, type `Node` non documenté).",
+    "`Link(a, b, X, X)` pour une arête symétrique (même nom des deux côtés).",
+    "Nom des espaces de noms : `using Curiosity.Library;` suffit (attributs `[Node]`, `[Key]`, `[Property]`, "
+    "`[Timestamp]`, `Graph`, `Node`).",
+    "Ingestion des tableaux `T[]` par `AddOrUpdate` via la classe attribuée (documenté pour ListField en fluent).",
+    "Propriétés calculées : la clé composite est une propriété `{ get; set; }` renseignée par `BuildKey(...)` "
+    "(choix prudent, pas de propriété en lecture seule).",
+    "Paquet NuGet `Curiosity.Library` : version à aligner sur l'espace de travail.",
+    "Indexation plein texte / facettes : se configurent dans l'espace de travail (Manage → Search), "
+    "pas dans le code.",
+]
+
+
+# ---------------------------------------------------------------------------------------------
+# Identifiants et échappements
+# ---------------------------------------------------------------------------------------------
+def cs_ident(name: str) -> str:
+    """Identifiant C# sûr : caractères [A-Za-z0-9_], pas de chiffre en tête, mot-clé échappé par '@'."""
+    s = re.sub(r"[^0-9A-Za-z_]", "_", name or "")
+    if not s:
+        s = "_"
+    if s[0].isdigit():
+        s = "_" + s
+    if s in CS_KEYWORDS:
+        s = "@" + s
+    return s
+
+
+def _bare(ident: str) -> str:
+    return ident[1:] if ident.startswith("@") else ident
+
+
+def xml_escape(text: str) -> str:
+    return (text or "").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
+def cs_string(text: Any) -> str:
+    """Littéral chaîne C# (échappement standard)."""
+    s = str(text)
+    s = s.replace("\\", "\\\\").replace('"', '\\"').replace("\r", "\\r").replace("\n", "\\n").replace("\t", "\\t")
+    return f'"{s}"'
+
+
+def one_line(text: Optional[str]) -> str:
+    return re.sub(r"\s+", " ", text or "").strip()
+
+
+def _comment(text: str) -> str:
+    """Texte sûr dans un commentaire // (pas de retour ligne)."""
+    return one_line(text).replace("*/", "* /")
+
+
+def _doc(lines: list[str], indent: str, summary: Optional[str], remarks: list[str]) -> None:
+    summary = one_line(summary)
+    remarks = [one_line(r) for r in remarks if one_line(r)]
+    if not summary and not remarks:
+        return
+    if summary:
+        lines.append(f"{indent}/// <summary>{xml_escape(summary)}</summary>")
+    if remarks:
+        lines.append(f"{indent}/// <remarks>")
+        for r in remarks:
+            lines.append(f"{indent}/// {xml_escape(r)}<br/>")
+        lines.append(f"{indent}/// </remarks>")
+
+
+def _namespace(pg: PGModel) -> str:
+    base = profile.node_name(pg.meta.name) if pg.meta.name else "OntoForgeModel"
+    return cs_ident(base)
+
+
+def _header(pg: PGModel, what: str) -> list[str]:
+    return [
+        "// <auto-generated>",
+        f"// {HEADER_TAG} {pg.meta.ontoforge_version} — cible Curiosity — {what}",
+        f"// Modèle : {_comment(pg.meta.name or '(sans nom)')}" + (f" — {_comment(pg.meta.iri)}" if pg.meta.iri else ""),
+        "// API : Curiosity.Library (https://docs.curiosity.ai). Les appels non confirmés portent « À VÉRIFIER ».",
+        "// </auto-generated>",
+        "",
+    ]
+
+
+# ---------------------------------------------------------------------------------------------
+# Plan de génération (noms C# résolus une fois pour toutes)
+# ---------------------------------------------------------------------------------------------
+class _Prop:
+    def __init__(self, p: PGProperty, ident: str, cs_type: str, attr: str, renamed_from: Optional[str]):
+        self.p, self.ident, self.cs_type, self.attr, self.renamed_from = p, ident, cs_type, attr, renamed_from
+
+
+class _Node:
+    def __init__(self, nt: NodeType, cls: str):
+        self.nt, self.cls = nt, cls
+        self.props: list[_Prop] = []
+        self.key_ident: str = "Uri"
+        self.key_components: list[_Prop] = []  # clé composite ou non string -> BuildKey
+        self.key_synthetic = False  # propriété de clé ajoutée par OntoForge
+        self.key_note = ""
+        self.by_name: dict[str, _Prop] = {}
+
+
+class _Plan:
+    def __init__(self, pg: PGModel, onto: Any = None):
+        self.pg, self.onto = pg, onto
+        self.ns = _namespace(pg)
+        self.nodes: "OrderedDict[str, _Node]" = OrderedDict()  # nom PG -> plan
+        self.skipped: list[NodeType] = []
+        used_cls: set[str] = set(GENERATED_CLASSES)
+        for name in sorted(pg.node_types):
+            nt = pg.node_types[name]
+            if nt.abstract:
+                self.skipped.append(nt)
+                continue
+            cls = cs_ident(name)
+            while _bare(cls) in used_cls:
+                cls = cls + "Node"
+            used_cls.add(_bare(cls))
+            self.nodes[name] = self._plan_node(nt, cls)
+        self.edges = sorted(pg.edge_types, key=lambda e: (e.name, e.from_, e.to))
+        self.warnings: list[str] = []
+        self.edge_consts: "OrderedDict[str, str]" = OrderedDict()  # nom d'arête final -> identifiant C#
+        self.edge_fwd: dict[int, str] = {}
+        self.edge_reverse: dict[int, str] = {}
+        self.edge_alias: dict[str, str] = {}  # nom brut du PGModel -> nom final
+        node_names = {n for n in pg.node_types} | {_bare(n.cls) for n in self.nodes.values()}
+        raw_to_final: dict[str, str] = {}
+        used_final: dict[str, str] = {}  # nom final -> nom brut propriétaire
+        used_idents: set[str] = set()
+
+        def final(raw: str) -> str:
+            """Nom d'arête unique : normalisé, sans collision avec un type de nœud ni une autre arête."""
+            if raw in raw_to_final:
+                return raw_to_final[raw]
+            base = profile.edge_name(raw)
+            name, k = base, 0
+            while name in node_names or (name in used_final and used_final[name] != raw):
+                k += 1
+                name = base + "Edge" if k == 1 else f"{base}Edge{k}"
+            if name != base:
+                self.warnings.append(f"Arête « {raw} » renommée « {name} » (collision avec un type de nœud ou une autre arête).")
+            raw_to_final[raw] = name
+            used_final[name] = raw
+            self.edge_alias[raw] = name
+            ident = cs_ident(name)
+            while _bare(ident) == "Edges" or _bare(ident) in used_idents:
+                ident += "Edge"
+            used_idents.add(_bare(ident))
+            self.edge_consts[name] = ident
+            return name
+
+        for i, e in enumerate(self.edges):
+            fwd = final(e.name)
+            if e.symmetric:
+                rev = fwd  # symétrique : son propre retour, même constante des deux côtés
+            elif e.reverse:
+                rev = final(e.reverse)
+            else:
+                rev = final(profile.reverse_name(e.name, None, symmetric=False))
+            if rev == fwd and not e.symmetric:
+                rev = final(fwd + "Inverse")
+                self.warnings.append(f"Arête « {e.name} » : retour identique à l'aller, renommé « {rev} » (à arbitrer, N01).")
+            self.edge_fwd[i], self.edge_reverse[i] = fwd, rev
+
+    def edge_ref(self, raw: Optional[str]) -> Optional[str]:
+        return self.edge_alias.get(raw, raw) if raw else raw
+
+    # -- nœud ------------------------------------------------------------------------------------
+    def _plan_node(self, nt: NodeType, cls: str) -> _Node:
+        node = _Node(nt, cls)
+        used: set[str] = {_bare(cls)}
+        reserved = set(profile.CAPABILITIES["reserved_node_fields"])  # type: ignore[arg-type]
+        for p in nt.properties:
+            ident = cs_ident(p.name)
+            renamed = None
+            while _bare(ident) in reserved or _bare(ident) in used:
+                renamed = renamed or p.name
+                ident = ident + "Value"
+            used.add(_bare(ident))
+            cs_type = CS_TYPES.get(p.type, "string")
+            if p.is_list:
+                cs_type += "[]"
+            pl = _Prop(p, ident, cs_type, "Property", renamed)
+            node.props.append(pl)
+            node.by_name[p.name] = pl
+
+        # Clé : exactement une [Key] string [S2].
+        key = [k for k in nt.key if k in node.by_name]
+        missing = [k for k in nt.key if k not in node.by_name]
+        if len(key) == 1 and node.by_name[key[0]].p.type == "String" and not node.by_name[key[0]].p.is_list:
+            kp = node.by_name[key[0]]
+            kp.attr = "Key"
+            node.key_ident = kp.ident
+        elif key:
+            node.key_components = [node.by_name[k] for k in key]
+            node.key_synthetic = True
+            node.key_ident = self._fresh(used, "Id")
+            node.key_note = ("Clé composite (" + ", ".join(k.ident for k in node.key_components) + ")"
+                             if len(key) > 1 else
+                             f"Clé non string ({node.key_components[0].ident} : {node.key_components[0].p.type})")
+            node.key_note += " -> [Key] string calculée par BuildKey (séparateur '|') : Curiosity n'accepte " \
+                             "qu'une clé string [S2]."
+        else:
+            existing = node.by_name.get("Uri") or node.by_name.get("uri")
+            if existing and existing.p.type == "String" and not existing.p.is_list:
+                existing.attr = "Key"
+                node.key_ident = existing.ident
+            else:
+                node.key_synthetic = True
+                node.key_ident = self._fresh(used, "Uri")
+                node.key_note = "Pas de clé métier (K01/K03) : [Key] = IRI de la ressource."
+        if missing:
+            node.key_note += f" Composants de clé introuvables dans les propriétés : {', '.join(missing)}."
+
+        # [Timestamp] : au plus un, DateTimeOffset [S2]. Choix : premier DateTime scalaire obligatoire, sinon premier.
+        cands = [x for x in node.props if x.attr == "Property" and x.p.type == "DateTime" and not x.p.is_list]
+        if cands:
+            pick = next((x for x in cands if x.p.required), cands[0])
+            pick.attr = "Timestamp"
+        return node
+
+    @staticmethod
+    def _fresh(used: set[str], base: str) -> str:
+        name = base
+        while name in used:
+            name += "Key"
+        used.add(name)
+        return name
+
+    def label(self, iri: str) -> Optional[str]:
+        if self.onto is None:
+            return None
+        try:
+            return self.onto.label(iri)
+        except Exception:  # pragma: no cover — OntoModel partiel
+            return None
+
+    def comment(self, iri: str) -> Optional[str]:
+        if self.onto is None:
+            return None
+        for coll in ("classes", "object_properties", "datatype_properties"):
+            e = getattr(self.onto, coll, {}).get(iri)
+            if e is not None and getattr(e, "comments", None):
+                c = e.comments
+                return c.get("fr") or c.get("en") or next(iter(c.values()))
+        return None
+
+    def lost_findings(self):
+        return sorted((f for f in self.pg.findings if f.severity == "lost"), key=lambda f: f.id)
+
+
+# ---------------------------------------------------------------------------------------------
+# Schema.cs
+# ---------------------------------------------------------------------------------------------
+def _schema_cs(plan: _Plan) -> str:
+    pg = plan.pg
+    L = _header(pg, "Schema.cs (types de nœuds)")
+    lost = plan.lost_findings()
+    if lost:
+        L.append("// Constats « perdus » (voir le rapport de transposition) :")
+        for f in lost:
+            choice = f.chosen or f.recommended or "non arbitré"
+            L.append(f"// LOST {_comment(f.id)} — {_comment(f.title)} — option : {_comment(choice)}")
+        L.append("")
+    L += ["using System;", "using System.Collections.Generic;", "using Curiosity.Library;", "",
+          f"namespace {plan.ns}.Schema", "{"]
+    for nt in plan.skipped:
+        L.append(f"    // Type abstrait « {_comment(nt.name)} » non généré (C04) : propriétés fusionnées dans les feuilles.")
+    if plan.skipped:
+        L.append("")
+    first = True
+    for name, node in plan.nodes.items():
+        nt = node.nt
+        if not first:
+            L.append("")
+        first = False
+        remarks = []
+        if nt.source:
+            remarks.append("Source OWL : " + ", ".join(nt.source))
+        if nt.discriminator:
+            vals = ", ".join(nt.discriminator_values)
+            remarks.append(f"Héritage aplati (C02) : discriminant {nt.discriminator}" + (f" ∈ {{{vals}}}" if vals else ""))
+        if node.key_note:
+            remarks.append(node.key_note)
+        summary = nt.description or (plan.comment(nt.source[0]) if nt.source else None) or \
+            (plan.label(nt.source[0]) if nt.source else None)
+        _doc(L, "    ", summary, remarks)
+        L.append("    [Node]")
+        L.append(f"    public class {node.cls}")
+        L.append("    {")
+        members: list[list[str]] = []
+        if node.key_synthetic:
+            m: list[str] = []
+            _doc(m, "        ", "Clé Curiosity (string, unique, non vide).", [node.key_note])
+            m.append(f"        [Key] public string {node.key_ident} {{ get; set; }}")
+            members.append(m)
+        for pl in node.props:
+            p = pl.p
+            m = []
+            remarks = []
+            if p.source:
+                remarks.append(f"Source : {p.source}")
+            if p.type in TYPE_NOTES:
+                remarks.append(TYPE_NOTES[p.type])
+            if p.lang:
+                remarks.append(f"Langue : {p.lang} (D06)")
+            if p.enum:
+                remarks.append("Valeurs autorisées : " + ", ".join(map(str, p.enum)) + " (contrôle dans le connecteur)")
+            if p.pattern:
+                remarks.append(f"Motif : {p.pattern} (contrôle dans le connecteur)")
+            if p.required and pl.attr != "Key":
+                remarks.append("Obligatoire (contrôle dans le connecteur : pas de contrainte d'existence Curiosity)")
+            if p.unique and pl.attr != "Key":
+                remarks.append("Unique (contrôle dans le connecteur : seule la clé est unique côté Curiosity)")
+            if pl.renamed_from:
+                remarks.append(f"Renommée depuis « {pl.renamed_from} » (nom réservé ou en conflit)")
+            if p.note:
+                remarks.append(p.note)
+            _doc(m, "        ", p.description or (plan.label(p.source) if p.source else None), remarks)
+            m.append(f"        [{pl.attr}] public {pl.cs_type} {pl.ident} {{ get; set; }}")
+            members.append(m)
+        if node.key_components:
+            m = []
+            args = ", ".join(f"{c.cs_type} {cs_ident(_lower_first(_bare(c.ident)))}" for c in node.key_components)
+            parts = ", ".join(_key_part_expr(c.cs_type, cs_ident(_lower_first(_bare(c.ident))))
+                              for c in node.key_components)
+            _doc(m, "        ", "Construit la clé déterministe à partir des composants (K02).",
+                 ["Ne jamais utiliser d'identifiant aléatoire : la ré-ingestion doit retrouver le même nœud."])
+            m.append(f"        public static string BuildKey({args})")
+            m.append(f"            => string.Join(\"|\", new[] {{ {parts} }});")
+            m.append("")
+            call = ", ".join(c.ident for c in node.key_components)
+            m.append(f"        /// <summary>Renseigne {node.key_ident} depuis les composants.</summary>")
+            m.append(f"        public {node.cls} WithComputedKey() {{ {node.key_ident} = BuildKey({call}); return this; }}")
+            members.append(m)
+        for i, m in enumerate(members):
+            if i:
+                L.append("")
+            L += m
+        L.append("    }")
+    if not plan.nodes:
+        L.append("    // Aucun type de nœud dans le modèle.")
+    L.append("}")
+    return "\n".join(L) + "\n"
+
+
+def _lower_first(s: str) -> str:
+    return s[:1].lower() + s[1:] if s else s
+
+
+def _key_part_expr(cs_type: str, var: str) -> str:
+    if cs_type == "string":
+        # '%' d'abord, puis '|' : encodage sans ambiguïté (("a%7Cb","c") et ("a|b","c") restent distincts).
+        # Les composants nuls/vides sont rejetés avant BuildKey (voir Ingest*), jamais convertis en "".
+        return f'{var}.Replace("%", "%25").Replace("|", "%7C")'
+    if cs_type in ("DateTimeOffset",):
+        return f'{var}.UtcDateTime.ToString("O", System.Globalization.CultureInfo.InvariantCulture)'
+    if cs_type == "DateTime":
+        return f'{var}.ToString("O", System.Globalization.CultureInfo.InvariantCulture)'
+    if cs_type in ("long", "double"):
+        return f"{var}.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+    if cs_type == "bool":
+        return f'({var} ? "true" : "false")'
+    if cs_type.endswith("[]"):
+        return f'string.Join(",", {var} ?? System.Array.Empty<{cs_type[:-2]}>())'
+    return f"{var}.ToString()"
+
+
+# ---------------------------------------------------------------------------------------------
+# Edges.cs
+# ---------------------------------------------------------------------------------------------
+def _edges_cs(plan: _Plan) -> str:
+    L = _header(plan.pg, "Edges.cs (paires d'arêtes aller/retour)")
+    L += [f"namespace {plan.ns}.Schema", "{",
+          "    /// <summary>Noms d'arêtes Curiosity. Chaque relation est déclarée en paire aller/retour ;",
+          "    /// une arête symétrique est son propre retour. Les arêtes ne portent pas de propriétés.</summary>",
+          "    public static class Edges", "    {"]
+    # Commentaires de provenance par constante.
+    usage: dict[str, list[str]] = {}
+    for i, e in enumerate(plan.edges):
+        rev = plan.edge_reverse[i]
+        fwd = plan.edge_fwd[i]
+        desc = f"{e.from_} -[{fwd}]-> {e.to} ⇄ {rev}"
+        if e.symmetric:
+            desc += " (symétrique)"
+        if e.derived:
+            desc += " (matérialisée)"
+        if e.source:
+            desc += f" — {e.source}"
+        usage.setdefault(fwd, []).append(desc)
+        if e.properties:
+            usage[fwd].append("LOST propriétés d'arête non supportées par Curiosity : " +
+                                 ", ".join(p.name for p in e.properties) + " (garder un nœud, R01)")
+        if rev != fwd:
+            usage.setdefault(rev, []).append(f"retour de {fwd} ({e.to} -> {e.from_})")
+    first = True
+    for name, ident in plan.edge_consts.items():
+        if not first:
+            L.append("")
+        first = False
+        for u in usage.get(name, []):
+            L.append(f"        // {_comment(u)}")
+        L.append(f"        public const string {ident} = nameof({ident});" if _bare(ident) == name
+                 else f"        public const string {ident} = {cs_string(name)};")
+    if not plan.edge_consts:
+        L.append("        // Aucune arête dans le modèle.")
+    L += ["    }", "}"]
+    return "\n".join(L) + "\n"
+
+
+# ---------------------------------------------------------------------------------------------
+# RegisterSchema.cs
+# ---------------------------------------------------------------------------------------------
+def _register_cs(plan: _Plan) -> str:
+    L = _header(plan.pg, "RegisterSchema.cs (enregistrement du schéma)")
+    L += ["using System.Threading.Tasks;", "using Curiosity.Library;", f"using {plan.ns}.Schema;", "",
+          f"namespace {plan.ns}.Connector", "{",
+          "    /// <summary>Enregistre les types de nœuds et d'arêtes. Idempotent : à appeler à chaque exécution [S1].</summary>",
+          "    public static class RegisterSchema", "    {",
+          "        public static async Task RunAsync(Graph graph) // Graph : type renvoyé par Graph.Connect — À VÉRIFIER",
+          "        {"]
+    for node in plan.nodes.values():
+        L.append(f"            await graph.CreateNodeSchemaAsync<{node.cls}>();")
+    L.append("            await graph.CreateEdgeSchemaAsync(typeof(Edges));")
+    L += ["        }", "    }", "}"]
+    return "\n".join(L) + "\n"
+
+
+# ---------------------------------------------------------------------------------------------
+# Connector.cs
+# ---------------------------------------------------------------------------------------------
+def _num(v: Any) -> Optional[str]:
+    try:
+        f = float(v)
+    except (TypeError, ValueError):
+        return None
+    return repr(int(f)) if f.is_integer() else repr(f)
+
+
+def _params_targets(v: Validation) -> list[str]:
+    t = (v.params.get("targets") or v.params.get("classes") or v.params.get("types")
+         or v.params.get("target") or v.params.get("with") or [])
+    if isinstance(t, str):
+        t = [t]
+    return [str(x) for x in t]
+
+
+def _edge_key(v: Validation, plan: Optional["_Plan"] = None) -> Optional[str]:
+    raw = v.edge_type or v.params.get("edge")
+    return plan.edge_ref(raw) if plan is not None else raw
+
+
+def _validation_node_checks(plan: _Plan) -> dict[str, list[str]]:
+    """Contrôles sur les propriétés d'un nœud, regroupés par type : code C# (une instruction par ligne).
+
+    Toute validation produit une ligne exécutable : un `Report` conditionnel, ou `NotChecked(id, raison)`
+    (avertissement émis une fois à l'exécution) quand elle n'est pas transposable."""
+    out: dict[str, list[str]] = {n: [] for n in plan.nodes}
+    for v in sorted(plan.pg.validations, key=lambda x: x.id):
+        node = plan.nodes.get(v.node_type or "")
+        if node is None or not v.property or _edge_key(v, plan):
+            continue
+        lines = out[v.node_type]
+        sev, vid = cs_string(v.severity), cs_string(v.id)
+        msg = cs_string(one_line(v.description))
+
+        def nc(reason: str) -> None:
+            lines.append(f"NotChecked({vid}, {cs_string(v.kind + ' : ' + one_line(reason))}); // {_comment(v.description)}")
+
+        pl = node.by_name.get(v.property)
+        if pl is None:
+            if v.property == node.key_ident or v.property in node.nt.key:
+                lines.append(f"Guaranteed({vid}, \"clé non vide : contrôlée avant l'upsert\");")
+            elif v.kind == "hasValue":
+                nc(f"propriété « {v.property} » absente du type : la valeur est implicite pour ce sous-type "
+                   f"(discriminant aplati) ; à contrôler sur le discriminant si besoin")
+            else:
+                nc(f"propriété « {v.property} » absente du type")
+            continue
+        f = f"n.{pl.ident}"
+        is_str = pl.cs_type == "string"
+        is_list = pl.cs_type.endswith("[]")
+        rep = f"Report({vid}, {sev}, {cs_string(node.nt.name)}, n.{node.key_ident}, {msg});"
+        cond = None
+        if v.kind == "existence":
+            if is_str:
+                cond = f"string.IsNullOrWhiteSpace({f})"
+            elif is_list:
+                cond = f"{f} == null || {f}.Length == 0"
+            elif pl.cs_type in ("DateTime", "DateTimeOffset"):
+                cond = f"{f} == default({pl.cs_type})"
+            else:
+                nc("existence d'un scalaire non nullable non vérifiable (Curiosity replie les nullables [S2])")
+                continue
+        elif v.kind in ("enum", "hasValue"):
+            vals = v.params.get("values") or pl.p.enum
+            if v.kind == "hasValue" and "value" in v.params:
+                vals = [v.params["value"]]
+            if not vals or not (is_str or cs_type_is_str_list(pl.cs_type)):
+                nc("valeurs autorisées inconnues ou propriété non textuelle")
+                continue
+            arr = ", ".join(cs_string(x) for x in vals)
+            if is_list:
+                cond = f"{f} != null && System.Linq.Enumerable.Any({f}, x => System.Array.IndexOf(new[] {{ {arr} }}, x) < 0)"
+            elif v.kind == "hasValue":
+                cond = f"{f} != {cs_string(vals[0])}" if len(vals) == 1 else \
+                    f"System.Array.IndexOf(new[] {{ {arr} }}, {f}) < 0"
+            else:
+                cond = f"!string.IsNullOrEmpty({f}) && System.Array.IndexOf(new[] {{ {arr} }}, {f}) < 0"
+        elif v.kind == "pattern":
+            pat = v.params.get("pattern") or pl.p.pattern
+            if not pat or not is_str:
+                nc("motif absent ou propriété non textuelle")
+                continue
+            cond = f"!string.IsNullOrEmpty({f}) && !Regex.IsMatch({f}, {cs_string(pat)})"
+        elif v.kind == "range":
+            lo, hi = _num(v.params.get("min")), _num(v.params.get("max"))
+            if pl.cs_type not in ("long", "double", "decimal") or (lo is None and hi is None):
+                nc("plage non vérifiable (type non numérique ou bornes absentes)")
+                continue
+            if pl.cs_type == "decimal":  # littéral decimal C# : suffixe m (un double ne se compare pas à un decimal)
+                lo = lo + "m" if lo is not None else None
+                hi = hi + "m" if hi is not None else None
+            cond = " || ".join(([f"{f} < {lo}"] if lo is not None else []) + ([f"{f} > {hi}"] if hi is not None else []))
+        elif v.kind == "cardinality" and is_list:
+            lo, hi = _num(v.params.get("min")), _num(v.params.get("max"))
+            cnt = f"({f}?.Length ?? 0)"
+            parts = ([f"{cnt} < {lo}"] if lo is not None else []) + ([f"{cnt} > {hi}"] if hi is not None else [])
+            if not parts:
+                nc("ni min ni max")
+                continue
+            cond = " || ".join(parts)
+        else:
+            nc(f"kind « {v.kind} » non transposé en code")
+            continue
+        lines.append(f"if ({cond}) {rep}")
+    return out
+
+
+def cs_type_is_str_list(t: str) -> bool:
+    return t == "string[]"
+
+
+def _validation_graph_checks(plan: _Plan) -> list[str]:
+    """Contrôles sur les liens après ingestion. Chaque validation émet du code exécutable
+    (Report, NotChecked ou Guaranteed) : jamais un simple commentaire."""
+    L: list[str] = []
+    for v in sorted(plan.pg.validations, key=lambda x: x.id):
+        edge = _edge_key(v, plan)
+        node = plan.nodes.get(v.node_type or "")
+        sev, vid, msg = cs_string(v.severity), cs_string(v.id), cs_string(one_line(v.description))
+        L.append(f"// {v.id} [{v.kind}] {_comment(v.description)}")
+
+        def nc(reason: str) -> None:
+            L.append(f"NotChecked({vid}, {cs_string(v.kind + ' : ' + one_line(reason))});")
+
+        if v.kind in ("cardinality", "existence", "functional") and edge and not v.property:
+            if node is None:
+                nc(f"type de nœud « {v.node_type or ''} » inconnu ou abstrait")
+                continue
+            lo = _num(v.params.get("min"))
+            hi = _num(v.params.get("max"))
+            if v.kind == "existence" and lo is None:
+                lo = "1"
+            if v.kind == "functional" and hi is None:
+                hi = "1"
+            direction = "In" if str(v.params.get("direction", "out")).lower() == "in" else "Out"
+            parts = ([f"c < {lo}"] if lo is not None else []) + ([f"c > {hi}"] if hi is not None else [])
+            if not parts:
+                nc("ni min ni max")
+                continue
+            L.append(f"foreach (var key in KeysOf({cs_string(node.nt.name)}))")
+            L.append("{")
+            L.append(f"    var c = Degree({cs_string(edge)}, {cs_string(node.nt.name)}, key, {cs_string(direction)});")
+            L.append(f"    if ({' || '.join(parts)}) Report({vid}, {sev}, {cs_string(node.nt.name)}, key, {msg} + \" (liens : \" + c + \")\");")
+            L.append("}")
+        elif v.kind == "disjoint":
+            L.append(f"Guaranteed({vid}, \"disjonction garantie par construction (un seul type par nœud, discriminant scalaire)\");")
+        elif v.kind == "allValuesFrom" and edge:
+            targets = _params_targets(v)
+            if node is None or not targets:
+                L.append(f"Guaranteed({vid}, \"types d'extrémités garantis par les fichiers de liens (un fichier par couple de types)\");")
+                continue
+            arr = ", ".join(cs_string(t) for t in targets)
+            L.append(f"foreach (var l in LinksOf({cs_string(edge)})) "
+                     f"if (l.FromType == {cs_string(node.nt.name)} && System.Array.IndexOf(new[] {{ {arr} }}, l.ToType) < 0) "
+                     f"Report({vid}, {sev}, l.FromType, l.FromKey, {msg} + \" -> \" + l.ToType);")
+        elif v.kind == "irreflexive" and edge:
+            L.append(f"foreach (var l in LinksOf({cs_string(edge)})) "
+                     f"if (l.FromType == l.ToType && l.FromKey == l.ToKey) Report({vid}, {sev}, l.FromType, l.FromKey, {msg});")
+        elif v.kind == "asymmetric" and edge:
+            L.append(f"foreach (var l in LinksOf({cs_string(edge)})) "
+                     f"if (HasLink({cs_string(edge)}, l.ToType, l.ToKey, l.FromType, l.FromKey)) "
+                     f"Report({vid}, {sev}, l.FromType, l.FromKey, {msg});")
+        elif v.property and edge:
+            nc(f"propriété d'arête « {v.property} » perdue (Curiosity : arêtes sans propriétés, R01) ; "
+               f"garder la relation en nœud pour la contrôler")
+        elif v.kind == "closed":
+            nc("propriétés inconnues non détectées : la désérialisation ignore les champs hors schéma ; "
+               "à contrôler sur le JSON source")
+        elif v.property and node is not None and v.property not in node.by_name \
+                and v.property != node.key_ident and v.property not in node.nt.key:
+            nc(f"propriété « {v.property} » absente du type : aucun contrôle possible")
+        elif v.property and node is not None:
+            L.append(f"Guaranteed({vid}, \"contrôlé à l'ingestion des nœuds (Validate{_bare(node.cls)})\");")
+        else:
+            nc(f"kind « {v.kind} » non transposé en code")
+    return L
+
+
+_HELPER_LINES = """\
+        private static Dictionary<(string, string, string, string), int>? _degrees;
+
+        private static int Degree(string edge, string type, string key, string direction)
+        {
+            if (_degrees == null) // index construit une fois : O(liens) au total
+            {
+                _degrees = new();
+                foreach (var l in Links)
+                {
+                    var o = (l.Edge, l.FromType, l.FromKey, "Out"); _degrees[o] = _degrees.GetValueOrDefault(o) + 1;
+                    var i = (l.Edge, l.ToType, l.ToKey, "In"); _degrees[i] = _degrees.GetValueOrDefault(i) + 1;
+                }
+            }
+            return _degrees.GetValueOrDefault((edge, type, key, direction));
+        }
+
+        private static readonly HashSet<string> Noted = new();
+
+        /// <summary>Validation non transposable en code : avertissement émis une fois à l'exécution.</summary>
+        private static void NotChecked(string id, string reason)
+        {
+            if (!Noted.Add("N" + id)) return;
+            _warnings++;
+            Console.Error.WriteLine($"[Warning] {id} non contrôlée — {reason}");
+        }
+
+        /// <summary>Validation garantie par construction : information émise une fois, sans compteur.</summary>
+        private static void Guaranteed(string id, string reason)
+        {
+            if (Noted.Add("G" + id)) Console.Error.WriteLine($"[Info] {id} garantie — {reason}");
+        }""".split("\n")
+
+
+def _connector_cs(plan: _Plan) -> str:
+    pg = plan.pg
+    L = _header(pg, "Connector.cs (squelette d'ingestion idempotente)")
+    L += ["using System;", "using System.Collections.Generic;", "using System.IO;", "using System.Linq;",
+          "using System.Text.Json;", "using System.Text.RegularExpressions;", "using System.Threading.Tasks;",
+          "using Curiosity.Library;", f"using {plan.ns}.Schema;", "",
+          f"namespace {plan.ns}.Connector", "{",
+          "    /// <summary>",
+          "    /// Connecteur généré : lit data/&lt;Type&gt;.json (tableau d'objets) et",
+          "    /// data/links/&lt;Arête&gt;__&lt;TypeSource&gt;__&lt;TypeCible&gt;.json (tableau {\"from\": clé, \"to\": clé}),",
+          "    /// fait un upsert par clé (AddOrUpdate, idempotent), crée les liens aller/retour, valide, puis CommitPendingAsync.",
+          "    /// </summary>",
+          "    public static class Connector",
+          "    {",
+          "        private static readonly JsonSerializerOptions Json = new() { PropertyNameCaseInsensitive = true };",
+          "        private static readonly Dictionary<(string, string), Node> Nodes = new(); // (Type, Clé) -> nœud — Node : À VÉRIFIER",
+          "        private static readonly Dictionary<string, HashSet<string>> Keys = new();",
+          "        private static readonly List<LinkRecord> Links = new();",
+          "        private static readonly HashSet<(string, string, string, string, string)> LinkSet = new();",
+          "        private static int _violations, _warnings;",
+          "",
+          "        private sealed record LinkRecord(string Edge, string FromType, string FromKey, string ToType, string ToKey);",
+          "        private sealed class KeyPair { public string From { get; set; } = \"\"; public string To { get; set; } = \"\"; }",
+          "",
+          "        public static async Task<int> Main(string[] args)",
+          "        {",
+          "            var dataDir = args.Length > 0 ? args[0] : \"data\";",
+          "            var endpoint = Environment.GetEnvironmentVariable(\"CURIOSITY_ENDPOINT\") ?? \"http://localhost:8080/\";",
+          "            var token = Environment.GetEnvironmentVariable(\"CURIOSITY_TOKEN\")",
+          "                        ?? throw new InvalidOperationException(\"CURIOSITY_TOKEN manquant (ne jamais l'écrire dans le code)\");",
+          "",
+          f"            using var graph = Graph.Connect(endpoint, token, {cs_string('OntoForge ' + (pg.meta.name or 'connector'))});",
+          "            graph.SetAutoCommitCost(everyNodes: 5_000, everyEdges: 10_000); // [S3]",
+          "            await RegisterSchema.RunAsync(graph);",
+          "",
+          "            // 1. Nœuds (upsert par clé : ré-exécution sans doublon)"]
+    for node in plan.nodes.values():
+        L.append(f"            Ingest{_bare(node.cls)}(graph, dataDir);")
+    L += ["", "            // 2. Liens (une paire aller/retour par Link)"]
+    for i, e in enumerate(plan.edges):
+        if e.from_ not in plan.nodes or e.to not in plan.nodes:
+            L.append(f"            // Arête {_comment(e.name)} ({_comment(e.from_)} -> {_comment(e.to)}) : type absent ou abstrait — ignorée")
+            continue
+        fwd = plan.edge_consts[plan.edge_fwd[i]]
+        rev = plan.edge_consts[plan.edge_reverse[i]]
+        note = " // symétrique : Link(a, b, X, X) — À VÉRIFIER" if e.symmetric or fwd == rev else ""
+        if e.derived:
+            note += " // arête matérialisée : alimentée par l'étape 3"
+        L.append(f"            LinkAll(graph, dataDir, Edges.{fwd}, Edges.{rev}, {cs_string(e.from_)}, {cs_string(e.to)});{note}")
+    L += ["", "            // 3. Matérialisations (raisonnement absent côté Curiosity)"]
+    if pg.materializations:
+        for m in sorted(pg.materializations, key=lambda x: x.id):
+            L.append(f"            // TODO {_comment(m.id)} [{m.kind}] {_comment(m.description)}"
+                     + (f" — arête {_comment(m.edge_type)}" if m.edge_type else ""))
+    else:
+        L.append("            // (aucune)")
+    L += ["",
+          "            // 4. Validations applicatives (contraintes OWL/SHACL sans équivalent Curiosity)",
+          "            CheckGraph();",
+          "",
+          "            await graph.CommitPendingAsync(); // [S3] le using ne committe pas : appel explicite",
+          "            Console.WriteLine($\"Ingestion terminée : {Nodes.Count} nœuds, {Links.Count} liens, \" +",
+          "                              $\"{_violations} violation(s), {_warnings} avertissement(s).\");",
+          "            return _violations > 0 ? 2 : 0;",
+          "        }",
+          ""]
+    # Ingest par type
+    node_checks = _validation_node_checks(plan)
+    for name, node in plan.nodes.items():
+        c = _bare(node.cls)
+        L += [f"        private static void Ingest{c}(Graph graph, string dataDir)",
+              "        {",
+              f"            foreach (var n in Read<{node.cls}>(dataDir, {cs_string(name)}))",
+              "            {"]
+        if node.key_components:
+            strs = [f"string.IsNullOrWhiteSpace(n.{k.ident})" for k in node.key_components if k.cs_type == "string"]
+            lists = [f"n.{k.ident} == null || n.{k.ident}.Length == 0" for k in node.key_components if k.cs_type.endswith("[]")]
+            bad = " || ".join(strs + lists)
+            if bad:
+                L.append(f"                if ({bad}) {{ Report(\"key\", \"Violation\", {cs_string(name)}, \"?\", "
+                         f"\"composant de clé vide ou nul : nœud rejeté (K02)\"); continue; }}")
+            L.append("                n.WithComputedKey(); // clé composite (K02), composants déjà contrôlés")
+        L += [f"                if (string.IsNullOrWhiteSpace(n.{node.key_ident})) {{ Report(\"key\", \"Violation\", {cs_string(name)}, \"?\", \"clé vide (rejetée au commit)\"); continue; }}",
+              f"                Validate{c}(n);",
+              f"                Nodes[({cs_string(name)}, n.{node.key_ident})] = graph.AddOrUpdate(n); // upsert [S3] ; retour Node : À VÉRIFIER",
+              f"                KeysOf({cs_string(name)}).Add(n.{node.key_ident});",
+              "            }",
+              "        }",
+              "",
+              f"        private static void Validate{c}({node.cls} n)",
+              "        {"]
+        checks = node_checks.get(name) or ["// (aucun contrôle de propriété)"]
+        L += ["            " + x for x in checks]
+        L += ["        }", ""]
+    # Helpers
+    L += ["        private static void CheckGraph()",
+          "        {"]
+    L += ["            " + x for x in (_validation_graph_checks(plan) or ["// (aucune validation de liens)"])]
+    L += ["        }",
+          "",
+          "        private static void LinkAll(Graph graph, string dataDir, string edge, string reverse, string fromType, string toType)",
+          "        {",
+          "            var path = Path.Combine(dataDir, \"links\", $\"{edge}__{fromType}__{toType}.json\");",
+          "            if (!File.Exists(path)) return;",
+          "            foreach (var p in JsonSerializer.Deserialize<List<KeyPair>>(File.ReadAllText(path), Json) ?? new())",
+          "            {",
+          "                if (!Nodes.TryGetValue((fromType, p.From), out var a) || !Nodes.TryGetValue((toType, p.To), out var b))",
+          "                {",
+          "                    Report(\"link\", \"Warning\", fromType, p.From, $\"lien {edge} vers {toType}|{p.To} : extrémité inconnue\");",
+          "                    continue;",
+          "                }",
+          "                if (!LinkSet.Add((edge, fromType, p.From, toType, p.To))) continue; // idempotent",
+          "                graph.Link(a, b, edge, reverse); // Link(source, cible, aller, retour) [S3][S5]",
+          "                Links.Add(new LinkRecord(edge, fromType, p.From, toType, p.To));",
+          "            }",
+          "        }",
+          "",
+          "        private static IEnumerable<T> Read<T>(string dataDir, string type)",
+          "        {",
+          "            var path = Path.Combine(dataDir, type + \".json\");",
+          "            return File.Exists(path)",
+          "                ? JsonSerializer.Deserialize<List<T>>(File.ReadAllText(path), Json) ?? new List<T>()",
+          "                : new List<T>();",
+          "        }",
+          "",
+          "        private static HashSet<string> KeysOf(string type)",
+          "        {",
+          "            if (!Keys.TryGetValue(type, out var set)) Keys[type] = set = new HashSet<string>();",
+          "            return set;",
+          "        }",
+          "",
+          "        private static IEnumerable<LinkRecord> LinksOf(string edge) => Links.Where(l => l.Edge == edge);",
+          "",
+          "        private static bool HasLink(string edge, string fromType, string fromKey, string toType, string toKey)",
+          "            => LinkSet.Contains((edge, fromType, fromKey, toType, toKey));",
+          "",
+          *_HELPER_LINES,
+          "",
+          "        private static void Report(string id, string severity, string type, string key, string message)",
+          "        {",
+          "            if (severity == \"Violation\") _violations++; else _warnings++;",
+          "            Console.Error.WriteLine($\"[{severity}] {id} {type}|{key} : {message}\");",
+          "        }",
+          "    }",
+          "}"]
+    return "\n".join(L) + "\n"
+
+
+# ---------------------------------------------------------------------------------------------
+# README-curiosity.md
+# ---------------------------------------------------------------------------------------------
+def _readme(plan: _Plan) -> str:
+    pg = plan.pg
+    ns = plan.ns
+    L = [f"# Schéma Curiosity — {pg.meta.name or 'modèle'}", "",
+         f"> {HEADER_TAG} {pg.meta.ontoforge_version}. Ne pas modifier à la main : régénérer depuis OntoForge.", "",
+         "## Fichiers", "",
+         "| Fichier | Contenu |", "|---|---|",
+         f"| `Schema.cs` | {len(plan.nodes)} type(s) de nœud `[Node]` (une `[Key]` string chacun, `[Property]`, `[Timestamp]`) |",
+         f"| `Edges.cs` | {len(plan.edge_consts)} constante(s) d'arête, déclarées par paires aller/retour |",
+         "| `RegisterSchema.cs` | `CreateNodeSchemaAsync<T>()` par type + `CreateEdgeSchemaAsync(typeof(Edges))` |",
+         "| `Connector.cs` | ingestion idempotente (`AddOrUpdate`), liens (`Link`), validations applicatives, `CommitPendingAsync` |",
+         "", "## Utilisation", "",
+         "```bash",
+         f"dotnet new console -n {_bare(ns)}Connector && cd {_bare(ns)}Connector",
+         "dotnet add package Curiosity.Library   # version alignée sur l'espace de travail — À VÉRIFIER",
+         "rm Program.cs && cp ../Schema.cs ../Edges.cs ../RegisterSchema.cs ../Connector.cs .",
+         "export CURIOSITY_ENDPOINT=http://localhost:8080/ CURIOSITY_TOKEN=<jeton du connecteur>",
+         "dotnet run -- ./data",
+         "```", "",
+         "Données attendues : `data/<Type>.json` (tableau d'objets aux noms de propriétés C#) et "
+         "`data/links/<Arête>__<TypeSource>__<TypeCible>.json` (tableau `{\"from\": clé, \"to\": clé}`). "
+         "Code de sortie 2 si une validation de sévérité `Violation` échoue.", "",
+         "## Types de nœuds", "", "| Type | Clé | Remarque |", "|---|---|---|"]
+    for node in plan.nodes.values():
+        rem = node.key_note or ""
+        if node.nt.discriminator:
+            rem += f" Discriminant `{node.nt.discriminator}`."
+        L.append(f"| `{_bare(node.cls)}` | `{node.key_ident}` | {one_line(rem) or '—'} |")
+    for nt in plan.skipped:
+        L.append(f"| ~~`{nt.name}`~~ | — | abstrait, non généré (C04) |")
+    L += ["", "## Arêtes", "", "| Aller | Retour | De | Vers |", "|---|---|---|---|"]
+    for i, e in enumerate(plan.edges):
+        L.append(f"| `{plan.edge_fwd[i]}` | `{plan.edge_reverse[i]}` | `{e.from_}` | `{e.to}` |"
+                 + (" symétrique" if e.symmetric else "") + (" matérialisée" if e.derived else ""))
+    if plan.warnings:
+        L += ["", "Avertissements de nommage :", ""] + [f"- {w}" for w in plan.warnings]
+    L += ["", "## Validations applicatives (dans `Connector.cs`)", "",
+          "Chaque validation produit du code exécutable : `Report` (violation), `Guaranteed` (garantie par construction, "
+          "information) ou `NotChecked` (non transposable : **avertissement émis à l'exécution**, jamais un simple commentaire).", ""]
+    if pg.validations:
+        for v in sorted(pg.validations, key=lambda x: x.id):
+            tgt = v.edge_type or v.property or ""
+            L.append(f"- `{v.id}` [{v.kind}, {v.severity}] {v.node_type or ''} {tgt} — {one_line(v.description)}")
+    else:
+        L.append("- (aucune)")
+    lost = plan.lost_findings()
+    L += ["", "## Pertes (constats `lost`)", ""]
+    if lost:
+        for f in lost:
+            L.append(f"- LOST `{f.id}` — {one_line(f.title)} (option : {f.chosen or f.recommended or 'non arbitré'})")
+    else:
+        L.append("- (aucune)")
+    if pg.materializations:
+        L += ["", "## Matérialisations à implémenter", ""]
+        for m in sorted(pg.materializations, key=lambda x: x.id):
+            L.append(f"- `{m.id}` [{m.kind}] {one_line(m.description)}")
+    L += ["", "## Contraintes Curiosity rappelées", "",
+          "- Un nœud = un type ; exactement une `[Key]` string non vide par type ; au plus un `[Timestamp]` "
+          "(`DateTimeOffset`).",
+          "- Les arêtes sont un nom, sans propriétés ; `Link(a, b, aller, retour)` crée les deux sens.",
+          "- Pas de contrainte d'existence, d'unicité (hors clé) ni de cardinalité : tout est dans le connecteur.",
+          "- Les scalaires nullables sont repliés (`int?` → `int`) : une valeur absente vaut 0 / false.",
+          "- Noms réservés (renommés avec le suffixe `Value`) : Type, UID, Key, Timestamp, Edges, EdgeCount.",
+          "- Recherche plein texte et facettes : à configurer dans l'espace de travail (Manage → Search).",
+          "", "## À VÉRIFIER", ""]
+    L += [f"- {x}" for x in TO_VERIFY]
+    L += ["", "## Sources", "",
+          "- https://docs.curiosity.ai/data-connector/schemas",
+          "- https://docs.curiosity.ai/workspace-api/schema-reference",
+          "- https://docs.curiosity.ai/workspace-api/sdk-csharp",
+          "- https://docs.curiosity.ai/workspace-build/guides-and-best-practices/tutorials/custom-connector-from-scratch",
+          "- https://github.com/curiosity-ai/technical-support", ""]
+    return "\n".join(L)
+
+
+# ---------------------------------------------------------------------------------------------
+def generate(pg: PGModel, onto: Any = None) -> dict[str, str]:
+    """PGModel -> fichiers Curiosity (déterministe)."""
+    plan = _Plan(pg, onto)
+    return {
+        "Connector.cs": _connector_cs(plan),
+        "Edges.cs": _edges_cs(plan),
+        "README-curiosity.md": _readme(plan),
+        "RegisterSchema.cs": _register_cs(plan),
+        "Schema.cs": _schema_cs(plan),
+    }

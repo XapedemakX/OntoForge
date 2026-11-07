@@ -1,0 +1,85 @@
+# Fixture SHACL Core « complète » (shacl, L2) — domaine maintenance automobile, données fictives.
+# Respecte les conventions de export_shapes (shapes d'IRI typées, anonymes non typées, pas de
+# sh:severity sh:Violation explicite) → round-trip Turtle → ShapesModel → Turtle isomorphe.
+@prefix am:   <https://w3id.org/ontoforge/automaint#> .
+@prefix ex:   <https://w3id.org/ontoforge/automaint-shapes#> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+# cible implicite : la shape est aussi une classe
+am:Brand a sh:NodeShape, rdfs:Class ;
+    rdfs:label "Marque"@fr, "Brand"@en ;
+    sh:property [ sh:path am:brandName ; sh:minCount 1 ; sh:datatype xsd:string ;
+                  sh:minLength 2 ; sh:maxLength 40 ; sh:uniqueLang true ; sh:languageIn ( "fr" "en" ) ;
+                  sh:name "nom"@fr, "name"@en ; sh:description "Nom commercial"@fr ; sh:order 1 ;
+                  sh:group ex:IdentityGroup ] .
+
+ex:VehicleShape a sh:NodeShape ;
+    sh:targetClass am:Vehicle ;
+    sh:closed true ;
+    sh:ignoredProperties ( rdf:type rdfs:label ) ;
+    sh:not [ sh:class am:Part ] ;
+    sh:xone ( [ sh:class am:Car ] [ sh:class am:Truck ] ) ;
+    sh:property ex:VinProperty ;
+    sh:property [
+        sh:path am:modelYear ; sh:datatype xsd:gYear ; sh:maxCount 1 ;
+        sh:severity sh:Warning ;
+        sh:message "Année modèle invalide"@fr, "Invalid model year"@en
+    ] , [
+        sh:path ( am:ofModel am:vehicleBrand ) ; sh:maxCount 1 ; sh:class am:Brand ; sh:nodeKind sh:IRI
+    ] , [
+        sh:path [ sh:alternativePath ( am:hasOwner am:ownedBy ) ] ; sh:minCount 1
+    ] , [
+        sh:path [ sh:zeroOrMorePath am:partOf ] ; sh:nodeKind sh:BlankNodeOrIRI
+    ] , [
+        sh:path [ sh:oneOrMorePath am:hasPart ] ; sh:class am:Part
+    ] , [
+        sh:path [ sh:zeroOrOnePath am:supersedes ] ; sh:maxCount 2
+    ] , [
+        sh:path am:hasMileageReading ;
+        sh:qualifiedValueShape [ sh:node ex:ReadingShape ] ;
+        sh:qualifiedMinCount 1 ; sh:qualifiedMaxCount 10 ; sh:qualifiedValueShapesDisjoint true
+    ] , [
+        sh:path am:usesFuel ; sh:in ( am:Petrol am:Diesel "autre"@fr 42 ) ; sh:defaultValue am:Petrol
+    ] , [
+        sh:path am:status ; sh:hasValue "active" ; sh:deactivated true
+    ] .
+
+ex:VinProperty a sh:PropertyShape ;
+    sh:path am:vin ; sh:minCount 1 ; sh:maxCount 1 ;
+    sh:pattern "^[A-HJ-NPR-Z0-9]{17}$" ; sh:flags "i" ;
+    sh:message "VIN invalide"@fr, "Invalid VIN"@en, "VIN ungültig"@de .
+
+ex:ReadingShape a sh:NodeShape ;
+    sh:targetSubjectsOf am:readingMileageKm ;
+    sh:and ( ex:MileageValue [ sh:nodeKind sh:BlankNodeOrIRI ] ) ;
+    sh:or ( [ sh:path am:readingDate ; sh:minCount 1 ] [ sh:path am:readingTimestamp ; sh:minCount 1 ] ) ;
+    sh:property [
+        sh:path am:readingDate ; sh:lessThanOrEquals am:recordedAt ; sh:lessThan am:nextReadingDate ;
+        sh:equals am:readingDate ; sh:disjoint am:installationDate ;
+        sh:minExclusive "2000-01-01"^^xsd:date ; sh:maxExclusive "2100-01-01"^^xsd:date
+    ] .
+
+# property shape autonome (référencée par sh:and) avec bornes typées
+ex:MileageValue a sh:PropertyShape ;
+    sh:path am:readingMileageKm ; sh:datatype xsd:nonNegativeInteger ;
+    sh:minInclusive "0"^^xsd:nonNegativeInteger ; sh:maxInclusive 2000000 ;
+    sh:severity sh:Info .
+
+ex:GarageWorkersShape a sh:NodeShape ;
+    sh:targetObjectsOf am:worksAt ;
+    sh:targetNode am:garage_tln_nord, "littéral cible" ;
+    sh:property [ sh:path [ sh:inversePath am:worksAt ] ; sh:class am:Technician ; sh:minCount 1 ] .
+
+ex:UniqueVinShape a sh:NodeShape ;
+    sh:targetClass am:Vehicle ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:message "VIN partagé avec un autre véhicule"@fr ;
+        sh:prefixes ex:prefixes ;
+        sh:select """SELECT $this ?value WHERE { $this am:vin ?value . ?other am:vin ?value . FILTER(?other != $this) }"""
+    ] .
+
+ex:prefixes sh:declare [ sh:prefix "am" ; sh:namespace "https://w3id.org/ontoforge/automaint#"^^xsd:anyURI ] .

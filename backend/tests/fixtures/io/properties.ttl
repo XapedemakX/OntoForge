@@ -1,0 +1,61 @@
+# Fixture io : propriétés, domaines/portées, caractéristiques, chaînes, datatypes (tables 12 et 16)
+@prefix auto: <https://example.org/auto#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+<https://example.org/auto/properties> a owl:Ontology .
+
+auto:Vehicle a owl:Class .
+auto:VehicleModel a owl:Class .
+auto:Brand a owl:Class .
+auto:Part a owl:Class .
+auto:Person a owl:Class .
+auto:Company a owl:Class .
+auto:Customer a owl:Class .
+auto:Garage a owl:Class .
+auto:RepairOrder a owl:Class .
+auto:DiagnosticSession a owl:Class .
+auto:Code a owl:Class .
+
+auto:ofModel a owl:ObjectProperty , owl:FunctionalProperty ; rdfs:domain auto:Vehicle ; rdfs:range auto:VehicleModel .
+auto:madeBy a owl:ObjectProperty ; rdfs:domain auto:VehicleModel ; rdfs:range auto:Brand .
+auto:vehicleBrand a owl:ObjectProperty ; owl:propertyChainAxiom ( auto:ofModel auto:madeBy ) .
+auto:hasPart a owl:ObjectProperty ; owl:inverseOf auto:partOf ; rdfs:domain auto:Vehicle ; rdfs:range auto:Part .
+auto:partOf a owl:ObjectProperty .
+auto:hasEngine a owl:ObjectProperty ; rdfs:subPropertyOf auto:hasPart .
+auto:isComponentOf a owl:ObjectProperty , owl:TransitiveProperty .
+auto:interchangeableWith a owl:ObjectProperty , owl:SymmetricProperty , owl:ReflexiveProperty .
+auto:supersedes a owl:ObjectProperty , owl:AsymmetricProperty , owl:IrreflexiveProperty .
+auto:hasRepairOrder a owl:ObjectProperty , owl:InverseFunctionalProperty .
+auto:hasOwner a owl:ObjectProperty ; rdfs:range [ a owl:Class ; owl:unionOf ( auto:Person auto:Company ) ] .
+auto:ownedBy a owl:ObjectProperty ; owl:equivalentProperty auto:hasOwner .
+auto:performedBy a owl:ObjectProperty ; owl:propertyDisjointWith auto:checkedBy .
+auto:checkedBy a owl:ObjectProperty .
+auto:reportsCode a owl:ObjectProperty ; rdfs:domain auto:RepairOrder , auto:DiagnosticSession ; rdfs:range auto:Code .
+auto:servicedAt a owl:ObjectProperty ;
+    rdfs:domain [ a owl:Class ; owl:intersectionOf ( auto:Vehicle [ a owl:Class ; owl:complementOf auto:Part ] ) ] .
+
+auto:vin a owl:DatatypeProperty , owl:FunctionalProperty ; rdfs:domain auto:Vehicle ; rdfs:range auto:VINString .
+auto:modelYear a owl:DatatypeProperty ; rdfs:domain auto:VehicleModel ; rdfs:range auto:ModelYear .
+auto:mileageKm a owl:DatatypeProperty ; rdfs:range xsd:decimal .
+auto:readingKm a owl:DatatypeProperty ; rdfs:subPropertyOf auto:mileageKm .
+auto:phone a owl:DatatypeProperty ; rdfs:domain [ a owl:Class ; owl:unionOf ( auto:Customer auto:Garage ) ] ; rdfs:range xsd:string .
+auto:emission a owl:DatatypeProperty ; rdfs:range [ a rdfs:Datatype ; owl:oneOf ( "Euro 5" "Euro 6" ) ] .
+auto:idNumber a owl:DatatypeProperty ; rdfs:range [ a rdfs:Datatype ; owl:unionOf ( xsd:string xsd:integer ) ] .
+auto:powerKw a owl:DatatypeProperty ;
+    rdfs:range [ a rdfs:Datatype ; owl:onDatatype xsd:decimal ; owl:withRestrictions ( [ xsd:minExclusive "0"^^xsd:decimal ] ) ] .
+auto:description a owl:DatatypeProperty ; rdfs:range rdf:PlainLiteral .
+auto:durationMonths a owl:DatatypeProperty ; rdfs:range xsd:nonNegativeInteger , xsd:int .
+auto:odometer a owl:DatatypeProperty ; owl:equivalentProperty auto:mileageKm ; owl:propertyDisjointWith auto:vin .
+
+auto:ModelYear a rdfs:Datatype ;
+    owl:equivalentClass [ a rdfs:Datatype ; owl:onDatatype xsd:integer ;
+        owl:withRestrictions ( [ xsd:minInclusive 1886 ] [ xsd:maxInclusive 2100 ] ) ] .
+auto:VINString a rdfs:Datatype ;
+    owl:equivalentClass [ a rdfs:Datatype ; owl:onDatatype xsd:string ;
+        owl:withRestrictions ( [ xsd:pattern "[A-HJ-NPR-Z0-9]{17}" ] [ xsd:length "17"^^xsd:nonNegativeInteger ] ) ] .
+
+auto:sourceSystem a owl:AnnotationProperty ; rdfs:range xsd:string ; rdfs:domain auto:Vehicle ;
+    rdfs:subPropertyOf rdfs:comment .

@@ -1,0 +1,5 @@
+# L9 — rapport backend (lead)
+
+Livré : `editing/{ops,history,perimeter,graph,icons}.py`, `api/editing.py` (enregistré), ajouts rétrocompatibles à `core/project.py` (`view`, `perimeters`, `active_perimeter`), `?perimeter` sur analyze/generate/zip (`api/analysis.py`), CONTRACTS §5, D-L9-01, `journal/L9/demandes-contrat.md`.
+Tests : `tests/test_editing_ops.py` (opérations valides/invalides, atomicité, propriétés simples, rename/delete, undo/redo + borne, icônes, graphe déterministe) et `tests/test_editing_perimeters.py` (CRUD, analyse restreinte sur automaint, descendants, filtre de propriétés, décisions partagées, génération, nettoyage à la suppression). Suite complète : 495 verts.
+Limites : annuler restaure les champs de l'entrée même si un PUT hors éditeur est intervenu entre-temps ; les shapes ne sont pas nettoyées à la suppression d'entité (avertissement) ; pas de verrou inter-processus (un seul worker) ; catalogue d'icônes = 80 icônes FA free solid (noms à confirmer côté front avec la version de Font Awesome embarquée, À VÉRIFIER) ; `inverseOf` du graphe relie des arêtes, pas des nœuds (à valider avec les maquettes).

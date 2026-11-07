@@ -1,0 +1,22 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    env_file:
+      - path: ./.env
+        required: false
+    environment:
+      ONTOFORGE_LLM_PROVIDER: ${ONTOFORGE_LLM_PROVIDER:-mock}
+      ONTOFORGE_SECRET_KEY: ${ONTOFORGE_SECRET_KEY:-}
+    volumes: [ontoforge-data:/data]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 10s
+      retries: 5
+  frontend:
+    build: ./frontend
+    ports: ["${ONTOFORGE_PORT:-8088}:80"]
+    depends_on: [backend]
+volumes:
+  ontoforge-data:

@@ -1,0 +1,2 @@
+PREFIX am: <https://w3id.org/ontoforge/automaint#>
+SELECT ?v (COUNT(?o) AS ?n) WHERE { ?o a am:RepairOrder ; am:concerns ?v . } GROUP BY ?v ORDER BY DESC(?n)

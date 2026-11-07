@@ -1,0 +1,45 @@
+# Fixture io : toutes les formes de restrictions (OWL 2 Mapping, table 13)
+@prefix auto: <https://example.org/auto#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+<https://example.org/auto/restrictions> a owl:Ontology .
+
+auto:Vehicle a owl:Class .
+auto:Car a owl:Class ;
+    rdfs:subClassOf auto:Vehicle ,
+        [ a owl:Restriction ; owl:onProperty auto:hasPart ; owl:someValuesFrom auto:Wheel ] ,
+        [ a owl:Restriction ; owl:onProperty auto:hasPart ; owl:allValuesFrom auto:Part ] ,
+        [ a owl:Restriction ; owl:onProperty auto:usesFuel ; owl:hasValue auto:Petrol ] ,
+        [ a owl:Restriction ; owl:onProperty auto:hasPart ; owl:minQualifiedCardinality "4"^^xsd:nonNegativeInteger ; owl:onClass auto:Wheel ] ,
+        [ a owl:Restriction ; owl:onProperty auto:hasPart ; owl:maxQualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onClass auto:Engine ] ,
+        [ a owl:Restriction ; owl:onProperty auto:ofModel ; owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onClass auto:VehicleModel ] ,
+        [ a owl:Restriction ; owl:onProperty auto:ofModel ; owl:cardinality "1"^^xsd:nonNegativeInteger ] ,
+        [ a owl:Restriction ; owl:onProperty auto:hasPart ; owl:minCardinality "1"^^xsd:nonNegativeInteger ] ,
+        [ a owl:Restriction ; owl:onProperty auto:hasPart ; owl:maxCardinality "200"^^xsd:nonNegativeInteger ] ,
+        [ a owl:Restriction ; owl:onProperty auto:vin ; owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onDataRange xsd:string ] ,
+        [ a owl:Restriction ; owl:onProperty auto:seats ; owl:someValuesFrom xsd:integer ] ,
+        [ a owl:Restriction ; owl:onProperty auto:colour ; owl:hasValue "rouge"@fr ] ,
+        [ a owl:Restriction ; owl:onProperty [ owl:inverseOf auto:installedOn ] ; owl:someValuesFrom auto:Part ] ,
+        [ a owl:Restriction ; owl:onProperty auto:hasPart ;
+          owl:someValuesFrom [ a owl:Class ; owl:intersectionOf ( auto:Part [ a owl:Restriction ; owl:onProperty auto:madeBy ; owl:someValuesFrom auto:Brand ] ) ] ] .
+auto:SelfServiceGarage a owl:Class ;
+    rdfs:subClassOf [ a owl:Restriction ; owl:onProperty auto:servicedBy ; owl:hasSelf true ] .
+auto:Part a owl:Class .
+auto:Wheel a owl:Class ; rdfs:subClassOf auto:Part .
+auto:Engine a owl:Class ; rdfs:subClassOf auto:Part .
+auto:VehicleModel a owl:Class .
+auto:Brand a owl:Class .
+auto:FuelType a owl:Class .
+auto:Petrol a owl:NamedIndividual , auto:FuelType .
+
+auto:hasPart a owl:ObjectProperty .
+auto:installedOn a owl:ObjectProperty .
+auto:usesFuel a owl:ObjectProperty .
+auto:ofModel a owl:ObjectProperty .
+auto:madeBy a owl:ObjectProperty .
+auto:servicedBy a owl:ObjectProperty .
+auto:vin a owl:DatatypeProperty .
+auto:seats a owl:DatatypeProperty .
+auto:colour a owl:DatatypeProperty .

@@ -1,0 +1,29 @@
+# Fixture io : constructions valides OWL 2 mais hors contrat OntoModel → `unmapped` + warnings
+@prefix auto: <https://example.org/auto#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+<https://example.org/auto/unmapped> a owl:Ontology .
+auto:Vehicle a owl:Class ; rdfs:subClassOf auto:Asset .
+auto:Asset a owl:Class .
+auto:DieselEngine a owl:Class .
+auto:RequiresDPFCheck a owl:Class .
+auto:MileageReading a owl:Class .
+auto:hasEngine a owl:ObjectProperty .
+auto:hasReading a owl:ObjectProperty .
+auto:km a owl:DatatypeProperty .
+auto:seats a owl:DatatypeProperty .
+
+# GCI (sujet anonyme)
+[ a owl:Class ; owl:intersectionOf ( auto:Vehicle [ a owl:Restriction ; owl:onProperty auto:hasEngine ; owl:someValuesFrom auto:DieselEngine ] ) ]
+    rdfs:subClassOf auto:RequiresDPFCheck .
+# annotation d'axiome
+[] a owl:Axiom ; owl:annotatedSource auto:Vehicle ; owl:annotatedProperty rdfs:subClassOf ;
+   owl:annotatedTarget auto:Asset ; rdfs:comment "validé"@fr .
+# individu anonyme
+auto:veh_1 a owl:NamedIndividual , auto:Vehicle ;
+    auto:hasReading [ a auto:MileageReading ; auto:km 1200 ] .
+# restriction de données sur DataRange à facettes (non représentable dans Restriction)
+auto:Bus a owl:Class ; rdfs:subClassOf [ a owl:Restriction ; owl:onProperty auto:seats ;
+    owl:someValuesFrom [ a rdfs:Datatype ; owl:onDatatype xsd:integer ; owl:withRestrictions ( [ xsd:minInclusive 10 ] ) ] ] .

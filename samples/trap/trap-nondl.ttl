@@ -1,0 +1,71 @@
+# =============================================================================
+# OntoForge — fixture de NON-conformité OWL 2 DL (règles W01–W07, lot L2)
+# Propriétaire : w3c. Complément de trap.ttl (qui est OWL 2 DL par construction).
+# Chaque défaut est précédé de « # W0x ». Les données sont fictives.
+# =============================================================================
+@prefix nd:   <https://w3id.org/ontoforge/nondl#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+# W07 — IRI d'ontologie SANS owl:versionIRI
+<https://w3id.org/ontoforge/nondl> a owl:Ontology .
+
+nd:Vehicle a owl:Class ;
+    rdfs:label "Véhicule"@fr , "Vehicle"@en .
+
+# W07 — classe sans label fr ni en
+nd:Part a owl:Class .
+
+# W06 — classes insatisfiables : GhostVehicle ⊑ Vehicle ⊓ Part, or Vehicle ⊥ Part
+nd:Vehicle owl:disjointWith nd:Part .
+nd:GhostVehicle a owl:Class ;
+    rdfs:label "Véhicule fantôme"@fr , "Ghost vehicle"@en ;
+    rdfs:subClassOf nd:Vehicle , nd:Part .
+
+# W01 — datatypes hors carte OWL 2 (SS §4) : xsd:date, xsd:gYear, rdf:langString
+nd:purchaseDate a owl:DatatypeProperty ;
+    rdfs:label "date d'achat"@fr , "purchase date"@en ;
+    rdfs:domain nd:Vehicle ; rdfs:range xsd:date .
+nd:modelYear a owl:DatatypeProperty ;
+    rdfs:label "année"@fr , "year"@en ;
+    rdfs:domain nd:Vehicle ; rdfs:range xsd:gYear .
+nd:nickname a owl:DatatypeProperty ;
+    rdfs:label "surnom"@fr , "nickname"@en ;
+    rdfs:domain nd:Vehicle ; rdfs:range rdf:langString .
+
+# W02 — propriété non typée (rdf:Property seul) ; entité utilisée sans déclaration
+nd:untypedLink a rdf:Property ;
+    rdfs:label "lien"@fr , "link"@en .
+nd:Vehicle rdfs:subClassOf nd:UndeclaredThing .          # W02 : classe nd:UndeclaredThing non déclarée
+nd:v1 a nd:Vehicle ; nd:usesUndeclared nd:v2 .          # W02 : prédicat nd:usesUndeclared non déclaré
+
+# W03 — propriétés non simples dans des contraintes interdites (SS §11.2)
+nd:isPartOf a owl:ObjectProperty , owl:TransitiveProperty ;
+    rdfs:label "fait partie de"@fr , "is part of"@en ;
+    rdfs:domain nd:Part ; rdfs:range nd:Part .
+nd:hasPart a owl:ObjectProperty ;                        # non simple : inverse d'une transitive
+    rdfs:label "a pour partie"@fr , "has part"@en ;
+    owl:inverseOf nd:isPartOf .
+nd:Vehicle rdfs:subClassOf [ a owl:Restriction ; owl:onProperty nd:isPartOf ;           # W03 : cardinalité
+                              owl:maxCardinality "1"^^xsd:nonNegativeInteger ] .
+nd:Part rdfs:subClassOf [ a owl:Restriction ; owl:onProperty nd:hasPart ;               # W03 : via l'inverse
+                           owl:minCardinality "1"^^xsd:nonNegativeInteger ] .
+nd:isPartOf a owl:FunctionalProperty .                   # W03 : propriété transitive fonctionnelle
+
+# W04 — punning interdit : même IRI propriété objet ET propriété de données ; classe ET datatype
+nd:colour a owl:ObjectProperty , owl:DatatypeProperty ;  # W04
+    rdfs:label "couleur"@fr , "colour"@en .
+nd:Euro a owl:Class , rdfs:Datatype ;                    # W04
+    rdfs:label "euro"@fr , "euro"@en .
+
+# W05 — caractéristiques interdites sur propriété de données (SS §9.3)
+nd:serial a owl:DatatypeProperty , owl:InverseFunctionalProperty ;   # W05
+    rdfs:label "numéro de série"@fr , "serial"@en ; rdfs:domain nd:Vehicle ; rdfs:range xsd:string .
+nd:related a owl:DatatypeProperty , owl:SymmetricProperty ;          # W05
+    rdfs:label "apparenté"@fr , "related"@en ; rdfs:domain nd:Vehicle ; rdfs:range xsd:string .
+
+# W07 (bonne pratique) — cycle de sous-classes et label dupliqué
+nd:Alpha a owl:Class ; rdfs:label "Alpha"@fr , "Alpha"@en ; rdfs:subClassOf nd:Beta .
+nd:Beta  a owl:Class ; rdfs:label "Alpha"@fr , "Beta"@en ; rdfs:subClassOf nd:Alpha .

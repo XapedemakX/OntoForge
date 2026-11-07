@@ -1,0 +1,64 @@
+/* OntoForge — design system « Abysse » (L11). Encre / lagon / ambre / écume / alerte. Clair + sombre.
+   Les anciens noms (--panel, --panel2, --ink, --muted, --line, --accent, --auto…) restent des alias : les écrans existants en héritent. */
+@import '@fontsource/ibm-plex-sans/latin-400.css';
+@import '@fontsource/ibm-plex-sans/latin-500.css';
+@import '@fontsource/ibm-plex-sans/latin-600.css';
+@import '@fontsource/ibm-plex-sans/latin-700.css';
+@import '@fontsource/ibm-plex-mono/latin-400.css';
+@import '@fontsource/ibm-plex-mono/latin-500.css';
+
+:root {
+  /* palette brute */
+  --encre: #14213d; --lagon: #0b6e6e; --pieuvre: #12a39a; --lanterne: #f2a900; --ecume: #f2f4f7; --alerte: #b42318;
+  /* surfaces */
+  --bg: #f2f4f7; --panel: #ffffff; --panel2: #eaeef3; --line: #d5dce5; --line-strong: #b9c4d1;
+  --ink: #14213d; --muted: #57657a;
+  --side-bg: #14213d; --side-ink: #dbe3f0; --side-muted: #8fa0ba; --side-line: #26365a; --side-active: #0f4f55;
+  /* action */
+  --accent: #0b6e6e; --accent-ink: #ffffff; --accent-soft: #d6ecea; --accent-hover: #085757;
+  /* sévérités : auto = lagon, review = ambre, lost = alerte, info = bleu encre */
+  --auto: #0b6e6e; --auto-soft: #d6ecea;
+  --review: #8a5a00; --review-soft: #fcefc9; --review-edge: #f2a900;
+  --lost: #b42318; --lost-soft: #fde4e1;
+  --info: #2c4f8f; --info-soft: #e1e9f7;
+  --ok: #0b6e6e;
+  --code-bg: #f7f9fb; --shadow: 0 1px 2px rgba(20, 33, 61, .08); --shadow-pop: 0 8px 28px rgba(20, 33, 61, .18);
+  /* typo */
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  --fs-xs: 11.5px; --fs-sm: 12.5px; --fs-md: 14px; --fs-lg: 16px; --fs-xl: 20px; --fs-2xl: 26px;
+  /* géométrie */
+  --r-sm: 4px; --r-md: 6px; --r-lg: 10px;
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px;
+  --side-w: 236px; --head-h: 52px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --dark: 1; }
+}
+:root[data-theme="dark"] {
+  --bg: #0a1220; --panel: #111c31; --panel2: #18263f; --line: #24344f; --line-strong: #364a6b;
+  --ink: #e6ebf3; --muted: #93a2b9;
+  --side-bg: #0d172a; --side-ink: #dbe3f0; --side-muted: #7f90ab; --side-line: #1f2e4a; --side-active: #14464d;
+  --accent: #3cc4bb; --accent-ink: #04201f; --accent-soft: #123c42; --accent-hover: #63d6ce;
+  --auto: #3cc4bb; --auto-soft: #123c42;
+  --review: #f2b73a; --review-soft: #3a2e0e; --review-edge: #f2a900;
+  --lost: #ff7b6e; --lost-soft: #43201f;
+  --info: #8fb3f0; --info-soft: #1a2c4d; --ok: #3cc4bb;
+  --code-bg: #0c1627; --shadow: none; --shadow-pop: 0 8px 28px rgba(0, 0, 0, .5);
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0a1220; --panel: #111c31; --panel2: #18263f; --line: #24344f; --line-strong: #364a6b;
+    --ink: #e6ebf3; --muted: #93a2b9;
+    --side-bg: #0d172a; --side-ink: #dbe3f0; --side-muted: #7f90ab; --side-line: #1f2e4a; --side-active: #14464d;
+    --accent: #3cc4bb; --accent-ink: #04201f; --accent-soft: #123c42; --accent-hover: #63d6ce;
+    --auto: #3cc4bb; --auto-soft: #123c42;
+    --review: #f2b73a; --review-soft: #3a2e0e; --review-edge: #f2a900;
+    --lost: #ff7b6e; --lost-soft: #43201f;
+    --info: #8fb3f0; --info-soft: #1a2c4d; --ok: #3cc4bb;
+    --code-bg: #0c1627; --shadow: none; --shadow-pop: 0 8px 28px rgba(0, 0, 0, .5);
+    color-scheme: dark;
+  }
+}

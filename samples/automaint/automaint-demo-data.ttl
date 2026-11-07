@@ -1,0 +1,4846 @@
+# OntoForge — jeu de données de DÉMO AutoMaint (fictif, reproductible, graine 20261105).
+# Généré par tools/demo/generate_demo_data.py — ne pas éditer à la main. Conforme à automaint-shapes.ttl (0 violation, sans inférence).
+# Ville des garages : l'ontologie n'a pas de propriété « ville » ; elle figure dans am:displayName (« … — Toulouse »).
+@prefix am: <https://w3id.org/ontoforge/automaint#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+am:part_001 a am:Part ;
+    rdfs:label "Vanne EGR (lot 001)"@fr ;
+    am:installedIn am:veh_17 ;
+    am:instanceOf am:ref_egr .
+
+am:part_002 a am:Part ;
+    rdfs:label "Filtre à air (lot 002)"@fr ;
+    am:installedIn am:veh_26 ;
+    am:instanceOf am:ref_filtre_air .
+
+am:part_003 a am:Part ;
+    rdfs:label "Pompe de refroidissement batterie (lot 003)"@fr ;
+    am:installedIn am:veh_21 ;
+    am:instanceOf am:ref_pompe_refroid .
+
+am:part_004 a am:Part ;
+    rdfs:label "Pompe de refroidissement batterie (lot 004)"@fr ;
+    am:installedIn am:veh_09 ;
+    am:instanceOf am:ref_pompe_refroid .
+
+am:part_005 a am:Part ;
+    rdfs:label "Débitmètre d'air (lot 005)"@fr ;
+    am:installedIn am:veh_08 ;
+    am:instanceOf am:ref_debitmetre .
+
+am:part_006 a am:Part ;
+    rdfs:label "Bobine d'allumage (lot 006)"@fr ;
+    am:installedIn am:veh_18 ;
+    am:instanceOf am:ref_bobine .
+
+am:part_007 a am:Part ;
+    rdfs:label "Paire de disques avant (lot 007)"@fr ;
+    am:installedIn am:veh_06 ;
+    am:instanceOf am:ref_disque_av .
+
+am:part_008 a am:Part ;
+    rdfs:label "Jeu de plaquettes avant (lot 008)"@fr ;
+    am:installedIn am:veh_06 ;
+    am:instanceOf am:ref_plaq_av .
+
+am:part_009 a am:Part ;
+    rdfs:label "Module de batterie haute tension (lot 009)"@fr ;
+    am:installedIn am:veh_06 ;
+    am:instanceOf am:ref_cellule_hv .
+
+am:part_010 a am:Part ;
+    rdfs:label "Débitmètre d'air (lot 010)"@fr ;
+    am:installedIn am:veh_08 ;
+    am:instanceOf am:ref_debitmetre .
+
+am:part_011 a am:Part ;
+    rdfs:label "Filtre d'habitacle (lot 011)"@fr ;
+    am:installedIn am:veh_23 ;
+    am:instanceOf am:ref_filtre_hab .
+
+am:part_012 a am:Part ;
+    rdfs:label "Pneu 195/55 R16 (unité) (lot 012)"@fr ;
+    am:installedIn am:veh_23 ;
+    am:instanceOf am:ref_pneu .
+
+am:part_013 a am:Part ;
+    rdfs:label "Filtre à huile (lot 013)"@fr ;
+    am:installedIn am:veh_16 ;
+    am:instanceOf am:ref_filtre_huile .
+
+am:part_014 a am:Part ;
+    rdfs:label "Huile moteur 5W-30 (5 L) (lot 014)"@fr ;
+    am:installedIn am:veh_16 ;
+    am:instanceOf am:ref_huile .
+
+am:part_015 a am:Part ;
+    rdfs:label "Jeu de plaquettes avant (lot 015)"@fr ;
+    am:installedIn am:veh_16 ;
+    am:instanceOf am:ref_plaq_av .
+
+am:part_016 a am:Part ;
+    rdfs:label "Bobine d'allumage (lot 016)"@fr ;
+    am:installedIn am:veh_35 ;
+    am:instanceOf am:ref_bobine .
+
+am:part_017 a am:Part ;
+    rdfs:label "Capteur de vitesse de roue (lot 017)"@fr ;
+    am:installedIn am:veh_09 ;
+    am:instanceOf am:ref_capteur_abs .
+
+am:part_018 a am:Part ;
+    rdfs:label "Turbocompresseur (lot 018)"@fr ;
+    am:installedIn am:veh_11 ;
+    am:instanceOf am:ref_turbo .
+
+am:part_019 a am:Part ;
+    rdfs:label "Pompe de refroidissement batterie (lot 019)"@fr ;
+    am:installedIn am:veh_10 ;
+    am:instanceOf am:ref_pompe_refroid .
+
+am:part_020 a am:Part ;
+    rdfs:label "Bobine d'allumage (lot 020)"@fr ;
+    am:installedIn am:veh_12 ;
+    am:instanceOf am:ref_bobine .
+
+am:part_021 a am:Part ;
+    rdfs:label "Module de batterie haute tension (lot 021)"@fr ;
+    am:installedIn am:veh_06 ;
+    am:instanceOf am:ref_cellule_hv .
+
+am:part_022 a am:Part ;
+    rdfs:label "Paire de disques avant (lot 022)"@fr ;
+    am:installedIn am:veh_28 ;
+    am:instanceOf am:ref_disque_av .
+
+am:part_023 a am:Part ;
+    rdfs:label "Jeu de plaquettes avant (lot 023)"@fr ;
+    am:installedIn am:veh_28 ;
+    am:instanceOf am:ref_plaq_av .
+
+am:part_024 a am:Part ;
+    rdfs:label "Capteur de vitesse de roue (lot 024)"@fr ;
+    am:installedIn am:veh_39 ;
+    am:instanceOf am:ref_capteur_abs .
+
+am:part_025 a am:Part ;
+    rdfs:label "Paire de disques avant (lot 025)"@fr ;
+    am:installedIn am:veh_39 ;
+    am:instanceOf am:ref_disque_av .
+
+am:part_026 a am:Part ;
+    rdfs:label "Jeu de plaquettes avant (lot 026)"@fr ;
+    am:installedIn am:veh_39 ;
+    am:instanceOf am:ref_plaq_av .
+
+am:part_027 a am:Part ;
+    rdfs:label "Bobine d'allumage (lot 027)"@fr ;
+    am:installedIn am:veh_35 ;
+    am:instanceOf am:ref_bobine .
+
+am:part_028 a am:Part ;
+    rdfs:label "Capteur de vitesse de roue (lot 028)"@fr ;
+    am:installedIn am:veh_29 ;
+    am:instanceOf am:ref_capteur_abs .
+
+am:part_029 a am:Part ;
+    rdfs:label "Pompe de refroidissement batterie (lot 029)"@fr ;
+    am:installedIn am:veh_02 ;
+    am:instanceOf am:ref_pompe_refroid .
+
+am:part_030 a am:Part ;
+    rdfs:label "Débitmètre d'air (lot 030)"@fr ;
+    am:installedIn am:veh_17 ;
+    am:instanceOf am:ref_debitmetre .
+
+am:part_031 a am:Part ;
+    rdfs:label "Liquide de frein DOT 4 (1 L) (lot 031)"@fr ;
+    am:installedIn am:veh_29 ;
+    am:instanceOf am:ref_liq_frein .
+
+am:part_032 a am:Part ;
+    rdfs:label "Filtre à particules (lot 032)"@fr ;
+    am:installedIn am:veh_29 ;
+    am:instanceOf am:ref_fap .
+
+am:part_033 a am:Part ;
+    rdfs:label "Module de batterie haute tension (lot 033)"@fr ;
+    am:installedIn am:veh_04 ;
+    am:instanceOf am:ref_cellule_hv .
+
+am:part_034 a am:Part ;
+    rdfs:label "Jeu de plaquettes avant (lot 034)"@fr ;
+    am:installedIn am:veh_33 ;
+    am:instanceOf am:ref_plaq_av .
+
+am:part_035 a am:Part ;
+    rdfs:label "Module de batterie haute tension (lot 035)"@fr ;
+    am:installedIn am:veh_38 ;
+    am:instanceOf am:ref_cellule_hv .
+
+am:part_036 a am:Part ;
+    rdfs:label "Capteur de vitesse de roue (lot 036)"@fr ;
+    am:installedIn am:veh_22 ;
+    am:instanceOf am:ref_capteur_abs .
+
+am:part_037 a am:Part ;
+    rdfs:label "Débitmètre d'air (lot 037)"@fr ;
+    am:installedIn am:veh_24 ;
+    am:instanceOf am:ref_debitmetre .
+
+am:part_038 a am:Part ;
+    rdfs:label "Bobine d'allumage (lot 038)"@fr ;
+    am:installedIn am:veh_01 ;
+    am:instanceOf am:ref_bobine .
+
+am:part_039 a am:Part ;
+    rdfs:label "Débitmètre d'air (lot 039)"@fr ;
+    am:installedIn am:veh_36 ;
+    am:instanceOf am:ref_debitmetre .
+
+am:part_040 a am:Part ;
+    rdfs:label "Courroie d'accessoires (lot 040)"@fr ;
+    am:installedIn am:veh_19 ;
+    am:instanceOf am:ref_courroie .
+
+am:part_041 a am:Part ;
+    rdfs:label "Paire de disques avant (lot 041)"@fr ;
+    am:installedIn am:veh_19 ;
+    am:instanceOf am:ref_disque_av .
+
+am:part_042 a am:Part ;
+    rdfs:label "Jeu de plaquettes avant (lot 042)"@fr ;
+    am:installedIn am:veh_19 ;
+    am:instanceOf am:ref_plaq_av .
+
+am:part_043 a am:Part ;
+    rdfs:label "Pneu 195/55 R16 (unité) (lot 043)"@fr ;
+    am:installedIn am:veh_17 ;
+    am:instanceOf am:ref_pneu .
+
+am:part_044 a am:Part ;
+    rdfs:label "Filtre à huile (lot 044)"@fr ;
+    am:installedIn am:veh_17 ;
+    am:instanceOf am:ref_filtre_huile .
+
+am:part_045 a am:Part ;
+    rdfs:label "Huile moteur 5W-30 (5 L) (lot 045)"@fr ;
+    am:installedIn am:veh_17 ;
+    am:instanceOf am:ref_huile .
+
+am:part_046 a am:Part ;
+    rdfs:label "Débitmètre d'air (lot 046)"@fr ;
+    am:installedIn am:veh_18 ;
+    am:instanceOf am:ref_debitmetre .
+
+am:part_047 a am:Part ;
+    rdfs:label "Filtre à huile (lot 047)"@fr ;
+    am:installedIn am:veh_16 ;
+    am:instanceOf am:ref_filtre_huile .
+
+am:part_048 a am:Part ;
+    rdfs:label "Huile moteur 5W-30 (5 L) (lot 048)"@fr ;
+    am:installedIn am:veh_16 ;
+    am:instanceOf am:ref_huile .
+
+am:part_049 a am:Part ;
+    rdfs:label "Catalyseur (lot 049)"@fr ;
+    am:installedIn am:veh_26 ;
+    am:instanceOf am:ref_catalyseur .
+
+am:part_050 a am:Part ;
+    rdfs:label "Courroie d'accessoires (lot 050)"@fr ;
+    am:installedIn am:veh_19 ;
+    am:instanceOf am:ref_courroie .
+
+am:part_051 a am:Part ;
+    rdfs:label "Batterie 12 V 60 Ah (lot 051)"@fr ;
+    am:installedIn am:veh_37 ;
+    am:instanceOf am:ref_batt12 .
+
+am:part_052 a am:Part ;
+    rdfs:label "Jeu de plaquettes avant (lot 052)"@fr ;
+    am:installedIn am:veh_20 ;
+    am:instanceOf am:ref_plaq_av .
+
+am:part_053 a am:Part ;
+    rdfs:label "Bobine d'allumage (lot 053)"@fr ;
+    am:installedIn am:veh_14 ;
+    am:instanceOf am:ref_bobine .
+
+am:part_054 a am:Part ;
+    rdfs:label "Paire de disques avant (lot 054)"@fr ;
+    am:installedIn am:veh_34 ;
+    am:instanceOf am:ref_disque_av .
+
+am:part_055 a am:Part ;
+    rdfs:label "Jeu de plaquettes avant (lot 055)"@fr ;
+    am:installedIn am:veh_34 ;
+    am:instanceOf am:ref_plaq_av .
+
+am:part_056 a am:Part ;
+    rdfs:label "Catalyseur (lot 056)"@fr ;
+    am:installedIn am:veh_34 ;
+    am:instanceOf am:ref_catalyseur .
+
+am:part_057 a am:Part ;
+    rdfs:label "Batterie 12 V 60 Ah (lot 057)"@fr ;
+    am:installedIn am:veh_31 ;
+    am:instanceOf am:ref_batt12 .
+
+am:part_058 a am:Part ;
+    rdfs:label "Catalyseur (lot 058)"@fr ;
+    am:installedIn am:veh_01 ;
+    am:instanceOf am:ref_catalyseur .
+
+am:part_059 a am:Part ;
+    rdfs:label "Pompe de refroidissement batterie (lot 059)"@fr ;
+    am:installedIn am:veh_22 ;
+    am:instanceOf am:ref_pompe_refroid .
+
+am:part_060 a am:Part ;
+    rdfs:label "Bougie d'allumage (lot 060)"@fr ;
+    am:installedIn am:veh_12 ;
+    am:instanceOf am:ref_bougie .
+
+am:part_061 a am:Part ;
+    rdfs:label "Paire de disques avant (lot 061)"@fr ;
+    am:installedIn am:veh_06 ;
+    am:instanceOf am:ref_disque_av .
+
+am:part_062 a am:Part ;
+    rdfs:label "Jeu de plaquettes avant (lot 062)"@fr ;
+    am:installedIn am:veh_06 ;
+    am:instanceOf am:ref_plaq_av .
+
+am:part_063 a am:Part ;
+    rdfs:label "Jeu de plaquettes avant (lot 063)"@fr ;
+    am:installedIn am:veh_34 ;
+    am:instanceOf am:ref_plaq_av .
+
+am:part_064 a am:Part ;
+    rdfs:label "Batterie 12 V 60 Ah (lot 064)"@fr ;
+    am:installedIn am:veh_27 ;
+    am:instanceOf am:ref_batt12 .
+
+am:part_065 a am:Part ;
+    rdfs:label "Capteur de vitesse de roue (lot 065)"@fr ;
+    am:installedIn am:veh_27 ;
+    am:instanceOf am:ref_capteur_abs .
+
+am:part_066 a am:Part ;
+    rdfs:label "Paire de disques avant (lot 066)"@fr ;
+    am:installedIn am:veh_38 ;
+    am:instanceOf am:ref_disque_av .
+
+am:part_067 a am:Part ;
+    rdfs:label "Jeu de plaquettes avant (lot 067)"@fr ;
+    am:installedIn am:veh_38 ;
+    am:instanceOf am:ref_plaq_av .
+
+am:part_068 a am:Part ;
+    rdfs:label "Jeu de plaquettes avant (lot 068)"@fr ;
+    am:installedIn am:veh_38 ;
+    am:instanceOf am:ref_plaq_av .
+
+am:part_069 a am:Part ;
+    rdfs:label "Jeu de plaquettes avant (lot 069)"@fr ;
+    am:installedIn am:veh_22 ;
+    am:instanceOf am:ref_plaq_av .
+
+am:part_070 a am:Part ;
+    rdfs:label "Batterie 12 V 60 Ah (lot 070)"@fr ;
+    am:installedIn am:veh_05 ;
+    am:instanceOf am:ref_batt12 .
+
+am:part_071 a am:Part ;
+    rdfs:label "Bougie d'allumage (lot 071)"@fr ;
+    am:installedIn am:veh_05 ;
+    am:instanceOf am:ref_bougie .
+
+am:part_072 a am:Part ;
+    rdfs:label "Vanne EGR (lot 072)"@fr ;
+    am:installedIn am:veh_11 ;
+    am:instanceOf am:ref_egr .
+
+am:part_073 a am:Part ;
+    rdfs:label "Catalyseur (lot 073)"@fr ;
+    am:installedIn am:veh_31 ;
+    am:instanceOf am:ref_catalyseur .
+
+am:part_074 a am:Part ;
+    rdfs:label "Batterie 12 V 60 Ah (lot 074)"@fr ;
+    am:installedIn am:veh_13 ;
+    am:instanceOf am:ref_batt12 .
+
+am:part_075 a am:Part ;
+    rdfs:label "Jeu de plaquettes avant (lot 075)"@fr ;
+    am:installedIn am:veh_13 ;
+    am:instanceOf am:ref_plaq_av .
+
+am:part_076 a am:Part ;
+    rdfs:label "Catalyseur (lot 076)"@fr ;
+    am:installedIn am:veh_03 ;
+    am:instanceOf am:ref_catalyseur .
+
+am:part_077 a am:Part ;
+    rdfs:label "Filtre d'habitacle (lot 077)"@fr ;
+    am:installedIn am:veh_32 ;
+    am:instanceOf am:ref_filtre_hab .
+
+am:part_078 a am:Part ;
+    rdfs:label "Pompe de refroidissement batterie (lot 078)"@fr ;
+    am:installedIn am:veh_09 ;
+    am:instanceOf am:ref_pompe_refroid .
+
+am:part_079 a am:Part ;
+    rdfs:label "Module de batterie haute tension (lot 079)"@fr ;
+    am:installedIn am:veh_10 ;
+    am:instanceOf am:ref_cellule_hv .
+
+am:part_080 a am:Part ;
+    rdfs:label "Filtre à huile (lot 080)"@fr ;
+    am:installedIn am:veh_08 ;
+    am:instanceOf am:ref_filtre_huile .
+
+am:part_081 a am:Part ;
+    rdfs:label "Huile moteur 5W-30 (5 L) (lot 081)"@fr ;
+    am:installedIn am:veh_08 ;
+    am:instanceOf am:ref_huile .
+
+am:part_082 a am:Part ;
+    rdfs:label "Filtre d'habitacle (lot 082)"@fr ;
+    am:installedIn am:veh_27 ;
+    am:instanceOf am:ref_filtre_hab .
+
+am:part_083 a am:Part ;
+    rdfs:label "Capteur de vitesse de roue (lot 083)"@fr ;
+    am:installedIn am:veh_27 ;
+    am:instanceOf am:ref_capteur_abs .
+
+am:part_084 a am:Part ;
+    rdfs:label "Paire de disques avant (lot 084)"@fr ;
+    am:installedIn am:veh_02 ;
+    am:instanceOf am:ref_disque_av .
+
+am:part_085 a am:Part ;
+    rdfs:label "Jeu de plaquettes avant (lot 085)"@fr ;
+    am:installedIn am:veh_02 ;
+    am:instanceOf am:ref_plaq_av .
+
+am:part_086 a am:Part ;
+    rdfs:label "Pneu 195/55 R16 (unité) (lot 086)"@fr ;
+    am:installedIn am:veh_11 ;
+    am:instanceOf am:ref_pneu .
+
+am:part_087 a am:Part ;
+    rdfs:label "Débitmètre d'air (lot 087)"@fr ;
+    am:installedIn am:veh_11 ;
+    am:instanceOf am:ref_debitmetre .
+
+am:part_088 a am:Part ;
+    rdfs:label "Module de batterie haute tension (lot 088)"@fr ;
+    am:installedIn am:veh_14 ;
+    am:instanceOf am:ref_cellule_hv .
+
+am:part_089 a am:Part ;
+    rdfs:label "Bobine d'allumage (lot 089)"@fr ;
+    am:installedIn am:veh_14 ;
+    am:instanceOf am:ref_bobine .
+
+am:part_090 a am:Part ;
+    rdfs:label "Bobine d'allumage (lot 090)"@fr ;
+    am:installedIn am:veh_01 ;
+    am:instanceOf am:ref_bobine .
+
+am:part_091 a am:Part ;
+    rdfs:label "Capteur de vitesse de roue (lot 091)"@fr ;
+    am:installedIn am:veh_01 ;
+    am:instanceOf am:ref_capteur_abs .
+
+am:part_092 a am:Part ;
+    rdfs:label "Turbocompresseur (lot 092)"@fr ;
+    am:installedIn am:veh_23 ;
+    am:instanceOf am:ref_turbo .
+
+am:part_093 a am:Part ;
+    rdfs:label "Capteur de vitesse de roue (lot 093)"@fr ;
+    am:installedIn am:veh_07 ;
+    am:instanceOf am:ref_capteur_abs .
+
+am:part_094 a am:Part ;
+    rdfs:label "Paire de disques avant (lot 094)"@fr ;
+    am:installedIn am:veh_11 ;
+    am:instanceOf am:ref_disque_av .
+
+am:part_095 a am:Part ;
+    rdfs:label "Jeu de plaquettes avant (lot 095)"@fr ;
+    am:installedIn am:veh_11 ;
+    am:instanceOf am:ref_plaq_av .
+
+am:part_096 a am:Part ;
+    rdfs:label "Débitmètre d'air (lot 096)"@fr ;
+    am:installedIn am:veh_18 ;
+    am:instanceOf am:ref_debitmetre .
+
+am:part_097 a am:Part ;
+    rdfs:label "Débitmètre d'air (lot 097)"@fr ;
+    am:installedIn am:veh_36 ;
+    am:instanceOf am:ref_debitmetre .
+
+am:part_098 a am:Part ;
+    rdfs:label "Débitmètre d'air (lot 098)"@fr ;
+    am:installedIn am:veh_15 ;
+    am:instanceOf am:ref_debitmetre .
+
+am:part_099 a am:Part ;
+    rdfs:label "Catalyseur (lot 099)"@fr ;
+    am:installedIn am:veh_37 ;
+    am:instanceOf am:ref_catalyseur .
+
+am:part_100 a am:Part ;
+    rdfs:label "Filtre d'habitacle (lot 100)"@fr ;
+    am:installedIn am:veh_39 ;
+    am:instanceOf am:ref_filtre_hab .
+
+am:part_101 a am:Part ;
+    rdfs:label "Filtre d'habitacle (lot 101)"@fr ;
+    am:installedIn am:veh_27 ;
+    am:instanceOf am:ref_filtre_hab .
+
+am:part_102 a am:Part ;
+    rdfs:label "Batterie 12 V 60 Ah (lot 102)"@fr ;
+    am:installedIn am:veh_27 ;
+    am:instanceOf am:ref_batt12 .
+
+am:part_103 a am:Part ;
+    rdfs:label "Paire de disques avant (lot 103)"@fr ;
+    am:installedIn am:veh_37 ;
+    am:instanceOf am:ref_disque_av .
+
+am:part_104 a am:Part ;
+    rdfs:label "Jeu de plaquettes avant (lot 104)"@fr ;
+    am:installedIn am:veh_37 ;
+    am:instanceOf am:ref_plaq_av .
+
+am:part_105 a am:Part ;
+    rdfs:label "Catalyseur (lot 105)"@fr ;
+    am:installedIn am:veh_25 ;
+    am:instanceOf am:ref_catalyseur .
+
+am:part_106 a am:Part ;
+    rdfs:label "Filtre à particules (lot 106)"@fr ;
+    am:installedIn am:veh_32 ;
+    am:instanceOf am:ref_fap .
+
+am:part_107 a am:Part ;
+    rdfs:label "Filtre à particules (lot 107)"@fr ;
+    am:installedIn am:veh_17 ;
+    am:instanceOf am:ref_fap .
+
+am:part_108 a am:Part ;
+    rdfs:label "Batterie 12 V 60 Ah (lot 108)"@fr ;
+    am:installedIn am:veh_02 ;
+    am:instanceOf am:ref_batt12 .
+
+am:part_109 a am:Part ;
+    rdfs:label "Pompe de refroidissement batterie (lot 109)"@fr ;
+    am:installedIn am:veh_02 ;
+    am:instanceOf am:ref_pompe_refroid .
+
+am:part_110 a am:Part ;
+    rdfs:label "Courroie d'accessoires (lot 110)"@fr ;
+    am:installedIn am:veh_30 ;
+    am:instanceOf am:ref_courroie .
+
+am:part_111 a am:Part ;
+    rdfs:label "Liquide de frein DOT 4 (1 L) (lot 111)"@fr ;
+    am:installedIn am:veh_30 ;
+    am:instanceOf am:ref_liq_frein .
+
+am:part_112 a am:Part ;
+    rdfs:label "Capteur de vitesse de roue (lot 112)"@fr ;
+    am:installedIn am:veh_07 ;
+    am:instanceOf am:ref_capteur_abs .
+
+am:part_113 a am:Part ;
+    rdfs:label "Bobine d'allumage (lot 113)"@fr ;
+    am:installedIn am:veh_40 ;
+    am:instanceOf am:ref_bobine .
+
+am:part_114 a am:Part ;
+    rdfs:label "Paire de disques avant (lot 114)"@fr ;
+    am:installedIn am:veh_14 ;
+    am:instanceOf am:ref_disque_av .
+
+am:part_115 a am:Part ;
+    rdfs:label "Jeu de plaquettes avant (lot 115)"@fr ;
+    am:installedIn am:veh_14 ;
+    am:instanceOf am:ref_plaq_av .
+
+am:part_116 a am:Part ;
+    rdfs:label "Liquide de frein DOT 4 (1 L) (lot 116)"@fr ;
+    am:installedIn am:veh_14 ;
+    am:instanceOf am:ref_liq_frein .
+
+am:part_117 a am:Part ;
+    rdfs:label "Filtre à huile (lot 117)"@fr ;
+    am:installedIn am:veh_36 ;
+    am:instanceOf am:ref_filtre_huile .
+
+am:part_118 a am:Part ;
+    rdfs:label "Huile moteur 5W-30 (5 L) (lot 118)"@fr ;
+    am:installedIn am:veh_36 ;
+    am:instanceOf am:ref_huile .
+
+am:part_119 a am:Part ;
+    rdfs:label "Courroie d'accessoires (lot 119)"@fr ;
+    am:installedIn am:veh_36 ;
+    am:instanceOf am:ref_courroie .
+
+am:part_120 a am:Part ;
+    rdfs:label "Catalyseur (lot 120)"@fr ;
+    am:installedIn am:veh_25 ;
+    am:instanceOf am:ref_catalyseur .
+
+am:part_121 a am:Part ;
+    rdfs:label "Capteur de vitesse de roue (lot 121)"@fr ;
+    am:installedIn am:veh_33 ;
+    am:instanceOf am:ref_capteur_abs .
+
+am:part_122 a am:Part ;
+    rdfs:label "Capteur de vitesse de roue (lot 122)"@fr ;
+    am:installedIn am:veh_18 ;
+    am:instanceOf am:ref_capteur_abs .
+
+am:part_123 a am:Part ;
+    rdfs:label "Débitmètre d'air (lot 123)"@fr ;
+    am:installedIn am:veh_32 ;
+    am:instanceOf am:ref_debitmetre .
+
+am:part_124 a am:Part ;
+    rdfs:label "Jeu de plaquettes avant (lot 124)"@fr ;
+    am:installedIn am:veh_39 ;
+    am:instanceOf am:ref_plaq_av .
+
+am:part_125 a am:Part ;
+    rdfs:label "Filtre à particules (lot 125)"@fr ;
+    am:installedIn am:veh_32 ;
+    am:instanceOf am:ref_fap .
+
+am:part_126 a am:Part ;
+    rdfs:label "Pompe de refroidissement batterie (lot 126)"@fr ;
+    am:installedIn am:veh_10 ;
+    am:instanceOf am:ref_pompe_refroid .
+
+am:part_127 a am:Part ;
+    rdfs:label "Bobine d'allumage (lot 127)"@fr ;
+    am:installedIn am:veh_34 ;
+    am:instanceOf am:ref_bobine .
+
+am:part_128 a am:Part ;
+    rdfs:label "Capteur de vitesse de roue (lot 128)"@fr ;
+    am:installedIn am:veh_29 ;
+    am:instanceOf am:ref_capteur_abs .
+
+am:part_129 a am:Part ;
+    rdfs:label "Capteur de vitesse de roue (lot 129)"@fr ;
+    am:installedIn am:veh_28 ;
+    am:instanceOf am:ref_capteur_abs .
+
+am:part_130 a am:Part ;
+    rdfs:label "Pompe de refroidissement batterie (lot 130)"@fr ;
+    am:installedIn am:veh_28 ;
+    am:instanceOf am:ref_pompe_refroid .
+
+am:part_131 a am:Part ;
+    rdfs:label "Capteur de vitesse de roue (lot 131)"@fr ;
+    am:installedIn am:veh_13 ;
+    am:instanceOf am:ref_capteur_abs .
+
+am:part_132 a am:Part ;
+    rdfs:label "Pompe de refroidissement batterie (lot 132)"@fr ;
+    am:installedIn am:veh_02 ;
+    am:instanceOf am:ref_pompe_refroid .
+
+am:part_133 a am:Part ;
+    rdfs:label "Capteur de vitesse de roue (lot 133)"@fr ;
+    am:installedIn am:veh_36 ;
+    am:instanceOf am:ref_capteur_abs .
+
+am:part_134 a am:Part ;
+    rdfs:label "Pneu 195/55 R16 (unité) (lot 134)"@fr ;
+    am:installedIn am:veh_31 ;
+    am:instanceOf am:ref_pneu .
+
+am:part_135 a am:Part ;
+    rdfs:label "Liquide de frein DOT 4 (1 L) (lot 135)"@fr ;
+    am:installedIn am:veh_31 ;
+    am:instanceOf am:ref_liq_frein .
+
+am:part_136 a am:Part ;
+    rdfs:label "Pneu 195/55 R16 (unité) (lot 136)"@fr ;
+    am:installedIn am:veh_07 ;
+    am:instanceOf am:ref_pneu .
+
+am:part_137 a am:Part ;
+    rdfs:label "Module de batterie haute tension (lot 137)"@fr ;
+    am:installedIn am:veh_07 ;
+    am:instanceOf am:ref_cellule_hv .
+
+am:part_138 a am:Part ;
+    rdfs:label "Filtre à particules (lot 138)"@fr ;
+    am:installedIn am:veh_15 ;
+    am:instanceOf am:ref_fap .
+
+am:part_139 a am:Part ;
+    rdfs:label "Filtre d'habitacle (lot 139)"@fr ;
+    am:installedIn am:veh_35 ;
+    am:instanceOf am:ref_filtre_hab .
+
+am:part_140 a am:Part ;
+    rdfs:label "Paire de disques avant (lot 140)"@fr ;
+    am:installedIn am:veh_21 ;
+    am:instanceOf am:ref_disque_av .
+
+am:part_141 a am:Part ;
+    rdfs:label "Jeu de plaquettes avant (lot 141)"@fr ;
+    am:installedIn am:veh_21 ;
+    am:instanceOf am:ref_plaq_av .
+
+am:part_142 a am:Part ;
+    rdfs:label "Batterie 12 V 60 Ah (lot 142)"@fr ;
+    am:installedIn am:veh_21 ;
+    am:instanceOf am:ref_batt12 .
+
+am:part_143 a am:Part ;
+    rdfs:label "Turbocompresseur (lot 143)"@fr ;
+    am:installedIn am:veh_23 ;
+    am:instanceOf am:ref_turbo .
+
+am:part_144 a am:Part ;
+    rdfs:label "Pneu 195/55 R16 (unité) (lot 144)"@fr ;
+    am:installedIn am:veh_23 ;
+    am:instanceOf am:ref_pneu .
+
+am:part_145 a am:Part ;
+    rdfs:label "Filtre d'habitacle (lot 145)"@fr ;
+    am:installedIn am:veh_15 ;
+    am:instanceOf am:ref_filtre_hab .
+
+am:part_146 a am:Part ;
+    rdfs:label "Filtre à particules (lot 146)"@fr ;
+    am:installedIn am:veh_15 ;
+    am:instanceOf am:ref_fap .
+
+am:part_147 a am:Part ;
+    rdfs:label "Capteur de vitesse de roue (lot 147)"@fr ;
+    am:installedIn am:veh_04 ;
+    am:instanceOf am:ref_capteur_abs .
+
+am:part_148 a am:Part ;
+    rdfs:label "Débitmètre d'air (lot 148)"@fr ;
+    am:installedIn am:veh_20 ;
+    am:instanceOf am:ref_debitmetre .
+
+am:part_149 a am:Part ;
+    rdfs:label "Filtre à air (lot 149)"@fr ;
+    am:installedIn am:veh_19 ;
+    am:instanceOf am:ref_filtre_air .
+
+am:part_150 a am:Part ;
+    rdfs:label "Bobine d'allumage (lot 150)"@fr ;
+    am:installedIn am:veh_26 ;
+    am:instanceOf am:ref_bobine .
+
+am:part_151 a am:Part ;
+    rdfs:label "Batterie 12 V 60 Ah (lot 151)"@fr ;
+    am:installedIn am:veh_30 ;
+    am:instanceOf am:ref_batt12 .
+
+am:part_152 a am:Part ;
+    rdfs:label "Capteur de vitesse de roue (lot 152)"@fr ;
+    am:installedIn am:veh_30 ;
+    am:instanceOf am:ref_capteur_abs .
+
+am:part_153 a am:Part ;
+    rdfs:label "Capteur de vitesse de roue (lot 153)"@fr ;
+    am:installedIn am:veh_16 ;
+    am:instanceOf am:ref_capteur_abs .
+
+am:part_154 a am:Part ;
+    rdfs:label "Bobine d'allumage (lot 154)"@fr ;
+    am:installedIn am:veh_12 ;
+    am:instanceOf am:ref_bobine .
+
+am:part_155 a am:Part ;
+    rdfs:label "Catalyseur (lot 155)"@fr ;
+    am:installedIn am:veh_26 ;
+    am:instanceOf am:ref_catalyseur .
+
+am:part_156 a am:Part ;
+    rdfs:label "Filtre à air (lot 156)"@fr ;
+    am:installedIn am:veh_05 ;
+    am:instanceOf am:ref_filtre_air .
+
+am:part_157 a am:Part ;
+    rdfs:label "Liquide de frein DOT 4 (1 L) (lot 157)"@fr ;
+    am:installedIn am:veh_05 ;
+    am:instanceOf am:ref_liq_frein .
+
+am:part_158 a am:Part ;
+    rdfs:label "Bobine d'allumage (lot 158)"@fr ;
+    am:installedIn am:veh_33 ;
+    am:instanceOf am:ref_bobine .
+
+am:part_159 a am:Part ;
+    rdfs:label "Courroie d'accessoires (lot 159)"@fr ;
+    am:installedIn am:veh_05 ;
+    am:instanceOf am:ref_courroie .
+
+am:part_160 a am:Part ;
+    rdfs:label "Filtre à huile (lot 160)"@fr ;
+    am:installedIn am:veh_20 ;
+    am:instanceOf am:ref_filtre_huile .
+
+am:part_161 a am:Part ;
+    rdfs:label "Huile moteur 5W-30 (5 L) (lot 161)"@fr ;
+    am:installedIn am:veh_20 ;
+    am:instanceOf am:ref_huile .
+
+am:part_162 a am:Part ;
+    rdfs:label "Filtre à particules (lot 162)"@fr ;
+    am:installedIn am:veh_24 ;
+    am:instanceOf am:ref_fap .
+
+am:part_163 a am:Part ;
+    rdfs:label "Jeu de plaquettes avant (lot 163)"@fr ;
+    am:installedIn am:veh_24 ;
+    am:instanceOf am:ref_plaq_av .
+
+am:part_164 a am:Part ;
+    rdfs:label "Pompe de refroidissement batterie (lot 164)"@fr ;
+    am:installedIn am:veh_19 ;
+    am:instanceOf am:ref_pompe_refroid .
+
+am:part_165 a am:Part ;
+    rdfs:label "Pneu 195/55 R16 (unité) (lot 165)"@fr ;
+    am:installedIn am:veh_19 ;
+    am:instanceOf am:ref_pneu .
+
+am:part_166 a am:Part ;
+    rdfs:label "Paire de disques avant (lot 166)"@fr ;
+    am:installedIn am:veh_28 ;
+    am:instanceOf am:ref_disque_av .
+
+am:part_167 a am:Part ;
+    rdfs:label "Jeu de plaquettes avant (lot 167)"@fr ;
+    am:installedIn am:veh_28 ;
+    am:instanceOf am:ref_plaq_av .
+
+am:part_168 a am:Part ;
+    rdfs:label "Courroie d'accessoires (lot 168)"@fr ;
+    am:installedIn am:veh_30 ;
+    am:instanceOf am:ref_courroie .
+
+am:part_169 a am:Part ;
+    rdfs:label "Batterie 12 V 60 Ah (lot 169)"@fr ;
+    am:installedIn am:veh_30 ;
+    am:instanceOf am:ref_batt12 .
+
+am:part_170 a am:Part ;
+    rdfs:label "Jeu de plaquettes avant (lot 170)"@fr ;
+    am:installedIn am:veh_20 ;
+    am:instanceOf am:ref_plaq_av .
+
+am:part_171 a am:Part ;
+    rdfs:label "Capteur de vitesse de roue (lot 171)"@fr ;
+    am:installedIn am:veh_20 ;
+    am:instanceOf am:ref_capteur_abs .
+
+am:part_172 a am:Part ;
+    rdfs:label "Batterie 12 V 60 Ah (lot 172)"@fr ;
+    am:installedIn am:veh_04 ;
+    am:instanceOf am:ref_batt12 .
+
+am:plan_c3 a am:MaintenancePlan ;
+    rdfs:label "Plan d'entretien C3"@fr ;
+    am:intervalKm 15000 ;
+    am:intervalMonths 12 ;
+    am:plannedFor am:model_c3 ;
+    am:prescribes am:op_vidange .
+
+am:plan_clio a am:MaintenancePlan ;
+    rdfs:label "Plan d'entretien Clio V"@fr ;
+    am:intervalKm 15000 ;
+    am:intervalMonths 12 ;
+    am:plannedFor am:model_clio ;
+    am:prescribes am:op_vidange .
+
+am:plan_duster a am:MaintenancePlan ;
+    rdfs:label "Plan d'entretien Duster"@fr ;
+    am:intervalKm 15000 ;
+    am:intervalMonths 12 ;
+    am:plannedFor am:model_duster ;
+    am:prescribes am:op_vidange .
+
+am:plan_e208 a am:MaintenancePlan ;
+    rdfs:label "Plan d'entretien e-208"@fr ;
+    am:intervalKm 30000 ;
+    am:intervalMonths 24 ;
+    am:plannedFor am:model_e208 ;
+    am:prescribes am:op_f_hab .
+
+am:plan_ioniq_h a am:MaintenancePlan ;
+    rdfs:label "Plan d'entretien Ioniq Hybride"@fr ;
+    am:intervalKm 15000 ;
+    am:intervalMonths 12 ;
+    am:plannedFor am:model_ioniq_h ;
+    am:prescribes am:op_vidange .
+
+am:plan_megane_e a am:MaintenancePlan ;
+    rdfs:label "Plan d'entretien Mégane E-Tech"@fr ;
+    am:intervalKm 30000 ;
+    am:intervalMonths 24 ;
+    am:plannedFor am:model_megane_e ;
+    am:prescribes am:op_f_hab .
+
+am:plan_p308 a am:MaintenancePlan ;
+    rdfs:label "Plan d'entretien 308"@fr ;
+    am:intervalKm 15000 ;
+    am:intervalMonths 12 ;
+    am:plannedFor am:model_p308 ;
+    am:prescribes am:op_vidange .
+
+am:plan_yaris_h a am:MaintenancePlan ;
+    rdfs:label "Plan d'entretien Yaris Hybride"@fr ;
+    am:intervalKm 15000 ;
+    am:intervalMonths 12 ;
+    am:plannedFor am:model_yaris_h ;
+    am:prescribes am:op_vidange .
+
+am:recall_rc_2025_014 a am:Recall ;
+    rdfs:label "Rappel RC-2025-014 — Bobine d'allumage"@fr ;
+    am:appliesToModel am:model_c3,
+        am:model_clio ;
+    am:concernsPart am:ref_bobine ;
+    am:issuedAt "2025-04-14T00:00:00"^^xsd:dateTime ;
+    am:recallNumber "RC-2025-014" .
+
+am:recall_rc_2025_031 a am:Recall ;
+    rdfs:label "Rappel RC-2025-031 — Vanne EGR"@fr ;
+    am:appliesToModel am:model_duster,
+        am:model_p308 ;
+    am:concernsPart am:ref_egr ;
+    am:issuedAt "2025-09-02T00:00:00"^^xsd:dateTime ;
+    am:recallNumber "RC-2025-031" .
+
+am:recall_rc_2026_007 a am:Recall ;
+    rdfs:label "Rappel RC-2026-007 — Pompe de refroidissement batterie"@fr ;
+    am:appliesToModel am:model_e208,
+        am:model_megane_e ;
+    am:concernsPart am:ref_pompe_refroid ;
+    am:issuedAt "2026-03-09T00:00:00"^^xsd:dateTime ;
+    am:recallNumber "RC-2026-007" .
+
+am:warranty_02 a am:Warranty ;
+    rdfs:label "Garantie constructeur 24 mois"@fr ;
+    am:covers am:veh_02 ;
+    am:warrantyDurationMonths 24 ;
+    am:warrantyMaxKm 100000 .
+
+am:warranty_03 a am:Warranty ;
+    rdfs:label "Garantie constructeur 60 mois"@fr ;
+    am:covers am:veh_03 ;
+    am:warrantyDurationMonths 60 ;
+    am:warrantyMaxKm 100000 .
+
+am:warranty_06 a am:Warranty ;
+    rdfs:label "Garantie constructeur 60 mois"@fr ;
+    am:covers am:veh_06 ;
+    am:warrantyDurationMonths 60 ;
+    am:warrantyMaxKm 60000 .
+
+am:warranty_08 a am:Warranty ;
+    rdfs:label "Garantie constructeur 24 mois"@fr ;
+    am:covers am:veh_08 ;
+    am:warrantyDurationMonths 24 .
+
+am:warranty_09 a am:Warranty ;
+    rdfs:label "Garantie constructeur 60 mois"@fr ;
+    am:covers am:veh_09 ;
+    am:warrantyDurationMonths 60 ;
+    am:warrantyMaxKm 60000 .
+
+am:warranty_10 a am:Warranty ;
+    rdfs:label "Garantie constructeur 60 mois"@fr ;
+    am:covers am:veh_10 ;
+    am:warrantyDurationMonths 60 .
+
+am:warranty_11 a am:Warranty ;
+    rdfs:label "Garantie constructeur 24 mois"@fr ;
+    am:covers am:veh_11 ;
+    am:warrantyDurationMonths 24 .
+
+am:warranty_12 a am:Warranty ;
+    rdfs:label "Garantie constructeur 36 mois"@fr ;
+    am:covers am:veh_12 ;
+    am:warrantyDurationMonths 36 ;
+    am:warrantyMaxKm 100000 .
+
+am:warranty_13 a am:Warranty ;
+    rdfs:label "Garantie constructeur 24 mois"@fr ;
+    am:covers am:veh_13 ;
+    am:warrantyDurationMonths 24 ;
+    am:warrantyMaxKm 150000 .
+
+am:warranty_15 a am:Warranty ;
+    rdfs:label "Garantie constructeur 36 mois"@fr ;
+    am:covers am:veh_15 ;
+    am:warrantyDurationMonths 36 .
+
+am:warranty_16 a am:Warranty ;
+    rdfs:label "Garantie constructeur 60 mois"@fr ;
+    am:covers am:veh_16 ;
+    am:warrantyDurationMonths 60 ;
+    am:warrantyMaxKm 60000 .
+
+am:warranty_18 a am:Warranty ;
+    rdfs:label "Garantie constructeur 24 mois"@fr ;
+    am:covers am:veh_18 ;
+    am:warrantyDurationMonths 24 ;
+    am:warrantyMaxKm 100000 .
+
+am:warranty_19 a am:Warranty ;
+    rdfs:label "Garantie constructeur 60 mois"@fr ;
+    am:covers am:veh_19 ;
+    am:warrantyDurationMonths 60 ;
+    am:warrantyMaxKm 60000 .
+
+am:warranty_24 a am:Warranty ;
+    rdfs:label "Garantie constructeur 60 mois"@fr ;
+    am:covers am:veh_24 ;
+    am:warrantyDurationMonths 60 .
+
+am:warranty_25 a am:Warranty ;
+    rdfs:label "Garantie constructeur 36 mois"@fr ;
+    am:covers am:veh_25 ;
+    am:warrantyDurationMonths 36 ;
+    am:warrantyMaxKm 100000 .
+
+am:warranty_26 a am:Warranty ;
+    rdfs:label "Garantie constructeur 24 mois"@fr ;
+    am:covers am:veh_26 ;
+    am:warrantyDurationMonths 24 .
+
+am:warranty_27 a am:Warranty ;
+    rdfs:label "Garantie constructeur 24 mois"@fr ;
+    am:covers am:veh_27 ;
+    am:warrantyDurationMonths 24 .
+
+am:warranty_28 a am:Warranty ;
+    rdfs:label "Garantie constructeur 24 mois"@fr ;
+    am:covers am:veh_28 ;
+    am:warrantyDurationMonths 24 ;
+    am:warrantyMaxKm 60000 .
+
+am:warranty_29 a am:Warranty ;
+    rdfs:label "Garantie constructeur 36 mois"@fr ;
+    am:covers am:veh_29 ;
+    am:warrantyDurationMonths 36 ;
+    am:warrantyMaxKm 150000 .
+
+am:warranty_32 a am:Warranty ;
+    rdfs:label "Garantie constructeur 36 mois"@fr ;
+    am:covers am:veh_32 ;
+    am:warrantyDurationMonths 36 ;
+    am:warrantyMaxKm 60000 .
+
+am:warranty_33 a am:Warranty ;
+    rdfs:label "Garantie constructeur 24 mois"@fr ;
+    am:covers am:veh_33 ;
+    am:warrantyDurationMonths 24 .
+
+am:warranty_36 a am:Warranty ;
+    rdfs:label "Garantie constructeur 36 mois"@fr ;
+    am:covers am:veh_36 ;
+    am:warrantyDurationMonths 36 ;
+    am:warrantyMaxKm 60000 .
+
+am:warranty_37 a am:Warranty ;
+    rdfs:label "Garantie constructeur 60 mois"@fr ;
+    am:covers am:veh_37 ;
+    am:warrantyDurationMonths 60 ;
+    am:warrantyMaxKm 100000 .
+
+am:warranty_38 a am:Warranty ;
+    rdfs:label "Garantie constructeur 36 mois"@fr ;
+    am:covers am:veh_38 ;
+    am:warrantyDurationMonths 36 ;
+    am:warrantyMaxKm 60000 .
+
+am:warranty_40 a am:Warranty ;
+    rdfs:label "Garantie constructeur 24 mois"@fr ;
+    am:covers am:veh_40 ;
+    am:warrantyDurationMonths 24 ;
+    am:warrantyMaxKm 100000 .
+
+am:brand_citroen a am:Brand ;
+    rdfs:label "Citroën"@fr ;
+    am:brandName "Citroën" ;
+    am:displayName "Citroën" .
+
+am:brand_dacia a am:Brand ;
+    rdfs:label "Dacia"@fr ;
+    am:brandName "Dacia" ;
+    am:displayName "Dacia" .
+
+am:brand_hyundai a am:Brand ;
+    rdfs:label "Hyundai"@fr ;
+    am:brandName "Hyundai" ;
+    am:displayName "Hyundai" .
+
+am:brand_michelin a am:Brand ;
+    rdfs:label "Michelin"@fr ;
+    am:brandName "Michelin" ;
+    am:displayName "Michelin" .
+
+am:brand_ngk a am:Brand ;
+    rdfs:label "NGK"@fr ;
+    am:brandName "NGK" ;
+    am:displayName "NGK" .
+
+am:brand_toyota a am:Brand ;
+    rdfs:label "Toyota"@fr ;
+    am:brandName "Toyota" ;
+    am:displayName "Toyota" .
+
+am:brand_varta a am:Brand ;
+    rdfs:label "Varta"@fr ;
+    am:brandName "Varta" ;
+    am:displayName "Varta" .
+
+am:client_01 a am:Customer ;
+    rdfs:label "Andrea Blanc"@fr ;
+    am:displayName "Andrea Blanc" .
+
+am:client_03 a am:Customer ;
+    rdfs:label "Tom Durand"@fr ;
+    am:displayName "Tom Durand" .
+
+am:client_04 a am:Customer ;
+    rdfs:label "Elio Richard"@fr ;
+    am:displayName "Elio Richard" .
+
+am:client_06 a am:Customer ;
+    rdfs:label "Elio Bonnet"@fr ;
+    am:displayName "Elio Bonnet" .
+
+am:client_07 a am:Customer ;
+    rdfs:label "Théo Guerin"@fr ;
+    am:displayName "Théo Guerin" .
+
+am:client_09 a am:Customer ;
+    rdfs:label "Maëlle Mathieu"@fr ;
+    am:displayName "Maëlle Mathieu" .
+
+am:client_12 a am:Customer ;
+    rdfs:label "Victor Legrand"@fr ;
+    am:displayName "Victor Legrand" .
+
+am:client_13 a am:Customer ;
+    rdfs:label "Alex Moreau"@fr ;
+    am:displayName "Alex Moreau" .
+
+am:client_14 a am:Customer ;
+    rdfs:label "Yael Dumont"@fr ;
+    am:displayName "Yael Dumont" .
+
+am:client_16 a am:Customer ;
+    rdfs:label "Nolan Perrin"@fr ;
+    am:displayName "Nolan Perrin" .
+
+am:client_17 a am:Customer ;
+    rdfs:label "Salomé David"@fr ;
+    am:displayName "Salomé David" .
+
+am:client_18 a am:Customer ;
+    rdfs:label "Sam David"@fr ;
+    am:displayName "Sam David" .
+
+am:client_19 a am:Customer ;
+    rdfs:label "Faustine Martinez"@fr ;
+    am:displayName "Faustine Martinez" .
+
+am:client_20 a am:Customer ;
+    rdfs:label "Sacha Leroy"@fr ;
+    am:displayName "Sacha Leroy" .
+
+am:client_21 a am:Customer ;
+    rdfs:label "Nina Robert"@fr ;
+    am:displayName "Nina Robert" .
+
+am:client_23 a am:Customer ;
+    rdfs:label "Claude Thomas"@fr ;
+    am:displayName "Claude Thomas" .
+
+am:client_24 a am:Customer ;
+    rdfs:label "Inès Blanc"@fr ;
+    am:displayName "Inès Blanc" .
+
+am:client_25 a am:Customer ;
+    rdfs:label "Mila Garnier"@fr ;
+    am:displayName "Mila Garnier" .
+
+am:client_27 a am:Customer ;
+    rdfs:label "Salomé Mercier"@fr ;
+    am:displayName "Salomé Mercier" .
+
+am:client_28 a am:Customer ;
+    rdfs:label "Louison Morel"@fr ;
+    am:displayName "Louison Morel" .
+
+am:client_29 a am:Customer ;
+    rdfs:label "Inès Roussel"@fr ;
+    am:displayName "Inès Roussel" .
+
+am:client_30 a am:Customer ;
+    rdfs:label "Andrea Vincent"@fr ;
+    am:displayName "Andrea Vincent" .
+
+am:dtc_P0299 a am:DiagnosticTroubleCode ;
+    rdfs:label "P0299 — Suralimentation insuffisante (turbo)"@fr ;
+    am:dtcCode "P0299" .
+
+am:dtc_P2002 a am:DiagnosticTroubleCode ;
+    rdfs:label "P2002 — Efficacité du filtre à particules sous le seuil"@fr ;
+    am:dtcCode "P2002" .
+
+am:eng_01_elec a am:ElectricMotor,
+        am:Engine ;
+    rdfs:label "Moteur électrique Ioniq Hybride"@fr ;
+    am:powerKw 43.0 ;
+    am:usesFuel am:Electric .
+
+am:eng_01_ice a am:Engine,
+        am:InternalCombustionEngine ;
+    rdfs:label "Moteur thermique Ioniq Hybride"@fr ;
+    am:displacementCc 1580 ;
+    am:powerKw 77.0 ;
+    am:usesFuel am:Petrol .
+
+am:eng_02_elec a am:ElectricMotor,
+        am:Engine ;
+    rdfs:label "Moteur électrique Mégane E-Tech"@fr ;
+    am:powerKw 160.0 ;
+    am:usesFuel am:Electric .
+
+am:eng_03_ice a am:Engine,
+        am:InternalCombustionEngine ;
+    rdfs:label "Moteur thermique C3"@fr ;
+    am:displacementCc 1199 ;
+    am:powerKw 61.0 ;
+    am:usesFuel am:Petrol .
+
+am:eng_04_elec a am:ElectricMotor,
+        am:Engine ;
+    rdfs:label "Moteur électrique e-208"@fr ;
+    am:powerKw 100.0 ;
+    am:usesFuel am:Electric .
+
+am:eng_05_elec a am:ElectricMotor,
+        am:Engine ;
+    rdfs:label "Moteur électrique Yaris Hybride"@fr ;
+    am:powerKw 43.0 ;
+    am:usesFuel am:Electric .
+
+am:eng_05_ice a am:Engine,
+        am:InternalCombustionEngine ;
+    rdfs:label "Moteur thermique Yaris Hybride"@fr ;
+    am:displacementCc 1490 ;
+    am:powerKw 68.0 ;
+    am:usesFuel am:Petrol .
+
+am:eng_06_elec a am:ElectricMotor,
+        am:Engine ;
+    rdfs:label "Moteur électrique Mégane E-Tech"@fr ;
+    am:powerKw 160.0 ;
+    am:usesFuel am:Electric .
+
+am:eng_07_elec a am:ElectricMotor,
+        am:Engine ;
+    rdfs:label "Moteur électrique Mégane E-Tech"@fr ;
+    am:powerKw 160.0 ;
+    am:usesFuel am:Electric .
+
+am:eng_08_ice a am:Engine,
+        am:InternalCombustionEngine ;
+    rdfs:label "Moteur thermique C3"@fr ;
+    am:displacementCc 1199 ;
+    am:powerKw 61.0 ;
+    am:usesFuel am:Petrol .
+
+am:eng_09_elec a am:ElectricMotor,
+        am:Engine ;
+    rdfs:label "Moteur électrique e-208"@fr ;
+    am:powerKw 100.0 ;
+    am:usesFuel am:Electric .
+
+am:eng_10_elec a am:ElectricMotor,
+        am:Engine ;
+    rdfs:label "Moteur électrique Ioniq Hybride"@fr ;
+    am:powerKw 43.0 ;
+    am:usesFuel am:Electric .
+
+am:eng_10_ice a am:Engine,
+        am:InternalCombustionEngine ;
+    rdfs:label "Moteur thermique Ioniq Hybride"@fr ;
+    am:displacementCc 1580 ;
+    am:powerKw 77.0 ;
+    am:usesFuel am:Petrol .
+
+am:eng_11_ice a am:Engine,
+        am:InternalCombustionEngine ;
+    rdfs:label "Moteur thermique Duster"@fr ;
+    am:displacementCc 1461 ;
+    am:powerKw 85.0 ;
+    am:usesFuel am:Diesel .
+
+am:eng_12_ice a am:Engine,
+        am:InternalCombustionEngine ;
+    rdfs:label "Moteur thermique C3"@fr ;
+    am:displacementCc 1199 ;
+    am:powerKw 61.0 ;
+    am:usesFuel am:Petrol .
+
+am:eng_13_elec a am:ElectricMotor,
+        am:Engine ;
+    rdfs:label "Moteur électrique Mégane E-Tech"@fr ;
+    am:powerKw 160.0 ;
+    am:usesFuel am:Electric .
+
+am:eng_14_elec a am:ElectricMotor,
+        am:Engine ;
+    rdfs:label "Moteur électrique Ioniq Hybride"@fr ;
+    am:powerKw 43.0 ;
+    am:usesFuel am:Electric .
+
+am:eng_14_ice a am:Engine,
+        am:InternalCombustionEngine ;
+    rdfs:label "Moteur thermique Ioniq Hybride"@fr ;
+    am:displacementCc 1580 ;
+    am:powerKw 77.0 ;
+    am:usesFuel am:Petrol .
+
+am:eng_15_ice a am:Engine,
+        am:InternalCombustionEngine ;
+    rdfs:label "Moteur thermique 308"@fr ;
+    am:displacementCc 1499 ;
+    am:powerKw 96.0 ;
+    am:usesFuel am:Diesel .
+
+am:eng_16_ice a am:Engine,
+        am:InternalCombustionEngine ;
+    rdfs:label "Moteur thermique C3"@fr ;
+    am:displacementCc 1199 ;
+    am:powerKw 61.0 ;
+    am:usesFuel am:Petrol .
+
+am:eng_17_ice a am:Engine,
+        am:InternalCombustionEngine ;
+    rdfs:label "Moteur thermique 308"@fr ;
+    am:displacementCc 1499 ;
+    am:powerKw 96.0 ;
+    am:usesFuel am:Diesel .
+
+am:eng_18_ice a am:Engine,
+        am:InternalCombustionEngine ;
+    rdfs:label "Moteur thermique Clio V"@fr ;
+    am:displacementCc 999 ;
+    am:powerKw 67.0 ;
+    am:usesFuel am:Petrol .
+
+am:eng_19_elec a am:ElectricMotor,
+        am:Engine ;
+    rdfs:label "Moteur électrique Ioniq Hybride"@fr ;
+    am:powerKw 43.0 ;
+    am:usesFuel am:Electric .
+
+am:eng_19_ice a am:Engine,
+        am:InternalCombustionEngine ;
+    rdfs:label "Moteur thermique Ioniq Hybride"@fr ;
+    am:displacementCc 1580 ;
+    am:powerKw 77.0 ;
+    am:usesFuel am:Petrol .
+
+am:eng_20_ice a am:Engine,
+        am:InternalCombustionEngine ;
+    rdfs:label "Moteur thermique Duster"@fr ;
+    am:displacementCc 1461 ;
+    am:powerKw 85.0 ;
+    am:usesFuel am:Diesel .
+
+am:eng_21_elec a am:ElectricMotor,
+        am:Engine ;
+    rdfs:label "Moteur électrique e-208"@fr ;
+    am:powerKw 100.0 ;
+    am:usesFuel am:Electric .
+
+am:eng_22_elec a am:ElectricMotor,
+        am:Engine ;
+    rdfs:label "Moteur électrique e-208"@fr ;
+    am:powerKw 100.0 ;
+    am:usesFuel am:Electric .
+
+am:eng_23_ice a am:Engine,
+        am:InternalCombustionEngine ;
+    rdfs:label "Moteur thermique 308"@fr ;
+    am:displacementCc 1499 ;
+    am:powerKw 96.0 ;
+    am:usesFuel am:Diesel .
+
+am:eng_24_ice a am:Engine,
+        am:InternalCombustionEngine ;
+    rdfs:label "Moteur thermique Duster"@fr ;
+    am:displacementCc 1461 ;
+    am:powerKw 85.0 ;
+    am:usesFuel am:Diesel .
+
+am:eng_25_ice a am:Engine,
+        am:InternalCombustionEngine ;
+    rdfs:label "Moteur thermique Clio V"@fr ;
+    am:displacementCc 999 ;
+    am:powerKw 67.0 ;
+    am:usesFuel am:Petrol .
+
+am:eng_26_elec a am:ElectricMotor,
+        am:Engine ;
+    rdfs:label "Moteur électrique Ioniq Hybride"@fr ;
+    am:powerKw 43.0 ;
+    am:usesFuel am:Electric .
+
+am:eng_26_ice a am:Engine,
+        am:InternalCombustionEngine ;
+    rdfs:label "Moteur thermique Ioniq Hybride"@fr ;
+    am:displacementCc 1580 ;
+    am:powerKw 77.0 ;
+    am:usesFuel am:Petrol .
+
+am:eng_27_ice a am:Engine,
+        am:InternalCombustionEngine ;
+    rdfs:label "Moteur thermique 308"@fr ;
+    am:displacementCc 1499 ;
+    am:powerKw 96.0 ;
+    am:usesFuel am:Diesel .
+
+am:eng_28_elec a am:ElectricMotor,
+        am:Engine ;
+    rdfs:label "Moteur électrique Yaris Hybride"@fr ;
+    am:powerKw 43.0 ;
+    am:usesFuel am:Electric .
+
+am:eng_28_ice a am:Engine,
+        am:InternalCombustionEngine ;
+    rdfs:label "Moteur thermique Yaris Hybride"@fr ;
+    am:displacementCc 1490 ;
+    am:powerKw 68.0 ;
+    am:usesFuel am:Petrol .
+
+am:eng_29_ice a am:Engine,
+        am:InternalCombustionEngine ;
+    rdfs:label "Moteur thermique Duster"@fr ;
+    am:displacementCc 1461 ;
+    am:powerKw 85.0 ;
+    am:usesFuel am:Diesel .
+
+am:eng_30_ice a am:Engine,
+        am:InternalCombustionEngine ;
+    rdfs:label "Moteur thermique 308"@fr ;
+    am:displacementCc 1499 ;
+    am:powerKw 96.0 ;
+    am:usesFuel am:Diesel .
+
+am:eng_31_elec a am:ElectricMotor,
+        am:Engine ;
+    rdfs:label "Moteur électrique Yaris Hybride"@fr ;
+    am:powerKw 43.0 ;
+    am:usesFuel am:Electric .
+
+am:eng_31_ice a am:Engine,
+        am:InternalCombustionEngine ;
+    rdfs:label "Moteur thermique Yaris Hybride"@fr ;
+    am:displacementCc 1490 ;
+    am:powerKw 68.0 ;
+    am:usesFuel am:Petrol .
+
+am:eng_32_ice a am:Engine,
+        am:InternalCombustionEngine ;
+    rdfs:label "Moteur thermique Duster"@fr ;
+    am:displacementCc 1461 ;
+    am:powerKw 85.0 ;
+    am:usesFuel am:Diesel .
+
+am:eng_33_elec a am:ElectricMotor,
+        am:Engine ;
+    rdfs:label "Moteur électrique Yaris Hybride"@fr ;
+    am:powerKw 43.0 ;
+    am:usesFuel am:Electric .
+
+am:eng_33_ice a am:Engine,
+        am:InternalCombustionEngine ;
+    rdfs:label "Moteur thermique Yaris Hybride"@fr ;
+    am:displacementCc 1490 ;
+    am:powerKw 68.0 ;
+    am:usesFuel am:Petrol .
+
+am:eng_34_elec a am:ElectricMotor,
+        am:Engine ;
+    rdfs:label "Moteur électrique Yaris Hybride"@fr ;
+    am:powerKw 43.0 ;
+    am:usesFuel am:Electric .
+
+am:eng_34_ice a am:Engine,
+        am:InternalCombustionEngine ;
+    rdfs:label "Moteur thermique Yaris Hybride"@fr ;
+    am:displacementCc 1490 ;
+    am:powerKw 68.0 ;
+    am:usesFuel am:Petrol .
+
+am:eng_35_ice a am:Engine,
+        am:InternalCombustionEngine ;
+    rdfs:label "Moteur thermique C3"@fr ;
+    am:displacementCc 1199 ;
+    am:powerKw 61.0 ;
+    am:usesFuel am:Petrol .
+
+am:eng_36_ice a am:Engine,
+        am:InternalCombustionEngine ;
+    rdfs:label "Moteur thermique Clio V"@fr ;
+    am:displacementCc 999 ;
+    am:powerKw 67.0 ;
+    am:usesFuel am:Petrol .
+
+am:eng_37_ice a am:Engine,
+        am:InternalCombustionEngine ;
+    rdfs:label "Moteur thermique Clio V"@fr ;
+    am:displacementCc 999 ;
+    am:powerKw 67.0 ;
+    am:usesFuel am:Petrol .
+
+am:eng_38_elec a am:ElectricMotor,
+        am:Engine ;
+    rdfs:label "Moteur électrique e-208"@fr ;
+    am:powerKw 100.0 ;
+    am:usesFuel am:Electric .
+
+am:eng_39_elec a am:ElectricMotor,
+        am:Engine ;
+    rdfs:label "Moteur électrique Mégane E-Tech"@fr ;
+    am:powerKw 160.0 ;
+    am:usesFuel am:Electric .
+
+am:eng_40_ice a am:Engine,
+        am:InternalCombustionEngine ;
+    rdfs:label "Moteur thermique Clio V"@fr ;
+    am:displacementCc 999 ;
+    am:powerKw 67.0 ;
+    am:usesFuel am:Petrol .
+
+am:km_01_000 a am:MileageReading ;
+    am:readingDate "2025-01-06T00:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 32799.0 ;
+    am:readingOf am:veh_01 .
+
+am:km_01_001 a am:MileageReading ;
+    am:readingDate "2025-06-03T18:30:00"^^xsd:dateTime ;
+    am:readingMileageKm 36553.0 ;
+    am:readingOf am:veh_01 .
+
+am:km_01_002 a am:MileageReading ;
+    am:readingDate "2025-08-08T23:30:00"^^xsd:dateTime ;
+    am:readingMileageKm 37847.0 ;
+    am:readingOf am:veh_01 .
+
+am:km_01_003 a am:MileageReading ;
+    am:readingDate "2025-12-10T16:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 40943.0 ;
+    am:readingOf am:veh_01 .
+
+am:km_02_000 a am:MileageReading ;
+    am:readingDate "2025-01-06T00:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 12718.0 ;
+    am:readingOf am:veh_02 .
+
+am:km_02_001 a am:MileageReading ;
+    am:readingDate "2025-05-06T23:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 15295.0 ;
+    am:readingOf am:veh_02 .
+
+am:km_02_002 a am:MileageReading ;
+    am:readingDate "2025-11-18T21:30:00"^^xsd:dateTime ;
+    am:readingMileageKm 19230.0 ;
+    am:readingOf am:veh_02 .
+
+am:km_02_003 a am:MileageReading ;
+    am:readingDate "2026-03-19T16:45:00"^^xsd:dateTime ;
+    am:readingMileageKm 21356.0 ;
+    am:readingOf am:veh_02 .
+
+am:km_02_004 a am:MileageReading ;
+    am:readingDate "2026-05-30T17:45:00"^^xsd:dateTime ;
+    am:readingMileageKm 22637.0 ;
+    am:readingOf am:veh_02 .
+
+am:km_03_000 a am:MileageReading ;
+    am:readingDate "2025-01-06T00:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 36548.0 ;
+    am:readingOf am:veh_03 .
+
+am:km_03_001 a am:MileageReading ;
+    am:readingDate "2025-10-06T06:15:00"^^xsd:dateTime ;
+    am:readingMileageKm 42113.0 ;
+    am:readingOf am:veh_03 .
+
+am:km_04_000 a am:MileageReading ;
+    am:readingDate "2025-01-06T00:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 35774.0 ;
+    am:readingOf am:veh_04 .
+
+am:km_04_001 a am:MileageReading ;
+    am:readingDate "2025-05-22T00:30:00"^^xsd:dateTime ;
+    am:readingMileageKm 40615.0 ;
+    am:readingOf am:veh_04 .
+
+am:km_04_002 a am:MileageReading ;
+    am:readingDate "2026-07-24T04:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 54599.0 ;
+    am:readingOf am:veh_04 .
+
+am:km_04_003 a am:MileageReading ;
+    am:readingDate "2026-10-24T15:30:00"^^xsd:dateTime ;
+    am:readingMileageKm 57455.0 ;
+    am:readingOf am:veh_04 .
+
+am:km_05_000 a am:MileageReading ;
+    am:readingDate "2025-01-06T00:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 31586.0 ;
+    am:readingOf am:veh_05 .
+
+am:km_05_001 a am:MileageReading ;
+    am:readingDate "2025-09-25T04:45:00"^^xsd:dateTime ;
+    am:readingMileageKm 46352.0 ;
+    am:readingOf am:veh_05 .
+
+am:km_05_002 a am:MileageReading ;
+    am:readingDate "2026-08-14T05:30:00"^^xsd:dateTime ;
+    am:readingMileageKm 65527.0 ;
+    am:readingOf am:veh_05 .
+
+am:km_05_003 a am:MileageReading ;
+    am:readingDate "2026-09-17T23:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 67676.0 ;
+    am:readingOf am:veh_05 .
+
+am:km_06_000 a am:MileageReading ;
+    am:readingDate "2025-01-06T00:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 26436.0 ;
+    am:readingOf am:veh_06 .
+
+am:km_06_001 a am:MileageReading ;
+    am:readingDate "2025-02-25T07:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 28405.0 ;
+    am:readingOf am:veh_06 .
+
+am:km_06_002 a am:MileageReading ;
+    am:readingDate "2025-04-09T00:30:00"^^xsd:dateTime ;
+    am:readingMileageKm 29904.0 ;
+    am:readingOf am:veh_06 .
+
+am:km_06_003 a am:MileageReading ;
+    am:readingDate "2025-09-01T14:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 34960.0 ;
+    am:readingOf am:veh_06 .
+
+am:km_07_000 a am:MileageReading ;
+    am:readingDate "2025-01-06T00:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 22141.0 ;
+    am:readingOf am:veh_07 .
+
+am:km_07_001 a am:MileageReading ;
+    am:readingDate "2025-12-17T02:30:00"^^xsd:dateTime ;
+    am:readingMileageKm 39303.0 ;
+    am:readingOf am:veh_07 .
+
+am:km_07_002 a am:MileageReading ;
+    am:readingDate "2026-03-24T14:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 43393.0 ;
+    am:readingOf am:veh_07 .
+
+am:km_07_003 a am:MileageReading ;
+    am:readingDate "2026-06-25T07:30:00"^^xsd:dateTime ;
+    am:readingMileageKm 47965.0 ;
+    am:readingOf am:veh_07 .
+
+am:km_08_000 a am:MileageReading ;
+    am:readingDate "2025-01-06T00:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 64447.0 ;
+    am:readingOf am:veh_08 .
+
+am:km_08_001 a am:MileageReading ;
+    am:readingDate "2025-01-26T01:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 65208.0 ;
+    am:readingOf am:veh_08 .
+
+am:km_08_002 a am:MileageReading ;
+    am:readingDate "2025-02-28T06:30:00"^^xsd:dateTime ;
+    am:readingMileageKm 66594.0 ;
+    am:readingOf am:veh_08 .
+
+am:km_08_003 a am:MileageReading ;
+    am:readingDate "2025-11-06T07:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 75128.0 ;
+    am:readingOf am:veh_08 .
+
+am:km_09_000 a am:MileageReading ;
+    am:readingDate "2025-01-06T00:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 62574.0 ;
+    am:readingOf am:veh_09 .
+
+am:km_09_001 a am:MileageReading ;
+    am:readingDate "2025-01-22T01:30:00"^^xsd:dateTime ;
+    am:readingMileageKm 63602.0 ;
+    am:readingOf am:veh_09 .
+
+am:km_09_002 a am:MileageReading ;
+    am:readingDate "2025-03-13T17:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 66602.0 ;
+    am:readingOf am:veh_09 .
+
+am:km_09_003 a am:MileageReading ;
+    am:readingDate "2025-11-02T11:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 79387.0 ;
+    am:readingOf am:veh_09 .
+
+am:km_10_000 a am:MileageReading ;
+    am:readingDate "2025-01-06T00:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 29659.0 ;
+    am:readingOf am:veh_10 .
+
+am:km_10_001 a am:MileageReading ;
+    am:readingDate "2025-03-31T17:30:00"^^xsd:dateTime ;
+    am:readingMileageKm 31475.0 ;
+    am:readingOf am:veh_10 .
+
+am:km_10_002 a am:MileageReading ;
+    am:readingDate "2025-11-04T03:45:00"^^xsd:dateTime ;
+    am:readingMileageKm 36318.0 ;
+    am:readingOf am:veh_10 .
+
+am:km_10_003 a am:MileageReading ;
+    am:readingDate "2026-05-07T04:45:00"^^xsd:dateTime ;
+    am:readingMileageKm 40688.0 ;
+    am:readingOf am:veh_10 .
+
+am:km_11_000 a am:MileageReading ;
+    am:readingDate "2025-01-06T00:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 23474.0 ;
+    am:readingOf am:veh_11 .
+
+am:km_11_001 a am:MileageReading ;
+    am:readingDate "2025-03-25T16:45:00"^^xsd:dateTime ;
+    am:readingMileageKm 25092.0 ;
+    am:readingOf am:veh_11 .
+
+am:km_11_002 a am:MileageReading ;
+    am:readingDate "2025-09-25T15:45:00"^^xsd:dateTime ;
+    am:readingMileageKm 29102.0 ;
+    am:readingOf am:veh_11 .
+
+am:km_11_003 a am:MileageReading ;
+    am:readingDate "2025-11-30T03:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 30487.0 ;
+    am:readingOf am:veh_11 .
+
+am:km_11_004 a am:MileageReading ;
+    am:readingDate "2025-12-17T13:30:00"^^xsd:dateTime ;
+    am:readingMileageKm 30859.0 ;
+    am:readingOf am:veh_11 .
+
+am:km_12_000 a am:MileageReading ;
+    am:readingDate "2025-01-06T00:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 50628.0 ;
+    am:readingOf am:veh_12 .
+
+am:km_12_001 a am:MileageReading ;
+    am:readingDate "2025-04-07T13:45:00"^^xsd:dateTime ;
+    am:readingMileageKm 53183.0 ;
+    am:readingOf am:veh_12 .
+
+am:km_12_002 a am:MileageReading ;
+    am:readingDate "2025-08-25T12:15:00"^^xsd:dateTime ;
+    am:readingMileageKm 58043.0 ;
+    am:readingOf am:veh_12 .
+
+am:km_12_003 a am:MileageReading ;
+    am:readingDate "2026-08-07T17:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 68417.0 ;
+    am:readingOf am:veh_12 .
+
+am:km_13_000 a am:MileageReading ;
+    am:readingDate "2025-01-06T00:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 22127.0 ;
+    am:readingOf am:veh_13 .
+
+am:km_13_001 a am:MileageReading ;
+    am:readingDate "2025-10-03T13:15:00"^^xsd:dateTime ;
+    am:readingMileageKm 29922.0 ;
+    am:readingOf am:veh_13 .
+
+am:km_13_002 a am:MileageReading ;
+    am:readingDate "2026-05-19T15:15:00"^^xsd:dateTime ;
+    am:readingMileageKm 35726.0 ;
+    am:readingOf am:veh_13 .
+
+am:km_14_000 a am:MileageReading ;
+    am:readingDate "2025-01-06T00:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 61149.0 ;
+    am:readingOf am:veh_14 .
+
+am:km_14_001 a am:MileageReading ;
+    am:readingDate "2025-07-25T07:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 71040.0 ;
+    am:readingOf am:veh_14 .
+
+am:km_14_002 a am:MileageReading ;
+    am:readingDate "2025-12-07T02:15:00"^^xsd:dateTime ;
+    am:readingMileageKm 76685.0 ;
+    am:readingOf am:veh_14 .
+
+am:km_14_003 a am:MileageReading ;
+    am:readingDate "2026-04-05T11:15:00"^^xsd:dateTime ;
+    am:readingMileageKm 82463.0 ;
+    am:readingOf am:veh_14 .
+
+am:km_15_000 a am:MileageReading ;
+    am:readingDate "2025-01-06T00:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 42839.0 ;
+    am:readingOf am:veh_15 .
+
+am:km_15_001 a am:MileageReading ;
+    am:readingDate "2026-01-02T03:15:00"^^xsd:dateTime ;
+    am:readingMileageKm 58862.0 ;
+    am:readingOf am:veh_15 .
+
+am:km_15_002 a am:MileageReading ;
+    am:readingDate "2026-06-30T02:15:00"^^xsd:dateTime ;
+    am:readingMileageKm 65802.0 ;
+    am:readingOf am:veh_15 .
+
+am:km_15_003 a am:MileageReading ;
+    am:readingDate "2026-07-22T22:30:00"^^xsd:dateTime ;
+    am:readingMileageKm 66690.0 ;
+    am:readingOf am:veh_15 .
+
+am:km_16_000 a am:MileageReading ;
+    am:readingDate "2025-01-06T00:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 33032.0 ;
+    am:readingOf am:veh_16 .
+
+am:km_16_001 a am:MileageReading ;
+    am:readingDate "2025-03-08T03:30:00"^^xsd:dateTime ;
+    am:readingMileageKm 34106.0 ;
+    am:readingOf am:veh_16 .
+
+am:km_16_002 a am:MileageReading ;
+    am:readingDate "2025-06-29T02:45:00"^^xsd:dateTime ;
+    am:readingMileageKm 36546.0 ;
+    am:readingOf am:veh_16 .
+
+am:km_16_003 a am:MileageReading ;
+    am:readingDate "2026-08-03T06:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 44934.0 ;
+    am:readingOf am:veh_16 .
+
+am:km_17_000 a am:MileageReading ;
+    am:readingDate "2025-01-06T00:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 58959.0 ;
+    am:readingOf am:veh_17 .
+
+am:km_17_001 a am:MileageReading ;
+    am:readingDate "2025-01-08T12:15:00"^^xsd:dateTime ;
+    am:readingMileageKm 59095.0 ;
+    am:readingOf am:veh_17 .
+
+am:km_17_002 a am:MileageReading ;
+    am:readingDate "2025-05-08T16:45:00"^^xsd:dateTime ;
+    am:readingMileageKm 66212.0 ;
+    am:readingOf am:veh_17 .
+
+am:km_17_003 a am:MileageReading ;
+    am:readingDate "2025-06-18T16:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 68597.0 ;
+    am:readingOf am:veh_17 .
+
+am:km_17_004 a am:MileageReading ;
+    am:readingDate "2026-02-23T01:45:00"^^xsd:dateTime ;
+    am:readingMileageKm 83059.0 ;
+    am:readingOf am:veh_17 .
+
+am:km_18_000 a am:MileageReading ;
+    am:readingDate "2025-01-06T00:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 71070.0 ;
+    am:readingOf am:veh_18 .
+
+am:km_18_001 a am:MileageReading ;
+    am:readingDate "2025-01-26T01:45:00"^^xsd:dateTime ;
+    am:readingMileageKm 72130.0 ;
+    am:readingOf am:veh_18 .
+
+am:km_18_002 a am:MileageReading ;
+    am:readingDate "2025-06-27T23:30:00"^^xsd:dateTime ;
+    am:readingMileageKm 79337.0 ;
+    am:readingOf am:veh_18 .
+
+am:km_18_003 a am:MileageReading ;
+    am:readingDate "2025-12-19T19:15:00"^^xsd:dateTime ;
+    am:readingMileageKm 88991.0 ;
+    am:readingOf am:veh_18 .
+
+am:km_18_004 a am:MileageReading ;
+    am:readingDate "2026-04-13T15:15:00"^^xsd:dateTime ;
+    am:readingMileageKm 96053.0 ;
+    am:readingOf am:veh_18 .
+
+am:km_19_000 a am:MileageReading ;
+    am:readingDate "2025-01-06T00:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 59332.0 ;
+    am:readingOf am:veh_19 .
+
+am:km_19_001 a am:MileageReading ;
+    am:readingDate "2025-06-18T03:30:00"^^xsd:dateTime ;
+    am:readingMileageKm 66122.0 ;
+    am:readingOf am:veh_19 .
+
+am:km_19_002 a am:MileageReading ;
+    am:readingDate "2025-07-10T10:30:00"^^xsd:dateTime ;
+    am:readingMileageKm 67105.0 ;
+    am:readingOf am:veh_19 .
+
+am:km_19_003 a am:MileageReading ;
+    am:readingDate "2026-07-27T18:45:00"^^xsd:dateTime ;
+    am:readingMileageKm 83315.0 ;
+    am:readingOf am:veh_19 .
+
+am:km_19_004 a am:MileageReading ;
+    am:readingDate "2026-10-07T13:15:00"^^xsd:dateTime ;
+    am:readingMileageKm 86781.0 ;
+    am:readingOf am:veh_19 .
+
+am:km_20_000 a am:MileageReading ;
+    am:readingDate "2025-01-06T00:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 35282.0 ;
+    am:readingOf am:veh_20 .
+
+am:km_20_001 a am:MileageReading ;
+    am:readingDate "2025-07-15T09:15:00"^^xsd:dateTime ;
+    am:readingMileageKm 41611.0 ;
+    am:readingOf am:veh_20 .
+
+am:km_20_002 a am:MileageReading ;
+    am:readingDate "2026-07-25T13:30:00"^^xsd:dateTime ;
+    am:readingMileageKm 55036.0 ;
+    am:readingOf am:veh_20 .
+
+am:km_20_003 a am:MileageReading ;
+    am:readingDate "2026-09-18T04:45:00"^^xsd:dateTime ;
+    am:readingMileageKm 56959.0 ;
+    am:readingOf am:veh_20 .
+
+am:km_20_004 a am:MileageReading ;
+    am:readingDate "2026-10-19T13:45:00"^^xsd:dateTime ;
+    am:readingMileageKm 57877.0 ;
+    am:readingOf am:veh_20 .
+
+am:km_21_000 a am:MileageReading ;
+    am:readingDate "2025-01-06T00:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 45117.0 ;
+    am:readingOf am:veh_21 .
+
+am:km_21_001 a am:MileageReading ;
+    am:readingDate "2025-01-21T08:30:00"^^xsd:dateTime ;
+    am:readingMileageKm 45932.0 ;
+    am:readingOf am:veh_21 .
+
+am:km_21_002 a am:MileageReading ;
+    am:readingDate "2026-07-16T19:45:00"^^xsd:dateTime ;
+    am:readingMileageKm 76003.0 ;
+    am:readingOf am:veh_21 .
+
+am:km_22_000 a am:MileageReading ;
+    am:readingDate "2025-01-06T00:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 32294.0 ;
+    am:readingOf am:veh_22 .
+
+am:km_22_001 a am:MileageReading ;
+    am:readingDate "2025-05-26T10:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 37307.0 ;
+    am:readingOf am:veh_22 .
+
+am:km_22_002 a am:MileageReading ;
+    am:readingDate "2025-08-21T18:45:00"^^xsd:dateTime ;
+    am:readingMileageKm 39799.0 ;
+    am:readingOf am:veh_22 .
+
+am:km_22_003 a am:MileageReading ;
+    am:readingDate "2025-09-22T21:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 41000.0 ;
+    am:readingOf am:veh_22 .
+
+am:km_23_000 a am:MileageReading ;
+    am:readingDate "2025-01-06T00:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 45857.0 ;
+    am:readingOf am:veh_23 .
+
+am:km_23_001 a am:MileageReading ;
+    am:readingDate "2025-03-01T01:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 48192.0 ;
+    am:readingOf am:veh_23 .
+
+am:km_23_002 a am:MileageReading ;
+    am:readingDate "2025-12-14T18:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 62980.0 ;
+    am:readingOf am:veh_23 .
+
+am:km_23_003 a am:MileageReading ;
+    am:readingDate "2026-07-19T08:15:00"^^xsd:dateTime ;
+    am:readingMileageKm 73996.0 ;
+    am:readingOf am:veh_23 .
+
+am:km_24_000 a am:MileageReading ;
+    am:readingDate "2025-01-06T00:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 45895.0 ;
+    am:readingOf am:veh_24 .
+
+am:km_24_001 a am:MileageReading ;
+    am:readingDate "2025-06-03T02:45:00"^^xsd:dateTime ;
+    am:readingMileageKm 54686.0 ;
+    am:readingOf am:veh_24 .
+
+am:km_24_002 a am:MileageReading ;
+    am:readingDate "2026-09-28T01:15:00"^^xsd:dateTime ;
+    am:readingMileageKm 82511.0 ;
+    am:readingOf am:veh_24 .
+
+am:km_25_000 a am:MileageReading ;
+    am:readingDate "2025-01-06T00:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 83330.0 ;
+    am:readingOf am:veh_25 .
+
+am:km_25_001 a am:MileageReading ;
+    am:readingDate "2026-02-07T13:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 109080.0 ;
+    am:readingOf am:veh_25 .
+
+am:km_25_002 a am:MileageReading ;
+    am:readingDate "2026-04-07T21:45:00"^^xsd:dateTime ;
+    am:readingMileageKm 112814.0 ;
+    am:readingOf am:veh_25 .
+
+am:km_26_000 a am:MileageReading ;
+    am:readingDate "2025-01-06T00:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 52706.0 ;
+    am:readingOf am:veh_26 .
+
+am:km_26_001 a am:MileageReading ;
+    am:readingDate "2025-01-11T04:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 52909.0 ;
+    am:readingOf am:veh_26 .
+
+am:km_26_002 a am:MileageReading ;
+    am:readingDate "2025-07-04T11:45:00"^^xsd:dateTime ;
+    am:readingMileageKm 59403.0 ;
+    am:readingOf am:veh_26 .
+
+am:km_26_003 a am:MileageReading ;
+    am:readingDate "2026-07-28T07:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 73665.0 ;
+    am:readingOf am:veh_26 .
+
+am:km_26_004 a am:MileageReading ;
+    am:readingDate "2026-08-13T20:30:00"^^xsd:dateTime ;
+    am:readingMileageKm 74295.0 ;
+    am:readingOf am:veh_26 .
+
+am:km_27_000 a am:MileageReading ;
+    am:readingDate "2025-01-06T00:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 26164.0 ;
+    am:readingOf am:veh_27 .
+
+am:km_27_001 a am:MileageReading ;
+    am:readingDate "2025-09-10T16:30:00"^^xsd:dateTime ;
+    am:readingMileageKm 32766.0 ;
+    am:readingOf am:veh_27 .
+
+am:km_27_002 a am:MileageReading ;
+    am:readingDate "2025-11-13T14:45:00"^^xsd:dateTime ;
+    am:readingMileageKm 34897.0 ;
+    am:readingOf am:veh_27 .
+
+am:km_27_003 a am:MileageReading ;
+    am:readingDate "2026-01-27T22:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 37021.0 ;
+    am:readingOf am:veh_27 .
+
+am:km_28_000 a am:MileageReading ;
+    am:readingDate "2025-01-06T00:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 21102.0 ;
+    am:readingOf am:veh_28 .
+
+am:km_28_001 a am:MileageReading ;
+    am:readingDate "2025-04-11T20:30:00"^^xsd:dateTime ;
+    am:readingMileageKm 25672.0 ;
+    am:readingOf am:veh_28 .
+
+am:km_28_002 a am:MileageReading ;
+    am:readingDate "2026-05-15T20:15:00"^^xsd:dateTime ;
+    am:readingMileageKm 45169.0 ;
+    am:readingOf am:veh_28 .
+
+am:km_28_003 a am:MileageReading ;
+    am:readingDate "2026-10-16T19:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 52924.0 ;
+    am:readingOf am:veh_28 .
+
+am:km_29_000 a am:MileageReading ;
+    am:readingDate "2025-01-06T00:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 41110.0 ;
+    am:readingOf am:veh_29 .
+
+am:km_29_001 a am:MileageReading ;
+    am:readingDate "2025-04-24T01:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 46502.0 ;
+    am:readingOf am:veh_29 .
+
+am:km_29_002 a am:MileageReading ;
+    am:readingDate "2025-05-18T05:15:00"^^xsd:dateTime ;
+    am:readingMileageKm 47570.0 ;
+    am:readingOf am:veh_29 .
+
+am:km_29_003 a am:MileageReading ;
+    am:readingDate "2026-05-14T17:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 68399.0 ;
+    am:readingOf am:veh_29 .
+
+am:km_30_000 a am:MileageReading ;
+    am:readingDate "2025-01-06T00:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 57180.0 ;
+    am:readingOf am:veh_30 .
+
+am:km_30_001 a am:MileageReading ;
+    am:readingDate "2026-03-22T06:30:00"^^xsd:dateTime ;
+    am:readingMileageKm 82435.0 ;
+    am:readingOf am:veh_30 .
+
+am:km_30_002 a am:MileageReading ;
+    am:readingDate "2026-07-28T21:30:00"^^xsd:dateTime ;
+    am:readingMileageKm 89220.0 ;
+    am:readingOf am:veh_30 .
+
+am:km_30_003 a am:MileageReading ;
+    am:readingDate "2026-10-19T04:15:00"^^xsd:dateTime ;
+    am:readingMileageKm 94137.0 ;
+    am:readingOf am:veh_30 .
+
+am:km_31_000 a am:MileageReading ;
+    am:readingDate "2025-01-06T00:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 25457.0 ;
+    am:readingOf am:veh_31 .
+
+am:km_31_001 a am:MileageReading ;
+    am:readingDate "2025-08-08T14:15:00"^^xsd:dateTime ;
+    am:readingMileageKm 32866.0 ;
+    am:readingOf am:veh_31 .
+
+am:km_31_002 a am:MileageReading ;
+    am:readingDate "2025-09-29T08:15:00"^^xsd:dateTime ;
+    am:readingMileageKm 35202.0 ;
+    am:readingOf am:veh_31 .
+
+am:km_31_003 a am:MileageReading ;
+    am:readingDate "2026-06-10T02:30:00"^^xsd:dateTime ;
+    am:readingMileageKm 46903.0 ;
+    am:readingOf am:veh_31 .
+
+am:km_32_000 a am:MileageReading ;
+    am:readingDate "2025-01-06T00:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 44764.0 ;
+    am:readingOf am:veh_32 .
+
+am:km_32_001 a am:MileageReading ;
+    am:readingDate "2025-10-10T12:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 54821.0 ;
+    am:readingOf am:veh_32 .
+
+am:km_32_002 a am:MileageReading ;
+    am:readingDate "2026-02-16T17:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 60880.0 ;
+    am:readingOf am:veh_32 .
+
+am:km_32_003 a am:MileageReading ;
+    am:readingDate "2026-04-18T13:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 63680.0 ;
+    am:readingOf am:veh_32 .
+
+am:km_32_004 a am:MileageReading ;
+    am:readingDate "2026-05-02T00:45:00"^^xsd:dateTime ;
+    am:readingMileageKm 64179.0 ;
+    am:readingOf am:veh_32 .
+
+am:km_33_000 a am:MileageReading ;
+    am:readingDate "2025-01-06T00:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 18821.0 ;
+    am:readingOf am:veh_33 .
+
+am:km_33_001 a am:MileageReading ;
+    am:readingDate "2025-05-23T20:15:00"^^xsd:dateTime ;
+    am:readingMileageKm 22783.0 ;
+    am:readingOf am:veh_33 .
+
+am:km_33_002 a am:MileageReading ;
+    am:readingDate "2026-04-12T07:15:00"^^xsd:dateTime ;
+    am:readingMileageKm 31914.0 ;
+    am:readingOf am:veh_33 .
+
+am:km_33_003 a am:MileageReading ;
+    am:readingDate "2026-09-10T01:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 36805.0 ;
+    am:readingOf am:veh_33 .
+
+am:km_34_000 a am:MileageReading ;
+    am:readingDate "2025-01-06T00:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 9944.0 ;
+    am:readingOf am:veh_34 .
+
+am:km_34_001 a am:MileageReading ;
+    am:readingDate "2025-07-26T23:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 14204.0 ;
+    am:readingOf am:veh_34 .
+
+am:km_34_002 a am:MileageReading ;
+    am:readingDate "2025-09-09T18:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 15286.0 ;
+    am:readingOf am:veh_34 .
+
+am:km_34_003 a am:MileageReading ;
+    am:readingDate "2026-05-10T11:30:00"^^xsd:dateTime ;
+    am:readingMileageKm 20176.0 ;
+    am:readingOf am:veh_34 .
+
+am:km_35_000 a am:MileageReading ;
+    am:readingDate "2025-01-06T00:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 102706.0 ;
+    am:readingOf am:veh_35 .
+
+am:km_35_001 a am:MileageReading ;
+    am:readingDate "2025-03-08T13:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 106101.0 ;
+    am:readingOf am:veh_35 .
+
+am:km_35_002 a am:MileageReading ;
+    am:readingDate "2025-04-21T13:15:00"^^xsd:dateTime ;
+    am:readingMileageKm 108340.0 ;
+    am:readingOf am:veh_35 .
+
+am:km_35_003 a am:MileageReading ;
+    am:readingDate "2026-07-05T01:30:00"^^xsd:dateTime ;
+    am:readingMileageKm 134785.0 ;
+    am:readingOf am:veh_35 .
+
+am:km_36_000 a am:MileageReading ;
+    am:readingDate "2025-01-06T00:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 49900.0 ;
+    am:readingOf am:veh_36 .
+
+am:km_36_001 a am:MileageReading ;
+    am:readingDate "2025-06-07T19:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 55532.0 ;
+    am:readingOf am:veh_36 .
+
+am:km_36_002 a am:MileageReading ;
+    am:readingDate "2025-12-23T23:30:00"^^xsd:dateTime ;
+    am:readingMileageKm 62079.0 ;
+    am:readingOf am:veh_36 .
+
+am:km_36_003 a am:MileageReading ;
+    am:readingDate "2026-04-06T19:15:00"^^xsd:dateTime ;
+    am:readingMileageKm 65773.0 ;
+    am:readingOf am:veh_36 .
+
+am:km_36_004 a am:MileageReading ;
+    am:readingDate "2026-06-06T08:45:00"^^xsd:dateTime ;
+    am:readingMileageKm 68003.0 ;
+    am:readingOf am:veh_36 .
+
+am:km_37_000 a am:MileageReading ;
+    am:readingDate "2025-01-06T00:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 58771.0 ;
+    am:readingOf am:veh_37 .
+
+am:km_37_001 a am:MileageReading ;
+    am:readingDate "2025-07-12T01:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 68819.0 ;
+    am:readingOf am:veh_37 .
+
+am:km_37_002 a am:MileageReading ;
+    am:readingDate "2026-01-21T10:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 77324.0 ;
+    am:readingOf am:veh_37 .
+
+am:km_37_003 a am:MileageReading ;
+    am:readingDate "2026-01-31T19:15:00"^^xsd:dateTime ;
+    am:readingMileageKm 77864.0 ;
+    am:readingOf am:veh_37 .
+
+am:km_38_000 a am:MileageReading ;
+    am:readingDate "2025-01-06T00:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 59932.0 ;
+    am:readingOf am:veh_38 .
+
+am:km_38_001 a am:MileageReading ;
+    am:readingDate "2025-05-25T17:30:00"^^xsd:dateTime ;
+    am:readingMileageKm 66855.0 ;
+    am:readingOf am:veh_38 .
+
+am:km_38_002 a am:MileageReading ;
+    am:readingDate "2025-09-19T01:30:00"^^xsd:dateTime ;
+    am:readingMileageKm 73679.0 ;
+    am:readingOf am:veh_38 .
+
+am:km_39_000 a am:MileageReading ;
+    am:readingDate "2025-01-06T00:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 11472.0 ;
+    am:readingOf am:veh_39 .
+
+am:km_39_001 a am:MileageReading ;
+    am:readingDate "2025-04-13T19:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 13314.0 ;
+    am:readingOf am:veh_39 .
+
+am:km_39_002 a am:MileageReading ;
+    am:readingDate "2026-01-24T05:30:00"^^xsd:dateTime ;
+    am:readingMileageKm 19547.0 ;
+    am:readingOf am:veh_39 .
+
+am:km_39_003 a am:MileageReading ;
+    am:readingDate "2026-04-19T19:45:00"^^xsd:dateTime ;
+    am:readingMileageKm 21364.0 ;
+    am:readingOf am:veh_39 .
+
+am:km_40_000 a am:MileageReading ;
+    am:readingDate "2025-01-06T00:00:00"^^xsd:dateTime ;
+    am:readingMileageKm 46597.0 ;
+    am:readingOf am:veh_40 .
+
+am:km_40_001 a am:MileageReading ;
+    am:readingDate "2026-03-26T02:15:00"^^xsd:dateTime ;
+    am:readingMileageKm 65115.0 ;
+    am:readingOf am:veh_40 .
+
+am:ro_001 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0001 — Peugeot 308 TR-022-EC"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2025-01-08T15:15:00"^^xsd:dateTime ;
+    am:concerns am:veh_17 ;
+    am:includesOperation am:op_diag,
+        am:op_egr ;
+    am:openedAt "2025-01-08T12:15:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0001" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_002 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0002 — Hyundai Ioniq Hybride JA-279-YH"@fr ;
+    am:assignedTo am:tech_05 ;
+    am:closedAt "2025-01-12T10:00:00"^^xsd:dateTime ;
+    am:concerns am:veh_26 ;
+    am:includesOperation am:op_f_air ;
+    am:openedAt "2025-01-11T04:00:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0002" ;
+    am:performedAt am:garage_lille .
+
+am:ro_003 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0003 — Peugeot e-208 YM-463-FQ"@fr ;
+    am:assignedTo am:tech_10 ;
+    am:closedAt "2025-01-21T13:30:00"^^xsd:dateTime ;
+    am:concerns am:veh_21 ;
+    am:includesOperation am:op_diag,
+        am:op_refroid ;
+    am:openedAt "2025-01-21T08:30:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0003" ;
+    am:performedAt am:garage_marseille .
+
+am:ro_004 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0004 — Peugeot e-208 JL-780-ZY"@fr ;
+    am:assignedTo am:tech_02 ;
+    am:closedAt "2025-01-24T03:30:00"^^xsd:dateTime ;
+    am:concerns am:veh_09 ;
+    am:includesOperation am:op_diag,
+        am:op_refroid ;
+    am:openedAt "2025-01-22T01:30:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0004" ;
+    am:performedAt am:garage_lyon .
+
+am:ro_005 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0005 — Citroën C3 BR-044-SD"@fr ;
+    am:assignedTo am:tech_02 ;
+    am:closedAt "2025-01-27T03:00:00"^^xsd:dateTime ;
+    am:concerns am:veh_08 ;
+    am:includesOperation am:op_debit ;
+    am:openedAt "2025-01-26T01:00:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0005" ;
+    am:performedAt am:garage_lyon .
+
+am:ro_006 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0006 — Renault Clio V DX-591-SW"@fr ;
+    am:assignedTo am:tech_02 ;
+    am:closedAt "2025-01-27T07:45:00"^^xsd:dateTime ;
+    am:concerns am:veh_18 ;
+    am:includesOperation am:op_bobine,
+        am:op_diag ;
+    am:openedAt "2025-01-26T01:45:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0006" ;
+    am:performedAt am:garage_lyon .
+
+am:ro_007 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0007 — Renault Mégane E-Tech BJ-078-RT"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2025-02-25T12:00:00"^^xsd:dateTime ;
+    am:concerns am:veh_06 ;
+    am:includesOperation am:op_disque,
+        am:op_hv ;
+    am:openedAt "2025-02-25T07:00:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0007" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_008 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0008 — Citroën C3 BR-044-SD"@fr ;
+    am:assignedTo am:tech_14 ;
+    am:closedAt "2025-03-01T08:30:00"^^xsd:dateTime ;
+    am:concerns am:veh_08 ;
+    am:includesOperation am:op_debit,
+        am:op_diag ;
+    am:openedAt "2025-02-28T06:30:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0008" ;
+    am:performedAt am:garage_marseille .
+
+am:ro_009 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0009 — Peugeot 308 AA-104-HP"@fr ;
+    am:assignedTo am:tech_12 ;
+    am:closedAt "2025-03-02T03:00:00"^^xsd:dateTime ;
+    am:concerns am:veh_23 ;
+    am:includesOperation am:op_f_hab,
+        am:op_pneus ;
+    am:openedAt "2025-03-01T01:00:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0009" ;
+    am:performedAt am:garage_marseille .
+
+am:ro_010 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0010 — Citroën C3 VB-146-VX"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2025-03-09T09:30:00"^^xsd:dateTime ;
+    am:concerns am:veh_16 ;
+    am:includesOperation am:op_plaq,
+        am:op_vidange ;
+    am:openedAt "2025-03-08T03:30:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0010" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_011 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0011 — Citroën C3 AS-039-BH"@fr ;
+    am:assignedTo am:tech_10 ;
+    am:closedAt "2025-03-08T16:00:00"^^xsd:dateTime ;
+    am:concerns am:veh_35 ;
+    am:includesOperation am:op_bobine,
+        am:op_diag ;
+    am:openedAt "2025-03-08T13:00:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0011" ;
+    am:performedAt am:garage_marseille .
+
+am:ro_012 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0012 — Peugeot e-208 JL-780-ZY"@fr ;
+    am:assignedTo am:tech_02 ;
+    am:closedAt "2025-03-14T01:00:00"^^xsd:dateTime ;
+    am:concerns am:veh_09 ;
+    am:includesOperation am:op_abs ;
+    am:openedAt "2025-03-13T17:00:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0012" ;
+    am:performedAt am:garage_lyon .
+
+am:ro_013 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0013 — Dacia Duster FY-596-LQ"@fr ;
+    am:assignedTo am:tech_08 ;
+    am:closedAt "2025-03-27T18:45:00"^^xsd:dateTime ;
+    am:concerns am:veh_11 ;
+    am:includesOperation am:op_diag,
+        am:op_turbo ;
+    am:openedAt "2025-03-25T16:45:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0013" ;
+    am:performedAt am:garage_nantes .
+
+am:ro_014 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0014 — Hyundai Ioniq Hybride FT-962-NT"@fr ;
+    am:assignedTo am:tech_02 ;
+    am:closedAt "2025-03-31T22:30:00"^^xsd:dateTime ;
+    am:concerns am:veh_10 ;
+    am:includesOperation am:op_diag,
+        am:op_refroid ;
+    am:openedAt "2025-03-31T17:30:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0014" ;
+    am:performedAt am:garage_lyon .
+
+am:ro_015 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0015 — Citroën C3 MR-345-FG"@fr ;
+    am:assignedTo am:tech_11 ;
+    am:closedAt "2025-04-07T21:45:00"^^xsd:dateTime ;
+    am:concerns am:veh_12 ;
+    am:includesOperation am:op_bobine ;
+    am:openedAt "2025-04-07T13:45:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0015" ;
+    am:performedAt am:garage_lille .
+
+am:ro_016 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0016 — Renault Mégane E-Tech BJ-078-RT"@fr ;
+    am:assignedTo am:tech_02 ;
+    am:closedAt "2025-04-10T02:30:00"^^xsd:dateTime ;
+    am:concerns am:veh_06 ;
+    am:includesOperation am:op_diag,
+        am:op_hv ;
+    am:openedAt "2025-04-09T00:30:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0016" ;
+    am:performedAt am:garage_lyon .
+
+am:ro_017 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0017 — Toyota Yaris Hybride CJ-379-DK"@fr ;
+    am:assignedTo am:tech_07 ;
+    am:closedAt "2025-04-13T02:30:00"^^xsd:dateTime ;
+    am:concerns am:veh_28 ;
+    am:includesOperation am:op_disque ;
+    am:openedAt "2025-04-11T20:30:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0017" ;
+    am:performedAt am:garage_toulouse .
+
+am:ro_018 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0018 — Renault Mégane E-Tech JN-162-NZ"@fr ;
+    am:assignedTo am:tech_06 ;
+    am:closedAt "2025-04-15T21:00:00"^^xsd:dateTime ;
+    am:concerns am:veh_39 ;
+    am:includesOperation am:op_abs,
+        am:op_disque ;
+    am:openedAt "2025-04-13T19:00:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0018" ;
+    am:performedAt am:garage_marseille .
+
+am:ro_019 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0019 — Citroën C3 AS-039-BH"@fr ;
+    am:assignedTo am:tech_06 ;
+    am:closedAt "2025-04-21T18:15:00"^^xsd:dateTime ;
+    am:concerns am:veh_35 ;
+    am:includesOperation am:op_bobine,
+        am:op_diag ;
+    am:openedAt "2025-04-21T13:15:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0019" ;
+    am:performedAt am:garage_marseille .
+
+am:ro_020 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0020 — Dacia Duster LG-199-HK"@fr ;
+    am:assignedTo am:tech_11 ;
+    am:closedAt "2025-04-24T09:00:00"^^xsd:dateTime ;
+    am:concerns am:veh_29 ;
+    am:includesOperation am:op_abs,
+        am:op_diag ;
+    am:openedAt "2025-04-24T01:00:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0020" ;
+    am:performedAt am:garage_lille .
+
+am:ro_021 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0021 — Renault Mégane E-Tech AS-745-ZZ"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2025-05-07T07:00:00"^^xsd:dateTime ;
+    am:concerns am:veh_02 ;
+    am:includesOperation am:op_refroid ;
+    am:openedAt "2025-05-06T23:00:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0021" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_022 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0022 — Peugeot 308 TR-022-EC"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2025-05-09T22:45:00"^^xsd:dateTime ;
+    am:concerns am:veh_17 ;
+    am:includesOperation am:op_debit,
+        am:op_diag ;
+    am:openedAt "2025-05-08T16:45:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0022" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_023 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0023 — Dacia Duster LG-199-HK"@fr ;
+    am:assignedTo am:tech_14 ;
+    am:closedAt "2025-05-18T10:15:00"^^xsd:dateTime ;
+    am:concerns am:veh_29 ;
+    am:includesOperation am:op_fap,
+        am:op_liq ;
+    am:openedAt "2025-05-18T05:15:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0023" ;
+    am:performedAt am:garage_marseille .
+
+am:ro_024 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0024 — Peugeot e-208 GW-251-RB"@fr ;
+    am:assignedTo am:tech_02 ;
+    am:closedAt "2025-05-22T05:30:00"^^xsd:dateTime ;
+    am:concerns am:veh_04 ;
+    am:includesOperation am:op_diag,
+        am:op_hv ;
+    am:openedAt "2025-05-22T00:30:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0024" ;
+    am:performedAt am:garage_lyon .
+
+am:ro_025 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0025 — Toyota Yaris Hybride VR-238-EK"@fr ;
+    am:assignedTo am:tech_04 ;
+    am:closedAt "2025-05-23T23:15:00"^^xsd:dateTime ;
+    am:concerns am:veh_33 ;
+    am:includesOperation am:op_plaq ;
+    am:openedAt "2025-05-23T20:15:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0025" ;
+    am:performedAt am:garage_nantes .
+
+am:ro_026 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0026 — Peugeot e-208 DP-930-XK"@fr ;
+    am:assignedTo am:tech_02 ;
+    am:closedAt "2025-05-26T19:30:00"^^xsd:dateTime ;
+    am:concerns am:veh_38 ;
+    am:includesOperation am:op_diag,
+        am:op_hv ;
+    am:openedAt "2025-05-25T17:30:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0026" ;
+    am:performedAt am:garage_lyon .
+
+am:ro_027 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0027 — Peugeot e-208 CG-625-AP"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2025-05-28T12:00:00"^^xsd:dateTime ;
+    am:concerns am:veh_22 ;
+    am:includesOperation am:op_abs,
+        am:op_diag ;
+    am:openedAt "2025-05-26T10:00:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0027" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_028 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0028 — Dacia Duster LS-744-AQ"@fr ;
+    am:assignedTo am:tech_11 ;
+    am:closedAt "2025-06-03T05:45:00"^^xsd:dateTime ;
+    am:concerns am:veh_24 ;
+    am:includesOperation am:op_debit,
+        am:op_diag ;
+    am:openedAt "2025-06-03T02:45:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0028" ;
+    am:performedAt am:garage_lille .
+
+am:ro_029 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0029 — Hyundai Ioniq Hybride NF-982-XB"@fr ;
+    am:assignedTo am:tech_11 ;
+    am:closedAt "2025-06-04T20:30:00"^^xsd:dateTime ;
+    am:concerns am:veh_01 ;
+    am:includesOperation am:op_bobine,
+        am:op_diag ;
+    am:openedAt "2025-06-03T18:30:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0029" ;
+    am:performedAt am:garage_lille .
+
+am:ro_030 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0030 — Renault Clio V YP-288-GG"@fr ;
+    am:assignedTo am:tech_07 ;
+    am:closedAt "2025-06-08T03:00:00"^^xsd:dateTime ;
+    am:concerns am:veh_36 ;
+    am:includesOperation am:op_debit,
+        am:op_diag ;
+    am:openedAt "2025-06-07T19:00:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0030" ;
+    am:performedAt am:garage_toulouse .
+
+am:ro_031 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0031 — Hyundai Ioniq Hybride MT-810-VG"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2025-06-18T08:30:00"^^xsd:dateTime ;
+    am:concerns am:veh_19 ;
+    am:includesOperation am:op_courroie,
+        am:op_disque ;
+    am:openedAt "2025-06-18T03:30:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0031" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_032 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0032 — Peugeot 308 TR-022-EC"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2025-06-18T21:00:00"^^xsd:dateTime ;
+    am:concerns am:veh_17 ;
+    am:includesOperation am:op_pneus,
+        am:op_vidange ;
+    am:openedAt "2025-06-18T16:00:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0032" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_033 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0033 — Renault Clio V DX-591-SW"@fr ;
+    am:assignedTo am:tech_02 ;
+    am:closedAt "2025-06-29T05:30:00"^^xsd:dateTime ;
+    am:concerns am:veh_18 ;
+    am:includesOperation am:op_debit,
+        am:op_diag ;
+    am:openedAt "2025-06-27T23:30:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0033" ;
+    am:performedAt am:garage_lyon .
+
+am:ro_034 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0034 — Citroën C3 VB-146-VX"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2025-06-30T08:45:00"^^xsd:dateTime ;
+    am:concerns am:veh_16 ;
+    am:includesOperation am:op_vidange ;
+    am:openedAt "2025-06-29T02:45:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0034" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_035 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0035 — Hyundai Ioniq Hybride JA-279-YH"@fr ;
+    am:assignedTo am:tech_11 ;
+    am:closedAt "2025-07-06T13:45:00"^^xsd:dateTime ;
+    am:concerns am:veh_26 ;
+    am:includesOperation am:op_cata,
+        am:op_diag ;
+    am:openedAt "2025-07-04T11:45:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0035" ;
+    am:performedAt am:garage_lille .
+
+am:ro_036 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0036 — Hyundai Ioniq Hybride MT-810-VG"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2025-07-11T16:30:00"^^xsd:dateTime ;
+    am:concerns am:veh_19 ;
+    am:includesOperation am:op_courroie ;
+    am:openedAt "2025-07-10T10:30:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0036" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_037 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0037 — Renault Clio V CY-355-NG"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2025-07-12T06:00:00"^^xsd:dateTime ;
+    am:concerns am:veh_37 ;
+    am:includesOperation am:op_batt ;
+    am:openedAt "2025-07-12T01:00:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0037" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_038 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0038 — Dacia Duster CV-705-SQ"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2025-07-15T14:15:00"^^xsd:dateTime ;
+    am:concerns am:veh_20 ;
+    am:includesOperation am:op_plaq ;
+    am:openedAt "2025-07-15T09:15:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0038" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_039 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0039 — Hyundai Ioniq Hybride RJ-720-LC"@fr ;
+    am:assignedTo am:tech_07 ;
+    am:closedAt "2025-07-25T10:00:00"^^xsd:dateTime ;
+    am:concerns am:veh_14 ;
+    am:includesOperation am:op_bobine,
+        am:op_diag ;
+    am:openedAt "2025-07-25T07:00:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0039" ;
+    am:performedAt am:garage_toulouse .
+
+am:ro_040 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0040 — Toyota Yaris Hybride RW-563-NV"@fr ;
+    am:assignedTo am:tech_09 ;
+    am:closedAt "2025-07-27T04:00:00"^^xsd:dateTime ;
+    am:concerns am:veh_34 ;
+    am:includesOperation am:op_cata,
+        am:op_disque ;
+    am:openedAt "2025-07-26T23:00:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0040" ;
+    am:performedAt am:garage_marseille .
+
+am:ro_041 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0041 — Toyota Yaris Hybride DE-616-JH"@fr ;
+    am:assignedTo am:tech_13 ;
+    am:closedAt "2025-08-08T19:15:00"^^xsd:dateTime ;
+    am:concerns am:veh_31 ;
+    am:includesOperation am:op_batt ;
+    am:openedAt "2025-08-08T14:15:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0041" ;
+    am:performedAt am:garage_lille .
+
+am:ro_042 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0042 — Hyundai Ioniq Hybride NF-982-XB"@fr ;
+    am:assignedTo am:tech_11 ;
+    am:closedAt "2025-08-09T07:30:00"^^xsd:dateTime ;
+    am:concerns am:veh_01 ;
+    am:includesOperation am:op_cata ;
+    am:openedAt "2025-08-08T23:30:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0042" ;
+    am:performedAt am:garage_lille .
+
+am:ro_043 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0043 — Peugeot e-208 CG-625-AP"@fr ;
+    am:assignedTo am:tech_06 ;
+    am:closedAt "2025-08-23T20:45:00"^^xsd:dateTime ;
+    am:concerns am:veh_22 ;
+    am:includesOperation am:op_diag,
+        am:op_refroid ;
+    am:openedAt "2025-08-21T18:45:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0043" ;
+    am:performedAt am:garage_marseille .
+
+am:ro_044 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0044 — Citroën C3 MR-345-FG"@fr ;
+    am:assignedTo am:tech_06 ;
+    am:closedAt "2025-08-27T14:15:00"^^xsd:dateTime ;
+    am:concerns am:veh_12 ;
+    am:includesOperation am:op_bougies,
+        am:op_diag ;
+    am:openedAt "2025-08-25T12:15:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0044" ;
+    am:performedAt am:garage_marseille .
+
+am:ro_045 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0045 — Renault Mégane E-Tech BJ-078-RT"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2025-09-01T17:00:00"^^xsd:dateTime ;
+    am:concerns am:veh_06 ;
+    am:includesOperation am:op_disque ;
+    am:openedAt "2025-09-01T14:00:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0045" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_046 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0046 — Toyota Yaris Hybride RW-563-NV"@fr ;
+    am:assignedTo am:tech_06 ;
+    am:closedAt "2025-09-09T23:00:00"^^xsd:dateTime ;
+    am:concerns am:veh_34 ;
+    am:includesOperation am:op_plaq ;
+    am:openedAt "2025-09-09T18:00:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0046" ;
+    am:performedAt am:garage_marseille .
+
+am:ro_047 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0047 — Peugeot 308 GQ-134-GX"@fr ;
+    am:assignedTo am:tech_06 ;
+    am:closedAt "2025-09-11T00:30:00"^^xsd:dateTime ;
+    am:concerns am:veh_27 ;
+    am:includesOperation am:op_abs,
+        am:op_batt ;
+    am:openedAt "2025-09-10T16:30:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0047" ;
+    am:performedAt am:garage_marseille .
+
+am:ro_048 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0048 — Peugeot e-208 DP-930-XK"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2025-09-21T03:30:00"^^xsd:dateTime ;
+    am:concerns am:veh_38 ;
+    am:includesOperation am:op_disque,
+        am:op_plaq ;
+    am:openedAt "2025-09-19T01:30:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0048" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_049 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0049 — Peugeot e-208 CG-625-AP"@fr ;
+    am:assignedTo am:tech_02 ;
+    am:closedAt "2025-09-23T02:00:00"^^xsd:dateTime ;
+    am:concerns am:veh_22 ;
+    am:includesOperation am:op_plaq ;
+    am:openedAt "2025-09-22T21:00:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0049" ;
+    am:performedAt am:garage_lyon .
+
+am:ro_050 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0050 — Toyota Yaris Hybride ER-768-FE"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2025-09-27T06:45:00"^^xsd:dateTime ;
+    am:concerns am:veh_05 ;
+    am:includesOperation am:op_batt,
+        am:op_bougies ;
+    am:openedAt "2025-09-25T04:45:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0050" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_051 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0051 — Dacia Duster FY-596-LQ"@fr ;
+    am:assignedTo am:tech_06 ;
+    am:closedAt "2025-09-25T20:45:00"^^xsd:dateTime ;
+    am:concerns am:veh_11 ;
+    am:includesOperation am:op_diag,
+        am:op_egr ;
+    am:openedAt "2025-09-25T15:45:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0051" ;
+    am:performedAt am:garage_marseille .
+
+am:ro_052 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0052 — Toyota Yaris Hybride DE-616-JH"@fr ;
+    am:assignedTo am:tech_05 ;
+    am:closedAt "2025-09-30T10:15:00"^^xsd:dateTime ;
+    am:concerns am:veh_31 ;
+    am:includesOperation am:op_cata,
+        am:op_diag ;
+    am:openedAt "2025-09-29T08:15:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0052" ;
+    am:performedAt am:garage_lille .
+
+am:ro_053 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0053 — Renault Mégane E-Tech XM-600-CG"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2025-10-04T19:15:00"^^xsd:dateTime ;
+    am:concerns am:veh_13 ;
+    am:includesOperation am:op_batt,
+        am:op_plaq ;
+    am:openedAt "2025-10-03T13:15:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0053" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_054 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0054 — Citroën C3 JM-303-AP"@fr ;
+    am:assignedTo am:tech_02 ;
+    am:closedAt "2025-10-06T11:15:00"^^xsd:dateTime ;
+    am:concerns am:veh_03 ;
+    am:includesOperation am:op_cata,
+        am:op_diag ;
+    am:openedAt "2025-10-06T06:15:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0054" ;
+    am:performedAt am:garage_lyon .
+
+am:ro_055 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0055 — Dacia Duster FS-921-JF"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2025-10-12T14:00:00"^^xsd:dateTime ;
+    am:concerns am:veh_32 ;
+    am:includesOperation am:op_f_hab ;
+    am:openedAt "2025-10-10T12:00:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0055" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_056 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0056 — Peugeot e-208 JL-780-ZY"@fr ;
+    am:assignedTo am:tech_14 ;
+    am:closedAt "2025-11-03T13:00:00"^^xsd:dateTime ;
+    am:concerns am:veh_09 ;
+    am:includesOperation am:op_diag,
+        am:op_refroid ;
+    am:openedAt "2025-11-02T11:00:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0056" ;
+    am:performedAt am:garage_marseille .
+
+am:ro_057 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0057 — Hyundai Ioniq Hybride FT-962-NT"@fr ;
+    am:assignedTo am:tech_02 ;
+    am:closedAt "2025-11-04T08:45:00"^^xsd:dateTime ;
+    am:concerns am:veh_10 ;
+    am:includesOperation am:op_diag,
+        am:op_hv ;
+    am:openedAt "2025-11-04T03:45:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0057" ;
+    am:performedAt am:garage_lyon .
+
+am:ro_058 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0058 — Citroën C3 BR-044-SD"@fr ;
+    am:assignedTo am:tech_12 ;
+    am:closedAt "2025-11-07T13:00:00"^^xsd:dateTime ;
+    am:concerns am:veh_08 ;
+    am:includesOperation am:op_vidange ;
+    am:openedAt "2025-11-06T07:00:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0058" ;
+    am:performedAt am:garage_marseille .
+
+am:ro_059 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0059 — Peugeot 308 GQ-134-GX"@fr ;
+    am:assignedTo am:tech_09 ;
+    am:closedAt "2025-11-13T19:45:00"^^xsd:dateTime ;
+    am:concerns am:veh_27 ;
+    am:includesOperation am:op_abs,
+        am:op_f_hab ;
+    am:openedAt "2025-11-13T14:45:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0059" ;
+    am:performedAt am:garage_marseille .
+
+am:ro_060 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0060 — Renault Mégane E-Tech AS-745-ZZ"@fr ;
+    am:assignedTo am:tech_11 ;
+    am:closedAt "2025-11-20T23:30:00"^^xsd:dateTime ;
+    am:concerns am:veh_02 ;
+    am:includesOperation am:op_disque ;
+    am:openedAt "2025-11-18T21:30:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0060" ;
+    am:performedAt am:garage_lille .
+
+am:ro_061 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0061 — Dacia Duster FY-596-LQ"@fr ;
+    am:assignedTo am:tech_08 ;
+    am:closedAt "2025-12-02T05:00:00"^^xsd:dateTime ;
+    am:concerns am:veh_11 ;
+    am:includesOperation am:op_debit,
+        am:op_pneus ;
+    am:openedAt "2025-11-30T03:00:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0061" ;
+    am:performedAt am:garage_nantes .
+
+am:ro_062 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0062 — Hyundai Ioniq Hybride RJ-720-LC"@fr ;
+    am:assignedTo am:tech_07 ;
+    am:closedAt "2025-12-07T05:15:00"^^xsd:dateTime ;
+    am:concerns am:veh_14 ;
+    am:includesOperation am:op_bobine,
+        am:op_hv ;
+    am:openedAt "2025-12-07T02:15:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0062" ;
+    am:performedAt am:garage_toulouse .
+
+am:ro_063 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0063 — Hyundai Ioniq Hybride NF-982-XB"@fr ;
+    am:assignedTo am:tech_11 ;
+    am:closedAt "2025-12-10T19:00:00"^^xsd:dateTime ;
+    am:concerns am:veh_01 ;
+    am:includesOperation am:op_abs,
+        am:op_bobine ;
+    am:openedAt "2025-12-10T16:00:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0063" ;
+    am:performedAt am:garage_lille .
+
+am:ro_064 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0064 — Peugeot 308 AA-104-HP"@fr ;
+    am:assignedTo am:tech_09 ;
+    am:closedAt "2025-12-16T00:00:00"^^xsd:dateTime ;
+    am:concerns am:veh_23 ;
+    am:includesOperation am:op_diag,
+        am:op_turbo ;
+    am:openedAt "2025-12-14T18:00:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0064" ;
+    am:performedAt am:garage_marseille .
+
+am:ro_065 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0065 — Renault Mégane E-Tech LT-582-LJ"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2025-12-17T10:30:00"^^xsd:dateTime ;
+    am:concerns am:veh_07 ;
+    am:includesOperation am:op_abs,
+        am:op_diag ;
+    am:openedAt "2025-12-17T02:30:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0065" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_066 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0066 — Dacia Duster FY-596-LQ"@fr ;
+    am:assignedTo am:tech_08 ;
+    am:closedAt "2025-12-17T21:30:00"^^xsd:dateTime ;
+    am:concerns am:veh_11 ;
+    am:includesOperation am:op_disque ;
+    am:openedAt "2025-12-17T13:30:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0066" ;
+    am:performedAt am:garage_nantes .
+
+am:ro_067 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0067 — Renault Clio V DX-591-SW"@fr ;
+    am:assignedTo am:tech_02 ;
+    am:closedAt "2025-12-20T00:15:00"^^xsd:dateTime ;
+    am:concerns am:veh_18 ;
+    am:includesOperation am:op_debit ;
+    am:openedAt "2025-12-19T19:15:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0067" ;
+    am:performedAt am:garage_lyon .
+
+am:ro_068 a am:RepairOrder ;
+    rdfs:label "Ordre 2025-0068 — Renault Clio V YP-288-GG"@fr ;
+    am:assignedTo am:tech_02 ;
+    am:closedAt "2025-12-25T01:30:00"^^xsd:dateTime ;
+    am:concerns am:veh_36 ;
+    am:includesOperation am:op_debit,
+        am:op_diag ;
+    am:openedAt "2025-12-23T23:30:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2025-0068" ;
+    am:performedAt am:garage_lyon .
+
+am:ro_069 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0069 — Peugeot 308 NM-993-CC"@fr ;
+    am:assignedTo am:tech_08 ;
+    am:closedAt "2026-01-03T05:15:00"^^xsd:dateTime ;
+    am:concerns am:veh_15 ;
+    am:includesOperation am:op_debit,
+        am:op_diag ;
+    am:openedAt "2026-01-02T03:15:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0069" ;
+    am:performedAt am:garage_nantes .
+
+am:ro_070 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0070 — Renault Clio V CY-355-NG"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2026-01-22T12:00:00"^^xsd:dateTime ;
+    am:concerns am:veh_37 ;
+    am:includesOperation am:op_cata,
+        am:op_diag ;
+    am:openedAt "2026-01-21T10:00:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0070" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_071 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0071 — Renault Mégane E-Tech JN-162-NZ"@fr ;
+    am:assignedTo am:tech_12 ;
+    am:closedAt "2026-01-25T11:30:00"^^xsd:dateTime ;
+    am:concerns am:veh_39 ;
+    am:includesOperation am:op_f_hab ;
+    am:openedAt "2026-01-24T05:30:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0071" ;
+    am:performedAt am:garage_marseille .
+
+am:ro_072 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0072 — Peugeot 308 GQ-134-GX"@fr ;
+    am:assignedTo am:tech_12 ;
+    am:closedAt "2026-01-28T03:00:00"^^xsd:dateTime ;
+    am:concerns am:veh_27 ;
+    am:includesOperation am:op_batt,
+        am:op_f_hab ;
+    am:openedAt "2026-01-27T22:00:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0072" ;
+    am:performedAt am:garage_marseille .
+
+am:ro_073 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0073 — Renault Clio V CY-355-NG"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2026-02-02T01:15:00"^^xsd:dateTime ;
+    am:concerns am:veh_37 ;
+    am:includesOperation am:op_disque ;
+    am:openedAt "2026-01-31T19:15:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0073" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_074 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0074 — Renault Clio V WQ-735-EZ"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2026-02-07T18:00:00"^^xsd:dateTime ;
+    am:concerns am:veh_25 ;
+    am:includesOperation am:op_cata,
+        am:op_diag ;
+    am:openedAt "2026-02-07T13:00:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0074" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_075 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0075 — Dacia Duster FS-921-JF"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2026-02-17T01:00:00"^^xsd:dateTime ;
+    am:concerns am:veh_32 ;
+    am:includesOperation am:op_diag,
+        am:op_fap ;
+    am:openedAt "2026-02-16T17:00:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0075" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_076 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0076 — Peugeot 308 TR-022-EC"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2026-02-23T06:45:00"^^xsd:dateTime ;
+    am:concerns am:veh_17 ;
+    am:includesOperation am:op_diag,
+        am:op_fap ;
+    am:openedAt "2026-02-23T01:45:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0076" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_077 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0077 — Renault Mégane E-Tech AS-745-ZZ"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2026-03-21T18:45:00"^^xsd:dateTime ;
+    am:concerns am:veh_02 ;
+    am:includesOperation am:op_batt,
+        am:op_refroid ;
+    am:openedAt "2026-03-19T16:45:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0077" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_078 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0078 — Peugeot 308 MQ-189-TQ"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2026-03-23T12:30:00"^^xsd:dateTime ;
+    am:concerns am:veh_30 ;
+    am:includesOperation am:op_courroie,
+        am:op_liq ;
+    am:openedAt "2026-03-22T06:30:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0078" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_079 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0079 — Renault Mégane E-Tech LT-582-LJ"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2026-03-24T22:00:00"^^xsd:dateTime ;
+    am:concerns am:veh_07 ;
+    am:includesOperation am:op_abs,
+        am:op_diag ;
+    am:openedAt "2026-03-24T14:00:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0079" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_080 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0080 — Renault Clio V WQ-083-XD"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2026-03-26T10:15:00"^^xsd:dateTime ;
+    am:concerns am:veh_40 ;
+    am:includesOperation am:op_bobine,
+        am:op_diag ;
+    am:openedAt "2026-03-26T02:15:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0080" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_081 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0081 — Hyundai Ioniq Hybride RJ-720-LC"@fr ;
+    am:assignedTo am:tech_15 ;
+    am:closedAt "2026-04-05T14:15:00"^^xsd:dateTime ;
+    am:concerns am:veh_14 ;
+    am:includesOperation am:op_disque,
+        am:op_liq ;
+    am:openedAt "2026-04-05T11:15:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0081" ;
+    am:performedAt am:garage_toulouse .
+
+am:ro_082 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0082 — Renault Clio V YP-288-GG"@fr ;
+    am:assignedTo am:tech_02 ;
+    am:closedAt "2026-04-08T01:15:00"^^xsd:dateTime ;
+    am:concerns am:veh_36 ;
+    am:includesOperation am:op_courroie,
+        am:op_vidange ;
+    am:openedAt "2026-04-06T19:15:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0082" ;
+    am:performedAt am:garage_lyon .
+
+am:ro_083 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0083 — Renault Clio V WQ-735-EZ"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2026-04-08T23:45:00"^^xsd:dateTime ;
+    am:concerns am:veh_25 ;
+    am:includesOperation am:op_cata,
+        am:op_diag ;
+    am:openedAt "2026-04-07T21:45:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0083" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_084 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0084 — Toyota Yaris Hybride VR-238-EK"@fr ;
+    am:assignedTo am:tech_12 ;
+    am:closedAt "2026-04-12T10:15:00"^^xsd:dateTime ;
+    am:concerns am:veh_33 ;
+    am:includesOperation am:op_abs,
+        am:op_diag ;
+    am:openedAt "2026-04-12T07:15:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0084" ;
+    am:performedAt am:garage_marseille .
+
+am:ro_085 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0085 — Renault Clio V DX-591-SW"@fr ;
+    am:assignedTo am:tech_02 ;
+    am:closedAt "2026-04-15T17:15:00"^^xsd:dateTime ;
+    am:concerns am:veh_18 ;
+    am:includesOperation am:op_abs,
+        am:op_diag ;
+    am:openedAt "2026-04-13T15:15:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0085" ;
+    am:performedAt am:garage_lyon .
+
+am:ro_086 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0086 — Dacia Duster FS-921-JF"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2026-04-18T18:00:00"^^xsd:dateTime ;
+    am:concerns am:veh_32 ;
+    am:includesOperation am:op_debit,
+        am:op_diag ;
+    am:openedAt "2026-04-18T13:00:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0086" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_087 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0087 — Renault Mégane E-Tech JN-162-NZ"@fr ;
+    am:assignedTo am:tech_10 ;
+    am:closedAt "2026-04-21T01:45:00"^^xsd:dateTime ;
+    am:concerns am:veh_39 ;
+    am:includesOperation am:op_plaq ;
+    am:openedAt "2026-04-19T19:45:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0087" ;
+    am:performedAt am:garage_marseille .
+
+am:ro_088 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0088 — Dacia Duster FS-921-JF"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2026-05-02T03:45:00"^^xsd:dateTime ;
+    am:concerns am:veh_32 ;
+    am:includesOperation am:op_fap ;
+    am:openedAt "2026-05-02T00:45:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0088" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_089 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0089 — Hyundai Ioniq Hybride FT-962-NT"@fr ;
+    am:assignedTo am:tech_02 ;
+    am:closedAt "2026-05-07T12:45:00"^^xsd:dateTime ;
+    am:concerns am:veh_10 ;
+    am:includesOperation am:op_refroid ;
+    am:openedAt "2026-05-07T04:45:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0089" ;
+    am:performedAt am:garage_lyon .
+
+am:ro_090 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0090 — Toyota Yaris Hybride RW-563-NV"@fr ;
+    am:assignedTo am:tech_10 ;
+    am:closedAt "2026-05-12T13:30:00"^^xsd:dateTime ;
+    am:concerns am:veh_34 ;
+    am:includesOperation am:op_bobine ;
+    am:openedAt "2026-05-10T11:30:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0090" ;
+    am:performedAt am:garage_marseille .
+
+am:ro_091 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0091 — Dacia Duster LG-199-HK"@fr ;
+    am:assignedTo am:tech_10 ;
+    am:closedAt "2026-05-15T23:00:00"^^xsd:dateTime ;
+    am:concerns am:veh_29 ;
+    am:includesOperation am:op_abs ;
+    am:openedAt "2026-05-14T17:00:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0091" ;
+    am:performedAt am:garage_marseille .
+
+am:ro_092 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0092 — Toyota Yaris Hybride CJ-379-DK"@fr ;
+    am:assignedTo am:tech_07 ;
+    am:closedAt "2026-05-15T23:15:00"^^xsd:dateTime ;
+    am:concerns am:veh_28 ;
+    am:includesOperation am:op_abs,
+        am:op_refroid ;
+    am:openedAt "2026-05-15T20:15:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0092" ;
+    am:performedAt am:garage_toulouse .
+
+am:ro_093 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0093 — Renault Mégane E-Tech XM-600-CG"@fr ;
+    am:assignedTo am:tech_08 ;
+    am:closedAt "2026-05-20T21:15:00"^^xsd:dateTime ;
+    am:concerns am:veh_13 ;
+    am:includesOperation am:op_abs,
+        am:op_diag ;
+    am:openedAt "2026-05-19T15:15:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0093" ;
+    am:performedAt am:garage_nantes .
+
+am:ro_094 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0094 — Renault Mégane E-Tech AS-745-ZZ"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2026-05-31T23:45:00"^^xsd:dateTime ;
+    am:concerns am:veh_02 ;
+    am:includesOperation am:op_refroid ;
+    am:openedAt "2026-05-30T17:45:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0094" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_095 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0095 — Renault Clio V YP-288-GG"@fr ;
+    am:assignedTo am:tech_02 ;
+    am:closedAt "2026-06-08T10:45:00"^^xsd:dateTime ;
+    am:concerns am:veh_36 ;
+    am:includesOperation am:op_abs,
+        am:op_diag ;
+    am:openedAt "2026-06-06T08:45:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0095" ;
+    am:performedAt am:garage_lyon .
+
+am:ro_096 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0096 — Toyota Yaris Hybride DE-616-JH"@fr ;
+    am:assignedTo am:tech_11 ;
+    am:closedAt "2026-06-10T07:30:00"^^xsd:dateTime ;
+    am:concerns am:veh_31 ;
+    am:includesOperation am:op_liq,
+        am:op_pneus ;
+    am:openedAt "2026-06-10T02:30:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0096" ;
+    am:performedAt am:garage_lille .
+
+am:ro_097 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0097 — Renault Mégane E-Tech LT-582-LJ"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2026-06-27T09:30:00"^^xsd:dateTime ;
+    am:concerns am:veh_07 ;
+    am:includesOperation am:op_hv,
+        am:op_pneus ;
+    am:openedAt "2026-06-25T07:30:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0097" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_098 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0098 — Peugeot 308 NM-993-CC"@fr ;
+    am:assignedTo am:tech_02 ;
+    am:closedAt "2026-06-30T05:15:00"^^xsd:dateTime ;
+    am:concerns am:veh_15 ;
+    am:includesOperation am:op_diag,
+        am:op_fap ;
+    am:openedAt "2026-06-30T02:15:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0098" ;
+    am:performedAt am:garage_lyon .
+
+am:ro_099 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0099 — Citroën C3 AS-039-BH"@fr ;
+    am:assignedTo am:tech_12 ;
+    am:closedAt "2026-07-06T07:30:00"^^xsd:dateTime ;
+    am:concerns am:veh_35 ;
+    am:includesOperation am:op_f_hab ;
+    am:openedAt "2026-07-05T01:30:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0099" ;
+    am:performedAt am:garage_marseille .
+
+am:ro_100 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0100 — Peugeot e-208 YM-463-FQ"@fr ;
+    am:assignedTo am:tech_06 ;
+    am:closedAt "2026-07-16T22:45:00"^^xsd:dateTime ;
+    am:concerns am:veh_21 ;
+    am:includesOperation am:op_batt,
+        am:op_disque ;
+    am:openedAt "2026-07-16T19:45:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0100" ;
+    am:performedAt am:garage_marseille .
+
+am:ro_101 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0101 — Peugeot 308 AA-104-HP"@fr ;
+    am:assignedTo am:tech_12 ;
+    am:closedAt "2026-07-20T10:15:00"^^xsd:dateTime ;
+    am:concerns am:veh_23 ;
+    am:includesOperation am:op_pneus,
+        am:op_turbo ;
+    am:openedAt "2026-07-19T08:15:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0101" ;
+    am:performedAt am:garage_marseille .
+
+am:ro_102 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0102 — Peugeot 308 NM-993-CC"@fr ;
+    am:assignedTo am:tech_02 ;
+    am:closedAt "2026-07-23T06:30:00"^^xsd:dateTime ;
+    am:concerns am:veh_15 ;
+    am:includesOperation am:op_f_hab,
+        am:op_fap ;
+    am:openedAt "2026-07-22T22:30:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0102" ;
+    am:performedAt am:garage_lyon .
+
+am:ro_103 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0103 — Peugeot e-208 GW-251-RB"@fr ;
+    am:assignedTo am:tech_02 ;
+    am:closedAt "2026-07-25T10:00:00"^^xsd:dateTime ;
+    am:concerns am:veh_04 ;
+    am:includesOperation am:op_abs,
+        am:op_diag ;
+    am:openedAt "2026-07-24T04:00:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0103" ;
+    am:performedAt am:garage_lyon .
+
+am:ro_104 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0104 — Dacia Duster CV-705-SQ"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2026-07-27T15:30:00"^^xsd:dateTime ;
+    am:concerns am:veh_20 ;
+    am:includesOperation am:op_debit,
+        am:op_diag ;
+    am:openedAt "2026-07-25T13:30:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0104" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_105 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0105 — Hyundai Ioniq Hybride MT-810-VG"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2026-07-28T02:45:00"^^xsd:dateTime ;
+    am:concerns am:veh_19 ;
+    am:includesOperation am:op_f_air ;
+    am:openedAt "2026-07-27T18:45:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0105" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_106 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0106 — Hyundai Ioniq Hybride JA-279-YH"@fr ;
+    am:assignedTo am:tech_02 ;
+    am:closedAt "2026-07-29T09:00:00"^^xsd:dateTime ;
+    am:concerns am:veh_26 ;
+    am:includesOperation am:op_bobine,
+        am:op_diag ;
+    am:openedAt "2026-07-28T07:00:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0106" ;
+    am:performedAt am:garage_lyon .
+
+am:ro_107 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0107 — Peugeot 308 MQ-189-TQ"@fr ;
+    am:assignedTo am:tech_14 ;
+    am:closedAt "2026-07-30T23:30:00"^^xsd:dateTime ;
+    am:concerns am:veh_30 ;
+    am:includesOperation am:op_abs,
+        am:op_batt ;
+    am:openedAt "2026-07-28T21:30:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0107" ;
+    am:performedAt am:garage_marseille .
+
+am:ro_108 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0108 — Citroën C3 VB-146-VX"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2026-08-05T08:00:00"^^xsd:dateTime ;
+    am:concerns am:veh_16 ;
+    am:includesOperation am:op_abs,
+        am:op_diag ;
+    am:openedAt "2026-08-03T06:00:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0108" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_109 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0109 — Citroën C3 MR-345-FG"@fr ;
+    am:assignedTo am:tech_10 ;
+    am:closedAt "2026-08-08T23:00:00"^^xsd:dateTime ;
+    am:concerns am:veh_12 ;
+    am:includesOperation am:op_bobine,
+        am:op_diag ;
+    am:openedAt "2026-08-07T17:00:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0109" ;
+    am:performedAt am:garage_marseille .
+
+am:ro_110 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0110 — Hyundai Ioniq Hybride JA-279-YH"@fr ;
+    am:assignedTo am:tech_04 ;
+    am:closedAt "2026-08-15T22:30:00"^^xsd:dateTime ;
+    am:concerns am:veh_26 ;
+    am:includesOperation am:op_cata,
+        am:op_diag ;
+    am:openedAt "2026-08-13T20:30:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0110" ;
+    am:performedAt am:garage_nantes .
+
+am:ro_111 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0111 — Toyota Yaris Hybride ER-768-FE"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2026-08-15T11:30:00"^^xsd:dateTime ;
+    am:concerns am:veh_05 ;
+    am:includesOperation am:op_f_air,
+        am:op_liq ;
+    am:openedAt "2026-08-14T05:30:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0111" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_112 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0112 — Toyota Yaris Hybride VR-238-EK"@fr ;
+    am:assignedTo am:tech_04 ;
+    am:closedAt "2026-09-10T04:00:00"^^xsd:dateTime ;
+    am:concerns am:veh_33 ;
+    am:includesOperation am:op_bobine,
+        am:op_diag ;
+    am:openedAt "2026-09-10T01:00:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0112" ;
+    am:performedAt am:garage_nantes .
+
+am:ro_113 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0113 — Toyota Yaris Hybride ER-768-FE"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2026-09-19T01:00:00"^^xsd:dateTime ;
+    am:concerns am:veh_05 ;
+    am:includesOperation am:op_courroie ;
+    am:openedAt "2026-09-17T23:00:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0113" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_114 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0114 — Dacia Duster CV-705-SQ"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2026-09-18T12:45:00"^^xsd:dateTime ;
+    am:concerns am:veh_20 ;
+    am:includesOperation am:op_vidange ;
+    am:openedAt "2026-09-18T04:45:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0114" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_115 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0115 — Dacia Duster LS-744-AQ"@fr ;
+    am:assignedTo am:tech_01 ;
+    am:closedAt "2026-09-28T09:15:00"^^xsd:dateTime ;
+    am:concerns am:veh_24 ;
+    am:includesOperation am:op_fap,
+        am:op_plaq ;
+    am:openedAt "2026-09-28T01:15:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0115" ;
+    am:performedAt am:garage_toulouse .
+
+am:ro_116 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0116 — Hyundai Ioniq Hybride MT-810-VG"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2026-10-09T15:15:00"^^xsd:dateTime ;
+    am:concerns am:veh_19 ;
+    am:includesOperation am:op_pneus,
+        am:op_refroid ;
+    am:openedAt "2026-10-07T13:15:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0116" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_117 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0117 — Toyota Yaris Hybride CJ-379-DK"@fr ;
+    am:assignedTo am:tech_11 ;
+    am:closedAt "2026-10-17T21:00:00"^^xsd:dateTime ;
+    am:concerns am:veh_28 ;
+    am:includesOperation am:op_disque ;
+    am:openedAt "2026-10-16T19:00:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0117" ;
+    am:performedAt am:garage_lille .
+
+am:ro_118 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0118 — Peugeot 308 MQ-189-TQ"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2026-10-20T06:15:00"^^xsd:dateTime ;
+    am:concerns am:veh_30 ;
+    am:includesOperation am:op_batt,
+        am:op_courroie ;
+    am:openedAt "2026-10-19T04:15:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0118" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_119 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0119 — Dacia Duster CV-705-SQ"@fr ;
+    am:assignedTo am:tech_03 ;
+    am:closedAt "2026-10-19T21:45:00"^^xsd:dateTime ;
+    am:concerns am:veh_20 ;
+    am:includesOperation am:op_abs,
+        am:op_plaq ;
+    am:openedAt "2026-10-19T13:45:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0119" ;
+    am:performedAt am:garage_bordeaux .
+
+am:ro_120 a am:RepairOrder ;
+    rdfs:label "Ordre 2026-0120 — Peugeot e-208 GW-251-RB"@fr ;
+    am:assignedTo am:tech_02 ;
+    am:concerns am:veh_04 ;
+    am:includesOperation am:op_batt ;
+    am:openedAt "2026-10-24T15:30:00"^^xsd:dateTime ;
+    am:orderNumber "OR-2026-0120" ;
+    am:performedAt am:garage_lyon .
+
+am:tech_01 a am:Technician ;
+    rdfs:label "Morgan Nicolas"@fr ;
+    am:displayName "Morgan Nicolas" ;
+    am:worksAt am:garage_toulouse .
+
+am:tech_13 a am:Technician ;
+    rdfs:label "Hugo Lefebvre"@fr ;
+    am:displayName "Hugo Lefebvre" ;
+    am:worksAt am:garage_lille .
+
+am:tech_15 a am:Technician ;
+    rdfs:label "Yael Mercier"@fr ;
+    am:displayName "Yael Mercier" ;
+    am:worksAt am:garage_toulouse .
+
+am:brand_brembo a am:Brand ;
+    rdfs:label "Brembo"@fr ;
+    am:brandName "Brembo" ;
+    am:displayName "Brembo" .
+
+am:brand_mann_filter a am:Brand ;
+    rdfs:label "Mann-Filter"@fr ;
+    am:brandName "Mann-Filter" ;
+    am:displayName "Mann-Filter" .
+
+am:brand_peugeot a am:Brand ;
+    rdfs:label "Peugeot"@fr ;
+    am:brandName "Peugeot" ;
+    am:displayName "Peugeot" .
+
+am:brand_renault a am:Brand ;
+    rdfs:label "Renault"@fr ;
+    am:brandName "Renault" ;
+    am:displayName "Renault" .
+
+am:client_05 a am:Customer ;
+    rdfs:label "Elio Bernard"@fr ;
+    am:displayName "Elio Bernard" .
+
+am:client_08 a am:Customer ;
+    rdfs:label "Victor Nicolas"@fr ;
+    am:displayName "Victor Nicolas" .
+
+am:client_10 a am:Customer ;
+    rdfs:label "Robin Simon"@fr ;
+    am:displayName "Robin Simon" .
+
+am:client_11 a am:Customer ;
+    rdfs:label "Louison Roux"@fr ;
+    am:displayName "Louison Roux" .
+
+am:client_15 a am:Customer ;
+    rdfs:label "Eden Moreau"@fr ;
+    am:displayName "Eden Moreau" .
+
+am:client_26 a am:Customer ;
+    rdfs:label "Faustine Perrin"@fr ;
+    am:displayName "Faustine Perrin" .
+
+am:dtc_P0300 a am:DiagnosticTroubleCode ;
+    rdfs:label "P0300 — Ratés d'allumage détectés (multi-cylindres)"@fr ;
+    am:dtcCode "P0300" .
+
+am:dtc_P0301 a am:DiagnosticTroubleCode ;
+    rdfs:label "P0301 — Raté d'allumage cylindre 1"@fr ;
+    am:dtcCode "P0301" .
+
+am:dtc_P0401 a am:DiagnosticTroubleCode ;
+    rdfs:label "P0401 — Débit de recirculation des gaz (EGR) insuffisant"@fr ;
+    am:dtcCode "P0401" .
+
+am:dtc_P0420 a am:DiagnosticTroubleCode ;
+    rdfs:label "P0420 — Efficacité du catalyseur sous le seuil (rangée 1)"@fr ;
+    am:dtcCode "P0420" .
+
+am:op_bougies a am:ServiceOperation ;
+    rdfs:label "Remplacement des bougies d'allumage"@fr ;
+    am:addresses am:dtc_P0300 ;
+    am:operationCode "OP-BOUGIES" ;
+    am:standardDurationMin 60 ;
+    am:usesPart am:ref_bougie .
+
+am:op_egr a am:ServiceOperation ;
+    rdfs:label "Remplacement de la vanne EGR"@fr ;
+    am:addresses am:dtc_P0401 ;
+    am:operationCode "OP-EGR" ;
+    am:standardDurationMin 100 ;
+    am:usesPart am:ref_egr .
+
+am:tech_05 a am:Technician ;
+    rdfs:label "Charlie Perrin"@fr ;
+    am:displayName "Charlie Perrin" ;
+    am:worksAt am:garage_lille .
+
+am:client_02 a am:Customer ;
+    rdfs:label "Rémi Morin"@fr ;
+    am:displayName "Rémi Morin" .
+
+am:client_22 a am:Customer ;
+    rdfs:label "Jade David"@fr ;
+    am:displayName "Jade David" .
+
+am:dtc_P0171 a am:DiagnosticTroubleCode ;
+    rdfs:label "P0171 — Mélange trop pauvre (rangée 1)"@fr ;
+    am:dtcCode "P0171" .
+
+am:dtc_U0100 a am:DiagnosticTroubleCode ;
+    rdfs:label "U0100 — Communication perdue avec le calculateur moteur"@fr ;
+    am:dtcCode "U0100" .
+
+am:op_f_air a am:ServiceOperation ;
+    rdfs:label "Remplacement du filtre à air"@fr ;
+    am:operationCode "OP-FILTRE-AIR" ;
+    am:standardDurationMin 20 ;
+    am:usesPart am:ref_filtre_air .
+
+am:op_turbo a am:ServiceOperation ;
+    rdfs:label "Remplacement du turbocompresseur"@fr ;
+    am:addresses am:dtc_P0299 ;
+    am:operationCode "OP-TURBO" ;
+    am:standardDurationMin 210 ;
+    am:usesPart am:ref_turbo .
+
+am:ref_bougie a am:PartReference ;
+    rdfs:label "Bougie d'allumage"@fr ;
+    am:hasManufacturer am:brand_ngk ;
+    am:manufacturerPartNumber "NG-ZFR6" ;
+    am:unitPrice 11.20 .
+
+am:tech_04 a am:Technician ;
+    rdfs:label "Maëlle Perrin"@fr ;
+    am:displayName "Maëlle Perrin" ;
+    am:worksAt am:garage_nantes .
+
+am:tech_09 a am:Technician ;
+    rdfs:label "Lena Garnier"@fr ;
+    am:displayName "Lena Garnier" ;
+    am:worksAt am:garage_marseille .
+
+am:brand_denso a am:Brand ;
+    rdfs:label "Denso"@fr ;
+    am:brandName "Denso" ;
+    am:displayName "Denso" .
+
+am:brand_valeo a am:Brand ;
+    rdfs:label "Valeo"@fr ;
+    am:brandName "Valeo" ;
+    am:displayName "Valeo" .
+
+am:ref_egr a am:PartReference ;
+    rdfs:label "Vanne EGR"@fr ;
+    am:hasManufacturer am:brand_valeo ;
+    am:manufacturerPartNumber "VL-700421" ;
+    am:unitPrice 215.00 .
+
+am:ref_filtre_air a am:PartReference ;
+    rdfs:label "Filtre à air"@fr ;
+    am:hasManufacturer am:brand_mann_filter ;
+    am:manufacturerPartNumber "MF-C25114" ;
+    am:unitPrice 18.40 .
+
+am:ref_turbo a am:PartReference ;
+    rdfs:label "Turbocompresseur"@fr ;
+    am:hasManufacturer am:brand_denso ;
+    am:manufacturerPartNumber "DN-TURBO-18" ;
+    am:unitPrice 690.00 .
+
+am:tech_14 a am:Technician ;
+    rdfs:label "Faustine André"@fr ;
+    am:displayName "Faustine André" ;
+    am:worksAt am:garage_marseille .
+
+am:brand_bosch a am:Brand ;
+    rdfs:label "Bosch"@fr ;
+    am:brandName "Bosch" ;
+    am:displayName "Bosch" .
+
+am:dtc_C0035 a am:DiagnosticTroubleCode ;
+    rdfs:label "C0035 — Capteur de vitesse de roue avant gauche : circuit"@fr ;
+    am:dtcCode "C0035" .
+
+am:dtc_P0A80 a am:DiagnosticTroubleCode ;
+    rdfs:label "P0A80 — Remplacer le pack de batterie hybride"@fr ;
+    am:dtcCode "P0A80" .
+
+am:dtc_P0AA6 a am:DiagnosticTroubleCode ;
+    rdfs:label "P0AA6 — Défaut d'isolement du circuit haute tension"@fr ;
+    am:dtcCode "P0AA6" .
+
+am:op_liq a am:ServiceOperation ;
+    rdfs:label "Purge et remplacement du liquide de frein"@fr ;
+    am:operationCode "OP-LIQUIDE-FREIN" ;
+    am:standardDurationMin 40 ;
+    am:usesPart am:ref_liq_frein .
+
+am:tech_07 a am:Technician ;
+    rdfs:label "Ivan Mercier"@fr ;
+    am:displayName "Ivan Mercier" ;
+    am:worksAt am:garage_toulouse .
+
+am:tech_08 a am:Technician ;
+    rdfs:label "Dominique Girard"@fr ;
+    am:displayName "Dominique Girard" ;
+    am:worksAt am:garage_nantes .
+
+am:veh_03 a am:CombustionVehicle,
+        am:Vehicle ;
+    rdfs:label "Citroën C3 JM-303-AP"@fr ;
+    am:firstRegistrationDate "2020-06-27T00:00:00"^^xsd:dateTime ;
+    am:hasEngine am:eng_03_ice ;
+    am:hasMileageReading am:km_03_000,
+        am:km_03_001 ;
+    am:hasRepairOrder am:ro_054 ;
+    am:ofModel am:model_c3 ;
+    am:ownedBy am:client_03 ;
+    am:registrationNumber "JM-303-AP" ;
+    am:vin "VF1MW035VCB6XNZBK" .
+
+am:veh_40 a am:CombustionVehicle,
+        am:Vehicle ;
+    rdfs:label "Renault Clio V WQ-083-XD"@fr ;
+    am:firstRegistrationDate "2021-12-04T00:00:00"^^xsd:dateTime ;
+    am:hasActiveCode am:dtc_P0101,
+        am:dtc_P0171 ;
+    am:hasEngine am:eng_40_ice ;
+    am:hasMileageReading am:km_40_000,
+        am:km_40_001 ;
+    am:hasRepairOrder am:ro_080 ;
+    am:ofModel am:model_clio ;
+    am:ownedBy am:client_05 ;
+    am:registrationNumber "WQ-083-XD" ;
+    am:vin "VF75JPU4ZELKB8ZCL" .
+
+am:dtc_P0101 a am:DiagnosticTroubleCode ;
+    rdfs:label "P0101 — Débitmètre d'air : plage / performance"@fr ;
+    am:dtcCode "P0101" .
+
+am:model_ioniq_h a am:VehicleModel ;
+    rdfs:label "Hyundai Ioniq Hybride"@fr ;
+    am:madeBy am:brand_hyundai ;
+    am:modelName "Ioniq Hybride" ;
+    am:modelYear 2021 .
+
+am:model_yaris_h a am:VehicleModel ;
+    rdfs:label "Toyota Yaris Hybride"@fr ;
+    am:madeBy am:brand_toyota ;
+    am:modelName "Yaris Hybride" ;
+    am:modelYear 2023 .
+
+am:op_courroie a am:ServiceOperation ;
+    rdfs:label "Remplacement de la courroie d'accessoires"@fr ;
+    am:operationCode "OP-COURROIE-ACC" ;
+    am:standardDurationMin 60 ;
+    am:usesPart am:ref_courroie .
+
+am:ref_liq_frein a am:PartReference ;
+    rdfs:label "Liquide de frein DOT 4 (1 L)"@fr ;
+    am:hasManufacturer am:brand_bosch ;
+    am:manufacturerPartNumber "BS-DOT4-1" ;
+    am:unitPrice 13.50 .
+
+am:tech_10 a am:Technician ;
+    rdfs:label "Ivan Dumont"@fr ;
+    am:displayName "Ivan Dumont" ;
+    am:worksAt am:garage_marseille .
+
+am:model_c3 a am:VehicleModel ;
+    rdfs:label "Citroën C3"@fr ;
+    am:madeBy am:brand_citroen ;
+    am:modelName "C3" ;
+    am:modelYear 2020 .
+
+am:model_clio a am:VehicleModel ;
+    rdfs:label "Renault Clio V"@fr ;
+    am:madeBy am:brand_renault ;
+    am:modelName "Clio V" ;
+    am:modelYear 2021 .
+
+am:model_duster a am:VehicleModel ;
+    rdfs:label "Dacia Duster"@fr ;
+    am:madeBy am:brand_dacia ;
+    am:modelName "Duster" ;
+    am:modelYear 2022 .
+
+am:model_e208 a am:VehicleModel ;
+    rdfs:label "Peugeot e-208"@fr ;
+    am:madeBy am:brand_peugeot ;
+    am:modelName "e-208" ;
+    am:modelYear 2022 .
+
+am:model_megane_e a am:VehicleModel ;
+    rdfs:label "Renault Mégane E-Tech"@fr ;
+    am:madeBy am:brand_renault ;
+    am:modelName "Mégane E-Tech" ;
+    am:modelYear 2023 .
+
+am:model_p308 a am:VehicleModel ;
+    rdfs:label "Peugeot 308"@fr ;
+    am:madeBy am:brand_peugeot ;
+    am:modelName "308" ;
+    am:modelYear 2022 .
+
+am:op_fap a am:ServiceOperation ;
+    rdfs:label "Remplacement du filtre à particules"@fr ;
+    am:addresses am:dtc_P2002 ;
+    am:operationCode "OP-FAP" ;
+    am:standardDurationMin 150 ;
+    am:usesPart am:ref_fap .
+
+am:op_hv a am:ServiceOperation ;
+    rdfs:label "Remplacement d'un module de batterie haute tension"@fr ;
+    am:addresses am:dtc_P0A80 ;
+    am:operationCode "OP-MODULE-HV" ;
+    am:standardDurationMin 240 ;
+    am:usesPart am:ref_cellule_hv .
+
+am:op_pneus a am:ServiceOperation ;
+    rdfs:label "Remplacement de deux pneus et équilibrage"@fr ;
+    am:operationCode "OP-PNEUS" ;
+    am:standardDurationMin 50 ;
+    am:usesPart am:ref_pneu .
+
+am:ref_courroie a am:PartReference ;
+    rdfs:label "Courroie d'accessoires"@fr ;
+    am:hasManufacturer am:brand_valeo ;
+    am:manufacturerPartNumber "VL-CA-6PK" ;
+    am:unitPrice 34.00 .
+
+am:ref_filtre_huile a am:PartReference ;
+    rdfs:label "Filtre à huile"@fr ;
+    am:hasManufacturer am:brand_mann_filter ;
+    am:manufacturerPartNumber "MF-HU712" ;
+    am:unitPrice 12.90 .
+
+am:ref_huile a am:PartReference ;
+    rdfs:label "Huile moteur 5W-30 (5 L)"@fr ;
+    am:hasManufacturer am:brand_bosch ;
+    am:manufacturerPartNumber "BS-OIL-5W30-5" ;
+    am:unitPrice 49.50 .
+
+am:tech_12 a am:Technician ;
+    rdfs:label "Andrea Rousseau"@fr ;
+    am:displayName "Andrea Rousseau" ;
+    am:worksAt am:garage_marseille .
+
+am:ref_cellule_hv a am:PartReference ;
+    rdfs:label "Module de batterie haute tension"@fr ;
+    am:hasManufacturer am:brand_denso ;
+    am:manufacturerPartNumber "DN-HV-M24" ;
+    am:unitPrice 1450.00 .
+
+am:ref_fap a am:PartReference ;
+    rdfs:label "Filtre à particules"@fr ;
+    am:hasManufacturer am:brand_denso ;
+    am:manufacturerPartNumber "DN-FAP-7730" ;
+    am:unitPrice 540.00 .
+
+am:ref_filtre_hab a am:PartReference ;
+    rdfs:label "Filtre d'habitacle"@fr ;
+    am:hasManufacturer am:brand_valeo ;
+    am:manufacturerPartNumber "VL-715631" ;
+    am:unitPrice 21.00 .
+
+am:ref_pneu a am:PartReference ;
+    rdfs:label "Pneu 195/55 R16 (unité)"@fr ;
+    am:hasManufacturer am:brand_michelin ;
+    am:manufacturerPartNumber "MI-195-55-16" ;
+    am:unitPrice 89.90 .
+
+am:tech_06 a am:Technician ;
+    rdfs:label "Loïc Bertrand"@fr ;
+    am:displayName "Loïc Bertrand" ;
+    am:worksAt am:garage_marseille .
+
+am:veh_25 a am:CombustionVehicle,
+        am:Vehicle ;
+    rdfs:label "Renault Clio V WQ-735-EZ"@fr ;
+    am:firstRegistrationDate "2021-02-25T00:00:00"^^xsd:dateTime ;
+    am:hasEngine am:eng_25_ice ;
+    am:hasMileageReading am:km_25_000,
+        am:km_25_001,
+        am:km_25_002 ;
+    am:hasRepairOrder am:ro_074,
+        am:ro_083 ;
+    am:ofModel am:model_clio ;
+    am:ownedBy am:client_25 ;
+    am:registrationNumber "WQ-735-EZ" ;
+    am:vin "VF5SC9KNS4CMJXRJ0" .
+
+am:op_cata a am:ServiceOperation ;
+    rdfs:label "Remplacement du catalyseur"@fr ;
+    am:addresses am:dtc_P0420 ;
+    am:operationCode "OP-CATALYSEUR" ;
+    am:standardDurationMin 120 ;
+    am:usesPart am:ref_catalyseur .
+
+am:op_f_hab a am:ServiceOperation ;
+    rdfs:label "Remplacement du filtre d'habitacle"@fr ;
+    am:operationCode "OP-FILTRE-HABITACLE" ;
+    am:standardDurationMin 15 ;
+    am:usesPart am:ref_filtre_hab .
+
+am:veh_13 a am:ElectricVehicle,
+        am:Vehicle ;
+    rdfs:label "Renault Mégane E-Tech XM-600-CG"@fr ;
+    am:firstRegistrationDate "2023-01-27T00:00:00"^^xsd:dateTime ;
+    am:hasActiveCode am:dtc_C0035 ;
+    am:hasEngine am:eng_13_elec ;
+    am:hasMileageReading am:km_13_000,
+        am:km_13_001,
+        am:km_13_002 ;
+    am:hasRepairOrder am:ro_053,
+        am:ro_093 ;
+    am:ofModel am:model_megane_e ;
+    am:ownedBy am:client_13 ;
+    am:registrationNumber "XM-600-CG" ;
+    am:vin "VF3XAWJ3PSYMXT951" .
+
+am:veh_21 a am:ElectricVehicle,
+        am:Vehicle ;
+    rdfs:label "Peugeot e-208 YM-463-FQ"@fr ;
+    am:firstRegistrationDate "2022-07-29T00:00:00"^^xsd:dateTime ;
+    am:hasActiveCode am:dtc_P0A80,
+        am:dtc_U0100 ;
+    am:hasEngine am:eng_21_elec ;
+    am:hasMileageReading am:km_21_000,
+        am:km_21_001,
+        am:km_21_002 ;
+    am:hasRepairOrder am:ro_003,
+        am:ro_100 ;
+    am:ofModel am:model_e208 ;
+    am:ownedBy am:client_21 ;
+    am:registrationNumber "YM-463-FQ" ;
+    am:vin "VF78177AEVNCSY2UN" .
+
+am:veh_24 a am:CombustionVehicle,
+        am:Vehicle ;
+    rdfs:label "Dacia Duster LS-744-AQ"@fr ;
+    am:firstRegistrationDate "2022-09-16T00:00:00"^^xsd:dateTime ;
+    am:hasEngine am:eng_24_ice ;
+    am:hasMileageReading am:km_24_000,
+        am:km_24_001,
+        am:km_24_002 ;
+    am:hasRepairOrder am:ro_028,
+        am:ro_115 ;
+    am:ofModel am:model_duster ;
+    am:ownedBy am:client_24 ;
+    am:registrationNumber "LS-744-AQ" ;
+    am:vin "VF1P3MK5E6UB7JUTM" .
+
+am:garage_nantes a am:Garage ;
+    rdfs:label "Auto Service Île de Nantes — Nantes"@fr ;
+    am:displayName "Auto Service Île de Nantes — Nantes" .
+
+am:garage_toulouse a am:Garage ;
+    rdfs:label "Garage du Capitole — Toulouse"@fr ;
+    am:displayName "Garage du Capitole — Toulouse" .
+
+am:op_plaq a am:ServiceOperation ;
+    rdfs:label "Remplacement des plaquettes de frein avant"@fr ;
+    am:operationCode "OP-PLAQUETTES-AV" ;
+    am:standardDurationMin 60 ;
+    am:usesPart am:ref_plaq_av .
+
+am:ref_catalyseur a am:PartReference ;
+    rdfs:label "Catalyseur"@fr ;
+    am:hasManufacturer am:brand_denso ;
+    am:manufacturerPartNumber "DN-CAT-4421" ;
+    am:unitPrice 389.00 .
+
+am:tech_11 a am:Technician ;
+    rdfs:label "Anaïs Henry"@fr ;
+    am:displayName "Anaïs Henry" ;
+    am:worksAt am:garage_lille .
+
+am:veh_04 a am:ElectricVehicle,
+        am:Vehicle ;
+    rdfs:label "Peugeot e-208 GW-251-RB"@fr ;
+    am:firstRegistrationDate "2022-01-27T00:00:00"^^xsd:dateTime ;
+    am:hasEngine am:eng_04_elec ;
+    am:hasMileageReading am:km_04_000,
+        am:km_04_001,
+        am:km_04_002,
+        am:km_04_003 ;
+    am:hasRepairOrder am:ro_024,
+        am:ro_103,
+        am:ro_120 ;
+    am:ofModel am:model_e208 ;
+    am:ownedBy am:client_04 ;
+    am:registrationNumber "GW-251-RB" ;
+    am:vin "VF57C5D3BKXFGTHWS" .
+
+am:veh_22 a am:ElectricVehicle,
+        am:Vehicle ;
+    rdfs:label "Peugeot e-208 CG-625-AP"@fr ;
+    am:firstRegistrationDate "2022-07-02T00:00:00"^^xsd:dateTime ;
+    am:hasEngine am:eng_22_elec ;
+    am:hasMileageReading am:km_22_000,
+        am:km_22_001,
+        am:km_22_002,
+        am:km_22_003 ;
+    am:hasRepairOrder am:ro_027,
+        am:ro_043,
+        am:ro_049 ;
+    am:ofModel am:model_e208 ;
+    am:ownedBy am:client_22 ;
+    am:registrationNumber "CG-625-AP" ;
+    am:vin "VF7YESXNKEFGDNLTU" .
+
+am:veh_35 a am:CombustionVehicle,
+        am:Vehicle ;
+    rdfs:label "Citroën C3 AS-039-BH"@fr ;
+    am:firstRegistrationDate "2020-03-27T00:00:00"^^xsd:dateTime ;
+    am:hasActiveCode am:dtc_C0035,
+        am:dtc_P0171 ;
+    am:hasEngine am:eng_35_ice ;
+    am:hasMileageReading am:km_35_000,
+        am:km_35_001,
+        am:km_35_002,
+        am:km_35_003 ;
+    am:hasRepairOrder am:ro_011,
+        am:ro_019,
+        am:ro_099 ;
+    am:ofModel am:model_c3 ;
+    am:ownedBy am:client_22 ;
+    am:registrationNumber "AS-039-BH" ;
+    am:vin "VF1G1MYS9B7VWAD9K" .
+
+am:veh_38 a am:ElectricVehicle,
+        am:Vehicle ;
+    rdfs:label "Peugeot e-208 DP-930-XK"@fr ;
+    am:firstRegistrationDate "2022-01-21T00:00:00"^^xsd:dateTime ;
+    am:hasActiveCode am:dtc_C0035,
+        am:dtc_P0AA6 ;
+    am:hasEngine am:eng_38_elec ;
+    am:hasMileageReading am:km_38_000,
+        am:km_38_001,
+        am:km_38_002 ;
+    am:hasRepairOrder am:ro_026,
+        am:ro_048 ;
+    am:ofModel am:model_e208 ;
+    am:ownedBy am:client_15 ;
+    am:registrationNumber "DP-930-XK" ;
+    am:vin "VF11ZGA8CZUB30RAD" .
+
+am:op_batt a am:ServiceOperation ;
+    rdfs:label "Remplacement de la batterie 12 V"@fr ;
+    am:operationCode "OP-BATTERIE-12V" ;
+    am:standardDurationMin 30 ;
+    am:usesPart am:ref_batt12 .
+
+am:op_refroid a am:ServiceOperation ;
+    rdfs:label "Remplacement de la pompe de refroidissement de batterie"@fr ;
+    am:addresses am:dtc_P0AA6 ;
+    am:operationCode "OP-REFROID-BATTERIE" ;
+    am:standardDurationMin 90 ;
+    am:usesPart am:ref_pompe_refroid .
+
+am:veh_01 a am:Vehicle ;
+    rdfs:label "Hyundai Ioniq Hybride NF-982-XB"@fr ;
+    am:firstRegistrationDate "2021-04-15T00:00:00"^^xsd:dateTime ;
+    am:hasActiveCode am:dtc_P0101,
+        am:dtc_U0100 ;
+    am:hasEngine am:eng_01_elec,
+        am:eng_01_ice ;
+    am:hasMileageReading am:km_01_000,
+        am:km_01_001,
+        am:km_01_002,
+        am:km_01_003 ;
+    am:hasRepairOrder am:ro_029,
+        am:ro_042,
+        am:ro_063 ;
+    am:ofModel am:model_ioniq_h ;
+    am:ownedBy am:client_01 ;
+    am:registrationNumber "NF-982-XB" ;
+    am:vin "VF5CP2HKSPF3PLYLA" .
+
+am:veh_07 a am:ElectricVehicle,
+        am:Vehicle ;
+    rdfs:label "Renault Mégane E-Tech LT-582-LJ"@fr ;
+    am:firstRegistrationDate "2023-09-02T00:00:00"^^xsd:dateTime ;
+    am:hasEngine am:eng_07_elec ;
+    am:hasMileageReading am:km_07_000,
+        am:km_07_001,
+        am:km_07_002,
+        am:km_07_003 ;
+    am:hasRepairOrder am:ro_065,
+        am:ro_079,
+        am:ro_097 ;
+    am:ofModel am:model_megane_e ;
+    am:ownedBy am:client_07 ;
+    am:registrationNumber "LT-582-LJ" ;
+    am:vin "VF7RFZP2XK7JFBV07" .
+
+am:veh_09 a am:ElectricVehicle,
+        am:Vehicle ;
+    rdfs:label "Peugeot e-208 JL-780-ZY"@fr ;
+    am:firstRegistrationDate "2022-04-12T00:00:00"^^xsd:dateTime ;
+    am:hasEngine am:eng_09_elec ;
+    am:hasMileageReading am:km_09_000,
+        am:km_09_001,
+        am:km_09_002,
+        am:km_09_003 ;
+    am:hasRepairOrder am:ro_004,
+        am:ro_012,
+        am:ro_056 ;
+    am:ofModel am:model_e208 ;
+    am:ownedBy am:client_09 ;
+    am:registrationNumber "JL-780-ZY" ;
+    am:vin "VF5JVHZPYJKLTLEHC" .
+
+am:veh_10 a am:Vehicle ;
+    rdfs:label "Hyundai Ioniq Hybride FT-962-NT"@fr ;
+    am:firstRegistrationDate "2021-06-19T00:00:00"^^xsd:dateTime ;
+    am:hasEngine am:eng_10_elec,
+        am:eng_10_ice ;
+    am:hasMileageReading am:km_10_000,
+        am:km_10_001,
+        am:km_10_002,
+        am:km_10_003 ;
+    am:hasRepairOrder am:ro_014,
+        am:ro_057,
+        am:ro_089 ;
+    am:ofModel am:model_ioniq_h ;
+    am:ownedBy am:client_10 ;
+    am:registrationNumber "FT-962-NT" ;
+    am:vin "VF1YD4KBYM93T7DRW" .
+
+am:veh_12 a am:CombustionVehicle,
+        am:Vehicle ;
+    rdfs:label "Citroën C3 MR-345-FG"@fr ;
+    am:firstRegistrationDate "2020-06-23T00:00:00"^^xsd:dateTime ;
+    am:hasEngine am:eng_12_ice ;
+    am:hasMileageReading am:km_12_000,
+        am:km_12_001,
+        am:km_12_002,
+        am:km_12_003 ;
+    am:hasRepairOrder am:ro_015,
+        am:ro_044,
+        am:ro_109 ;
+    am:ofModel am:model_c3 ;
+    am:ownedBy am:client_12 ;
+    am:registrationNumber "MR-345-FG" ;
+    am:vin "VF26K3S7M0REMZBGK" .
+
+am:veh_31 a am:Vehicle ;
+    rdfs:label "Toyota Yaris Hybride DE-616-JH"@fr ;
+    am:firstRegistrationDate "2023-04-30T00:00:00"^^xsd:dateTime ;
+    am:hasActiveCode am:dtc_P0A80,
+        am:dtc_P0AA6 ;
+    am:hasEngine am:eng_31_elec,
+        am:eng_31_ice ;
+    am:hasMileageReading am:km_31_000,
+        am:km_31_001,
+        am:km_31_002,
+        am:km_31_003 ;
+    am:hasRepairOrder am:ro_041,
+        am:ro_052,
+        am:ro_096 ;
+    am:ofModel am:model_yaris_h ;
+    am:ownedBy am:client_26 ;
+    am:registrationNumber "DE-616-JH" ;
+    am:vin "VF7H2D2HGTE8FKS5F" .
+
+am:veh_33 a am:Vehicle ;
+    rdfs:label "Toyota Yaris Hybride VR-238-EK"@fr ;
+    am:firstRegistrationDate "2023-03-29T00:00:00"^^xsd:dateTime ;
+    am:hasEngine am:eng_33_elec,
+        am:eng_33_ice ;
+    am:hasMileageReading am:km_33_000,
+        am:km_33_001,
+        am:km_33_002,
+        am:km_33_003 ;
+    am:hasRepairOrder am:ro_025,
+        am:ro_084,
+        am:ro_112 ;
+    am:ofModel am:model_yaris_h ;
+    am:ownedBy am:client_11 ;
+    am:registrationNumber "VR-238-EK" ;
+    am:vin "VF3FL2L8CWHF8FW4X" .
+
+am:op_debit a am:ServiceOperation ;
+    rdfs:label "Remplacement du débitmètre d'air"@fr ;
+    am:addresses am:dtc_P0101,
+        am:dtc_P0171 ;
+    am:operationCode "OP-DEBITMETRE" ;
+    am:standardDurationMin 35 ;
+    am:usesPart am:ref_debitmetre .
+
+am:op_vidange a am:ServiceOperation ;
+    rdfs:label "Vidange moteur et remplacement du filtre à huile"@fr ;
+    am:operationCode "OP-VIDANGE" ;
+    am:standardDurationMin 45 ;
+    am:usesPart am:ref_filtre_huile,
+        am:ref_huile .
+
+am:ref_batt12 a am:PartReference ;
+    rdfs:label "Batterie 12 V 60 Ah"@fr ;
+    am:hasManufacturer am:brand_varta ;
+    am:manufacturerPartNumber "VA-E11" ;
+    am:unitPrice 129.00 .
+
+am:veh_05 a am:Vehicle ;
+    rdfs:label "Toyota Yaris Hybride ER-768-FE"@fr ;
+    am:firstRegistrationDate "2023-07-14T00:00:00"^^xsd:dateTime ;
+    am:hasEngine am:eng_05_elec,
+        am:eng_05_ice ;
+    am:hasMileageReading am:km_05_000,
+        am:km_05_001,
+        am:km_05_002,
+        am:km_05_003 ;
+    am:hasRepairOrder am:ro_050,
+        am:ro_111,
+        am:ro_113 ;
+    am:ofModel am:model_yaris_h ;
+    am:ownedBy am:client_05 ;
+    am:registrationNumber "ER-768-FE" ;
+    am:vin "VF4T1EV43YPVK042T" .
+
+am:veh_08 a am:CombustionVehicle,
+        am:Vehicle ;
+    rdfs:label "Citroën C3 BR-044-SD"@fr ;
+    am:firstRegistrationDate "2020-08-22T00:00:00"^^xsd:dateTime ;
+    am:hasEngine am:eng_08_ice ;
+    am:hasMileageReading am:km_08_000,
+        am:km_08_001,
+        am:km_08_002,
+        am:km_08_003 ;
+    am:hasRepairOrder am:ro_005,
+        am:ro_008,
+        am:ro_058 ;
+    am:ofModel am:model_c3 ;
+    am:ownedBy am:client_08 ;
+    am:registrationNumber "BR-044-SD" ;
+    am:vin "VF77MM8SJMG1FPYDM" .
+
+am:veh_15 a am:CombustionVehicle,
+        am:Vehicle ;
+    rdfs:label "Peugeot 308 NM-993-CC"@fr ;
+    am:firstRegistrationDate "2022-06-22T00:00:00"^^xsd:dateTime ;
+    am:hasEngine am:eng_15_ice ;
+    am:hasMileageReading am:km_15_000,
+        am:km_15_001,
+        am:km_15_002,
+        am:km_15_003 ;
+    am:hasRepairOrder am:ro_069,
+        am:ro_098,
+        am:ro_102 ;
+    am:ofModel am:model_p308 ;
+    am:ownedBy am:client_15 ;
+    am:registrationNumber "NM-993-CC" ;
+    am:vin "VF79VMETSWX6D46LC" .
+
+am:veh_23 a am:CombustionVehicle,
+        am:Vehicle ;
+    rdfs:label "Peugeot 308 AA-104-HP"@fr ;
+    am:firstRegistrationDate "2022-07-20T00:00:00"^^xsd:dateTime ;
+    am:hasEngine am:eng_23_ice ;
+    am:hasMileageReading am:km_23_000,
+        am:km_23_001,
+        am:km_23_002,
+        am:km_23_003 ;
+    am:hasRepairOrder am:ro_009,
+        am:ro_064,
+        am:ro_101 ;
+    am:ofModel am:model_p308 ;
+    am:ownedBy am:client_23 ;
+    am:registrationNumber "AA-104-HP" ;
+    am:vin "VF5ZZNE2S23JRGZ6B" .
+
+am:veh_29 a am:CombustionVehicle,
+        am:Vehicle ;
+    rdfs:label "Dacia Duster LG-199-HK"@fr ;
+    am:firstRegistrationDate "2022-10-18T00:00:00"^^xsd:dateTime ;
+    am:hasActiveCode am:dtc_P0101,
+        am:dtc_P0401 ;
+    am:hasEngine am:eng_29_ice ;
+    am:hasMileageReading am:km_29_000,
+        am:km_29_001,
+        am:km_29_002,
+        am:km_29_003 ;
+    am:hasRepairOrder am:ro_020,
+        am:ro_023,
+        am:ro_091 ;
+    am:ofModel am:model_duster ;
+    am:ownedBy am:client_29 ;
+    am:registrationNumber "LG-199-HK" ;
+    am:vin "VF44UB2AHL1E5LGK1" .
+
+am:veh_34 a am:Vehicle ;
+    rdfs:label "Toyota Yaris Hybride RW-563-NV"@fr ;
+    am:firstRegistrationDate "2023-10-26T00:00:00"^^xsd:dateTime ;
+    am:hasEngine am:eng_34_elec,
+        am:eng_34_ice ;
+    am:hasMileageReading am:km_34_000,
+        am:km_34_001,
+        am:km_34_002,
+        am:km_34_003 ;
+    am:hasRepairOrder am:ro_040,
+        am:ro_046,
+        am:ro_090 ;
+    am:ofModel am:model_yaris_h ;
+    am:ownedBy am:client_08 ;
+    am:registrationNumber "RW-563-NV" ;
+    am:vin "VF5H6XBVRDWWEDBBS" .
+
+am:veh_37 a am:CombustionVehicle,
+        am:Vehicle ;
+    rdfs:label "Renault Clio V CY-355-NG"@fr ;
+    am:firstRegistrationDate "2021-12-11T00:00:00"^^xsd:dateTime ;
+    am:hasEngine am:eng_37_ice ;
+    am:hasMileageReading am:km_37_000,
+        am:km_37_001,
+        am:km_37_002,
+        am:km_37_003 ;
+    am:hasRepairOrder am:ro_037,
+        am:ro_070,
+        am:ro_073 ;
+    am:ofModel am:model_clio ;
+    am:ownedBy am:client_02 ;
+    am:registrationNumber "CY-355-NG" ;
+    am:vin "VF1LF2R1W1RHKAC13" .
+
+am:veh_39 a am:ElectricVehicle,
+        am:Vehicle ;
+    rdfs:label "Renault Mégane E-Tech JN-162-NZ"@fr ;
+    am:firstRegistrationDate "2023-10-26T00:00:00"^^xsd:dateTime ;
+    am:hasActiveCode am:dtc_P0A80,
+        am:dtc_P0AA6 ;
+    am:hasEngine am:eng_39_elec ;
+    am:hasMileageReading am:km_39_000,
+        am:km_39_001,
+        am:km_39_002,
+        am:km_39_003 ;
+    am:hasRepairOrder am:ro_018,
+        am:ro_071,
+        am:ro_087 ;
+    am:ofModel am:model_megane_e ;
+    am:ownedBy am:client_22 ;
+    am:registrationNumber "JN-162-NZ" ;
+    am:vin "VF21HZWCV0LVHJJVL" .
+
+am:op_bobine a am:ServiceOperation ;
+    rdfs:label "Remplacement d'une bobine d'allumage"@fr ;
+    am:addresses am:dtc_P0300,
+        am:dtc_P0301 ;
+    am:operationCode "OP-BOBINE" ;
+    am:standardDurationMin 40 ;
+    am:usesPart am:ref_bobine .
+
+am:op_disque a am:ServiceOperation ;
+    rdfs:label "Remplacement des disques et plaquettes avant"@fr ;
+    am:operationCode "OP-DISQUES-AV" ;
+    am:standardDurationMin 95 ;
+    am:usesPart am:ref_disque_av,
+        am:ref_plaq_av .
+
+am:ref_debitmetre a am:PartReference ;
+    rdfs:label "Débitmètre d'air"@fr ;
+    am:hasManufacturer am:brand_bosch ;
+    am:manufacturerPartNumber "BS-0280218" ;
+    am:unitPrice 98.00 .
+
+am:ref_pompe_refroid a am:PartReference ;
+    rdfs:label "Pompe de refroidissement batterie"@fr ;
+    am:hasManufacturer am:brand_valeo ;
+    am:manufacturerPartNumber "VL-PRB-300" ;
+    am:unitPrice 310.00 .
+
+am:veh_14 a am:Vehicle ;
+    rdfs:label "Hyundai Ioniq Hybride RJ-720-LC"@fr ;
+    am:firstRegistrationDate "2021-06-29T00:00:00"^^xsd:dateTime ;
+    am:hasEngine am:eng_14_elec,
+        am:eng_14_ice ;
+    am:hasMileageReading am:km_14_000,
+        am:km_14_001,
+        am:km_14_002,
+        am:km_14_003 ;
+    am:hasRepairOrder am:ro_039,
+        am:ro_062,
+        am:ro_081 ;
+    am:ofModel am:model_ioniq_h ;
+    am:ownedBy am:client_14 ;
+    am:registrationNumber "RJ-720-LC" ;
+    am:vin "VF1W15894A7MNC540" .
+
+am:veh_30 a am:CombustionVehicle,
+        am:Vehicle ;
+    rdfs:label "Peugeot 308 MQ-189-TQ"@fr ;
+    am:firstRegistrationDate "2022-05-18T00:00:00"^^xsd:dateTime ;
+    am:hasEngine am:eng_30_ice ;
+    am:hasMileageReading am:km_30_000,
+        am:km_30_001,
+        am:km_30_002,
+        am:km_30_003 ;
+    am:hasRepairOrder am:ro_078,
+        am:ro_107,
+        am:ro_118 ;
+    am:ofModel am:model_p308 ;
+    am:ownedBy am:client_30 ;
+    am:registrationNumber "MQ-189-TQ" ;
+    am:vin "VF3SLMFUN229B63EZ" .
+
+am:ref_disque_av a am:PartReference ;
+    rdfs:label "Paire de disques avant"@fr ;
+    am:hasManufacturer am:brand_brembo ;
+    am:manufacturerPartNumber "BR-09A7" ;
+    am:unitPrice 119.00 .
+
+am:veh_06 a am:ElectricVehicle,
+        am:Vehicle ;
+    rdfs:label "Renault Mégane E-Tech BJ-078-RT"@fr ;
+    am:firstRegistrationDate "2023-02-17T00:00:00"^^xsd:dateTime ;
+    am:hasEngine am:eng_06_elec ;
+    am:hasMileageReading am:km_06_000,
+        am:km_06_001,
+        am:km_06_002,
+        am:km_06_003 ;
+    am:hasRepairOrder am:ro_007,
+        am:ro_016,
+        am:ro_045 ;
+    am:ofModel am:model_megane_e ;
+    am:ownedBy am:client_06 ;
+    am:registrationNumber "BJ-078-RT" ;
+    am:vin "VF25XLR0XJVUNJZ0A" .
+
+am:veh_16 a am:CombustionVehicle,
+        am:Vehicle ;
+    rdfs:label "Citroën C3 VB-146-VX"@fr ;
+    am:firstRegistrationDate "2020-08-22T00:00:00"^^xsd:dateTime ;
+    am:hasActiveCode am:dtc_P0A80 ;
+    am:hasEngine am:eng_16_ice ;
+    am:hasMileageReading am:km_16_000,
+        am:km_16_001,
+        am:km_16_002,
+        am:km_16_003 ;
+    am:hasRepairOrder am:ro_010,
+        am:ro_034,
+        am:ro_108 ;
+    am:ofModel am:model_c3 ;
+    am:ownedBy am:client_16 ;
+    am:registrationNumber "VB-146-VX" ;
+    am:vin "VF5VRKBX7MTB13W3C" .
+
+am:veh_18 a am:CombustionVehicle,
+        am:Vehicle ;
+    rdfs:label "Renault Clio V DX-591-SW"@fr ;
+    am:firstRegistrationDate "2021-05-29T00:00:00"^^xsd:dateTime ;
+    am:hasEngine am:eng_18_ice ;
+    am:hasMileageReading am:km_18_000,
+        am:km_18_001,
+        am:km_18_002,
+        am:km_18_003,
+        am:km_18_004 ;
+    am:hasRepairOrder am:ro_006,
+        am:ro_033,
+        am:ro_067,
+        am:ro_085 ;
+    am:ofModel am:model_clio ;
+    am:ownedBy am:client_18 ;
+    am:registrationNumber "DX-591-SW" ;
+    am:vin "VF78CD5BM0FBH5BCT" .
+
+am:veh_26 a am:Vehicle ;
+    rdfs:label "Hyundai Ioniq Hybride JA-279-YH"@fr ;
+    am:firstRegistrationDate "2021-09-18T00:00:00"^^xsd:dateTime ;
+    am:hasEngine am:eng_26_elec,
+        am:eng_26_ice ;
+    am:hasMileageReading am:km_26_000,
+        am:km_26_001,
+        am:km_26_002,
+        am:km_26_003,
+        am:km_26_004 ;
+    am:hasRepairOrder am:ro_002,
+        am:ro_035,
+        am:ro_106,
+        am:ro_110 ;
+    am:ofModel am:model_ioniq_h ;
+    am:ownedBy am:client_26 ;
+    am:registrationNumber "JA-279-YH" ;
+    am:vin "VF17EJKG8YD4VK92G" .
+
+am:veh_27 a am:CombustionVehicle,
+        am:Vehicle ;
+    rdfs:label "Peugeot 308 GQ-134-GX"@fr ;
+    am:firstRegistrationDate "2022-12-04T00:00:00"^^xsd:dateTime ;
+    am:hasActiveCode am:dtc_P0301,
+        am:dtc_P0AA6 ;
+    am:hasEngine am:eng_27_ice ;
+    am:hasMileageReading am:km_27_000,
+        am:km_27_001,
+        am:km_27_002,
+        am:km_27_003 ;
+    am:hasRepairOrder am:ro_047,
+        am:ro_059,
+        am:ro_072 ;
+    am:ofModel am:model_p308 ;
+    am:ownedBy am:client_27 ;
+    am:registrationNumber "GQ-134-GX" ;
+    am:vin "VF2UYBT90WVHRNKJE" .
+
+am:veh_28 a am:Vehicle ;
+    rdfs:label "Toyota Yaris Hybride CJ-379-DK"@fr ;
+    am:firstRegistrationDate "2023-12-10T00:00:00"^^xsd:dateTime ;
+    am:hasEngine am:eng_28_elec,
+        am:eng_28_ice ;
+    am:hasMileageReading am:km_28_000,
+        am:km_28_001,
+        am:km_28_002,
+        am:km_28_003 ;
+    am:hasRepairOrder am:ro_017,
+        am:ro_092,
+        am:ro_117 ;
+    am:ofModel am:model_yaris_h ;
+    am:ownedBy am:client_28 ;
+    am:registrationNumber "CJ-379-DK" ;
+    am:vin "VF2XSFNBP8JLVU14N" .
+
+am:veh_32 a am:CombustionVehicle,
+        am:Vehicle ;
+    rdfs:label "Dacia Duster FS-921-JF"@fr ;
+    am:firstRegistrationDate "2022-02-28T00:00:00"^^xsd:dateTime ;
+    am:hasEngine am:eng_32_ice ;
+    am:hasMileageReading am:km_32_000,
+        am:km_32_001,
+        am:km_32_002,
+        am:km_32_003,
+        am:km_32_004 ;
+    am:hasRepairOrder am:ro_055,
+        am:ro_075,
+        am:ro_086,
+        am:ro_088 ;
+    am:ofModel am:model_duster ;
+    am:ownedBy am:client_02 ;
+    am:registrationNumber "FS-921-JF" ;
+    am:vin "VF34CDS5D1KAWVE2M" .
+
+am:ref_bobine a am:PartReference ;
+    rdfs:label "Bobine d'allumage"@fr ;
+    am:hasManufacturer am:brand_bosch ;
+    am:manufacturerPartNumber "BS-0221504" ;
+    am:unitPrice 47.50 .
+
+am:veh_17 a am:CombustionVehicle,
+        am:Vehicle ;
+    rdfs:label "Peugeot 308 TR-022-EC"@fr ;
+    am:firstRegistrationDate "2022-04-20T00:00:00"^^xsd:dateTime ;
+    am:hasEngine am:eng_17_ice ;
+    am:hasMileageReading am:km_17_000,
+        am:km_17_001,
+        am:km_17_002,
+        am:km_17_003,
+        am:km_17_004 ;
+    am:hasRepairOrder am:ro_001,
+        am:ro_022,
+        am:ro_032,
+        am:ro_076 ;
+    am:ofModel am:model_p308 ;
+    am:ownedBy am:client_17 ;
+    am:registrationNumber "TR-022-EC" ;
+    am:vin "VF366602JT3HEYFCN" .
+
+am:veh_20 a am:CombustionVehicle,
+        am:Vehicle ;
+    rdfs:label "Dacia Duster CV-705-SQ"@fr ;
+    am:firstRegistrationDate "2022-01-21T00:00:00"^^xsd:dateTime ;
+    am:hasEngine am:eng_20_ice ;
+    am:hasMileageReading am:km_20_000,
+        am:km_20_001,
+        am:km_20_002,
+        am:km_20_003,
+        am:km_20_004 ;
+    am:hasRepairOrder am:ro_038,
+        am:ro_104,
+        am:ro_114,
+        am:ro_119 ;
+    am:ofModel am:model_duster ;
+    am:ownedBy am:client_20 ;
+    am:registrationNumber "CV-705-SQ" ;
+    am:vin "VF1C4ZHYX9P3MX0UZ" .
+
+am:garage_lille a am:Garage ;
+    rdfs:label "Garage Vieux-Lille — Lille"@fr ;
+    am:displayName "Garage Vieux-Lille — Lille" .
+
+am:veh_02 a am:ElectricVehicle,
+        am:Vehicle ;
+    rdfs:label "Renault Mégane E-Tech AS-745-ZZ"@fr ;
+    am:firstRegistrationDate "2023-08-20T00:00:00"^^xsd:dateTime ;
+    am:hasActiveCode am:dtc_C0035 ;
+    am:hasEngine am:eng_02_elec ;
+    am:hasMileageReading am:km_02_000,
+        am:km_02_001,
+        am:km_02_002,
+        am:km_02_003,
+        am:km_02_004 ;
+    am:hasRepairOrder am:ro_021,
+        am:ro_060,
+        am:ro_077,
+        am:ro_094 ;
+    am:ofModel am:model_megane_e ;
+    am:ownedBy am:client_02 ;
+    am:registrationNumber "AS-745-ZZ" ;
+    am:vin "VF7Y3MAC0MCVA2XJ4" .
+
+am:veh_11 a am:CombustionVehicle,
+        am:Vehicle ;
+    rdfs:label "Dacia Duster FY-596-LQ"@fr ;
+    am:firstRegistrationDate "2022-01-23T00:00:00"^^xsd:dateTime ;
+    am:hasEngine am:eng_11_ice ;
+    am:hasMileageReading am:km_11_000,
+        am:km_11_001,
+        am:km_11_002,
+        am:km_11_003,
+        am:km_11_004 ;
+    am:hasRepairOrder am:ro_013,
+        am:ro_051,
+        am:ro_061,
+        am:ro_066 ;
+    am:ofModel am:model_duster ;
+    am:ownedBy am:client_11 ;
+    am:registrationNumber "FY-596-LQ" ;
+    am:vin "VF7D9SWKVB5P0PFZZ" .
+
+am:veh_36 a am:CombustionVehicle,
+        am:Vehicle ;
+    rdfs:label "Renault Clio V YP-288-GG"@fr ;
+    am:firstRegistrationDate "2021-03-25T00:00:00"^^xsd:dateTime ;
+    am:hasActiveCode am:dtc_P0101 ;
+    am:hasEngine am:eng_36_ice ;
+    am:hasMileageReading am:km_36_000,
+        am:km_36_001,
+        am:km_36_002,
+        am:km_36_003,
+        am:km_36_004 ;
+    am:hasRepairOrder am:ro_030,
+        am:ro_068,
+        am:ro_082,
+        am:ro_095 ;
+    am:ofModel am:model_clio ;
+    am:ownedBy am:client_10 ;
+    am:registrationNumber "YP-288-GG" ;
+    am:vin "VF7JYVMY5L9EG0U1T" .
+
+am:veh_19 a am:Vehicle ;
+    rdfs:label "Hyundai Ioniq Hybride MT-810-VG"@fr ;
+    am:firstRegistrationDate "2021-07-04T00:00:00"^^xsd:dateTime ;
+    am:hasActiveCode am:dtc_P0101,
+        am:dtc_P0420 ;
+    am:hasEngine am:eng_19_elec,
+        am:eng_19_ice ;
+    am:hasMileageReading am:km_19_000,
+        am:km_19_001,
+        am:km_19_002,
+        am:km_19_003,
+        am:km_19_004 ;
+    am:hasRepairOrder am:ro_031,
+        am:ro_036,
+        am:ro_105,
+        am:ro_116 ;
+    am:ofModel am:model_ioniq_h ;
+    am:ownedBy am:client_19 ;
+    am:registrationNumber "MT-810-VG" ;
+    am:vin "VF26G3DVWB6JRX78S" .
+
+am:op_abs a am:ServiceOperation ;
+    rdfs:label "Remplacement d'un capteur de vitesse de roue"@fr ;
+    am:addresses am:dtc_C0035 ;
+    am:operationCode "OP-CAPTEUR-ABS" ;
+    am:standardDurationMin 45 ;
+    am:usesPart am:ref_capteur_abs .
+
+am:ref_capteur_abs a am:PartReference ;
+    rdfs:label "Capteur de vitesse de roue"@fr ;
+    am:hasManufacturer am:brand_bosch ;
+    am:manufacturerPartNumber "BS-0986594" ;
+    am:unitPrice 42.60 .
+
+am:tech_02 a am:Technician ;
+    rdfs:label "Axel Vincent"@fr ;
+    am:displayName "Axel Vincent" ;
+    am:worksAt am:garage_lyon .
+
+am:garage_lyon a am:Garage ;
+    rdfs:label "Atelier Confluence — Lyon"@fr ;
+    am:displayName "Atelier Confluence — Lyon" .
+
+am:ref_plaq_av a am:PartReference ;
+    rdfs:label "Jeu de plaquettes avant"@fr ;
+    am:hasManufacturer am:brand_brembo ;
+    am:manufacturerPartNumber "BR-P85020" ;
+    am:unitPrice 64.80 .
+
+am:garage_marseille a am:Garage ;
+    rdfs:label "Mécanique du Vieux-Port — Marseille"@fr ;
+    am:displayName "Mécanique du Vieux-Port — Marseille" .
+
+am:tech_03 a am:Technician ;
+    rdfs:label "Zoé Martin"@fr ;
+    am:displayName "Zoé Martin" ;
+    am:worksAt am:garage_bordeaux .
+
+am:garage_bordeaux a am:Garage ;
+    rdfs:label "Garage des Chartrons — Bordeaux"@fr ;
+    am:displayName "Garage des Chartrons — Bordeaux" .
+
+am:op_diag a am:ServiceOperation ;
+    rdfs:label "Diagnostic électronique (lecture des codes défaut)"@fr ;
+    am:addresses am:dtc_U0100 ;
+    am:operationCode "OP-DIAGNOSTIC" ;
+    am:standardDurationMin 30 .
+

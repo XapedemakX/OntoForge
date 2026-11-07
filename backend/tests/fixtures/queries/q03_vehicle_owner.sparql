@@ -1,0 +1,2 @@
+PREFIX am: <https://w3id.org/ontoforge/automaint#>
+SELECT ?reg ?name WHERE { ?v am:registrationNumber ?reg ; am:ownedBy ?c . ?c am:displayName ?name . }

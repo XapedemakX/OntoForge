@@ -1,0 +1,30 @@
+[project]
+name = "ontoforge"
+version = "0.1.0"
+description = "OntoForge — conception d'ontologies OWL 2 / SHACL et transposition vers property graphs (Curiosity, Neo4j)"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi==0.115.6",
+  "uvicorn[standard]==0.32.1",
+  "pydantic==2.10.3",
+  "rdflib==7.1.1",
+  "pyshacl==0.29.1",
+  "owlrl==7.1.2",
+  "httpx==0.28.1",
+  "python-multipart==0.0.19",
+  "pyyaml==6.0.2",
+  "cryptography==50.0.2",
+]
+[project.optional-dependencies]
+dev = ["pytest==8.3.4", "graphql-core==3.2.5"]
+reasoner = ["owlready2==0.47"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["ontoforge*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

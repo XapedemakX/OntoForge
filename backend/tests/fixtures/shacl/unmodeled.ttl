@@ -1,0 +1,12 @@
+# Triplets non modélisés par le contrat ShapesModel : doivent produire des warnings (jamais de perte silencieuse).
+@prefix am:   <https://w3id.org/ontoforge/automaint#> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+
+<https://w3id.org/ontoforge/automaint-shapes> a owl:Ontology .
+am:EngineShape a sh:NodeShape ;
+    sh:targetClass am:Engine ;
+    rdfs:comment "Commentaire non modélisé"@fr ;
+    sh:target [ a sh:SPARQLTarget ; sh:select "SELECT ?this WHERE { ?this a am:Engine }" ] ;
+    sh:property [ sh:path am:power ; sh:targetClass am:Engine ; rdfs:label "puissance" ] .

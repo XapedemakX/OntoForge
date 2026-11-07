@@ -1,0 +1,59 @@
+# OntoForge — jeu de données de test SHACL (fictif) pour samples/trap/trap-shapes.ttl
+# Commande : pyshacl -s samples/trap/trap-shapes.ttl samples/trap/trap-data.ttl   (sans inférence)
+# Résultat attendu : Conforms: False, EXACTEMENT 8 violations (sh:Violation) :
+#   V1 am:veh_bad_vin     sh:path am:vin                    sh:PatternConstraintComponent         (VIN contient « I »)
+#   V2 am:veh_no_model    sh:path am:ofModel                sh:MinCountConstraintComponent
+#   V3 am:veh_bad_fuel    sh:path am:usesFuel               sh:InConstraintComponent              (am:Kerosene)
+#   V4 am:veh_bad_owner   sh:path am:hasOwner               sh:OrConstraintComponent              (propriétaire = garage)
+#   V5 am:ro_bad_dates    sh:path am:openedAt               sh:LessThanConstraintComponent        (ouverture > clôture)
+#   V6 am:ro_no_op        sh:path am:includesOperation      sh:QualifiedMinCountConstraintComponent
+#   V7 am:garage_empty    sh:path [sh:inversePath am:worksAt] sh:MinCountConstraintComponent
+#   V8 am:reading_extra   sh:path am:note (focus = le relevé) sh:ClosedConstraintComponent         (propriété hors forme fermée)
+# Tous les autres nœuds sont conformes.
+
+@prefix am:  <https://w3id.org/ontoforge/automaint#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+am:model_x a am:VehicleModel .
+am:owner_ok a am:Person .
+am:tech_ok a am:Technician ; am:worksAt am:garage_ok .
+am:garage_ok a am:Garage .
+am:op_ok a am:MaintenanceOperation .
+
+am:veh_ok a am:Vehicle ;
+    am:vin "VF1AB000000000010" ; am:ofModel am:model_x ; am:usesFuel am:Diesel ; am:hasOwner am:owner_ok .
+
+# V1
+am:veh_bad_vin a am:Vehicle ;
+    am:vin "VF1AB00000000001I" ; am:ofModel am:model_x ; am:usesFuel am:Petrol .
+# V2
+am:veh_no_model a am:Vehicle ;
+    am:vin "VF1AB000000000012" ; am:usesFuel am:Petrol .
+# V3
+am:veh_bad_fuel a am:Vehicle ;
+    am:vin "VF1AB000000000013" ; am:ofModel am:model_x ; am:usesFuel am:Kerosene .
+# V4
+am:veh_bad_owner a am:Vehicle ;
+    am:vin "VF1AB000000000014" ; am:ofModel am:model_x ; am:usesFuel am:LPG ; am:hasOwner am:garage_ok .
+
+am:ro_ok a am:RepairOrder ;
+    am:openedAt "2026-10-01T08:00:00Z"^^xsd:dateTime ; am:closedAt "2026-10-01T18:00:00Z"^^xsd:dateTime ;
+    am:performedBy am:tech_ok ; am:includesOperation am:op_ok .
+# V5
+am:ro_bad_dates a am:RepairOrder ;
+    am:openedAt "2026-10-03T18:00:00Z"^^xsd:dateTime ; am:closedAt "2026-10-02T08:00:00Z"^^xsd:dateTime ;
+    am:performedBy am:tech_ok ; am:includesOperation am:op_ok .
+# V6
+am:ro_no_op a am:RepairOrder ;
+    am:openedAt "2026-10-04T08:00:00Z"^^xsd:dateTime ;
+    am:performedBy am:tech_ok .
+# V7
+am:garage_empty a am:Garage .
+
+am:reading_ok a am:MileageReading ;
+    am:readingMileageKm 1200.0 ; am:readingDate "2026-10-01T08:00:00Z"^^xsd:dateTime .
+# V8
+am:reading_extra a am:MileageReading ;
+    am:readingMileageKm 1300.0 ; am:readingDate "2026-10-02T08:00:00Z"^^xsd:dateTime ;
+    am:note "relevé saisi à la main" .

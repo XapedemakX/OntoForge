@@ -1,0 +1,1379 @@
+{
+ "target": "curiosity",
+ "meta": {
+  "name": "automaint",
+  "iri": "https://w3id.org/ontoforge/automaint",
+  "generated_at": null,
+  "ontoforge_version": "0.1.0"
+ },
+ "node_types": {
+  "Vehicle": {
+   "name": "Vehicle",
+   "labels": [
+    "Vehicle"
+   ],
+   "source": [
+    "https://w3id.org/ontoforge/automaint#Vehicle",
+    "https://w3id.org/ontoforge/automaint#ElectricVehicle",
+    "https://w3id.org/ontoforge/automaint#CombustionVehicle"
+   ],
+   "key": [
+    "vin"
+   ],
+   "properties": [
+    {
+     "name": "uri",
+     "type": "String",
+     "is_list": false,
+     "required": true,
+     "unique": true,
+     "indexed": true,
+     "source": null,
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": "K01 identité IRI"
+    },
+    {
+     "name": "firstRegistrationDate",
+     "type": "DateTime",
+     "is_list": false,
+     "required": false,
+     "unique": false,
+     "indexed": false,
+     "source": "https://w3id.org/ontoforge/automaint#firstRegistrationDate",
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": null
+    },
+    {
+     "name": "registrationNumber",
+     "type": "String",
+     "is_list": false,
+     "required": false,
+     "unique": false,
+     "indexed": false,
+     "source": "https://w3id.org/ontoforge/automaint#registrationNumber",
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": null
+    },
+    {
+     "name": "vin",
+     "type": "String",
+     "is_list": false,
+     "required": true,
+     "unique": true,
+     "indexed": true,
+     "source": "https://w3id.org/ontoforge/automaint#vin",
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": null
+    },
+    {
+     "name": "vehicleKind",
+     "type": "String",
+     "is_list": false,
+     "required": false,
+     "unique": false,
+     "indexed": false,
+     "source": null,
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": "discriminant"
+    }
+   ],
+   "description": null,
+   "abstract": false,
+   "discriminator": "vehicleKind",
+   "discriminator_values": [
+    "ElectricVehicle",
+    "CombustionVehicle"
+   ]
+  },
+  "VehicleModel": {
+   "name": "VehicleModel",
+   "labels": [
+    "VehicleModel"
+   ],
+   "source": [
+    "https://w3id.org/ontoforge/automaint#VehicleModel"
+   ],
+   "key": [
+    "modelName"
+   ],
+   "properties": [
+    {
+     "name": "uri",
+     "type": "String",
+     "is_list": false,
+     "required": true,
+     "unique": true,
+     "indexed": true,
+     "source": null,
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": "K01 identité IRI"
+    },
+    {
+     "name": "modelName",
+     "type": "String",
+     "is_list": false,
+     "required": true,
+     "unique": true,
+     "indexed": true,
+     "source": "https://w3id.org/ontoforge/automaint#modelName",
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": null
+    },
+    {
+     "name": "modelYear",
+     "type": "Integer",
+     "is_list": false,
+     "required": false,
+     "unique": false,
+     "indexed": false,
+     "source": "https://w3id.org/ontoforge/automaint#modelYear",
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": null
+    }
+   ],
+   "description": null,
+   "abstract": false,
+   "discriminator": null,
+   "discriminator_values": []
+  },
+  "Brand": {
+   "name": "Brand",
+   "labels": [
+    "Brand"
+   ],
+   "source": [
+    "https://w3id.org/ontoforge/automaint#Brand"
+   ],
+   "key": [
+    "brandName"
+   ],
+   "properties": [
+    {
+     "name": "uri",
+     "type": "String",
+     "is_list": false,
+     "required": true,
+     "unique": true,
+     "indexed": true,
+     "source": null,
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": "K01 identité IRI"
+    },
+    {
+     "name": "brandName",
+     "type": "String",
+     "is_list": false,
+     "required": true,
+     "unique": true,
+     "indexed": true,
+     "source": "https://w3id.org/ontoforge/automaint#brandName",
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": null
+    },
+    {
+     "name": "displayName",
+     "type": "String",
+     "is_list": false,
+     "required": false,
+     "unique": false,
+     "indexed": false,
+     "source": "https://w3id.org/ontoforge/automaint#displayName",
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": null
+    }
+   ],
+   "description": null,
+   "abstract": false,
+   "discriminator": null,
+   "discriminator_values": []
+  },
+  "Engine": {
+   "name": "Engine",
+   "labels": [
+    "Engine"
+   ],
+   "source": [
+    "https://w3id.org/ontoforge/automaint#Engine",
+    "https://w3id.org/ontoforge/automaint#ElectricMotor",
+    "https://w3id.org/ontoforge/automaint#InternalCombustionEngine"
+   ],
+   "key": [
+    "uri"
+   ],
+   "properties": [
+    {
+     "name": "uri",
+     "type": "String",
+     "is_list": false,
+     "required": true,
+     "unique": true,
+     "indexed": true,
+     "source": null,
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": "K01 identité IRI"
+    },
+    {
+     "name": "displacementCc",
+     "type": "Integer",
+     "is_list": false,
+     "required": false,
+     "unique": false,
+     "indexed": false,
+     "source": "https://w3id.org/ontoforge/automaint#displacementCc",
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": null
+    },
+    {
+     "name": "powerKw",
+     "type": "Float",
+     "is_list": false,
+     "required": false,
+     "unique": false,
+     "indexed": false,
+     "source": "https://w3id.org/ontoforge/automaint#powerKw",
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": null
+    },
+    {
+     "name": "engineKind",
+     "type": "String",
+     "is_list": false,
+     "required": false,
+     "unique": false,
+     "indexed": false,
+     "source": null,
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": "discriminant"
+    }
+   ],
+   "description": null,
+   "abstract": false,
+   "discriminator": "engineKind",
+   "discriminator_values": [
+    "ElectricMotor",
+    "InternalCombustionEngine"
+   ]
+  },
+  "Part": {
+   "name": "Part",
+   "labels": [
+    "Part"
+   ],
+   "source": [
+    "https://w3id.org/ontoforge/automaint#Part"
+   ],
+   "key": [
+    "uri"
+   ],
+   "properties": [
+    {
+     "name": "uri",
+     "type": "String",
+     "is_list": false,
+     "required": true,
+     "unique": true,
+     "indexed": true,
+     "source": null,
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": "K01 identité IRI"
+    }
+   ],
+   "description": null,
+   "abstract": false,
+   "discriminator": null,
+   "discriminator_values": []
+  },
+  "PartReference": {
+   "name": "PartReference",
+   "labels": [
+    "PartReference"
+   ],
+   "source": [
+    "https://w3id.org/ontoforge/automaint#PartReference"
+   ],
+   "key": [
+    "manufacturerPartNumber"
+   ],
+   "properties": [
+    {
+     "name": "uri",
+     "type": "String",
+     "is_list": false,
+     "required": true,
+     "unique": true,
+     "indexed": true,
+     "source": null,
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": "K01 identité IRI"
+    },
+    {
+     "name": "manufacturerPartNumber",
+     "type": "String",
+     "is_list": false,
+     "required": true,
+     "unique": true,
+     "indexed": true,
+     "source": "https://w3id.org/ontoforge/automaint#manufacturerPartNumber",
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": null
+    },
+    {
+     "name": "unitPrice",
+     "type": "Float",
+     "is_list": false,
+     "required": false,
+     "unique": false,
+     "indexed": false,
+     "source": "https://w3id.org/ontoforge/automaint#unitPrice",
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": null
+    }
+   ],
+   "description": null,
+   "abstract": false,
+   "discriminator": null,
+   "discriminator_values": []
+  },
+  "ServiceOperation": {
+   "name": "ServiceOperation",
+   "labels": [
+    "ServiceOperation"
+   ],
+   "source": [
+    "https://w3id.org/ontoforge/automaint#ServiceOperation"
+   ],
+   "key": [
+    "operationCode"
+   ],
+   "properties": [
+    {
+     "name": "uri",
+     "type": "String",
+     "is_list": false,
+     "required": true,
+     "unique": true,
+     "indexed": true,
+     "source": null,
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": "K01 identité IRI"
+    },
+    {
+     "name": "standardDurationMin",
+     "type": "Integer",
+     "is_list": false,
+     "required": false,
+     "unique": false,
+     "indexed": false,
+     "source": "https://w3id.org/ontoforge/automaint#standardDurationMin",
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": null
+    },
+    {
+     "name": "operationCode",
+     "type": "String",
+     "is_list": false,
+     "required": true,
+     "unique": true,
+     "indexed": true,
+     "source": "https://w3id.org/ontoforge/automaint#operationCode",
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": null
+    }
+   ],
+   "description": null,
+   "abstract": false,
+   "discriminator": null,
+   "discriminator_values": []
+  },
+  "MaintenancePlan": {
+   "name": "MaintenancePlan",
+   "labels": [
+    "MaintenancePlan"
+   ],
+   "source": [
+    "https://w3id.org/ontoforge/automaint#MaintenancePlan"
+   ],
+   "key": [
+    "uri"
+   ],
+   "properties": [
+    {
+     "name": "uri",
+     "type": "String",
+     "is_list": false,
+     "required": true,
+     "unique": true,
+     "indexed": true,
+     "source": null,
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": "K01 identité IRI"
+    },
+    {
+     "name": "intervalKm",
+     "type": "Integer",
+     "is_list": false,
+     "required": false,
+     "unique": false,
+     "indexed": false,
+     "source": "https://w3id.org/ontoforge/automaint#intervalKm",
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": null
+    },
+    {
+     "name": "intervalMonths",
+     "type": "Integer",
+     "is_list": false,
+     "required": false,
+     "unique": false,
+     "indexed": false,
+     "source": "https://w3id.org/ontoforge/automaint#intervalMonths",
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": null
+    }
+   ],
+   "description": null,
+   "abstract": false,
+   "discriminator": null,
+   "discriminator_values": []
+  },
+  "RepairOrder": {
+   "name": "RepairOrder",
+   "labels": [
+    "RepairOrder"
+   ],
+   "source": [
+    "https://w3id.org/ontoforge/automaint#RepairOrder"
+   ],
+   "key": [
+    "orderNumber"
+   ],
+   "properties": [
+    {
+     "name": "uri",
+     "type": "String",
+     "is_list": false,
+     "required": true,
+     "unique": true,
+     "indexed": true,
+     "source": null,
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": "K01 identité IRI"
+    },
+    {
+     "name": "closedAt",
+     "type": "DateTime",
+     "is_list": false,
+     "required": false,
+     "unique": false,
+     "indexed": false,
+     "source": "https://w3id.org/ontoforge/automaint#closedAt",
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": null
+    },
+    {
+     "name": "openedAt",
+     "type": "DateTime",
+     "is_list": false,
+     "required": false,
+     "unique": false,
+     "indexed": false,
+     "source": "https://w3id.org/ontoforge/automaint#openedAt",
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": null
+    },
+    {
+     "name": "orderNumber",
+     "type": "String",
+     "is_list": false,
+     "required": true,
+     "unique": true,
+     "indexed": true,
+     "source": "https://w3id.org/ontoforge/automaint#orderNumber",
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": null
+    }
+   ],
+   "description": null,
+   "abstract": false,
+   "discriminator": null,
+   "discriminator_values": []
+  },
+  "Garage": {
+   "name": "Garage",
+   "labels": [
+    "Garage"
+   ],
+   "source": [
+    "https://w3id.org/ontoforge/automaint#Garage"
+   ],
+   "key": [
+    "uri"
+   ],
+   "properties": [
+    {
+     "name": "uri",
+     "type": "String",
+     "is_list": false,
+     "required": true,
+     "unique": true,
+     "indexed": true,
+     "source": null,
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": "K01 identité IRI"
+    },
+    {
+     "name": "displayName",
+     "type": "String",
+     "is_list": false,
+     "required": false,
+     "unique": false,
+     "indexed": false,
+     "source": "https://w3id.org/ontoforge/automaint#displayName",
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": null
+    }
+   ],
+   "description": null,
+   "abstract": false,
+   "discriminator": null,
+   "discriminator_values": []
+  },
+  "Technician": {
+   "name": "Technician",
+   "labels": [
+    "Technician"
+   ],
+   "source": [
+    "https://w3id.org/ontoforge/automaint#Technician"
+   ],
+   "key": [
+    "uri"
+   ],
+   "properties": [
+    {
+     "name": "uri",
+     "type": "String",
+     "is_list": false,
+     "required": true,
+     "unique": true,
+     "indexed": true,
+     "source": null,
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": "K01 identité IRI"
+    },
+    {
+     "name": "displayName",
+     "type": "String",
+     "is_list": false,
+     "required": false,
+     "unique": false,
+     "indexed": false,
+     "source": "https://w3id.org/ontoforge/automaint#displayName",
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": null
+    }
+   ],
+   "description": null,
+   "abstract": false,
+   "discriminator": null,
+   "discriminator_values": []
+  },
+  "Customer": {
+   "name": "Customer",
+   "labels": [
+    "Customer"
+   ],
+   "source": [
+    "https://w3id.org/ontoforge/automaint#Customer"
+   ],
+   "key": [
+    "uri"
+   ],
+   "properties": [
+    {
+     "name": "uri",
+     "type": "String",
+     "is_list": false,
+     "required": true,
+     "unique": true,
+     "indexed": true,
+     "source": null,
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": "K01 identité IRI"
+    },
+    {
+     "name": "displayName",
+     "type": "String",
+     "is_list": false,
+     "required": false,
+     "unique": false,
+     "indexed": false,
+     "source": "https://w3id.org/ontoforge/automaint#displayName",
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": null
+    }
+   ],
+   "description": null,
+   "abstract": false,
+   "discriminator": null,
+   "discriminator_values": []
+  },
+  "MileageReading": {
+   "name": "MileageReading",
+   "labels": [
+    "MileageReading"
+   ],
+   "source": [
+    "https://w3id.org/ontoforge/automaint#MileageReading"
+   ],
+   "key": [
+    "uri"
+   ],
+   "properties": [
+    {
+     "name": "uri",
+     "type": "String",
+     "is_list": false,
+     "required": true,
+     "unique": true,
+     "indexed": true,
+     "source": null,
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": "K01 identité IRI"
+    },
+    {
+     "name": "readingDate",
+     "type": "DateTime",
+     "is_list": false,
+     "required": false,
+     "unique": false,
+     "indexed": false,
+     "source": "https://w3id.org/ontoforge/automaint#readingDate",
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": null
+    },
+    {
+     "name": "readingMileageKm",
+     "type": "Float",
+     "is_list": false,
+     "required": false,
+     "unique": false,
+     "indexed": false,
+     "source": "https://w3id.org/ontoforge/automaint#readingMileageKm",
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": null
+    }
+   ],
+   "description": null,
+   "abstract": false,
+   "discriminator": null,
+   "discriminator_values": []
+  },
+  "DiagnosticTroubleCode": {
+   "name": "DiagnosticTroubleCode",
+   "labels": [
+    "DiagnosticTroubleCode"
+   ],
+   "source": [
+    "https://w3id.org/ontoforge/automaint#DiagnosticTroubleCode"
+   ],
+   "key": [
+    "dtcCode"
+   ],
+   "properties": [
+    {
+     "name": "uri",
+     "type": "String",
+     "is_list": false,
+     "required": true,
+     "unique": true,
+     "indexed": true,
+     "source": null,
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": "K01 identité IRI"
+    },
+    {
+     "name": "dtcCode",
+     "type": "String",
+     "is_list": false,
+     "required": true,
+     "unique": true,
+     "indexed": true,
+     "source": "https://w3id.org/ontoforge/automaint#dtcCode",
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": null
+    }
+   ],
+   "description": null,
+   "abstract": false,
+   "discriminator": null,
+   "discriminator_values": []
+  },
+  "Recall": {
+   "name": "Recall",
+   "labels": [
+    "Recall"
+   ],
+   "source": [
+    "https://w3id.org/ontoforge/automaint#Recall"
+   ],
+   "key": [
+    "recallNumber"
+   ],
+   "properties": [
+    {
+     "name": "uri",
+     "type": "String",
+     "is_list": false,
+     "required": true,
+     "unique": true,
+     "indexed": true,
+     "source": null,
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": "K01 identité IRI"
+    },
+    {
+     "name": "issuedAt",
+     "type": "DateTime",
+     "is_list": false,
+     "required": false,
+     "unique": false,
+     "indexed": false,
+     "source": "https://w3id.org/ontoforge/automaint#issuedAt",
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": null
+    },
+    {
+     "name": "recallNumber",
+     "type": "String",
+     "is_list": false,
+     "required": true,
+     "unique": true,
+     "indexed": true,
+     "source": "https://w3id.org/ontoforge/automaint#recallNumber",
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": null
+    }
+   ],
+   "description": null,
+   "abstract": false,
+   "discriminator": null,
+   "discriminator_values": []
+  },
+  "Warranty": {
+   "name": "Warranty",
+   "labels": [
+    "Warranty"
+   ],
+   "source": [
+    "https://w3id.org/ontoforge/automaint#Warranty"
+   ],
+   "key": [
+    "uri"
+   ],
+   "properties": [
+    {
+     "name": "uri",
+     "type": "String",
+     "is_list": false,
+     "required": true,
+     "unique": true,
+     "indexed": true,
+     "source": null,
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": "K01 identité IRI"
+    },
+    {
+     "name": "warrantyDurationMonths",
+     "type": "Integer",
+     "is_list": false,
+     "required": false,
+     "unique": false,
+     "indexed": false,
+     "source": "https://w3id.org/ontoforge/automaint#warrantyDurationMonths",
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": null
+    },
+    {
+     "name": "warrantyMaxKm",
+     "type": "Integer",
+     "is_list": false,
+     "required": false,
+     "unique": false,
+     "indexed": false,
+     "source": "https://w3id.org/ontoforge/automaint#warrantyMaxKm",
+     "description": null,
+     "enum": [],
+     "default": null,
+     "pattern": null,
+     "lang": null,
+     "note": null
+    }
+   ],
+   "description": null,
+   "abstract": false,
+   "discriminator": null,
+   "discriminator_values": []
+  }
+ },
+ "edge_types": [
+  {
+   "name": "Addresses",
+   "from": "ServiceOperation",
+   "to": "DiagnosticTroubleCode",
+   "reverse": "InverseAddresses",
+   "source": "https://w3id.org/ontoforge/automaint#addresses",
+   "description": null,
+   "properties": [],
+   "cardinality": {
+    "out": "0..*",
+    "in": "0..*"
+   },
+   "directed": true,
+   "symmetric": false,
+   "derived": false,
+   "note": null
+  },
+  {
+   "name": "AssignedTo",
+   "from": "RepairOrder",
+   "to": "Technician",
+   "reverse": "InverseAssignedTo",
+   "source": "https://w3id.org/ontoforge/automaint#assignedTo",
+   "description": null,
+   "properties": [],
+   "cardinality": {
+    "out": "0..*",
+    "in": "0..*"
+   },
+   "directed": true,
+   "symmetric": false,
+   "derived": false,
+   "note": null
+  },
+  {
+   "name": "ConcernsPart",
+   "from": "Recall",
+   "to": "PartReference",
+   "reverse": "InverseConcernsPart",
+   "source": "https://w3id.org/ontoforge/automaint#concernsPart",
+   "description": null,
+   "properties": [],
+   "cardinality": {
+    "out": "0..*",
+    "in": "0..*"
+   },
+   "directed": true,
+   "symmetric": false,
+   "derived": false,
+   "note": null
+  },
+  {
+   "name": "HasActiveCode",
+   "from": "Vehicle",
+   "to": "DiagnosticTroubleCode",
+   "reverse": "InverseHasActiveCode",
+   "source": "https://w3id.org/ontoforge/automaint#hasActiveCode",
+   "description": null,
+   "properties": [],
+   "cardinality": {
+    "out": "0..*",
+    "in": "0..*"
+   },
+   "directed": true,
+   "symmetric": false,
+   "derived": false,
+   "note": null
+  },
+  {
+   "name": "InstalledIn",
+   "from": "Part",
+   "to": "Vehicle",
+   "reverse": "InverseInstalledIn",
+   "source": "https://w3id.org/ontoforge/automaint#installedIn",
+   "description": null,
+   "properties": [],
+   "cardinality": {
+    "out": "0..*",
+    "in": "0..*"
+   },
+   "directed": true,
+   "symmetric": false,
+   "derived": false,
+   "note": null
+  },
+  {
+   "name": "OwnedBy",
+   "from": "Vehicle",
+   "to": "Customer",
+   "reverse": "InverseOwnedBy",
+   "source": "https://w3id.org/ontoforge/automaint#ownedBy",
+   "description": null,
+   "properties": [],
+   "cardinality": {
+    "out": "0..1",
+    "in": "0..*"
+   },
+   "directed": true,
+   "symmetric": false,
+   "derived": false,
+   "note": null
+  },
+  {
+   "name": "PartOf",
+   "from": "Part",
+   "to": "Part",
+   "reverse": "InversePartOf",
+   "source": "https://w3id.org/ontoforge/automaint#partOf",
+   "description": null,
+   "properties": [],
+   "cardinality": {
+    "out": "0..*",
+    "in": "0..*"
+   },
+   "directed": true,
+   "symmetric": false,
+   "derived": false,
+   "note": "transitive : requêtes *1.."
+  },
+  {
+   "name": "UsesPart",
+   "from": "ServiceOperation",
+   "to": "PartReference",
+   "reverse": "InverseUsesPart",
+   "source": "https://w3id.org/ontoforge/automaint#usesPart",
+   "description": null,
+   "properties": [],
+   "cardinality": {
+    "out": "0..*",
+    "in": "0..*"
+   },
+   "directed": true,
+   "symmetric": false,
+   "derived": false,
+   "note": null
+  },
+  {
+   "name": "AppliesToModel",
+   "from": "Recall",
+   "to": "VehicleModel",
+   "reverse": "InverseAppliesToModel",
+   "source": "https://w3id.org/ontoforge/automaint#appliesToModel",
+   "description": null,
+   "properties": [],
+   "cardinality": {
+    "out": "0..*",
+    "in": "0..*"
+   },
+   "directed": true,
+   "symmetric": false,
+   "derived": false,
+   "note": null
+  },
+  {
+   "name": "Covers",
+   "from": "Warranty",
+   "to": "Vehicle",
+   "reverse": "InverseCovers",
+   "source": "https://w3id.org/ontoforge/automaint#covers",
+   "description": null,
+   "properties": [],
+   "cardinality": {
+    "out": "0..*",
+    "in": "0..*"
+   },
+   "directed": true,
+   "symmetric": false,
+   "derived": false,
+   "note": null
+  },
+  {
+   "name": "HasManufacturer",
+   "from": "PartReference",
+   "to": "Brand",
+   "reverse": "InverseHasManufacturer",
+   "source": "https://w3id.org/ontoforge/automaint#hasManufacturer",
+   "description": null,
+   "properties": [],
+   "cardinality": {
+    "out": "0..*",
+    "in": "0..*"
+   },
+   "directed": true,
+   "symmetric": false,
+   "derived": false,
+   "note": null
+  },
+  {
+   "name": "HasMileageReading",
+   "from": "Vehicle",
+   "to": "MileageReading",
+   "reverse": "InverseHasMileageReading",
+   "source": "https://w3id.org/ontoforge/automaint#hasMileageReading",
+   "description": null,
+   "properties": [],
+   "cardinality": {
+    "out": "0..*",
+    "in": "0..*"
+   },
+   "directed": true,
+   "symmetric": false,
+   "derived": false,
+   "note": null
+  },
+  {
+   "name": "HasRepairOrder",
+   "from": "Vehicle",
+   "to": "RepairOrder",
+   "reverse": "InverseHasRepairOrder",
+   "source": "https://w3id.org/ontoforge/automaint#hasRepairOrder",
+   "description": null,
+   "properties": [],
+   "cardinality": {
+    "out": "0..*",
+    "in": "0..*"
+   },
+   "directed": true,
+   "symmetric": false,
+   "derived": false,
+   "note": null
+  },
+  {
+   "name": "IncludesOperation",
+   "from": "RepairOrder",
+   "to": "ServiceOperation",
+   "reverse": "InverseIncludesOperation",
+   "source": "https://w3id.org/ontoforge/automaint#includesOperation",
+   "description": null,
+   "properties": [],
+   "cardinality": {
+    "out": "0..*",
+    "in": "0..*"
+   },
+   "directed": true,
+   "symmetric": false,
+   "derived": false,
+   "note": null
+  },
+  {
+   "name": "InstanceOf",
+   "from": "Part",
+   "to": "PartReference",
+   "reverse": "InverseInstanceOf",
+   "source": "https://w3id.org/ontoforge/automaint#instanceOf",
+   "description": null,
+   "properties": [],
+   "cardinality": {
+    "out": "0..1",
+    "in": "0..*"
+   },
+   "directed": true,
+   "symmetric": false,
+   "derived": false,
+   "note": null
+  },
+  {
+   "name": "MadeBy",
+   "from": "VehicleModel",
+   "to": "Brand",
+   "reverse": "InverseMadeBy",
+   "source": "https://w3id.org/ontoforge/automaint#madeBy",
+   "description": null,
+   "properties": [],
+   "cardinality": {
+    "out": "0..1",
+    "in": "0..*"
+   },
+   "directed": true,
+   "symmetric": false,
+   "derived": false,
+   "note": null
+  },
+  {
+   "name": "OfModel",
+   "from": "Vehicle",
+   "to": "VehicleModel",
+   "reverse": "InverseOfModel",
+   "source": "https://w3id.org/ontoforge/automaint#ofModel",
+   "description": null,
+   "properties": [],
+   "cardinality": {
+    "out": "0..1",
+    "in": "0..*"
+   },
+   "directed": true,
+   "symmetric": false,
+   "derived": false,
+   "note": null
+  },
+  {
+   "name": "PerformedAt",
+   "from": "RepairOrder",
+   "to": "Garage",
+   "reverse": "InversePerformedAt",
+   "source": "https://w3id.org/ontoforge/automaint#performedAt",
+   "description": null,
+   "properties": [],
+   "cardinality": {
+    "out": "0..1",
+    "in": "0..*"
+   },
+   "directed": true,
+   "symmetric": false,
+   "derived": false,
+   "note": null
+  },
+  {
+   "name": "PlannedFor",
+   "from": "MaintenancePlan",
+   "to": "VehicleModel",
+   "reverse": "InversePlannedFor",
+   "source": "https://w3id.org/ontoforge/automaint#plannedFor",
+   "description": null,
+   "properties": [],
+   "cardinality": {
+    "out": "0..*",
+    "in": "0..*"
+   },
+   "directed": true,
+   "symmetric": false,
+   "derived": false,
+   "note": null
+  },
+  {
+   "name": "Prescribes",
+   "from": "MaintenancePlan",
+   "to": "ServiceOperation",
+   "reverse": "InversePrescribes",
+   "source": "https://w3id.org/ontoforge/automaint#prescribes",
+   "description": null,
+   "properties": [],
+   "cardinality": {
+    "out": "0..*",
+    "in": "0..*"
+   },
+   "directed": true,
+   "symmetric": false,
+   "derived": false,
+   "note": null
+  },
+  {
+   "name": "WorksAt",
+   "from": "Technician",
+   "to": "Garage",
+   "reverse": "InverseWorksAt",
+   "source": "https://w3id.org/ontoforge/automaint#worksAt",
+   "description": null,
+   "properties": [],
+   "cardinality": {
+    "out": "0..*",
+    "in": "0..*"
+   },
+   "directed": true,
+   "symmetric": false,
+   "derived": false,
+   "note": null
+  },
+  {
+   "name": "HasEngine",
+   "from": "Vehicle",
+   "to": "Engine",
+   "reverse": "InverseHasEngine",
+   "source": "https://w3id.org/ontoforge/automaint#hasEngine",
+   "description": null,
+   "properties": [],
+   "cardinality": {
+    "out": "0..*",
+    "in": "0..*"
+   },
+   "directed": true,
+   "symmetric": false,
+   "derived": false,
+   "note": null
+  }
+ ],
+ "validations": [],
+ "materializations": [],
+ "findings": [],
+ "decisions": {}
+}

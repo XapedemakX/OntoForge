@@ -1,0 +1,843 @@
+# =============================================================================
+# OntoForge — ontologie « piège » (domaine : maintenance automobile)
+# Propriétaire : w3c (lot L0). Oracle associé : samples/trap/expected-findings.yaml
+#
+# Objectif : exercer CHAQUE règle du catalogue (docs/ARCHITECTURE.md §4, y compris
+# les règles ajoutées par journal/L0/review-w3c-catalogue.md) au moins une fois.
+# Chaque construct piège est précédé d'un commentaire « # règle <ID> ».
+#
+# Contraintes respectées :
+#  - OWL 2 DL (Structural Specification + Mapping to RDF Graphs) : toutes les
+#    entités sont déclarées, aucune propriété composite (transitive / chaîne /
+#    super-propriété d'une telle propriété) n'est utilisée dans une restriction de
+#    cardinalité, hasSelf, irréflexivité, asymétrie ou disjonction de propriétés ;
+#    seuls des datatypes de la carte OWL 2 (Structural Spec §4) ou définis
+#    (DatatypeDefinition) sont utilisés. En particulier PAS de xsd:gYear ni
+#    xsd:date (hors carte OWL 2) : modelYear utilise un datatype défini par facettes.
+#  - L'import de PROV-O (règle M02) suppose sa fermeture OWL 2 DL ; l'outil doit
+#    travailler hors-ligne et signaler l'import non résolu.
+#  - Données fictives : aucune donnée d'entreprise réelle. Les VIN sont inventés.
+# =============================================================================
+
+@prefix am:      <https://w3id.org/ontoforge/automaint#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix vann:    <http://purl.org/vocab/vann/> .
+
+# -----------------------------------------------------------------------------
+# règle M01 — en-tête d'ontologie (IRI, versionIRI, versionInfo, métadonnées dcterms)
+# règle M02 — owl:imports (fermeture d'import à résoudre hors-ligne)
+# -----------------------------------------------------------------------------
+<https://w3id.org/ontoforge/automaint>
+    a owl:Ontology ;
+    owl:versionIRI <https://w3id.org/ontoforge/automaint/0.1.0> ;
+    owl:versionInfo "0.1.0" ;
+    dcterms:title "Ontologie piège OntoForge — maintenance automobile"@fr ,
+                  "OntoForge trap ontology — car maintenance"@en ;
+    dcterms:description "Ontologie de test exerçant toutes les règles de transposition OWL 2 → property graph."@fr ;
+    dcterms:created "2026-11-02T00:00:00Z"^^xsd:dateTime ;
+    vann:preferredNamespacePrefix "am" ;
+    vann:preferredNamespaceUri "https://w3id.org/ontoforge/automaint#" ;
+    owl:imports <http://www.w3.org/ns/prov-o> .
+
+# Déclarations des propriétés d'annotation non-OWL utilisées (obligatoire en DL :
+# Structural Spec §5.8 / Mapping §3.1 — une IRI non déclarée n'est pas typable).
+# règle A01 — annotations (skos/dcterms)
+dcterms:title a owl:AnnotationProperty .
+dcterms:description a owl:AnnotationProperty .
+dcterms:created a owl:AnnotationProperty .
+dcterms:source a owl:AnnotationProperty .
+vann:preferredNamespacePrefix a owl:AnnotationProperty .
+vann:preferredNamespaceUri a owl:AnnotationProperty .
+skos:definition a owl:AnnotationProperty .
+skos:altLabel a owl:AnnotationProperty .
+skos:example a owl:AnnotationProperty .
+
+# règle A02 (support) — propriété d'annotation custom avec portée et super-propriété
+am:sourceSystem a owl:AnnotationProperty ;
+    rdfs:label "système source"@fr , "source system"@en ;
+    rdfs:range xsd:string ;
+    rdfs:subPropertyOf dcterms:source .
+
+# =============================================================================
+# DATATYPES DÉFINIS
+# =============================================================================
+
+# règle D09 — DatatypeDefinition par facettes (année modèle : entier borné).
+# Remplace xsd:gYear (hors carte OWL 2 DL, Structural Spec §4).
+am:ModelYear a rdfs:Datatype ;
+    rdfs:label "année modèle"@fr , "model year"@en ;
+    owl:equivalentClass [
+        a rdfs:Datatype ;
+        owl:onDatatype xsd:integer ;
+        owl:withRestrictions ( [ xsd:minInclusive 1886 ] [ xsd:maxInclusive 2100 ] )
+    ] .
+
+# règle D09 — facette xsd:pattern sur xsd:string (format VIN ISO 3779 : 17 car., sans I, O, Q)
+am:VINString a rdfs:Datatype ;
+    rdfs:label "chaîne VIN"@fr , "VIN string"@en ;
+    owl:equivalentClass [
+        a rdfs:Datatype ;
+        owl:onDatatype xsd:string ;
+        owl:withRestrictions ( [ xsd:pattern "[A-HJ-NPR-Z0-9]{17}" ] )
+    ] .
+
+# =============================================================================
+# CLASSES
+# =============================================================================
+
+# règle C01 — classe nommée simple
+# règle C04 — classe abstraite : aucune instance directe, seulement des sous-classes
+am:MotorVehicle a owl:Class ;
+    rdfs:label "véhicule à moteur"@fr , "motor vehicle"@en ;
+    rdfs:comment "Abstract root class of vehicles."@en , "Classe racine abstraite des véhicules."@fr .
+
+# règle C02 — rdfs:subClassOf simple
+# règle K02 — owl:hasKey sur une propriété de données
+am:Vehicle a owl:Class ;
+    rdfs:label "véhicule"@fr , "vehicle"@en ;
+    skos:definition "Véhicule identifié par son VIN, suivi en atelier."@fr ;
+    rdfs:subClassOf am:MotorVehicle ;
+    owl:hasKey ( am:vin ) .
+
+# règle A02 — annotation d'axiome (owl:Axiom réifiant SubClassOf(Vehicle MotorVehicle))
+[] a owl:Axiom ;
+    owl:annotatedSource am:Vehicle ;
+    owl:annotatedProperty rdfs:subClassOf ;
+    owl:annotatedTarget am:MotorVehicle ;
+    rdfs:comment "Hierarchy validated in a modelling workshop (example)."@en , "Hiérarchie validée en atelier de modélisation (exemple)."@fr ;
+    am:sourceSystem "atelier-modelisation" .
+
+# règle O12 — hasValue (un véhicule électrique utilise l'énergie Electricity)
+# règle O10 — someValuesFrom (existence d'une batterie de traction)
+am:ElectricVehicle a owl:Class ;
+    rdfs:label "véhicule électrifié"@fr , "electric vehicle"@en ;
+    rdfs:subClassOf am:Vehicle ,
+        [ a owl:Restriction ; owl:onProperty am:usesFuel ; owl:hasValue am:Electricity ] ,
+        [ a owl:Restriction ; owl:onProperty am:hasPart ; owl:someValuesFrom am:TractionBattery ] .
+
+am:CombustionVehicle a owl:Class ;
+    rdfs:label "véhicule thermique"@fr , "combustion vehicle"@en ;
+    rdfs:subClassOf am:Vehicle ,
+        [ a owl:Restriction ; owl:onProperty am:hasEngine ; owl:someValuesFrom am:InternalCombustionEngine ] .
+
+# règle C03 — héritage multiple
+am:HybridVehicle a owl:Class ;
+    rdfs:label "véhicule hybride"@fr , "hybrid vehicle"@en ;
+    rdfs:subClassOf am:ElectricVehicle , am:CombustionVehicle .
+
+am:FleetVehicle a owl:Class ;
+    rdfs:label "véhicule de flotte"@fr , "fleet vehicle"@en ;
+    rdfs:subClassOf am:Vehicle .
+
+# règle C05 — owl:equivalentClass entre deux classes nommées
+# règle O16 — cardinalité qualifiée minimale (au moins 4 roues)
+am:Car a owl:Class ;
+    rdfs:label "voiture"@fr , "car"@en ;
+    rdfs:subClassOf am:Vehicle ,
+        [ a owl:Restriction ; owl:onProperty am:hasPart ;
+          owl:minQualifiedCardinality "4"^^xsd:nonNegativeInteger ; owl:onClass am:Wheel ] ;
+    owl:equivalentClass am:PassengerCar .
+
+am:PassengerCar a owl:Class ;
+    rdfs:label "véhicule particulier"@fr , "passenger car"@en .
+
+# règle C06 — classe définie (condition nécessaire et suffisante) Vehicle ⊓ ∃hasOpenRecall.Recall
+am:OverdueVehicle a owl:Class ;
+    rdfs:label "véhicule en retard de rappel"@fr , "overdue vehicle"@en ;
+    owl:equivalentClass [
+        a owl:Class ;
+        owl:intersectionOf ( am:Vehicle
+            [ a owl:Restriction ; owl:onProperty am:hasOpenRecall ; owl:someValuesFrom am:Recall ] )
+    ] .
+
+# règle C11 — owl:complementOf (dans une définition)
+am:NonElectricVehicle a owl:Class ;
+    rdfs:label "véhicule non électrifié"@fr , "non-electric vehicle"@en ;
+    owl:equivalentClass [
+        a owl:Class ;
+        owl:intersectionOf ( am:Vehicle [ a owl:Class ; owl:complementOf am:ElectricVehicle ] )
+    ] .
+
+# règle C13 — axiome général d'inclusion (GCI) : sujet anonyme
+# (Vehicle ⊓ ∃hasEngine.DieselEngine) ⊑ RequiresDPFCheck
+[ a owl:Class ;
+  owl:intersectionOf ( am:Vehicle
+      [ a owl:Restriction ; owl:onProperty am:hasEngine ; owl:someValuesFrom am:DieselEngine ] ) ]
+    rdfs:subClassOf am:RequiresDPFCheck .
+
+am:RequiresDPFCheck a owl:Class ;
+    rdfs:label "contrôle FAP requis"@fr , "requires DPF check"@en .
+
+# règle C04 — classe abstraite (parent de Person / Company)
+am:Party a owl:Class ;
+    rdfs:label "acteur"@fr , "party"@en .
+
+am:Person a owl:Class ;
+    rdfs:label "personne"@fr , "person"@en ;
+    rdfs:subClassOf am:Party .
+
+am:Company a owl:Class ;
+    rdfs:label "société"@fr , "company"@en ;
+    rdfs:subClassOf am:Party .
+
+# règle C09 — owl:unionOf anonyme (classe définie par union)
+am:Owner a owl:Class ;
+    rdfs:label "propriétaire"@fr , "owner"@en ;
+    owl:equivalentClass [ a owl:Class ; owl:unionOf ( am:Person am:Company ) ] .
+
+# règle C07 — owl:disjointWith (paire)
+am:Customer a owl:Class ;
+    rdfs:label "client"@fr , "customer"@en ;
+    rdfs:subClassOf am:Party ;
+    owl:disjointWith am:Technician .
+
+# règle O14 — ObjectInverseOf anonyme dans une restriction (∃ worksAt⁻.Technician)
+am:Garage a owl:Class ;
+    rdfs:label "garage"@fr , "garage"@en ;
+    skos:altLabel "atelier"@fr , "workshop"@en ;
+    rdfs:subClassOf [ a owl:Restriction ;
+        owl:onProperty [ owl:inverseOf am:worksAt ] ;
+        owl:someValuesFrom am:Technician ] .
+
+am:Technician a owl:Class ;
+    rdfs:label "technicien"@fr , "technician"@en ;
+    rdfs:subClassOf am:Person .
+
+# règle O17 — ObjectHasSelf (technicien à son compte : employé par lui-même)
+am:SelfEmployedTechnician a owl:Class ;
+    rdfs:label "technicien indépendant"@fr , "self-employed technician"@en ;
+    owl:equivalentClass [
+        a owl:Class ;
+        owl:intersectionOf ( am:Technician
+            [ a owl:Restriction ; owl:onProperty am:employedBy ; owl:hasSelf true ] )
+    ] .
+
+# règle C09 — owl:unionOf anonyme comme super-classe (axiome de couverture)
+am:ServiceProvider a owl:Class ;
+    rdfs:label "prestataire"@fr , "service provider"@en ;
+    rdfs:subClassOf [ a owl:Class ; owl:unionOf ( am:Garage am:MobileMechanicService ) ] .
+
+am:MobileMechanicService a owl:Class ;
+    rdfs:label "mécanicien itinérant"@fr , "mobile mechanic service"@en .
+
+am:Brand a owl:Class ;
+    rdfs:label "marque"@fr , "brand"@en .
+
+am:VehicleModel a owl:Class ;
+    rdfs:label "modèle de véhicule"@fr , "vehicle model"@en .
+
+am:EngineType a owl:Class ;
+    rdfs:label "motorisation"@fr , "engine type"@en .
+
+am:Part a owl:Class ;
+    rdfs:label "pièce"@fr , "part"@en .
+
+am:Engine a owl:Class ;
+    rdfs:label "moteur"@fr , "engine"@en ;
+    rdfs:subClassOf am:Part .
+
+am:InternalCombustionEngine a owl:Class ;
+    rdfs:label "moteur thermique"@fr , "internal combustion engine"@en ;
+    rdfs:subClassOf am:Engine .
+
+am:DieselEngine a owl:Class ;
+    rdfs:label "moteur diesel"@fr , "diesel engine"@en ;
+    rdfs:subClassOf am:InternalCombustionEngine .
+
+am:TractionBattery a owl:Class ;
+    rdfs:label "batterie de traction"@fr , "traction battery"@en ;
+    rdfs:subClassOf am:Part .
+
+am:Wheel a owl:Class ;
+    rdfs:label "roue"@fr , "wheel"@en ;
+    rdfs:subClassOf am:Part .
+
+# règle C12 — punning : am:TimingBelt est à la fois une classe et un individu
+# (métamodélisation autorisée en OWL 2 DL entre classe et individu, Structural Spec §5.9)
+am:TimingBelt a owl:Class ;
+    rdfs:label "courroie de distribution"@fr , "timing belt"@en ;
+    rdfs:subClassOf am:Part .
+
+am:PartCategory a owl:Class ;
+    rdfs:label "catégorie de pièce"@fr , "part category"@en .
+
+# règle K05 — owl:hasKey composite incluant une propriété objet
+am:PartReference a owl:Class ;
+    rdfs:label "référence pièce"@fr , "part reference"@en ;
+    owl:hasKey ( am:manufacturerPartNumber am:hasManufacturer ) .
+
+# règle C10 — owl:disjointUnionOf
+am:MaintenanceOperation a owl:Class ;
+    rdfs:label "opération de maintenance"@fr , "maintenance operation"@en ;
+    owl:disjointUnionOf ( am:PreventiveOperation am:CorrectiveOperation ) .
+
+am:PreventiveOperation a owl:Class ;
+    rdfs:label "opération préventive"@fr , "preventive operation"@en .
+
+am:CorrectiveOperation a owl:Class ;
+    rdfs:label "opération corrective"@fr , "corrective operation"@en .
+
+am:MaintenancePlan a owl:Class ;
+    rdfs:label "plan d'entretien"@fr , "maintenance plan"@en .
+
+# règle O10 — someValuesFrom + minCardinality (non qualifiée)
+# règle O09 — maxCardinality 1 (non qualifiée) sur propriété objet
+# règle O11 — allValuesFrom
+# règle D13 — restriction sur propriété de données (cardinalité exacte qualifiée par datatype)
+am:RepairOrder a owl:Class ;
+    rdfs:label "ordre de réparation"@fr , "repair order"@en ;
+    rdfs:subClassOf
+        [ a owl:Restriction ; owl:onProperty am:includesOperation ; owl:someValuesFrom am:MaintenanceOperation ] ,
+        [ a owl:Restriction ; owl:onProperty am:performedBy ; owl:minCardinality "1"^^xsd:nonNegativeInteger ] ,
+        [ a owl:Restriction ; owl:onProperty am:performedAt ; owl:maxCardinality "1"^^xsd:nonNegativeInteger ] ,
+        [ a owl:Restriction ; owl:onProperty am:performedBy ; owl:allValuesFrom am:Technician ] ,
+        [ a owl:Restriction ; owl:onProperty am:openedAt ;
+          owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ; owl:onDataRange xsd:dateTime ] .
+
+am:DiagnosticSession a owl:Class ;
+    rdfs:label "session de diagnostic"@fr , "diagnostic session"@en .
+
+am:OBDCode a owl:Class ;
+    rdfs:label "code défaut OBD"@fr , "OBD fault code"@en ;
+    owl:hasKey ( am:dtc_code ) .
+
+# règle K03 — classe sans clé métier
+am:MileageReading a owl:Class ;
+    rdfs:label "relevé kilométrique"@fr , "mileage reading"@en .
+
+am:Recall a owl:Class ;
+    rdfs:label "rappel constructeur"@fr , "manufacturer recall"@en .
+
+# règle N01 — collision de nommage : am:Warranty (classe) et am:warranty (propriété objet)
+# donnent le même nom PascalCase « Warranty » côté Curiosity.
+am:Warranty a owl:Class ;
+    rdfs:label "garantie"@fr , "warranty"@en .
+
+# règle R01 — classe de réification binaire (Part ↔ Vehicle) avec date et kilométrage
+am:PartInstallation a owl:Class ;
+    rdfs:label "pose de pièce"@fr , "part installation"@en ;
+    rdfs:comment "Reifies the part–vehicle relationship to carry installation date and mileage."@en , "Réifie la relation pièce–véhicule pour porter date et kilométrage de pose."@fr .
+
+# règle R02 — relation n-aire (≥ 3 rôles) : véhicule, pièce, garage, garantie
+am:WarrantyClaim a owl:Class ;
+    rdfs:label "demande de prise en garantie"@fr , "warranty claim"@en .
+
+# règle A03 — owl:deprecated
+am:ServiceBooklet a owl:Class ;
+    rdfs:label "carnet d'entretien papier"@fr , "paper service booklet"@en ;
+    owl:deprecated true ;
+    rdfs:comment "Replaced by am:MaintenancePlan."@en , "Remplacé par am:MaintenancePlan."@fr .
+
+# règle C07 — owl:AllDisjointClasses (n-aire)
+[] a owl:AllDisjointClasses ;
+    owl:members ( am:Vehicle am:Part am:Party am:Garage am:RepairOrder am:PartReference ) .
+
+# =============================================================================
+# PROPRIÉTÉS OBJET
+# =============================================================================
+
+# règle O18 — owl:topObjectProperty comme super-propriété
+am:relatedTo a owl:ObjectProperty ;
+    rdfs:label "lié à"@fr , "related to"@en ;
+    rdfs:subPropertyOf owl:topObjectProperty .
+
+# règle O01 — domaine et portée uniques
+am:worksAt a owl:ObjectProperty ;
+    rdfs:label "travaille à"@fr , "works at"@en ;
+    rdfs:domain am:Technician ;
+    rdfs:range am:Garage .
+
+am:employedBy a owl:ObjectProperty ;
+    rdfs:label "employé par"@fr , "employed by"@en ;
+    rdfs:domain am:Technician ;
+    rdfs:range am:Party .
+
+# règle O09 — owl:FunctionalProperty sur propriété objet
+am:ofModel a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "de modèle"@fr , "of model"@en ;
+    rdfs:domain am:Vehicle ;
+    rdfs:range am:VehicleModel .
+
+am:madeBy a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "fabriqué par"@fr , "made by"@en ;
+    rdfs:domain am:VehicleModel ;
+    rdfs:range am:Brand .
+
+# règle O08 — owl:propertyChainAxiom (marque du véhicule = ofModel ∘ madeBy)
+am:vehicleBrand a owl:ObjectProperty ;
+    rdfs:label "marque du véhicule"@fr , "vehicle brand"@en ;
+    rdfs:domain am:Vehicle ;
+    rdfs:range am:Brand ;
+    owl:propertyChainAxiom ( am:ofModel am:madeBy ) .
+
+am:hasEngineType a owl:ObjectProperty ;
+    rdfs:label "a pour motorisation"@fr , "has engine type"@en ;
+    rdfs:domain am:VehicleModel ;
+    rdfs:range am:EngineType .
+
+# règle O04 — owl:inverseOf (paire hasPart / partOf)
+am:hasPart a owl:ObjectProperty ;
+    rdfs:label "a pour pièce"@fr , "has part"@en ;
+    rdfs:domain am:Vehicle ;
+    rdfs:range am:Part ;
+    owl:inverseOf am:partOf .
+
+am:partOf a owl:ObjectProperty ;
+    rdfs:label "pièce de"@fr , "part of"@en .
+
+# règle O07 — rdfs:subPropertyOf (hasEngine ⊑ hasPart)
+am:hasEngine a owl:ObjectProperty ;
+    rdfs:label "a pour moteur"@fr , "has engine"@en ;
+    rdfs:subPropertyOf am:hasPart ;
+    rdfs:domain am:Vehicle ;
+    rdfs:range am:Engine .
+
+# règle O06 — owl:TransitiveProperty (composite : interdite dans les cardinalités)
+am:isComponentOf a owl:ObjectProperty , owl:TransitiveProperty ;
+    rdfs:label "est un composant de"@fr , "is component of"@en ;
+    rdfs:domain am:Part ;
+    rdfs:range am:Part .
+
+# règle O05 — owl:SymmetricProperty
+# règle O13 — owl:ReflexiveProperty
+# règle O02 — ni domaine ni portée
+am:interchangeableWith a owl:ObjectProperty , owl:SymmetricProperty , owl:ReflexiveProperty ;
+    rdfs:label "interchangeable avec"@fr , "interchangeable with"@en ;
+    rdfs:subPropertyOf am:relatedTo .
+
+# règle O13 — owl:AsymmetricProperty + owl:IrreflexiveProperty (propriété simple)
+am:supersedes a owl:ObjectProperty , owl:AsymmetricProperty , owl:IrreflexiveProperty ;
+    rdfs:label "remplace"@fr , "supersedes"@en ;
+    rdfs:domain am:PartReference ;
+    rdfs:range am:PartReference .
+
+am:instanceOfReference a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "a pour référence"@fr , "instance of reference"@en ;
+    rdfs:domain am:Part ;
+    rdfs:range am:PartReference .
+
+am:hasManufacturer a owl:ObjectProperty ;
+    rdfs:label "fabricant"@fr , "has manufacturer"@en ;
+    rdfs:domain am:PartReference ;
+    rdfs:range am:Brand .
+
+am:inCategory a owl:ObjectProperty ;
+    rdfs:label "dans la catégorie"@fr , "in category"@en ;
+    rdfs:domain am:PartReference ;
+    rdfs:range am:PartCategory .
+
+# règle O03 — portée = union (owl:unionOf)
+am:hasOwner a owl:ObjectProperty ;
+    rdfs:label "a pour propriétaire"@fr , "has owner"@en ;
+    rdfs:domain am:Vehicle ;
+    rdfs:range [ a owl:Class ; owl:unionOf ( am:Person am:Company ) ] .
+
+# règle O19 — owl:equivalentProperty
+am:ownedBy a owl:ObjectProperty ;
+    rdfs:label "possédé par"@fr , "owned by"@en ;
+    owl:equivalentProperty am:hasOwner .
+
+am:usesFuel a owl:ObjectProperty ;
+    rdfs:label "utilise l'énergie"@fr , "uses fuel"@en ;
+    rdfs:domain am:Vehicle ;
+    rdfs:range am:FuelType .
+
+am:hasOpenRecall a owl:ObjectProperty ;
+    rdfs:label "a un rappel ouvert"@fr , "has open recall"@en ;
+    rdfs:domain am:Vehicle ;
+    rdfs:range am:Recall .
+
+# règle O15 — owl:InverseFunctionalProperty (un OR n'appartient qu'à un véhicule)
+am:hasRepairOrder a owl:ObjectProperty , owl:InverseFunctionalProperty ;
+    rdfs:label "a pour ordre de réparation"@fr , "has repair order"@en ;
+    rdfs:domain am:Vehicle ;
+    rdfs:range am:RepairOrder .
+
+am:performedAt a owl:ObjectProperty ;
+    rdfs:label "réalisé à"@fr , "performed at"@en ;
+    rdfs:domain am:RepairOrder ;
+    rdfs:range am:Garage .
+
+# règle O20 — owl:propertyDisjointWith (principe des quatre yeux)
+am:performedBy a owl:ObjectProperty ;
+    rdfs:label "réalisé par"@fr , "performed by"@en ;
+    rdfs:domain am:RepairOrder ;
+    rdfs:range am:Technician ;
+    owl:propertyDisjointWith am:checkedBy .
+
+am:checkedBy a owl:ObjectProperty ;
+    rdfs:label "contrôlé par"@fr , "checked by"@en ;
+    rdfs:domain am:RepairOrder ;
+    rdfs:range am:Technician .
+
+am:includesOperation a owl:ObjectProperty ;
+    rdfs:label "comprend l'opération"@fr , "includes operation"@en ;
+    rdfs:domain am:RepairOrder ;
+    rdfs:range am:MaintenanceOperation .
+
+am:appliesToModel a owl:ObjectProperty ;
+    rdfs:label "s'applique au modèle"@fr , "applies to model"@en ;
+    rdfs:domain am:MaintenancePlan ;
+    rdfs:range am:VehicleModel .
+
+am:schedulesOperation a owl:ObjectProperty ;
+    rdfs:label "planifie"@fr , "schedules operation"@en ;
+    rdfs:domain am:MaintenancePlan ;
+    rdfs:range am:PreventiveOperation .
+
+# règle O21 — plusieurs rdfs:domain (sémantique d'INTERSECTION, pas d'union)
+am:reportsFaultCode a owl:ObjectProperty ;
+    rdfs:label "remonte le code défaut"@fr , "reports fault code"@en ;
+    rdfs:domain am:RepairOrder ;
+    rdfs:domain am:DiagnosticSession ;
+    rdfs:range am:OBDCode .
+
+am:hasMileageReading a owl:ObjectProperty ;
+    rdfs:label "a pour relevé"@fr , "has mileage reading"@en ;
+    rdfs:domain am:Vehicle ;
+    rdfs:range am:MileageReading .
+
+# règle N01 — collision de nom avec la classe am:Warranty
+am:warranty a owl:ObjectProperty ;
+    rdfs:label "garantie applicable"@fr , "warranty"@en ;
+    rdfs:domain am:Vehicle ;
+    rdfs:range am:Warranty .
+
+# règle R01 — rôles fonctionnels de la classe de réification PartInstallation
+am:installedPart a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "pièce posée"@fr , "installed part"@en ;
+    rdfs:domain am:PartInstallation ;
+    rdfs:range am:Part .
+
+am:installedOn a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "posée sur"@fr , "installed on"@en ;
+    rdfs:domain am:PartInstallation ;
+    rdfs:range am:Vehicle .
+
+# règle R02 — rôles de la relation n-aire WarrantyClaim (4 rôles fonctionnels)
+am:claimVehicle a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "véhicule concerné"@fr , "claim vehicle"@en ;
+    rdfs:domain am:WarrantyClaim ; rdfs:range am:Vehicle .
+am:claimPart a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "pièce concernée"@fr , "claim part"@en ;
+    rdfs:domain am:WarrantyClaim ; rdfs:range am:Part .
+am:claimGarage a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "garage déclarant"@fr , "claim garage"@en ;
+    rdfs:domain am:WarrantyClaim ; rdfs:range am:Garage .
+am:claimWarranty a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "garantie invoquée"@fr , "claim warranty"@en ;
+    rdfs:domain am:WarrantyClaim ; rdfs:range am:Warranty .
+
+# =============================================================================
+# PROPRIÉTÉS DE DONNÉES
+# =============================================================================
+
+# règle D01 — domaine unique
+# règle D07 — owl:FunctionalProperty sur propriété de données
+# règle D09 — portée = datatype à facette (am:VINString)
+am:vin a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "VIN"@fr , "VIN"@en ;
+    skos:definition "Numéro d'identification du véhicule (17 caractères)."@fr ;
+    rdfs:domain am:Vehicle ;
+    rdfs:range am:VINString .
+
+# règle D09 — portée = datatype défini (am:ModelYear, au lieu de xsd:gYear)
+am:modelYear a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "année modèle"@fr , "model year"@en ;
+    rdfs:domain am:VehicleModel ;
+    rdfs:range am:ModelYear .
+
+# règle D04 — non fonctionnelle (plusieurs noms commerciaux possibles)
+am:commercialName a owl:DatatypeProperty ;
+    rdfs:label "nom commercial"@fr , "commercial name"@en ;
+    rdfs:domain am:VehicleModel ;
+    rdfs:range xsd:string .
+
+# règle D02 — sans domaine ; règle D05 — xsd:decimal (perte de précision possible)
+am:mileageKm a owl:DatatypeProperty ;
+    rdfs:label "kilométrage (km)"@fr , "mileage (km)"@en ;
+    rdfs:range xsd:decimal .
+
+# règle D11 — sous-propriété de données
+am:readingMileageKm a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "kilométrage relevé"@fr , "reading mileage"@en ;
+    rdfs:subPropertyOf am:mileageKm ;
+    rdfs:domain am:MileageReading ;
+    rdfs:range xsd:decimal .
+
+# règle D11 — sous-propriété de données (côté réification R01)
+am:installMileageKm a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "kilométrage à la pose"@fr , "installation mileage"@en ;
+    rdfs:subPropertyOf am:mileageKm ;
+    rdfs:domain am:PartInstallation ;
+    rdfs:range xsd:decimal .
+
+am:installationDate a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "date de pose"@fr , "installation date"@en ;
+    rdfs:domain am:PartInstallation ;
+    rdfs:range xsd:dateTime .
+
+am:readingDate a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "date du relevé"@fr , "reading date"@en ;
+    rdfs:domain am:MileageReading ;
+    rdfs:range xsd:dateTime .
+
+am:openedAt a owl:DatatypeProperty ;
+    rdfs:label "ouvert le"@fr , "opened at"@en ;
+    rdfs:domain am:RepairOrder ;
+    rdfs:range xsd:dateTime .
+
+am:closedAt a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "clôturé le"@fr , "closed at"@en ;
+    rdfs:domain am:RepairOrder ;
+    rdfs:range xsd:dateTimeStamp .
+
+# règle D05 — xsd:decimal (heures de main d'œuvre)
+am:labourHours a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "heures de main d'œuvre"@fr , "labour hours"@en ;
+    rdfs:domain am:MaintenanceOperation ;
+    rdfs:range xsd:decimal .
+
+# règle D05 — xsd:hexBinary (pas de type natif)
+am:ecuFirmwareChecksum a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "empreinte du logiciel calculateur"@fr , "ECU firmware checksum"@en ;
+    rdfs:domain am:Vehicle ;
+    rdfs:range xsd:hexBinary .
+
+# règle D06 — valeurs multilingues (rdf:PlainLiteral, seul type « chaîne + langue » de la carte OWL 2)
+am:operationDescription a owl:DatatypeProperty ;
+    rdfs:label "description de l'opération"@fr , "operation description"@en ;
+    rdfs:domain am:MaintenanceOperation ;
+    rdfs:range rdf:PlainLiteral .
+
+# règle D03 — domaine = union (owl:unionOf)
+am:phoneNumber a owl:DatatypeProperty ;
+    rdfs:label "téléphone"@fr , "phone number"@en ;
+    rdfs:domain [ a owl:Class ; owl:unionOf ( am:Customer am:Garage ) ] ;
+    rdfs:range xsd:string .
+
+# règle D08 — DataOneOf (énumération de littéraux)
+am:emissionStandard a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "norme d'émission"@fr , "emission standard"@en ;
+    rdfs:domain am:EngineType ;
+    rdfs:range [ a rdfs:Datatype ; owl:oneOf ( "Euro 5" "Euro 6" "Euro 6d" "Euro 7" ) ] .
+
+# règle D10 — portée rdfs:Literal (type non contraint)
+am:legacyCode a owl:DatatypeProperty ;
+    rdfs:label "code historique"@fr , "legacy code"@en ;
+    rdfs:domain am:MaintenanceOperation ;
+    rdfs:range rdfs:Literal .
+
+# règle D12 — plusieurs rdfs:range (intersection de datatypes)
+am:warrantyDurationMonths a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "durée de garantie (mois)"@fr , "warranty duration (months)"@en ;
+    rdfs:domain am:Warranty ;
+    rdfs:range xsd:nonNegativeInteger ;
+    rdfs:range xsd:int .
+
+am:manufacturerPartNumber a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "référence fabricant"@fr , "manufacturer part number"@en ;
+    rdfs:domain am:PartReference ;
+    rdfs:range xsd:string .
+
+# règle N01 — nom non camelCase (snake_case) à normaliser
+am:dtc_code a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "code DTC"@fr , "DTC code"@en ;
+    rdfs:domain am:OBDCode ;
+    rdfs:range xsd:string .
+
+am:recommendedReplacementKm a owl:DatatypeProperty ;
+    rdfs:label "kilométrage de remplacement conseillé"@fr , "recommended replacement mileage"@en ;
+    rdfs:domain am:PartCategory ;
+    rdfs:range xsd:integer .
+
+am:intervalKm a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "intervalle (km)"@fr , "interval (km)"@en ;
+    rdfs:domain am:MaintenancePlan ;
+    rdfs:range xsd:positiveInteger .
+
+am:claimDate a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "date de la demande"@fr , "claim date"@en ;
+    rdfs:domain am:WarrantyClaim ;
+    rdfs:range xsd:dateTime .
+
+am:displayName a owl:DatatypeProperty ;
+    rdfs:label "nom affiché"@fr , "display name"@en ;
+    rdfs:domain am:Party ;
+    rdfs:range xsd:string .
+
+# =============================================================================
+# CLASSE ÉNUMÉRÉE ET INDIVIDUS
+# =============================================================================
+
+# règle C08 — owl:oneOf (classe énumérée)
+am:FuelType a owl:Class ;
+    rdfs:label "type d'énergie"@fr , "fuel type"@en ;
+    owl:equivalentClass [ a owl:Class ;
+        owl:oneOf ( am:Petrol am:Diesel am:Electricity am:LPG am:Hydrogen ) ] .
+
+# règle I01 — individus (données de référence)
+am:Petrol a owl:NamedIndividual , am:FuelType ; rdfs:label "essence"@fr , "petrol"@en .
+am:Diesel a owl:NamedIndividual , am:FuelType ; rdfs:label "gazole"@fr , "diesel"@en .
+am:Electricity a owl:NamedIndividual , am:FuelType ; rdfs:label "électricité"@fr , "electricity"@en .
+am:LPG a owl:NamedIndividual , am:FuelType ; rdfs:label "GPL"@fr , "LPG"@en .
+am:Hydrogen a owl:NamedIndividual , am:FuelType ; rdfs:label "hydrogène"@fr , "hydrogen"@en .
+
+# règle I03 — owl:AllDifferent (UNA explicite sur l'énumération)
+[] a owl:AllDifferent ;
+    owl:distinctMembers ( am:Petrol am:Diesel am:Electricity am:LPG am:Hydrogen ) .
+
+am:brand_alpha a owl:NamedIndividual , am:Brand ; rdfs:label "Marque Alpha (fictive)"@fr .
+am:brand_beta  a owl:NamedIndividual , am:Brand ; rdfs:label "Marque Beta (fictive)"@fr .
+
+# règle I03 — owl:differentFrom (paire)
+am:brand_alpha owl:differentFrom am:brand_beta .
+
+am:engtype_d15 a owl:NamedIndividual , am:EngineType ;
+    rdfs:label "1.5 diesel 85 kW"@fr ;
+    am:emissionStandard "Euro 6d" .
+
+am:model_alpha_city a owl:NamedIndividual , am:VehicleModel ;
+    rdfs:label "Alpha City"@fr ;
+    am:madeBy am:brand_alpha ;
+    am:hasEngineType am:engtype_d15 ;
+    am:modelYear 2022 ;
+    am:commercialName "Alpha City" , "Alpha City Business" .
+
+# règle C12 — l'IRI am:TimingBelt utilisée comme individu (punning)
+am:TimingBelt a owl:NamedIndividual , am:PartCategory ;
+    am:recommendedReplacementKm 120000 .
+
+am:ref_tb_001 a owl:NamedIndividual , am:PartReference ;
+    rdfs:label "Kit distribution AB-123 (fictif)"@fr ;
+    am:manufacturerPartNumber "AB-123" ;
+    am:hasManufacturer am:brand_beta ;
+    am:inCategory am:TimingBelt .
+
+am:ref_tb_002 a owl:NamedIndividual , am:PartReference ;
+    am:manufacturerPartNumber "AB-123-B" ;
+    am:hasManufacturer am:brand_beta ;
+    am:inCategory am:TimingBelt ;
+    am:supersedes am:ref_tb_001 ;
+    am:interchangeableWith am:ref_tb_001 .
+
+am:part_tb_0001 a owl:NamedIndividual , am:TimingBelt ;
+    am:instanceOfReference am:ref_tb_002 .
+
+am:part_wheel_1 a owl:NamedIndividual , am:Wheel .
+am:part_wheel_2 a owl:NamedIndividual , am:Wheel .
+am:part_engine_1 a owl:NamedIndividual , am:DieselEngine .
+am:part_battery_1 a owl:NamedIndividual , am:TractionBattery .
+am:part_icengine_2 a owl:NamedIndividual , am:InternalCombustionEngine .
+
+# règle O06 — assertion sur propriété transitive (pièce → pièce)
+am:part_tb_0001 am:isComponentOf am:part_engine_1 .
+
+am:recall_2026_01 a owl:NamedIndividual , am:Recall ;
+    rdfs:label "Rappel 2026-01 (fictif)"@fr .
+
+am:P0300 a owl:NamedIndividual , am:OBDCode ;
+    rdfs:label "Ratés d'allumage aléatoires"@fr , "Random misfire detected"@en ;
+    am:dtc_code "P0300" .
+
+am:warranty_std a owl:NamedIndividual , am:Warranty ;
+    am:warrantyDurationMonths "24"^^xsd:nonNegativeInteger .
+
+am:customer_dupont a owl:NamedIndividual , am:Customer , am:Person ;
+    am:displayName "Client Exemple" ;
+    am:phoneNumber "+33 5 00 00 00 00" .
+
+am:tech_martin a owl:NamedIndividual , am:Technician ;
+    am:displayName "Technicien A" ;
+    am:worksAt am:garage_tln_nord ;
+    am:employedBy am:tech_martin .
+
+# règle G01 — construct OWL 2 DL non représentable dans OntoModel (Individual.types = IRIs nommées) :
+# ClassAssertion d'une expression anonyme (ObjectHasValue). Doit finir dans `unmapped` + constat G01.
+am:tech_leroy a owl:NamedIndividual , am:Technician ,
+        [ a owl:Restriction ; owl:onProperty am:worksAt ; owl:hasValue am:garage_tln_nord ] ;
+    am:displayName "Technicien B" ;
+    am:worksAt am:garage_tln_nord .
+
+am:garage_tln_nord a owl:NamedIndividual , am:Garage ;
+    rdfs:label "Garage Exemple Nord"@fr ;
+    am:phoneNumber "+33 5 00 00 00 01" .
+
+# règle I02 — owl:sameAs (deux IRIs pour le même garage, pas d'UNA en OWL)
+am:garage_TLN01 a owl:NamedIndividual ;
+    owl:sameAs am:garage_tln_nord .
+
+# règle K01 — identité IRI (am:veh_001 → propriété uri + unicité)
+# règle I05 — individu à types multiples (HybridVehicle et FleetVehicle)
+am:veh_001 a owl:NamedIndividual , am:HybridVehicle , am:FleetVehicle ;
+    rdfs:label "Véhicule de test 001"@fr ;
+    am:vin "VF1AB000000000001" ;
+    am:ofModel am:model_alpha_city ;
+    am:usesFuel am:Electricity , am:Petrol ;
+    am:hasOwner am:customer_dupont ;
+    am:hasPart am:part_battery_1 , am:part_wheel_1 , am:part_wheel_2 ;
+    am:hasEngine am:part_icengine_2 ;
+    am:hasOpenRecall am:recall_2026_01 ;
+    am:warranty am:warranty_std ;
+    am:hasRepairOrder am:ro_2026_0001 ;
+    am:ecuFirmwareChecksum "0FB7A2"^^xsd:hexBinary ;
+    # règle K04 — individu anonyme (nœud blanc) : aucun IRI, donc aucune clé dérivable
+    am:hasMileageReading [ a am:MileageReading ;
+        am:readingMileageKm 15230.5 ;
+        am:readingDate "2026-10-15T09:30:00Z"^^xsd:dateTime ] .
+
+am:veh_002 a owl:NamedIndividual , am:CombustionVehicle ;
+    am:vin "VF1AB000000000002" ;
+    am:ofModel am:model_alpha_city ;
+    am:usesFuel am:Diesel ;
+    am:hasEngine am:part_engine_1 .
+
+# règle I04 — NegativeObjectPropertyAssertion : veh_002 n'a PAS le rappel 2026-01 ouvert
+[] a owl:NegativePropertyAssertion ;
+    owl:sourceIndividual am:veh_002 ;
+    owl:assertionProperty am:hasOpenRecall ;
+    owl:targetIndividual am:recall_2026_01 .
+
+# règle I04 — NegativeDataPropertyAssertion
+[] a owl:NegativePropertyAssertion ;
+    owl:sourceIndividual am:veh_002 ;
+    owl:assertionProperty am:vin ;
+    owl:targetValue "VF1AB000000000001" .
+
+am:op_oil_change a owl:NamedIndividual , am:PreventiveOperation ;
+    am:labourHours 0.8 ;
+    am:operationDescription "Vidange moteur et remplacement du filtre à huile"@fr ,
+                            "Engine oil and filter change"@en ;
+    am:legacyCode "VID-01" .
+
+am:ro_2026_0001 a owl:NamedIndividual , am:RepairOrder ;
+    am:openedAt "2026-10-15T08:00:00Z"^^xsd:dateTime ;
+    am:closedAt "2026-10-15T17:00:00Z"^^xsd:dateTimeStamp ;
+    am:includesOperation am:op_oil_change ;
+    am:performedBy am:tech_martin ;
+    am:checkedBy am:tech_leroy ;
+    am:performedAt am:garage_tln_nord ;
+    am:reportsFaultCode am:P0300 .
+
+am:plan_alpha_city a owl:NamedIndividual , am:MaintenancePlan ;
+    am:appliesToModel am:model_alpha_city ;
+    am:schedulesOperation am:op_oil_change ;
+    am:intervalKm 15000 .
+
+am:inst_0001 a owl:NamedIndividual , am:PartInstallation ;
+    am:installedPart am:part_tb_0001 ;
+    am:installedOn am:veh_002 ;
+    am:installationDate "2025-06-01T10:00:00Z"^^xsd:dateTime ;
+    am:installMileageKm 98000 .
+
+am:claim_0001 a owl:NamedIndividual , am:WarrantyClaim ;
+    am:claimVehicle am:veh_001 ;
+    am:claimPart am:part_battery_1 ;
+    am:claimGarage am:garage_tln_nord ;
+    am:claimWarranty am:warranty_std ;
+    am:claimDate "2026-10-20T14:00:00Z"^^xsd:dateTime .

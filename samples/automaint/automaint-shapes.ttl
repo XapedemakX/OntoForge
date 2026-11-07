@@ -1,0 +1,49 @@
+# OntoForge — shapes SHACL Core du jeu AutoMaint (maintenance automobile, données fictives).
+# Alignées sur samples/automaint/automaint.ttl (namespace am:). Validation SANS inférence (inference="none").
+@prefix am:   <https://w3id.org/ontoforge/automaint#> .
+@prefix ams:  <https://w3id.org/ontoforge/automaint-shapes#> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+ams:VehicleShape a sh:NodeShape ; sh:targetClass am:Vehicle ; rdfs:label "Vehicle"@en, "Véhicule"@fr ;
+    sh:property [ sh:path am:vin ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:string ;
+                  sh:pattern "^[A-HJ-NPR-Z0-9]{17}$" ; sh:message "VIN: 17 characters, without I, O or Q"@en, "VIN : 17 caractères, sans I, O ni Q"@fr ] ;
+    sh:property [ sh:path am:ofModel ; sh:minCount 1 ; sh:maxCount 1 ; sh:class am:VehicleModel ] ;
+    sh:property [ sh:path am:hasEngine ; sh:class am:Engine ] .
+
+ams:VehicleModelShape a sh:NodeShape ; sh:targetClass am:VehicleModel ;
+    sh:property [ sh:path am:madeBy ; sh:minCount 1 ; sh:maxCount 1 ; sh:class am:Brand ] ;
+    sh:property [ sh:path am:modelYear ; sh:datatype xsd:integer ; sh:minInclusive 1886 ; sh:maxInclusive 2100 ] .
+
+ams:BrandShape a sh:NodeShape ; sh:targetClass am:Brand ;
+    sh:property [ sh:path am:brandName ; sh:minCount 1 ; sh:datatype xsd:string ] .
+
+ams:MileageReadingShape a sh:NodeShape ; sh:targetClass am:MileageReading ;
+    sh:property [ sh:path am:readingMileageKm ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:decimal ; sh:minInclusive 0 ] ;
+    sh:property [ sh:path am:readingDate ; sh:minCount 1 ; sh:datatype xsd:dateTime ] .
+
+ams:RepairOrderShape a sh:NodeShape ; sh:targetClass am:RepairOrder ;
+    sh:property [ sh:path am:openedAt ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:dateTime ; sh:lessThanOrEquals am:closedAt ] ;
+    sh:property [ sh:path am:closedAt ; sh:maxCount 1 ; sh:datatype xsd:dateTime ] ;
+    sh:property [ sh:path am:performedAt ; sh:minCount 1 ; sh:class am:Garage ] ;
+    sh:property [ sh:path am:includesOperation ; sh:minCount 1 ; sh:class am:ServiceOperation ] .
+
+ams:GarageShape a sh:NodeShape ; sh:targetClass am:Garage ;
+    sh:property [ sh:path am:displayName ; sh:minCount 1 ; sh:datatype xsd:string ] .
+
+ams:TechnicianShape a sh:NodeShape ; sh:targetClass am:Technician ;
+    sh:property [ sh:path am:worksAt ; sh:minCount 1 ; sh:class am:Garage ] .
+
+ams:PartReferenceShape a sh:NodeShape ; sh:targetClass am:PartReference ;
+    sh:property [ sh:path am:manufacturerPartNumber ; sh:minCount 1 ; sh:datatype xsd:string ] ;
+    sh:property [ sh:path am:hasManufacturer ; sh:minCount 1 ; sh:maxCount 1 ; sh:class am:Brand ] .
+
+ams:RecallShape a sh:NodeShape ; sh:targetClass am:Recall ;
+    sh:property [ sh:path am:appliesToModel ; sh:minCount 1 ; sh:class am:VehicleModel ] .
+
+ams:WarrantyShape a sh:NodeShape ; sh:targetClass am:Warranty ;
+    sh:property [ sh:path am:warrantyDurationMonths ; sh:datatype xsd:integer ; sh:minInclusive 0 ] .
+
+ams:DtcShape a sh:NodeShape ; sh:targetClass am:DiagnosticTroubleCode ;
+    sh:property [ sh:path am:dtcCode ; sh:minCount 1 ; sh:pattern "^[PCBU][0-9A-F]{4}$" ] .

@@ -1,0 +1,34 @@
+# Fixture io : annotations multilingues, SKOS, Dublin Core, owl:deprecated, métadonnées (§3.2.6)
+@prefix auto:    <https://example.org/auto#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos:    <http://www.w3.org/2004/02/skos/core#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+
+<https://example.org/auto> a owl:Ontology ;
+    owl:versionIRI <https://example.org/auto/1.0> ;
+    owl:imports <http://www.w3.org/ns/prov-o> ;
+    owl:versionInfo "1.0" ;
+    rdfs:label "Maintenance automobile"@fr , "Car maintenance"@en ;
+    rdfs:comment "Ontologie d'exemple."@fr ;
+    dcterms:title "Maintenance automobile"@fr ;
+    dcterms:license <https://creativecommons.org/licenses/by/4.0/> ;
+    dcterms:created "2026-11-02T00:00:00+00:00"^^xsd:dateTime .
+
+skos:definition a owl:AnnotationProperty .
+skos:altLabel a owl:AnnotationProperty .
+dcterms:title a owl:AnnotationProperty .
+dcterms:license a owl:AnnotationProperty .
+dcterms:created a owl:AnnotationProperty .
+
+auto:Vehicle a owl:Class ;
+    rdfs:label "véhicule"@fr , "vehicle"@en , "Fahrzeug"@de , "vehicle (no lang)" ;
+    rdfs:comment "Un véhicule suivi en atelier."@fr , "A vehicle tracked in the workshop."@en ;
+    skos:definition "Véhicule identifié par son VIN."@fr ;
+    skos:altLabel "auto"@fr , "voiture"@fr ;
+    rdfs:seeAlso <https://example.org/doc/vehicle> .
+auto:Garage a owl:Class ;
+    rdfs:label "garage"@fr , "atelier"@fr .
+auto:ServiceBooklet a owl:Class ; owl:deprecated true ; rdfs:label "carnet papier"@fr .
+auto:oldCode a owl:DatatypeProperty ; owl:deprecated true .
