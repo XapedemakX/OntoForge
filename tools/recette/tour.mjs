@@ -38,6 +38,7 @@ async function session(vp) {
   page.on('pageerror', e => errs.push(String(e).slice(0, 200)))
   return { ctx, page, errs }
 }
+const MAX_STEPS = 19 // borne haute de la visite (L26 : étape « legend » ajoutée, 18 → 19)
 const st = page => page.evaluate(() => window.ontoforgeTour.state())
 const ready = async (page, i) => { for (let k = 0; k < 120; k++) { const s = await st(page); if (s.active && s.index === i && s.ready) return s; await sleep(100) } return st(page) }
 const geom = page => page.evaluate(() => {
@@ -50,7 +51,7 @@ const geom = page => page.evaluate(() => {
 const d = await session({ width: 1440, height: 900 })
 await d.page.goto(`${base}/#/projet/${pid}/tableau?tour=1`, { waitUntil: 'load' })
 let s = await ready(d.page, 0)
-log('D-start (?tour=1)', s.active && s.total >= 14 && s.total <= 18, `${s.total} étapes`)
+log('D-start (?tour=1)', s.active && s.total >= 14 && s.total <= MAX_STEPS, `${s.total} étapes`)
 const total = s.total
 let idx = 0
 for (let i = 0; i < total; i++) {

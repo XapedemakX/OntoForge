@@ -101,7 +101,55 @@ Proposition de l'assistant dans l'éditeur. Quand l'assistant a fait une proposi
 
 ![Proposition dans l'éditeur](../../journal/L9/screens/08-proposition.png)
 
-Éléments en lecture seule dans l'inspecteur : domaine/portée en union, chaînes de propriétés, équivalences complexes, faits des individus, autres superclasses anonymes. Ils sont conservés et transposés, mais pas modifiables (voir `limites.md`). Les propriétés de données et les équivalences ne sont pas dessinées comme arêtes.
+Éléments en lecture seule dans l'inspecteur : domaine/portée en union, chaînes de propriétés, équivalences complexes, faits des individus, autres superclasses anonymes. Ils sont conservés et transposés, mais pas modifiables (voir `limites.md`). En affichage classique, les propriétés de données ne sont pas dessinées ; la notation VOWL les montre (voir la section suivante).
+
+### Lire le graphe : légende et notation VOWL
+
+Trois outils aident à lire un graphe chargé : une légende, un second mode de dessin et des filtres.
+
+La légende. Le bouton « Légende », en haut à droite du graphe, ouvre un panneau flottant. Il ne décrit que les éléments présents dans la vue en cours, chacun avec un mini-dessin qui reprend les couleurs et les traits du graphe, et une phrase. Au premier usage, le panneau est ouvert (replié sous 900 px de large) et la vue se cadre pour qu'il ne cache aucun nœud. Le chevron le replie, la croix le ferme. Ce choix est ensuite mémorisé dans le navigateur. La sélection et l'erreur sont toujours expliquées, car elles n'apparaissent que sur un geste. Le panneau suit le mode d'affichage.
+
+| Encodage (affichage classique) | Ce que cela veut dire |
+|---|---|
+| Rectangle arrondi, pictogramme, nom et nom court | Une classe. Le pictogramme se choisit dans l'inspecteur |
+| Bordure pointillée, nom en italique, pastille « abstrait » | Classe abstraite |
+| Nom barré et grisé, pastille orange | Classe dépréciée |
+| Trait teal, pointe creuse | Sous-classe de |
+| Trait bleu, pointe pleine, nom au milieu | Propriété objet ; « a ⇄ b » : deux propriétés inverses fusionnées |
+| Boucle sur une classe | Propriété dont le domaine et l'image sont la même classe |
+| Pointillé rouge sans flèche, repère ⟂ | Classes disjointes |
+| Tiret-point teal, repère ≡ | Classes équivalentes |
+| Vert pointillé avec « + », pastilles ✓ et ✕ | Proposition de Krakie, pas encore appliquée |
+| Halo orange et crayon | Élément existant que Krakie propose de modifier |
+| Halo rouge quelques secondes | Opération refusée sur cet élément |
+| Anneau teal | Sélection |
+| Pastille « +n » | n classes voisines repliées par le curseur de densité |
+
+Le mode « Notation VOWL ». Le sélecteur Classique / VOWL de la barre dessine le même graphe avec la notation VOWL 2 (*Visual Notation for OWL Ontologies*), reprise de sa spécification : seule la notation est reprise, aucun code de WebVOWL. Le choix est mémorisé. Les couleurs de la spécification (#acf, #36c, #ccc, #fc3, #9c6) sont adaptées aux thèmes clair et sombre.
+
+| Encodage (notation VOWL) | Ce que cela veut dire |
+|---|---|
+| Cercle bleu clair | Classe (le diamètre suit la longueur du nom) |
+| Cercle bleu foncé, « [externe] » | Classe hors de l'espace de noms de l'ontologie (l'IRI de l'ontologie suivie de `#` ou `/` ; si aucune classe déclarée n'y figure, l'espace de noms majoritaire des classes déclarées) |
+| Cercle gris, « [déprécié] » | Classe dépréciée (le gris l'emporte sur le bleu foncé) |
+| Double cercle, autres noms entre crochets | Classes équivalentes, fusionnées en un nœud |
+| Petit cercle blanc pointillé « Thing » | owl:Thing, dupliqué pour chaque propriété objet dont le domaine ou l'image est absent (ou vaut owl:Thing). Une propriété sans domaine ni image, ou une propriété de données sans domaine, n'est pas dessinée |
+| Cercle pointillé ∪, ∩ ou ¬ | Classe anonyme : union, intersection, complément, reliée à ses membres par des traits en tirets |
+| Rectangle jaune | Type de données (string, integer…), un par propriété ; `Literal` en pointillé. Sans choix mémorisé, affichés d'emblée seulement jusqu'à 16 classes (case « Propriétés de données » du menu « Afficher ») |
+| Libellé vert clair sur une arête | Propriété de données |
+| Libellé bleu clair au milieu de l'arête, pointe noire | Propriété objet ; ses caractéristiques (fonctionnelle, inverse fonctionnelle, transitive, symétrique, asymétrique, réflexive, irréflexive) sont entre crochets sous le nom |
+| Deux pointes, « a ⇄ b » | Propriétés inverses fusionnées, quand leurs extrémités se correspondent (sinon deux arêtes) ; une inverse sans domaine ni image propres est portée par l'arête de l'autre |
+| Trait pointillé, pointe blanche, « Sous-classe de » | Sous-classe de |
+| Trait en tirets, deux disques séparés, « [disjointe] » | Classes disjointes |
+| Italique et anneau pointillé intérieur | Classe abstraite (ajout d'OntoForge : VOWL n'a pas d'équivalent) |
+
+En vue d'ensemble (zoom sous 60 %), le nom des classes garde au moins 11 px à l'écran et peut déborder du cercle. Sous 30 %, il est masqué et le survol d'un cercle le donne. Les libellés des propriétés apparaissent à partir de 55 % de zoom.
+
+Les états d'édition (proposé, modifié, erreur, sélection) restent identiques dans les deux modes. Écart assumé avec WebVOWL : la sélection reste en teal, le rouge est réservé aux erreurs. Sélection, inspecteur, création par glisser depuis la poignée, renommage et menus fonctionnent en VOWL comme en classique, sur les classes déclarées dans l'ontologie. Sont en lecture seule : les types de données et leurs propriétés (modifiez-les dans l'inspecteur de la classe), les classes externes, les classes anonymes et les nœuds Thing.
+
+Le menu « Afficher » masque ou montre les propriétés de données (VOWL seulement), les sous-classes, les relations, les disjonctions et équivalences, les classes dépréciées et les propositions de Krakie. En VOWL, sans les équivalences, les classes équivalentes ne sont plus fusionnées. Les boutons Hiérarchie / Relations / Tout règlent d'un clic les cases sous-classes, relations et disjonctions. Le curseur « Densité » replie les classes qui ont au plus N liens de sous-classe ou de relation (le « degree of collapsing » de WebVOWL). Un badge « +n » signale les voisines repliées. Les nœuds sélectionnés ou proposés ne sont jamais repliés. Le compteur donne « N nœuds / M arêtes affichés sur X / Y », X et Y étant les totaux sans filtre. Les choix sont mémorisés.
+
+Exporter. Le bouton « Exporter » télécharge le graphe tel qu'il est affiché, en SVG ou en PNG. Le SVG est autonome : styles en ligne, polices de secours, couleurs du thème courant, légende en option au bas de l'image. Le PNG est tiré du SVG, en double résolution.
 
 ### Vue liste
 
@@ -306,7 +354,7 @@ Les variables d'environnement (`ONTOFORGE_LLM_PROVIDER`, `ANTHROPIC_API_KEY`…)
 
 ## Visite guidée
 
-Krakie peut vous faire le tour de l'outil en 18 étapes (environ 5 minutes) : l'écran s'assombrit, l'élément expliqué est entouré d'un halo teal et une bulle dit à quoi il sert. La visite suit le parcours Concevoir → Vérifier → Transposer → Générer sur le projet de démo automaint.
+Krakie peut vous faire le tour de l'outil en 19 étapes (environ 5 minutes) : l'écran s'assombrit, l'élément expliqué est entouré d'un halo teal et une bulle dit à quoi il sert. La visite suit le parcours Concevoir → Vérifier → Transposer → Générer sur le projet de démo automaint.
 
 - Lancer : bouton route (« Visite guidée ») dans la barre du haut, carte « Découvrir OntoForge » du tableau de bord, ou proposition affichée à la première ouverture d'un projet. Sans projet ouvert, la visite propose de créer le projet de démo « Démo automaint ».
 - Naviguer : boutons Précédent / Suivant, ou touches ← et →. Échap ou « Passer la visite » ferme la visite ; elle ne se reproposera plus (mémorisé dans le navigateur, clé `ontoforge.tour.done`).

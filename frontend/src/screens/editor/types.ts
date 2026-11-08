@@ -2,8 +2,8 @@
 import { tr } from '../../i18n'
 import type { Project, Perimeter, OntoModel } from '../../api'
 
-export interface GNode { id: string; label: string; kind: 'class' | 'datatype' | 'individual'; icon: string | null; position: { x: number; y: number } | null; abstract: boolean; deprecated: boolean; collapsed: boolean }
-export interface GEdge { id: string; source: string; target: string; kind: string; label: string; iri: string | null; inverse_of?: string | null; on?: string }
+export interface GNode { id: string; label: string; kind: 'class' | 'datatype' | 'individual' | 'thing' | 'anonymous'; icon: string | null; position: { x: number; y: number } | null; abstract: boolean; deprecated: boolean; collapsed: boolean; external?: boolean; equivalent?: boolean; op?: 'and' | 'or' | 'not' }
+export interface GEdge { id: string; source: string; target: string; kind: string; label: string; iri: string | null; inverse_of?: string | null; inverse_label?: string; on?: string; characteristics?: string[]; deprecated?: boolean; functional?: boolean }
 export interface GraphData { nodes: GNode[]; edges: GEdge[]; skipped: unknown[] }
 export interface OpResult { ok: boolean; project: Project; applied: number; errors: { index: number; message: string }[]; warnings: string[]; can_undo: boolean; can_redo: boolean; label?: string }
 export interface IconDef { id: string; label: { fr: string; en: string }; keywords: string[] }
@@ -40,7 +40,7 @@ async function call<T>(method: string, path: string, body?: unknown): Promise<T>
 }
 const pp = (id: string) => `/projects/${encodeURIComponent(id)}`
 export const eapi = {
-  graph: (id: string, perimeter: string, lang: string) => call<GraphData>('GET', `${pp(id)}/graph?lang=${lang}${perimeter ? '&perimeter=' + encodeURIComponent(perimeter) : ''}`),
+  graph: (id: string, perimeter: string, lang: string, include = '') => call<GraphData>('GET', `${pp(id)}/graph?lang=${lang}${perimeter ? '&perimeter=' + encodeURIComponent(perimeter) : ''}${include ? '&include=' + include : ''}`),
   ops: (id: string, ops: Op[], label?: string) => call<OpResult>('POST', `${pp(id)}/ops`, { ops, label }),
   undo: (id: string) => call<OpResult>('POST', `${pp(id)}/ops/undo`),
   redo: (id: string) => call<OpResult>('POST', `${pp(id)}/ops/redo`),

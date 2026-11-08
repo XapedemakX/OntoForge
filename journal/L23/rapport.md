@@ -53,3 +53,18 @@ Agent : humain. Lots relus : L19 à L22 et L25 (doc-ok.md présents). Même cont
 
 Non touchés : revues, fix-it*.md, lots/.
 
+
+# L26, passe d'humanisation
+
+Agent : humain. Périmètre : section « Lire le graphe : légende et notation VOWL » de docs/guide/utilisateur.md, prose de docs/CONTRACTS.md §5 (paragraphe « Graphe enrichi »), section L26 de docs/guide/CHANGELOG.md, journal/L26/rapport.md. Même contrôle automatique avant/après (HEAD contre fichier) : blocs de code, code en ligne, liens, nombres, lignes de tableau, `À VÉRIFIER`. Aucun écart sur les quatre fichiers.
+
+| Fichier | Lignes modifiées | Doutes |
+|---|---|---|
+| docs/guide/utilisateur.md | 3 | Points-virgules scindés, énumération du menu « Afficher » allégée (la précision sur les équivalences en VOWL passe dans une phrase séparée). Tableaux, couleurs et seuils intacts. |
+| docs/CONTRACTS.md | 1 | Paragraphe « Graphe enrichi » : trois enchaînements par point-virgule ou deux-points scindés. Spécification, noms de champs et tests intacts. |
+| docs/guide/CHANGELOG.md | 1 | Ligne L26 : « enrichi de façon rétrocompatible » devient « reste rétrocompatible et gagne ». |
+| journal/L26/rapport.md | 6 | Contrastes « pas X » retirés (sélection en teal, caractéristiques, limite de zoom), points-virgules scindés. Tableau « Livré » intact. |
+
+Questions laissées sans réponse, hors périmètre de l'humanisation :
+- Le rapport L26 dit en décision 3 « Légende fermée par défaut », alors que doc-ok.md et le guide décrivent une légende ouverte au premier usage depuis la revue scout.
+- La section « Relectures » du rapport L26 dit que les relectures ne sont pas faites, alors que review-w3c-it1.md, review-scout-it1.md et doc-ok.md existent.

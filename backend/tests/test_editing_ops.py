@@ -433,3 +433,71 @@ def test_w3c_it2_disjoint_equivalent_classes_refused(client, pid):
     err(ops(client, pid, {"op": "add_disjoint", "iri": c("Wagon"), "other": c("Car")}), "équivalentes")  # par chaîne
     err(ops(client, pid, {"op": "add_disjoint", "iri": c("Wagon"), "other": c("Vehicle")}), "équivalentes")  # via sous-classe d'une équivalente
     assert ops(client, pid, {"op": "add_disjoint", "iri": c("Wagon"), "other": c("Other")})["ok"]
+
+
+# ---- L26 : graphe enrichi pour la notation VOWL (champs additifs, include=external,anonymous,thing) -----------
+
+def test_graph_l26_additive_flags_and_includes(client, pid):
+    def m(o):
+        o["meta"]["iri"] = "https://example.org/t"
+        o["classes"][c("Car")]["equivalent_to"] = [{"op": "named", "iri": c("Garage")}]
+        o["classes"][c("Garage")]["equivalent_to"] = [{"op": "or", "args": [{"op": "named", "iri": c("Car")}, {"op": "named", "iri": "http://xmlns.com/foaf/0.1/Person"}]}]
+        o["classes"][c("Vehicle")]["sub_class_of"] = ["http://xmlns.com/foaf/0.1/Agent"]
+        o["classes"][c("Vehicle")]["super_expressions"] = [{"op": "not", "args": [{"op": "named", "iri": c("Garage")}]}]
+    put_onto(client, pid, m)
+    assert ops(client, pid, {"op": "add_object_property", "iri": c("owns"), "domain": c("Garage"), "characteristics": ["functional", "symmetric"]})["ok"]
+    base = client.get(f"/api/projects/{pid}/graph").json()
+    # rétrocompatible : mêmes nœuds qu'avant, deux champs en plus, aucun nouveau type
+    assert {n["kind"] for n in base["nodes"]} == {"class"} and {n["id"] for n in base["nodes"]} == {c("Vehicle"), c("Car"), c("Garage")}
+    assert all(n["external"] is False and "equivalent" in n for n in base["nodes"])
+    assert {n["id"]: n["equivalent"] for n in base["nodes"]}[c("Car")] is True
+    assert c("owns") in base["skipped"]
+    g = client.get(f"/api/projects/{pid}/graph", params={"include": "external,anonymous,thing,datatypes"}).json()
+    nodes = {n["id"]: n for n in g["nodes"]}
+    assert nodes["http://xmlns.com/foaf/0.1/Agent"]["external"] is True and nodes["http://xmlns.com/foaf/0.1/Agent"]["kind"] == "class"
+    anon = [n for n in g["nodes"] if n["kind"] == "anonymous"]
+    assert {n["op"] for n in anon} == {"or", "not"} and {n["label"] for n in anon} == {"∪", "¬"}
+    assert any(e["kind"] == "anonymousOf" and e["label"] == "unionOf" for e in g["edges"])
+    assert any(e["kind"] == "equivalentClass" and e["target"].startswith("anon|") for e in g["edges"])
+    things = [n for n in g["nodes"] if n["kind"] == "thing"]
+    assert len(things) == 1 and things[0]["label"] == "Thing"
+    owns = [e for e in g["edges"] if e["iri"] == c("owns")]
+    assert owns and owns[0]["characteristics"] == ["functional", "symmetric"] and owns[0]["target"] == things[0]["id"]
+    dp = [e for e in g["edges"] if e["kind"] == "datatypeProperty"]
+    assert dp and dp[0]["deprecated"] is False and dp[0]["functional"] is False
+    assert g == client.get(f"/api/projects/{pid}/graph", params={"include": "external,anonymous,thing,datatypes"}).json()
+
+
+# ---- revue w3c L26 it1 : owl:Thing, inverses sans extrémités, espace de noms de repli --------------------------
+
+def test_graph_l26_w3c_it1_thing_inverse_namespace(client, pid):
+    from ontoforge.core.project import ProjectView
+    from ontoforge.editing.graph import build_graph
+    inc = {"external", "anonymous", "thing", "datatypes"}
+
+    # 1) domaine déclaré mais hors de la vue (classe externe non demandée) : pas de nœud owl:Thing inventé
+    def m(o):
+        o["meta"]["iri"] = "https://example.org/t"
+        o["object_properties"][c("servicedAt")]["domain"] = ["http://xmlns.com/foaf/0.1/Agent"]
+    put_onto(client, pid, m)
+    g = client.get(f"/api/projects/{pid}/graph", params={"include": "thing"}).json()
+    assert not [n for n in g["nodes"] if n["kind"] == "thing"] and c("servicedAt") in g["skipped"]
+    g = client.get(f"/api/projects/{pid}/graph", params={"include": "thing,external"}).json()
+    e = [x for x in g["edges"] if x["iri"] == c("servicedAt")]
+    assert e and e[0]["source"] == "http://xmlns.com/foaf/0.1/Agent"
+
+    # 2) samples/trap : am:hasPart owl:inverseOf am:partOf, partOf sans domaine ni image → libellé porté par hasPart
+    onto, _ = parse_ontology(open("../samples/trap/trap.ttl").read(), filename="trap.ttl")
+    am = "https://w3id.org/ontoforge/automaint#"
+    g = build_graph(onto, ProjectView(), "en", inc)
+    hp = [x for x in g["edges"] if x["iri"] == am + "hasPart"]
+    assert hp and all(x["inverse_label"] == "part of" for x in hp) and am + "partOf" not in g["skipped"]
+    chars = {x["iri"]: x["characteristics"] for x in g["edges"] if x["kind"] == "objectProperty"}
+    assert chars[am + "isComponentOf"] == ["transitive"] and set(chars[am + "supersedes"]) == {"asymmetric", "irreflexive"}
+    assert chars[am + "hasRepairOrder"] == ["inverseFunctional"] and chars[am + "ofModel"] == ["functional"]
+    assert not [n for n in g["nodes"] if n["external"]]  # tout est dans https://w3id.org/ontoforge/automaint#
+
+    # 3) IRI d'ontologie distincte du vocabulaire : repli sur l'espace de noms majoritaire, rien n'est « externe » à tort
+    onto.meta.iri = "https://example.org/other-ontology/1.0"
+    g = build_graph(onto, ProjectView(), "en", inc)
+    assert not [n for n in g["nodes"] if n["kind"] == "class" and n["external"] and n["id"].startswith(am)]

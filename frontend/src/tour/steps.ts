@@ -6,7 +6,9 @@ const click = (s: string) => { $(s)?.click() }
 const sleep = (ms: number) => new Promise<void>(r => setTimeout(r, ms))
 async function until(fn: () => unknown, ms = 2500) { const t0 = performance.now(); while (!fn() && performance.now() - t0 < ms) await sleep(80) }
 
-/** Les 18 étapes de la visite « Découvrir OntoForge » ; textes dans i18n (tour.s.<id>.t / .b). */
+let legendWasOpen = false
+
+/** Les 19 étapes de la visite « Découvrir OntoForge » ; textes dans i18n (tour.s.<id>.t / .b). */
 export function buildSteps(t: (k: string) => string): TourStep[] {
   const S = (id: string, rest: Omit<TourStep, 'id' | 'title' | 'body'>): TourStep => ({ id, title: t(`tour.s.${id}.t`), body: t(`tour.s.${id}.b`), ...rest })
   return [
@@ -22,6 +24,11 @@ export function buildSteps(t: (k: string) => string): TourStep[] {
       route: 'ontologie', waitFor: '[data-tour="ed-quick"]', target: '[data-tour="ed-quick"]', placement: 'top', pose: 'lit',
       action: async () => { if ($('.of-dslhead[aria-expanded="false"]')) { click('.of-dslhead'); await until(() => $('[data-tour="ed-quick"] textarea')) } },
       leave: () => click('.of-dslhead[aria-expanded="true"]'),
+    }),
+    S('legend', {
+      route: 'ontologie', waitFor: '[data-tour="ed-legend-btn"]', target: '[data-tour="ed-legend"]', placement: 'left', pose: 'loupe',
+      action: async () => { legendWasOpen = !!$('[data-tour="ed-legend"]'); if (!legendWasOpen) { click('[data-tour="ed-legend-btn"]'); await until(() => $('[data-tour="ed-legend"]')) } },
+      leave: () => { if (!legendWasOpen && $('[data-tour="ed-legend"]')) click('[data-tour="ed-legend-btn"]') },
     }),
     S('list', {
       route: 'ontologie-liste', waitFor: '.ol-tree .nm', target: '[data-tour="ol"]', placement: 'bottom', pose: 'lit',

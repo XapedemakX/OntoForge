@@ -11,16 +11,31 @@ import { useI18n, tr } from '../../i18n'
 import { autoLayout, NODE_H, NODE_W, toLocalName } from './layout'
 import { ClassNode, EdgeDefs, OfEdge, type ClassNodeData, type OfEdgeData } from './parts'
 import { Inspector } from './Inspector'
+import { VNode, vsize, type VNodeData } from './vowl'
+import { buildView, type MNode, type ViewModel } from './view'
+import { DEFAULT_SHOW, KEYS, lsGet, readShow, useStored, type LegendState, type Mode, type ShowPrefs } from './prefs'
+import { Legend } from './Legend'
+import { legendFlags } from './legendDefs'
+import { ExportMenu, ShowMenu } from './ShowMenu'
+import { resolvePal } from './glyphs'
+import { buildSvg, download, svgToPng } from './exporter'
 import { Tree } from './Tree'
 import { QuickInput } from './QuickInput'
 import { useAssistantContext } from '../../lib/assistantContext'
 import { acceptAll, acceptItem, bindProjectSetter, rejectAll, rejectItem, useProposal } from '../../lib/proposal'
-import { eapi, type EdgeFilter, type GraphData, type Op, type OpResult, type ProposalItem, type Sel } from './types'
+import { eapi, type GraphData, type Op, type OpResult, type ProposalItem, type Sel } from './types'
 import './editor.css'
 
-const nodeTypes = { cls: ClassNode }
+const nodeTypes = { cls: ClassNode, vn: VNode }
 const edgeTypes = { of: OfEdge }
 const MARKER: Record<string, string> = { subClassOf: 'of-hollow', objectProperty: 'of-solid' }
+// VOWL : l'espacement de la disposition (pensée pour des rectangles de 196 × 52) est élargi pour laisser de la place aux cercles et aux libellés d'arêtes
+const SX = 1.0, SY = 1.65
+const VOWL_INCLUDE = 'datatypes,external,anonymous,thing'
+type EdgeFilter = 'isa' | 'rel' | 'all'
+const serMode = (m: Mode) => m
+const serLegend = (s: LegendState) => s
+const serShow = (s: ShowPrefs) => JSON.stringify(s)
 
 function useMedia(q: string) {
   const [m, setM] = useState(() => matchMedia(q).matches)
@@ -48,7 +63,22 @@ function Inner({ p, setP }: EditorProps) {
   const [peri, setPeri] = useState<string>((p as Project & { active_perimeter?: string | null }).active_perimeter ?? '')
   const [periName, setPeriName] = useState('')
   const [graph, setGraph] = useState<GraphData | null>(null)
-  const [filter, setFilter] = useState<EdgeFilter>('all')
+  const [mode, setMode] = useStored<Mode>(KEYS.mode, () => (lsGet(KEYS.mode) === 'vowl' ? 'vowl' : 'classic'), serMode)
+  // légende ouverte au premier usage (Jerem ne la trouvait pas) ; repliée sur écran étroit pour ne pas couvrir le graphe ; ensuite, le dernier choix est mémorisé
+  const [legend, setLegend] = useStored<LegendState>(KEYS.legend, () => { const v = lsGet(KEYS.legend); return v === 'open' || v === 'folded' || v === 'closed' ? v : (typeof window !== 'undefined' && window.innerWidth < 900 ? 'folded' : 'open') }, serLegend)
+  // cadrage : la légende ouverte (330 px, en surimpression à droite) ne doit pas masquer de nœud après « ajuster la vue »
+  const fitPad = legend === 'open' && typeof window !== 'undefined' && window.innerWidth >= 768 ? { top: '6%', bottom: '6%', left: '4%', right: '350px' } as const : 0.12
+  const [showStored, setShowStored] = useStored<ShowPrefs>(KEYS.show, readShow, serShow)
+  const [chosen, setChosen] = useState(() => lsGet(KEYS.show) !== null)
+  const setShow = useCallback((s: ShowPrefs) => { setChosen(true); setShowStored(s) }, [setShowStored])
+  const [shown, setShown] = useState<{ vm: ViewModel; total: { n: number; m: number } } | null>(null)
+  const vowl = mode === 'vowl'
+  // sans choix mémorisé, les types de données ne s'affichent d'emblée que sur un graphe assez petit pour rester lisible (au-delà : case « Propriétés de données »)
+  const nClasses = graph?.nodes.filter(n => n.kind === 'class').length ?? 0
+  const show = useMemo<ShowPrefs>(() => (chosen ? showStored : { ...showStored, dt: nClasses <= 16 }), [chosen, showStored, nClasses])
+  const filter: EdgeFilter | '' = show.sub && show.rel && show.disj ? 'all' : show.sub && !show.rel && !show.disj ? 'isa' : !show.sub && show.rel && !show.disj ? 'rel' : ''
+  const setFilter = (f: EdgeFilter) => setShow({ ...show, sub: f !== 'rel', rel: f !== 'isa', disj: f === 'all' })
+  const satRef = useRef(new Map<string, { owner: string; dx: number; dy: number; w: number; h: number }>())
   const [nodes, setNodes] = useState<Node[]>([])
   const [edges, setEdges] = useState<Edge[]>([])
   const [sel, setSel] = useState<Sel>(null)
@@ -88,10 +118,11 @@ function Inner({ p, setP }: EditorProps) {
   // ---------- graphe ----------
   useEffect(() => {
     let live = true
-    eapi.graph(pid, peri, lang).then(g => { if (live) setGraph(g) }).catch(e => { if (live) toast((e as Error).message) })
+    eapi.graph(pid, peri, lang, vowl ? VOWL_INCLUDE : '').then(g => { if (live) setGraph(g) }).catch(e => { if (live) toast((e as Error).message) })
     return () => { live = false }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pid, p.updated_at, peri, lang])
+  }, [pid, p.updated_at, peri, lang, vowl])
+  useEffect(() => { fitted.current = false }, [mode])
 
   // proposition de l'assistant : éléments du store convertis (+ arêtes des sous-classes portées par l'ajout d'une classe)
   useEffect(() => { bindProjectSetter(setP); return () => bindProjectSetter(null) }, [setP])
@@ -112,9 +143,9 @@ function Inner({ p, setP }: EditorProps) {
     if (!graph) return
     const pf = p.onto.meta.prefixes || {}
     const ghostClass = visibleItems.filter(i => i.kind === 'class' && i.status === 'add' && !graph.nodes.some(n => n.id === i.iri))
-    const ids = [...graph.nodes.map(n => n.id), ...ghostClass.map(i => i.iri)]
+    const ids = [...graph.nodes.filter(n => n.kind === 'class').map(n => n.id), ...ghostClass.map(i => i.iri)]
     // positions : celles du serveur d'abord, puis le cache de session, puis disposition automatique
-    for (const n of graph.nodes) if (n.position && !pending.current.has(n.id)) posRef.current.set(n.id, n.position)
+    for (const n of graph.nodes) if (n.kind === 'class' && n.position && !pending.current.has(n.id)) posRef.current.set(n.id, n.position)
     for (const k of [...posRef.current.keys()]) if (!ids.includes(k)) posRef.current.delete(k)
     const missing = ids.filter(i => !posRef.current.has(i))
     if (missing.length) {
@@ -139,42 +170,71 @@ function Inner({ p, setP }: EditorProps) {
     }
     const pk = new Map(visibleItems.filter(i => i.kind === 'class' && i.ops.length).map(i => [i.iri, i.key]))
     const onProposal = (key: string, ok: boolean) => { if (ok) acceptItem(key); else rejectItem(key) }
-    const mk = (id: string, label: string, icon: string | null, abstract: boolean, deprecated: boolean, status?: 'add' | 'modify'): Node => ({
-      id, type: 'cls', position: posRef.current.get(id)!, selected: selIds.has(id), draggable: !readOnly && !status,
-      data: { label, curie: curie(id, pf), icon, abstract, deprecated, status, error: errIris.has(id), readOnly: readOnly || !!status, editing: renaming === id, onRename, pkey: pk.get(id), onProposal } satisfies ClassNodeData,
-    })
-    const ns: Node[] = [
-      ...graph.nodes.filter(n => n.kind === 'class').map(n => mk(n.id, n.label, n.icon, n.abstract, n.deprecated, modClasses.has(n.id) ? 'modify' : undefined)),
-      ...ghostClass.map(i => mk(i.iri, i.label, null, false, false, 'add')),
-    ]
-    const idset = new Set(ns.map(n => n.id))
-    const invOf = new Map<string, string>(); const hidden = new Set<string>()
-    const byId = new Map(graph.edges.map(e => [e.id, e]))
-    for (const e of graph.edges) if (e.kind === 'inverseOf') { const a = byId.get(e.source), b = byId.get(e.target); if (a && b) { invOf.set(a.id, b.label); hidden.add(b.id) } }
-    const show = (k: string) => filter === 'all' ? k !== 'inverseOf' : filter === 'isa' ? k === 'subClassOf' : k === 'objectProperty'
-    const base = graph.edges.filter(e => show(e.kind) && !hidden.has(e.id) && idset.has(e.source) && idset.has(e.target))
     const modProps = new Set(visibleItems.filter(i => i.status === 'modify' && i.kind === 'objectProperty').map(i => i.iri))
-    const ghostEdges = visibleItems.filter(i => i.status === 'add' && (i.kind === 'subClassOf' || i.kind === 'objectProperty') && i.source && i.target && idset.has(i.source) && idset.has(i.target) && show(i.kind))
-    const all: { id: string; source: string; target: string; kind: string; label: string; iri: string | null; status?: 'add' | 'modify'; inverse?: string }[] = [
-      ...base.map(e => ({ id: e.id, source: e.source, target: e.target, kind: e.kind, label: e.label, iri: e.iri, inverse: invOf.get(e.id), status: e.iri && modProps.has(e.iri) ? 'modify' as const : undefined })),
-      ...ghostEdges.map(i => ({ id: `ghost|${i.kind}|${i.source}|${i.target}|${i.iri}`, source: i.source!, target: i.target!, kind: i.kind, label: i.kind === 'objectProperty' ? i.label : '', iri: i.kind === 'objectProperty' ? i.iri : null, status: 'add' as const })),
-    ]
-    const groups = new Map<string, number>(); const seen = new Map<string, number>()
-    const gk = (e: { source: string; target: string }) => [e.source, e.target].sort().join('|')
-    all.forEach(e => groups.set(gk(e), (groups.get(gk(e)) ?? 0) + 1))
-    const es: Edge[] = all.map(e => {
-      const k = gk(e); const i = seen.get(k) ?? 0; seen.set(k, i + 1); const n = groups.get(k)!
+    const ghostEdges = visibleItems.filter(i => i.status === 'add' && (i.kind === 'subClassOf' || i.kind === 'objectProperty') && i.source && i.target)
+    const vin = { graph, ghostClasses: ghostClass, ghostEdges, mode, show, modClasses, modProps, keep: selIds, declared: (i: string) => !!p.onto.classes[i] }
+    const vm = buildView(vin)
+    const all = buildView({ ...vin, show: { ...DEFAULT_SHOW, krakie: true }, keep: new Set() })
+
+    // ---- nœuds ----
+    const center = (id: string) => { const q = posRef.current.get(id)!; return { x: (q.x + NODE_W / 2) * (vowl ? SX : 1), y: (q.y + NODE_H / 2) * (vowl ? SY : 1) } }
+    const sizes = new Map<string, ReturnType<typeof vsize>>(vm.nodes.map(n => [n.id, vsize(n)]))
+    // satellites (types de données, Thing, classes anonymes) : rangés sous leur classe porteuse
+    satRef.current.clear()
+    const byOwner = new Map<string, MNode[]>()
+    for (const n of vm.nodes) if (n.vk !== 'class' && n.owner && posRef.current.has(n.owner)) byOwner.set(n.owner, [...(byOwner.get(n.owner) ?? []), n])
+    for (const [owner, sats] of byOwner) {
+      const r = (sizes.get(owner)?.h ?? 96) / 2
+      sats.sort((a, b) => a.vk.localeCompare(b.vk) || a.id.localeCompare(b.id))
+      // éventail sous la classe : les types de données s'écartent assez pour que leurs libellés d'arête ne se recouvrent pas
+      const n = sats.length
+      const FAN: Record<number, number[]> = { 1: [0], 2: [-34, 34], 3: [-50, 0, 50], 4: [-62, -22, 22, 62] }
+      sats.forEach((sat, i) => {
+        const z = sizes.get(sat.id)!
+        const ring = n > 4 ? Math.floor(i / 4) : 0, k = n > 4 ? i % 4 : i, cnt = n > 4 ? Math.min(4, n - ring * 4) : n
+        const ang = ((FAN[cnt] ?? FAN[4])[k] * Math.PI) / 180
+        const R = r + 60 + z.h / 2 + ring * 52
+        satRef.current.set(sat.id, { owner, dx: R * Math.sin(ang) * 1.25, dy: R * Math.cos(ang), w: z.w, h: z.h })
+      })
+    }
+    const ns: Node[] = vm.nodes.flatMap((n): Node[] => {
+      if (n.vk !== 'class' && !satRef.current.has(n.id)) return []
+      const err = errIris.has(n.id)
+      if (!vowl) {
+        const q = posRef.current.get(n.id)!
+        return [{
+          id: n.id, type: 'cls', position: q, selected: selIds.has(n.id), draggable: !readOnly && !n.status,
+          data: { label: n.label, curie: curie(n.id, pf), icon: n.icon, abstract: n.abstract, deprecated: n.deprecated, status: n.status, error: err, readOnly: readOnly || !!n.status, editing: renaming === n.id, onRename, pkey: pk.get(n.id), onProposal, hid: n.hid } satisfies ClassNodeData,
+        }]
+      }
+      const z = sizes.get(n.id)!
+      const sat = satRef.current.get(n.id)
+      const c = sat ? (() => { const o = center(sat.owner); return { x: o.x + sat.dx, y: o.y + sat.dy } })() : center(n.id)
+      const isClass = n.vk === 'class'
+      return [{
+        id: n.id, type: 'vn', position: { x: c.x - z.w / 2, y: c.y - z.h / 2 }, width: z.w, height: z.h, style: { width: z.w, height: z.h },
+        selected: isClass && selIds.has(n.id), selectable: isClass, focusable: isClass, connectable: isClass && n.declared && !readOnly, draggable: isClass && n.declared && !readOnly && !n.status,
+        data: { vk: n.vk, label: n.label, curie: curie(n.id, pf), abstract: n.abstract, deprecated: n.deprecated, external: n.external, merged: n.merged, op: n.op, status: n.status, error: err,
+          readOnly: readOnly || !!n.status || !n.declared, editing: renaming === n.id && n.declared, onRename, pkey: pk.get(n.id), onProposal, hid: n.hid, shape: z.shape } satisfies VNodeData,
+      }]
+    })
+    const es: Edge[] = vm.edges.map(e => {
+      const own = e.kind === 'datatypeProperty' || e.kind === 'anonymousOf'
+      const hollow = e.status === 'add' ? 'of-hollow-add' : vowl ? 'v-hollow' : MARKER.subClassOf
+      const solid = e.status === 'add' ? 'of-solid-add' : vowl ? 'v-solid' : MARKER.objectProperty
       return {
-        id: e.id, source: e.source, target: e.target, type: 'of', selected: sel?.kind === 'prop' && e.iri === sel.iri, deletable: false,
-        markerEnd: e.kind === 'subClassOf' ? (e.status === 'add' ? 'of-hollow-add' : MARKER.subClassOf) : e.kind === 'objectProperty' ? (e.status === 'add' ? 'of-solid-add' : MARKER.objectProperty) : undefined,
-        data: { kind: e.kind, label: e.label, inverse: e.inverse, offset: n > 1 ? i - (n - 1) / 2 : 0, status: e.status, iri: e.iri, err: !!(e.iri && errIris.has(e.iri)) } satisfies OfEdgeData & { iri: string | null },
+        id: e.id, source: e.source, target: e.target, type: 'of', selected: sel?.kind === 'prop' && e.iri === sel.iri, deletable: false, selectable: !own,
+        markerEnd: e.kind === 'subClassOf' ? hollow : e.kind === 'objectProperty' || e.kind === 'datatypeProperty' ? solid : undefined,
+        markerStart: vowl && e.inverse ? solid : undefined,
+        data: { kind: e.kind, label: e.label, inverse: e.inverse, offset: e.offset, status: e.status, iri: e.iri, err: !!(e.iri && errIris.has(e.iri)), vowl, chars: e.chars, deprecated: e.deprecated } satisfies OfEdgeData & { iri: string | null },
       }
     })
+    setShown({ vm, total: { n: all.nodes.length, m: all.edges.length } })
     setNodes(ns); setEdges(es)
-    if (!fitted.current && ns.length) { fitted.current = true; setTimeout(() => rf.fitView({ padding: 0.12, maxZoom: 1, minZoom: 0.42 }), 50) }
+    if (!fitted.current && ns.length) { fitted.current = true; setTimeout(() => rf.fitView({ padding: fitPad, maxZoom: 1, minZoom: 0.3 }), 50) }
     if (pendingSel.current) { const f = ns.find(n => localName(n.id) === pendingSel.current); if (f) { pendingSel.current = null; setTimeout(() => selectClass(f.id, false), 0) } }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [graph, filter, visibleItems, readOnly, errIris, renaming, lang])
+  }, [graph, mode, show, visibleItems, readOnly, errIris, renaming, lang])
 
   // ---------- opérations ----------
   const flash = useCallback((ids: string[]) => { setErrIris(new Set(ids)); setTimeout(() => setErrIris(new Set()), 6000) }, [])
@@ -195,11 +255,11 @@ function Inner({ p, setP }: EditorProps) {
   }, [pid, setP, toast, t])
   const flushMoves = useCallback(() => {
     clearTimeout(moveTimer.current)
-    const ops: Op[] = [...pending.current].map(([iri, { x, y }]) => ({ op: 'move_node', iri, x: Math.round(x), y: Math.round(y) }))
+    const ops: Op[] = [...pending.current].filter(([iri]) => !!p.onto.classes[iri]).map(([iri, { x, y }]) => ({ op: 'move_node', iri, x: Math.round(x), y: Math.round(y) }))
     if (!ops.length) return
     pending.current.clear()
     eapi.ops(pid, ops, tr('hist.deplacer')).then(r => { setCan({ undo: r.can_undo, redo: r.can_redo }); if (r.ok) setP(r.project) }).catch(() => {})
-  }, [pid, setP])
+  }, [pid, setP, p.onto.classes])
   useEffect(() => () => flushMoves(), [flushMoves])
 
   // ---------- sélection ----------
@@ -295,9 +355,9 @@ function Inner({ p, setP }: EditorProps) {
     const ids = graph.nodes.filter(n => n.kind === 'class').map(n => n.id)
     const lay = autoLayout(ids, graph.edges.filter(e => e.kind === 'subClassOf').map(e => [e.source, e.target]), graph.edges.filter(e => e.kind === 'objectProperty').map(e => [e.source, e.target]))
     lay.forEach((v, k) => posRef.current.set(k, v))
-    setNodes(ns => ns.map(n => ({ ...n, position: lay.get(n.id) ?? n.position })))
-    setTimeout(() => rf.fitView({ padding: 0.12, maxZoom: 1, minZoom: 0.42, duration: 300 }), 30)
-    await apply([...lay].map(([iri, v]) => ({ op: 'move_node', iri, x: v.x, y: v.y })), tr('hist.reorganiser'))
+    setNodes(ns => ns.map(n => { const v = lay.get(n.id); if (!v) return n; return { ...n, position: vowl ? { x: (v.x + NODE_W / 2) * SX - (n.width ?? 96) / 2, y: (v.y + NODE_H / 2) * SY - (n.height ?? 96) / 2 } : v } }))
+    setTimeout(() => rf.fitView({ padding: fitPad, maxZoom: 1, minZoom: 0.3, duration: 300 }), 30)
+    await apply([...lay].filter(([iri]) => !!p.onto.classes[iri]).map(([iri, v]) => ({ op: 'move_node', iri, x: v.x, y: v.y })), tr('hist.reorganiser'))
   }
   const createPerimeter = async () => {
     if (!periForm?.name.trim()) return
@@ -318,6 +378,15 @@ function Inner({ p, setP }: EditorProps) {
   const hits = useMemo(() => q.trim() ? (graph?.nodes ?? []).filter(n => n.label.toLowerCase().includes(q.toLowerCase()) || localName(n.id).toLowerCase().includes(q.toLowerCase())).slice(0, 8) : [], [q, graph])
   const goTo = (iri: string) => { setQ(''); setQOpen(false); selectClass(iri, false) }
 
+  /** Position de l'écran → coordonnées classiques mémorisées (le VOWL élargit l'espacement et ancre les cercles par leur centre). */
+  const toClassic = (n: Node) => vowl
+    ? { x: (n.position.x + (n.width ?? 96) / 2) / SX - NODE_W / 2, y: (n.position.y + (n.height ?? 96) / 2) / SY - NODE_H / 2 }
+    : n.position
+  /** Pendant un déplacement, les satellites d'une classe (types de données, Thing, classes anonymes) la suivent. */
+  const followSats = (dragged: Node[]) => {
+    const moved = new Map(dragged.map(n => [n.id, { x: n.position.x + (n.width ?? 96) / 2, y: n.position.y + (n.height ?? 96) / 2 }]))
+    setNodes(ns => ns.map(n => { const sat = satRef.current.get(n.id); const c = sat && moved.get(sat.owner); return c && sat ? { ...n, position: { x: c.x + sat.dx - sat.w / 2, y: c.y + sat.dy - sat.h / 2 } } : n }))
+  }
   const onNodesChange = useCallback((c: NodeChange[]) => setNodes(ns => applyNodeChanges(c, ns)), [])
   const onEdgesChange = useCallback((c: EdgeChange[]) => setEdges(es => applyEdgeChanges(c, es)), [])
   const inspOpen = inspPref ?? !!sel
@@ -326,8 +395,20 @@ function Inner({ p, setP }: EditorProps) {
   const hint = sel?.kind === 'class' ? localName(sel.iri) : null
   const propsList = Object.values(p.onto.object_properties).map(o => ({ iri: o.iri, label: labelOf(o, o.iri, lang) })).sort((a, b) => a.label.localeCompare(b.label))
 
+  const doExport = async (fmt: 'svg' | 'png', withLegend: boolean) => {
+    if (!shown) return
+    try {
+      const root = wrap.current?.closest('.ed') ?? document.body
+      const out = buildSvg({ nodes: rf.getNodes(), edges: rf.getEdges(), mode, pal: resolvePal(root), t, flags: legendFlags(shown.vm), withLegend, title: p.name || 'OntoForge' })
+      const base = `${(p.name || 'ontologie').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '').toLowerCase() || 'ontologie'}-${mode}`
+      if (fmt === 'svg') download(new Blob([out.svg], { type: 'image/svg+xml;charset=utf-8' }), `${base}.svg`)
+      else download(await svgToPng(out.svg, out.w, out.h), `${base}.png`)
+      toast(t('ed.exp.done', { f: fmt.toUpperCase() }))
+    } catch (e) { toast((e as Error).message) }
+  }
+
   return (
-    <div className={'ed' + (readOnly ? ' ro' : '')}>
+    <div className={'ed' + (readOnly ? ' ro' : '') + (vowl ? ' vowl' : '')}>
       <div className="of-bar" role="toolbar" aria-label={t('ed.toolbar')}>
         {!treeOpen && <IconButton icon="angles-right" label={t('ed.tree.show')} onClick={() => setTreeOpen(true)} />}
         <div className="of-search">
@@ -337,7 +418,10 @@ function Inner({ p, setP }: EditorProps) {
             onKeyDown={e => { if (e.key === 'Enter' && hits[0]) goTo(hits[0].id) }} />
           {qOpen && hits.length > 0 && <ul className="of-hits" role="listbox">{hits.map(h => <li key={h.id}><button type="button" role="option" aria-selected={false} onMouseDown={e => e.preventDefault()} onClick={() => goTo(h.id)}><Icon name={h.icon || 'circle-nodes'} />{h.label}</button></li>)}</ul>}
         </div>
-        <Segmented<EdgeFilter> label={t('ed.filter')} value={filter} onChange={setFilter} items={[['isa', t('ed.filter.isa')], ['rel', t('ed.filter.rel')], ['all', t('ed.filter.all')]]} />
+        <Segmented<EdgeFilter> label={t('ed.filter')} value={filter as EdgeFilter} onChange={setFilter} items={[['isa', t('ed.filter.isa')], ['rel', t('ed.filter.rel')], ['all', t('ed.filter.all')]]} />
+        <Segmented<Mode> label={t('ed.mode')} value={mode} onChange={setMode} items={[['classic', t('ed.mode.classic')], ['vowl', t('ed.mode.vowl')]]} />
+        <ShowMenu mode={mode} show={show} setShow={setShow} collapsed={shown?.vm.collapsed ?? 0} />
+        {shown && <span className="of-count muted" data-testid="counter" role="status">{t('ed.count', { n: shown.vm.nodes.length, m: shown.vm.edges.length, tn: shown.total.n, tm: shown.total.m })}</span>}
         <Button size="sm" icon="wand-magic" onClick={relayout} disabled={readOnly || !classNodes.length}>{t('ed.relayout')}</Button>
         <span className="grow" />
         {periName && <span className="of-periflag" title={t('ed.peri.active')}><Icon name="crop-simple" />{periName}</span>}
@@ -356,18 +440,24 @@ function Inner({ p, setP }: EditorProps) {
 
         <div className="of-canvas" ref={wrap} tabIndex={-1} data-tour="ed-canvas">
           <EdgeDefs />
+          <div className="of-cvtools">
+            <Button size="sm" icon="circle-info" aria-pressed={legend !== 'closed'} data-testid="legend-btn" data-tour="ed-legend-btn" onClick={() => setLegend(legend === 'closed' ? 'open' : 'closed')}>{t('lg.btn')}</Button>
+            <ExportMenu onExport={doExport} disabled={!nodes.length} />
+          </div>
+          {shown && <Legend mode={mode} flags={legendFlags(shown.vm)} state={legend} setState={setLegend} />}
           <ReactFlow
             nodes={nodes} edges={edges} nodeTypes={nodeTypes} edgeTypes={edgeTypes}
             onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onSelectionChange={onSelectionChange}
             nodesDraggable={!readOnly} nodesConnectable={!readOnly} elementsSelectable
             deleteKeyCode={null} zoomOnDoubleClick={false} minZoom={0.15} maxZoom={2.2}
             multiSelectionKeyCode={['Control', 'Meta']} selectionKeyCode="Shift"
-            onNodeDragStop={(_, __, dragged) => { dragged.forEach(n => { posRef.current.set(n.id, n.position); pending.current.set(n.id, n.position) }); clearTimeout(moveTimer.current); moveTimer.current = setTimeout(flushMoves, 600) }}
+            onNodeDrag={(_, __, dragged) => { if (vowl) followSats(dragged) }}
+            onNodeDragStop={(_, __, dragged) => { dragged.forEach(n => { const q = toClassic(n); posRef.current.set(n.id, q); pending.current.set(n.id, q) }); clearTimeout(moveTimer.current); moveTimer.current = setTimeout(flushMoves, 600) }}
             onConnectEnd={onConnectEnd}
             onNodeDoubleClick={(_, n) => { if (!readOnly && p.onto.classes[n.id]) setRenaming(n.id) }}
             onDoubleClick={e => { if (!readOnly && (e.target as HTMLElement).classList.contains('react-flow__pane')) startCreate(e.clientX, e.clientY) }}
             onPaneClick={() => { setMenu(null); setCreating(null); wrap.current?.focus() }}
-            proOptions={{ hideAttribution: true }} fitViewOptions={{ padding: 0.2, maxZoom: 1 }}
+            proOptions={{ hideAttribution: true }} fitViewOptions={{ padding: fitPad === 0.12 ? 0.2 : fitPad, maxZoom: 1 }}
           >
             <Background variant={BackgroundVariant.Dots} gap={22} size={1.4} />
             <Controls showInteractive={false} position="bottom-left" />

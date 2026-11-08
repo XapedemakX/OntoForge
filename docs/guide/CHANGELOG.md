@@ -98,7 +98,7 @@ C# Curiosity et Query API non vérifiés, Cypher non exécuté, API externes `À
 
 ## 0.3.0 (en cours)
 
-Lots L19 à L25, un par ligne. Les détails sont dans `journal/L<n>/rapport.md`.
+Lots L19 à L26, un par ligne. Les détails sont dans `journal/L<n>/rapport.md`.
 
 - L19 : triplestore local embarqué par projet (pyoxigraph 0.5.13), requêtes, inférence RDFS / OWL RL, validation SHACL. Graphe par défaut = union dédupliquée (D-L19-01). Revues w3c et requêtage OK à l'itération 2, documentation vérifiée.
 - L20 : easter egg avec Krakie, un petit jeu caché dans l'application (un indice se trouve dans Paramètres) ; revue scout it1 OK.
@@ -107,3 +107,4 @@ Lots L19 à L25, un par ligne. Les détails sont dans `journal/L<n>/rapport.md`.
 - L23 : humanisation de la documentation et des skills, étape 1 (skill `humanizer`).
 - L24 : publication, intégration continue (pytest, build front, recettes en manuel) et Dependabot encadré.
 - L25 : amorcer une ontologie depuis un document (.txt, .md, .pdf) avec extrait source, badge « À confirmer » et contrôles W3C ; revues w3c et scout it1.
+- L26 : lire le graphe de l'ontologie. Légende flottante qui ne montre que les encodages présents, mode « Notation VOWL » (VOWL 2 : classes en cercles, classes externes, équivalentes, anonymes, types de données, caractéristiques des propriétés), menu « Afficher » avec curseur de densité et compteur, export SVG et PNG du graphe tel qu'affiché, étape « legend » de la visite guidée (19 étapes). `GET /graph` reste rétrocompatible et gagne (`external`, `equivalent`, `include=external,anonymous,thing`). Revues w3c, scout, doc, humaniseur : voir `journal/L26/rapport.md`.

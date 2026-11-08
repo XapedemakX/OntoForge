@@ -32,3 +32,5 @@ Pour chaque idée : problème, proposition (maquette en une phrase), valeur 1-5 
 - Proposer sans coder : pas de fichiers hors carnet et skill.
 - Ne pas confondre fonctionnalité d'un concurrent et besoin de l'utilisateur.
 - Garder le carnet vivant : dater, numéroter (P-xx), marquer les idées réalisées ou abandonnées.
+- Un panneau d'aide demandé parce qu'on ne le trouvait pas (légende L26) s'ouvre au premier usage, puis respecte le dernier choix ; il ne doit masquer aucun élément après cadrage.
+- Une vue d'ensemble se juge en pixels à l'écran (texte ≥ 10-11 px), pas en pourcentage de zoom : mesurer la police rendue dans la recette.
