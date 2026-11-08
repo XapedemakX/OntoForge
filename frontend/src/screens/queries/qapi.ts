@@ -39,6 +39,7 @@ export type InlineOrLocal = InlineEndpoint | LocalEndpoint
 export type Semantics = 'rdfs' | 'owlrl' | 'both'
 export interface StoreGraph { graph: string; kind: 'ontology' | 'individuals' | 'data' | 'inferred'; name: string; triples: number; format?: string; source?: string }
 export interface StoreStats {
+  ephemeral?: boolean
   exists: boolean; triples: number; graphs: StoreGraph[]; ontology_stale: boolean; size_kb?: number; engine: string
   inference: { semantics: Semantics; triples: number; source_triples: number; stale: boolean; notes?: string[] } | null
   demo: { sample: string; file: string } | null

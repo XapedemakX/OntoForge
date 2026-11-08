@@ -12,6 +12,7 @@ from typing import Any, Optional
 import httpx
 from pydantic import BaseModel, Field
 
+from .. import netguard
 from ..settings.models import EndpointConfig
 
 ACCEPT = "application/sparql-results+json"
@@ -27,7 +28,8 @@ class EndpointError(Exception):
 
 
 def make_client(timeout: float) -> httpx.Client:
-    return httpx.Client(timeout=timeout)
+    """Client sortant ; avec ONTOFORGE_PUBLIC=1, protection SSRF (netguard) : IP privées refusées, adresse vérifiée après résolution."""
+    return netguard.client(timeout)
 
 
 # ---------------------------------------------------------------------------- lecture seule / LIMIT
@@ -127,6 +129,8 @@ def _post(ep: EndpointConfig, query: str, timeout: Optional[float] = None) -> ht
     try:
         with make_client(t) as c:
             return c.post(ep.url, data=data, headers=headers, auth=auth)
+    except netguard.NetGuardError as exc:
+        raise EndpointError(f"Endpoint « {ep.name} » : {exc}", 403) from None
     except httpx.TimeoutException:
         raise EndpointError(f"Délai dépassé ({t:.0f} s) en attendant l'endpoint SPARQL « {ep.name} ».", 504) from None
     except httpx.HTTPError as exc:

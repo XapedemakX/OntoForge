@@ -9,6 +9,7 @@ import logging
 import os
 from pathlib import Path
 
+from .. import fsutil
 from cryptography.fernet import Fernet, InvalidToken
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
@@ -43,7 +44,7 @@ def master_secret() -> str:
     fd = os.open(f, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
     with os.fdopen(fd, "w", encoding="utf-8") as fh:
         fh.write(key)
-    os.chmod(f, 0o600)
+    fsutil.try_chmod(f, 0o600)  # FUSE (Cloud Storage) : chmod peut être refusé
     log.warning("ONTOFORGE_SECRET_KEY absente : clé maître générée dans %s. Définissez ONTOFORGE_SECRET_KEY dans .env "
                 "pour maîtriser la clé (et sauvegardez-la : sans elle les clés d'API enregistrées sont perdues).", f)
     return key

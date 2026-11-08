@@ -89,9 +89,12 @@ def _http_error(provider: str, status: int) -> LLMError:
 def post_json(provider: str, url: str, headers: dict[str, str], payload: dict[str, Any], timeout_s: Optional[float] = None) -> dict[str, Any]:
     """POST JSON avec gestion d'erreurs en français (aucun en-tête n'est jamais journalisé ni renvoyé)."""
     import httpx
+    from ... import netguard as _ng
     try:
         tmo = timeout_s if timeout_s else timeout()
-        r = httpx.post(url, headers=headers, json=payload, timeout=tmo)
+        r = _ng.post(url, headers=headers, json=payload, timeout=tmo)
+    except _ng.NetGuardError as exc:
+        raise LLMError(f"{provider} : {exc}") from None
     except httpx.TimeoutException:
         raise LLMError(f"{provider} : délai dépassé ({tmo:.0f} s) en attendant la réponse.") from None
     except httpx.HTTPError as exc:

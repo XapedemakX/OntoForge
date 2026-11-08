@@ -12,6 +12,7 @@ from typing import Optional
 
 from pydantic import BaseModel, Field, model_validator
 
+from .. import fsutil
 from ..projects import store
 from .builder import GuidedQuery
 
@@ -59,15 +60,7 @@ def list_saved(pid: str) -> list[SavedQuery]:
 def _write(pid: str, items: list[SavedQuery]) -> None:
     p = _path(pid)
     p.parent.mkdir(parents=True, exist_ok=True)
-    fd, tmp = tempfile.mkstemp(dir=p.parent, prefix=".queries-", suffix=".tmp")
-    try:
-        with os.fdopen(fd, "w", encoding="utf-8") as fh:
-            json.dump([i.model_dump(mode="json") for i in items], fh, ensure_ascii=False, indent=2)
-        os.replace(tmp, p)
-    except BaseException:
-        if os.path.exists(tmp):
-            os.unlink(tmp)
-        raise
+    fsutil.atomic_write(p, json.dumps([i.model_dump(mode="json") for i in items], ensure_ascii=False, indent=2), prefix=".queries-")
 
 
 def get(pid: str, qid: str) -> SavedQuery:

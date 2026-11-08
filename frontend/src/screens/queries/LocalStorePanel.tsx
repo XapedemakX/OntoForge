@@ -67,6 +67,7 @@ export function LocalStorePanel({ pid, version }: { pid: string; version: string
           {!shacl.conforms && <ul className="qlocal-res">{shacl.results.slice(0, 5).map((r, i) => <li key={i}><b>{localName(r.focus)}</b>{r.path ? ` · ${localName(r.path)}` : ''} — {r.message || r.severity}</li>)}{shacl.results.length > 5 && <li className="muted">{t('q.local.shacl.more', { n: shacl.results.length - 5 })}</li>}</ul>}
         </div>
       )}
+      {st?.ephemeral && <p className="muted tiny" data-testid="local-ephemeral" role="note"><Icon name="clock" /> {t('q.local.ephemeral')}</p>}
       <p className="muted tiny">{t('q.local.limits', { mb: st?.limits.max_upload_mb ?? 25, t: st ? n(st.limits.max_triples) : '…', s: st?.limits.query_timeout_s ?? 20 })}</p>
     </div>
   )

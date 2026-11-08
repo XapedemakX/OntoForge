@@ -10,6 +10,7 @@ import threading
 from pathlib import Path
 from typing import Any
 
+from .. import fsutil
 from . import crypto
 from .models import DEFAULT_MODELS, EndpointConfig, ProviderConfig, Settings, SparqlAuth
 
@@ -142,18 +143,7 @@ def save(s: Settings, secret: str | None = None) -> None:
         p = path()
         p.parent.mkdir(parents=True, exist_ok=True)
         payload = json.dumps(_to_disk(s, secret), ensure_ascii=False, indent=2)
-        fd, tmp = tempfile.mkstemp(dir=p.parent, prefix=".settings-", suffix=".tmp")
-        try:
-            with os.fdopen(fd, "w", encoding="utf-8") as fh:
-                fh.write(payload)
-                fh.flush()
-                os.fsync(fh.fileno())
-            os.chmod(tmp, 0o600)
-            os.replace(tmp, p)
-        except BaseException:
-            if os.path.exists(tmp):
-                os.unlink(tmp)
-            raise
+        fsutil.atomic_write(p, payload, mode=0o600, prefix=".settings-")
 
 
 def load(persist: bool = True) -> Settings:

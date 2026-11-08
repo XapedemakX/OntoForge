@@ -119,8 +119,30 @@ def lock(pid: str) -> _RWLock:
 
 # -------------------------------------------------------------------------------------------- chemins
 
+def local_dir() -> Optional[Path]:
+    """``ONTOFORGE_LOCAL_STORE_DIR`` : dossier LOCAL (disque de l'instance, ex. /tmp) où vit le triplestore, à la place de
+    ``<projet>/triplestore``. Sur Cloud Run, ``/data`` est un montage Cloud Storage FUSE sur lequel RocksDB (verrous, mmap, renommages)
+    ne doit pas vivre ; ce dossier est éphémère : perdu à l'arrêt de l'instance, reconstruit à la demande (`ensure`)."""
+    v = os.environ.get("ONTOFORGE_LOCAL_STORE_DIR", "").strip()
+    return Path(v) if v else None
+
+
+def ephemeral() -> bool:
+    return local_dir() is not None
+
+
 def root(pid: str) -> Path:
+    d = local_dir()
+    if d is not None:
+        project_store.project_dir(pid)  # valide l'identifiant (ProjectNotFound sinon)
+        return d / pid
     return project_store.project_dir(pid) / "triplestore"
+
+
+def purge(pid: str) -> None:
+    """Supprime le triplestore d'un projet supprimé quand il vit hors du dossier du projet."""
+    if ephemeral():
+        shutil.rmtree(root(pid), ignore_errors=True)
 
 
 def db_path(pid: str) -> Path:
@@ -456,7 +478,7 @@ def demo_for(p: Any) -> Optional[dict[str, str]]:
 
 def stats(pid: str, p: Any) -> dict[str, Any]:
     lim = limits()
-    base = {"limits": lim, "demo": demo_for(p), "engine": "pyoxigraph " + ox.__version__}
+    base = {"limits": lim, "demo": demo_for(p), "engine": "pyoxigraph " + ox.__version__, "ephemeral": ephemeral()}
     if not exists(pid):
         return {"exists": False, "triples": 0, "graphs": [], "inference": None, "ontology_stale": False, **base}
     with lock(pid).read():

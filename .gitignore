@@ -12,3 +12,4 @@ journal/L18/video/chk/
 journal/L18/video/*.mp4
 *.whl
 frontend/tsconfig.tsbuildinfo
+backend/build/

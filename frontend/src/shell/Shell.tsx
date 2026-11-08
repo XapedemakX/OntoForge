@@ -9,6 +9,7 @@ import { useActiveEndpoint } from '../screens/settings/activeEndpoint'
 import { AssistantDock } from '../assistant-global'
 import { TourHost, tour } from '../tour'
 import { SCREENS, STEPS } from './registry'
+import { useAuth } from '../auth/AuthGate'
 import { useTheme } from './theme'
 import { Logo } from './Logo'
 import type { ScreenProps } from './types'
@@ -31,6 +32,7 @@ export function Shell() {
   const [pending, setPending] = useState(0)
   const [menu, setMenu] = useState(false)
   const [themePref, cycleTheme] = useTheme()
+  const auth = useAuth()
   const [peris, setPeris] = useState<Perimeter[] | null>(null)
   const [activePeri, setActivePeri] = useState<string>('')
   const pid = route.kind === 'project' ? route.id : null
@@ -116,6 +118,7 @@ export function Shell() {
             <Icon name="database" /><span>{endpoint ? (endpoint.name || endpoint.url.replace(/^https?:\/\//, '')) : t('head.sparqlNone')}</span></a>
           <IconButton icon="route" label={t('tour.btn')} onClick={() => void tour.start()} />
           <IconButton icon={themeIcon} label={t('head.theme.' + themePref)} onClick={cycleTheme} />
+          {auth.enabled && <button type="button" className="btn sm ghost logout" data-testid="logout" title={auth.user ?? ''} onClick={() => void auth.logout()}><Icon name="right-from-bracket" /><span>{t('auth.logout')}</span></button>}
         </header>
         <main className={'content' + (def?.fullBleed ? ' bleed' : '')}>
           {def?.editing && <div className="notice soon mobile-only">{t('head.mobileReadOnly')}</div>}

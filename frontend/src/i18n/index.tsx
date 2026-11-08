@@ -27,9 +27,14 @@ const LangCtx = createContext<Ctx>({ lang: 'fr', setLang: () => {} })
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>('fr')
   useEffect(() => {
-    fetch('/api/settings').then(r => (r.ok ? r.json() : null)).then(s => {
+    const load = () => fetch('/api/settings').then(r => (r.ok ? r.json() : null)).then(s => {
       const l = s?.language?.ui; if (l === 'fr' || l === 'en') setLangState(l)
     }).catch(() => { /* backend absent : français */ })
+    void load()
+    // instance protégée par mot de passe : les réglages ne sont lisibles qu'après la connexion (L27) ; un choix fait sur la page de connexion prime
+    const onAuthed = () => { let chosen = false; try { chosen = !!localStorage.getItem('ontoforge.lang') } catch { /* ignoré */ } if (!chosen) void load() }
+    addEventListener('ontoforge:authed', onAuthed)
+    return () => removeEventListener('ontoforge:authed', onAuthed)
   }, [])
   CURRENT = lang
   useEffect(() => { document.documentElement.lang = lang }, [lang])

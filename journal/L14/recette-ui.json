@@ -15,7 +15,7 @@
   {
    "screen": "03-ontologie-editeur",
    "ok": true,
-   "detail": "texte=1522c erreurs=0"
+   "detail": "texte=1614c erreurs=0"
   },
   {
    "screen": "04-ontologie-liste",
@@ -100,7 +100,7 @@
   {
    "screen": "m-03-ontologie-editeur",
    "ok": true,
-   "detail": "texte=751c erreurs=0"
+   "detail": "texte=801c erreurs=0"
   },
   {
    "screen": "m-04-ontologie-liste",

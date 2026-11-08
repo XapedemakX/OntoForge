@@ -10,6 +10,7 @@ import httpx
 from fastapi import APIRouter, Body, HTTPException
 from pydantic import ValidationError
 
+from .. import netguard
 from ..assistant.providers import LLMError, from_config
 from ..settings import store
 from ..settings.models import DEFAULT_MODELS, EndpointConfig, ProviderConfig, Settings, SparqlAuth, SparqlEndpoint
@@ -226,7 +227,9 @@ def test_sparql(body: Optional[dict[str, Any]] = Body(default=None)) -> Any:
         headers["Authorization"] = "Bearer " + ep.auth.secret
     t0 = time.perf_counter()
     try:
-        r = httpx.post(ep.url, data={"query": "ASK {}"}, headers=headers, auth=auth, timeout=TEST_TIMEOUT)
+        r = netguard.post(ep.url, data={"query": "ASK {}"}, headers=headers, auth=auth, timeout=TEST_TIMEOUT)
+    except netguard.NetGuardError as exc:
+        return {"ok": False, "latency_ms": 0, "message": str(exc)}
     except httpx.TimeoutException:
         return {"ok": False, "latency_ms": int(TEST_TIMEOUT * 1000), "message": f"Délai dépassé ({TEST_TIMEOUT:.0f} s) en attendant l'endpoint SPARQL."}
     except httpx.HTTPError as exc:

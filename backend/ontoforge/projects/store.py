@@ -19,6 +19,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
+from .. import fsutil
 from ..core.project import Project
 
 log = logging.getLogger(__name__)
@@ -59,21 +60,8 @@ def project_dir(project_id: str) -> Path:
 
 
 def _atomic_write(path: Path, content: str | bytes) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    data = content.encode("utf-8") if isinstance(content, str) else content
-    fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=f".{path.name}.", suffix=".tmp")
-    try:
-        with os.fdopen(fd, "wb") as fh:
-            fh.write(data)
-            fh.flush()
-            os.fsync(fh.fileno())
-        os.replace(tmp, path)
-    except BaseException:
-        try:
-            os.unlink(tmp)
-        except OSError:
-            pass
-        raise
+    """Écriture atomique (fichier temporaire + renommage), compatible avec un montage Cloud Storage FUSE : voir ``fsutil``."""
+    fsutil.atomic_write(path, content)
 
 
 # ---- API du module (CONTRACTS.md §1) -------------------------------------------------------
@@ -130,6 +118,11 @@ def save(project: Project, touch: bool = True) -> Project:
 def delete(project_id: str) -> Project:
     p = get(project_id)
     shutil.rmtree(project_dir(project_id))
+    try:  # triplestore hors du dossier du projet (ONTOFORGE_LOCAL_STORE_DIR) : nettoyage au mieux
+        from ..localstore import store as _ls
+        _ls.purge(project_id)
+    except Exception:  # noqa: BLE001
+        pass
     return p
 
 
