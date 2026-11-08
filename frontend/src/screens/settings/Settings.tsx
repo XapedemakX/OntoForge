@@ -31,5 +31,6 @@ export function Settings() {
           {sec === 'defaults' && <DefaultsSection s={s} reload={reload} />}
           {sec === 'sparql' && <EndpointsSection />}
         </>)}
+      <p className="set-hint set-retro">{t('settings.hint.retro')}</p>
     </div>)
 }

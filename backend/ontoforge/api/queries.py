@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import re
-from typing import Any, Optional
+from typing import Any, Callable, Literal, Optional, Union
 
 from fastapi import APIRouter, Body, HTTPException, Query
 from pydantic import BaseModel, Field, ValidationError
@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field, ValidationError
 from .. import localize
 from ..core.onto_model import RDFS, local_name
 from ..queries import builder, endpoint as ep_mod, options as opt_mod, saved
+from ..localstore import runner as local_runner, store as local_store
 from ..queries.builder import GuidedError, GuidedQuery
 from ..settings import store as settings_store
 from ..settings.models import EndpointConfig
@@ -41,11 +42,17 @@ class InlineEndpoint(BaseModel):
     timeout_s: float = 30.0
 
 
+class LocalEndpoint(BaseModel):
+    """Triplestore local du projet (L19) : `endpoint: {kind: "local"}`. Lecture seule, sans réseau, délai et lignes plafonnés."""
+    kind: Literal["local"]
+    timeout_s: Optional[float] = Field(None, ge=1, le=120)
+
+
 class RunRequest(BaseModel):
     guided: Optional[GuidedQuery] = None
     sparql: Optional[str] = None
     endpoint_id: Optional[str] = None
-    endpoint: Optional[InlineEndpoint] = None
+    endpoint: Optional[Union[LocalEndpoint, InlineEndpoint]] = None
     limit: int = 100
 
 
@@ -54,7 +61,7 @@ class ValuesRequest(BaseModel):
     property: Optional[str] = None
     q: str = ""
     endpoint_id: Optional[str] = None
-    endpoint: Optional[InlineEndpoint] = None
+    endpoint: Optional[Union[LocalEndpoint, InlineEndpoint]] = None
     model_config = {"populate_by_name": True}
 
 
@@ -82,6 +89,14 @@ def _endpoint(eid: Optional[str], inline: Optional[InlineEndpoint] = None):
 
 def _ep_error(exc: ep_mod.EndpointError) -> HTTPException:
     return HTTPException(status_code=exc.status, detail=str(exc))
+
+
+def _executor(p: Any, eid: Optional[str], inline: Optional[Union[LocalEndpoint, InlineEndpoint]]) -> tuple[str, Callable[[str, int], ep_mod.QueryResult]]:
+    """(identifiant d'endpoint, fonction (sparql, limite) -> résultat) : triplestore local, endpoint temporaire ou enregistré."""
+    if isinstance(inline, LocalEndpoint):
+        return "local", lambda q, n: local_runner.run_local(p, q, n, inline.timeout_s)
+    ep = _endpoint(eid, inline)
+    return ep.id, lambda q, n: ep_mod.run_select(ep, q, n)
 
 
 @router.get("/query/suggest")
@@ -130,7 +145,7 @@ def run(pid: str, body: RunRequest) -> Any:
     p = load_project(pid)
     if (body.guided is None) == (body.sparql is None):
         raise HTTPException(status_code=422, detail="Fournir exactement l'un de « guided » ou « sparql ».")
-    ep = _endpoint(body.endpoint_id, body.endpoint)
+    ep_id, execute = _executor(p, body.endpoint_id, body.endpoint)
     edges: list[tuple[str, str, str]] = []
     try:
         if body.guided is not None:
@@ -140,14 +155,14 @@ def run(pid: str, body: RunRequest) -> Any:
             limit = min(body.limit, body.guided.limit or body.limit)
         else:
             sparql, limit = body.sparql or "", body.limit
-        res = ep_mod.run_select(ep, sparql, limit)
+        res = execute(sparql, limit)
     except GuidedError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from None
     except ep_mod.EndpointError as exc:
         raise _ep_error(exc) from None
     out = res.model_dump(mode="json")
     out["graph"] = ep_mod.graph_preview(res, edges)
-    out["endpoint_id"] = ep.id
+    out["endpoint_id"] = ep_id
     return out
 
 
@@ -155,20 +170,20 @@ def run(pid: str, body: RunRequest) -> Any:
 def values(pid: str, class_: Optional[str] = Query(None, alias="class"), property: Optional[str] = None,
            q: str = "", endpoint_id: Optional[str] = None) -> Any:
     """Autocomplétion : valeurs (ou libellés d'entités) de `property` sur les instances de `class`, 20 maximum."""
-    return _values(pid, class_, property, q, _endpoint_lazy(endpoint_id, None))
+    return _values(pid, class_, property, q, _endpoint_lazy(pid, endpoint_id, None))
 
 
 @router.post("/query/values")
 def values_post(pid: str, body: ValuesRequest) -> Any:
     """Idem GET, avec un endpoint temporaire en ligne (le secret ne transite pas par l'URL)."""
-    return _values(pid, body.class_, body.property, body.q, _endpoint_lazy(body.endpoint_id, body.endpoint))
+    return _values(pid, body.class_, body.property, body.q, _endpoint_lazy(pid, body.endpoint_id, body.endpoint))
 
 
-def _endpoint_lazy(eid: Optional[str], inline: Optional[InlineEndpoint]):
-    return lambda: _endpoint(eid, inline)
+def _endpoint_lazy(pid: str, eid: Optional[str], inline: Optional[Union[LocalEndpoint, InlineEndpoint]]):
+    return lambda: _executor(load_project(pid), eid, inline)[1]
 
 
-def _values(pid: str, class_: Optional[str], property: Optional[str], q: str, get_ep) -> Any:
+def _values(pid: str, class_: Optional[str], property: Optional[str], q: str, get_exec) -> Any:
     p = load_project(pid)
     if not class_ and not property:
         raise HTTPException(status_code=422, detail="Indiquer « class » et/ou « property ».")
@@ -189,7 +204,7 @@ def _values(pid: str, class_: Optional[str], property: Optional[str], q: str, ge
         sparql = (f"SELECT DISTINCT ?value ?label WHERE {{ {typing} {link} VALUES ?lp {{ {lp} }} "
                   f"?value ?lp ?label . {flt} }} ORDER BY ?label")
     try:
-        res = ep_mod.run_select(get_ep(), t.header() + sparql, 20)
+        res = get_exec()(t.header() + sparql, 20)
     except ep_mod.EndpointError as exc:
         raise _ep_error(exc) from None
     items = []
@@ -203,8 +218,9 @@ def _values(pid: str, class_: Optional[str], property: Optional[str], q: str, ge
 
 @router.get("/query/options")
 def options(pid: str, class_: Optional[str] = Query(None, alias="class"), property: Optional[str] = None,
-            q: str = "", lang: Optional[str] = None) -> Any:
-    """Valeurs possibles connues de l'ontologie, SANS endpoint : individus (classes énumérées ou peuplées), sh:in, DataOneOf, enum PG."""
+            q: str = "", lang: Optional[str] = None, local: bool = False) -> Any:
+    """Valeurs possibles connues de l'ontologie, SANS endpoint : individus (classes énumérées ou peuplées), sh:in, DataOneOf, enum PG.
+    `local=true` (L19) complète avec les valeurs présentes dans le triplestore local du projet (source `local`) ; `local: {triples, added}` ou `{error}`."""
     from .analysis import run_analysis
     p = load_project(pid)
     if not class_ and not property:
@@ -217,7 +233,28 @@ def options(pid: str, class_: Optional[str] = Query(None, alias="class"), proper
             pg = run_analysis(p, check_target(p.target))
         except Exception:  # noqa: BLE001 - l'enum du modèle est un complément facultatif
             pg = None
-    return opt_mod.options(p.onto, p.shapes, pg, class_, property, q, _lang(lang))
+    res = opt_mod.options(p.onto, p.shapes, pg, class_, property, q, _lang(lang))
+    if local:
+        res["local"] = _local_options(p, res, class_, property, q)
+    return res
+
+
+def _local_options(p: Any, res: dict[str, Any], class_: Optional[str], property: Optional[str], q: str) -> dict[str, Any]:
+    """Ajoute à `res["values"]` les valeurs trouvées dans le triplestore local (sans doublon) ; ne lève jamais."""
+    try:
+        got = _values(p.id, class_, property, q, lambda: (lambda s, n: local_runner.run_local(p, s, n)))
+    except HTTPException as exc:
+        return {"error": str(exc.detail)}
+    have = {v["value"] for v in res["values"]}
+    added = 0
+    for v in got["values"]:
+        if v["value"] and v["value"] not in have and len(res["values"]) < opt_mod.MAX_VALUES:
+            res["values"].append({"value": v["value"], "label": v["label"], "is_iri": v["is_iri"], "source": "local",
+                                  **({"lang": v["lang"]} if v.get("lang") else {})})
+            have.add(v["value"])
+            added += 1
+    res["known_count"] += added
+    return {"triples": local_store.stats(p.id, p)["triples"], "added": added}
 
 
 @router.post("/query/endpoint-test")

@@ -36,6 +36,11 @@ def extract_json(raw: str) -> dict[str, Any]:
     return obj
 
 
+def is_absolute_iri(n: str) -> bool:
+    """Vrai pour une IRI absolue (``http://``, ``https://``, ``urn:``) : un nom local comme « httpUrl » n'en est pas une."""
+    return n.startswith(("http://", "https://", "urn:"))
+
+
 def normalize_base(base: Optional[str]) -> str:
     b = (base or DEFAULT_BASE).strip()
     return b if b.endswith(("#", "/")) else b + "#"
@@ -70,7 +75,7 @@ def _annots(d: dict[str, Any]) -> list[Annotation]:
     out = []
     for key, prop in (("exact_match", "exactMatch"), ("close_match", "closeMatch"), ("see_also", None)):
         v = d.get(key)
-        if isinstance(v, str) and v.startswith("http"):
+        if isinstance(v, str) and is_absolute_iri(v):
             out.append(Annotation(property=(SKOS + prop) if prop else "http://www.w3.org/2000/01/rdf-schema#seeAlso", value=v, is_iri=True))
     return out
 
@@ -86,10 +91,10 @@ def to_onto(data: dict[str, Any], base_iri: Optional[str] = None) -> tuple[OntoM
     m = OntoModel(meta=meta)
 
     def ciri(n: str) -> str:
-        return n if n.startswith("http") else base + pascal(n)
+        return n if is_absolute_iri(n) else base + pascal(n)
 
     def piri(n: str) -> str:
-        return n if n.startswith("http") else base + camel(n)
+        return n if is_absolute_iri(n) else base + camel(n)
 
     def ensure_class(name: str, why: str) -> str:
         i = ciri(name)
@@ -149,7 +154,7 @@ def to_onto(data: dict[str, Any], base_iri: Optional[str] = None) -> tuple[OntoM
         i = piri(str(d["name"]))
         rng = str(d.get("range") or "string")
         key = rng.split("#")[-1].split(":")[-1].lower()
-        if rng.startswith("http"):
+        if is_absolute_iri(rng):
             dt = rng
         elif key in DEGRADED:
             dt = XSD + DEGRADED[key]

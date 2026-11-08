@@ -1,0 +1,88 @@
+# Dependabot — OntoForge. Voir docs/veille/processus-mise-a-jour.md §2.
+#
+# NOTE (D-L21-02, 7/11) : on reste sur une base stable. Dependabot SIGNALE les mises à jour ;
+# RIEN n'est fusionné sans l'accord de Jerem, mises à jour de sécurité comprises (elles sont
+# proposées, puis arbitrées). Les montées majeures sont ignorées partout, et le nombre de
+# demandes ouvertes est volontairement bas pour ne pas noyer la revue.
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Paris"
+    open-pull-requests-limit: 2
+    labels: ["dependencies", "veille"]
+    commit-message:
+      prefix: "deps(backend)"
+    groups:
+      # Ces cinq bibliothèques se tiennent (pyshacl 0.40 exige rdflib>=7.3 et owlrl>=7.6.1).
+      semantique:
+        patterns: ["rdflib", "pyshacl", "owlrl", "pyoxigraph", "owlready2"]
+      web:
+        patterns: ["fastapi", "uvicorn*", "pydantic*", "httpx", "python-multipart", "starlette"]
+      tests:
+        patterns: ["pytest*", "graphql-core", "testcontainers*"]
+    ignore:
+      # D-L21-02 : pas de montée majeure (rdflib 7.1.1, pyshacl 0.29.1, owlrl restent figés).
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Paris"
+    open-pull-requests-limit: 2
+    labels: ["dependencies", "veille"]
+    commit-message:
+      prefix: "deps(frontend)"
+    groups:
+      codemirror:
+        patterns: ["@codemirror/*", "@lezer/*"]
+      graphes:
+        patterns: ["@xyflow/react", "@dagrejs/dagre", "cytoscape", "@types/cytoscape"]
+    ignore:
+      # D-L21-02 : React 18 et Vite 5 restent en place ; aucune montée majeure (docs/veille/normes.md §4.2).
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "docker"
+    directory: "/backend"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 1
+    labels: ["dependencies", "veille"]
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "docker"
+    directory: "/frontend"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 1
+    labels: ["dependencies", "veille"]
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+  # Les actions du workflow sont épinglées par SHA : Dependabot propose le nouveau SHA et sa version.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 1
+    labels: ["dependencies", "veille"]
+    commit-message:
+      prefix: "deps(ci)"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+  # Pas d'écosystème nuget : le dépôt ne contient aucun .csproj (le C# est généré).
+  # Curiosity.Library est suivie par la veille mensuelle.

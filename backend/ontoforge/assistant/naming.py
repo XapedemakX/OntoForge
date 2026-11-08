@@ -5,8 +5,11 @@ import re
 import unicodedata
 
 
+_LIGATURES = str.maketrans({"œ": "oe", "Œ": "Oe", "æ": "ae", "Æ": "Ae", "ß": "ss"})  # NFKD ne les décompose pas : « main-d'œuvre » -> MainDOeuvre
+
+
 def _words(s: str) -> list[str]:
-    s = unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode()
+    s = unicodedata.normalize("NFKD", s.translate(_LIGATURES)).encode("ascii", "ignore").decode()
     s = re.sub(r"([a-z0-9])([A-Z])", r"\1 \2", s)
     return [w for w in re.split(r"[^A-Za-z0-9]+", s) if w]
 

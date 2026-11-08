@@ -12,7 +12,7 @@
 import { useEffect } from 'react'
 
 export type AssistantScreen =
-  | 'dashboard' | 'editor' | 'ontology-list' | 'shapes' | 'shacl' | 'conformance'
+  | 'dashboard' | 'editor' | 'ontology-list' | 'shapes' | 'shacl' | 'files' | 'conformance'
   | 'analysis' | 'model' | 'exports' | 'queries' | 'settings' | 'projects' | 'assistant' | string
 
 export interface AssistantContext {

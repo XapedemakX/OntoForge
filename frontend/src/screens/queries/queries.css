@@ -183,3 +183,11 @@ button.qc:hover, .qc.on { border-color: var(--accent); background: var(--accent-
 .qchk-i.on { background: var(--lagon); border-color: var(--lagon); color: #fff; font-weight: 600; }
 .qf-ent { align-items: flex-start; } .qf-lead { font-weight: 600; padding-top: 3px; }
 .qsearch.sm { max-width: 240px; }
+
+/* L19 : triplestore local */
+.qlocal { border-style: solid; border-color: var(--line-strong); }
+.qlocal-n { font-weight: 600; white-space: nowrap; }
+.qlocal-g { margin: 0; }
+.qlocal-shacl { display: flex; flex-direction: column; gap: 4px; }
+.qlocal-res { margin: 0; padding-left: 18px; font-size: var(--fs-sm); }
+.qlocal .qt { display: inline-flex; align-items: center; gap: 6px; }

@@ -138,6 +138,8 @@ def put_project(pid: str, body: Project) -> Project:
 @router.delete("/projects/{pid}", response_model=Project)
 def delete_project(pid: str) -> Project:
     load_project(pid)
+    from ..localstore import store as local_store
+    local_store.drop(pid)  # verrou d'écriture du triplestore local : attend les requêtes en cours, évite le rmtree sous leurs pieds
     return store.delete(pid)
 
 

@@ -6,6 +6,9 @@ export type Lang = 'fr' | 'en'
 const DICTS: Record<Lang, Record<string, string>> = { fr, en }
 export type Params = Record<string, string | number>
 
+/** Ajoute des chaînes à un dictionnaire (chunks chargés à la demande, ex. le mini-jeu caché) : évite d'alourdir le bundle principal. */
+export function extendDicts(fr_: Record<string, string>, en_: Record<string, string>) { Object.assign(DICTS.fr, fr_); Object.assign(DICTS.en, en_) }
+
 /** Traduit `key` ; repli sur le français puis sur la clé elle-même. `{nom}` est remplacé par params.nom. */
 export function translate(lang: Lang, key: string, params?: Params): string {
   let s = DICTS[lang][key] ?? DICTS.fr[key] ?? key

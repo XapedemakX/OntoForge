@@ -5,6 +5,10 @@ import type { Pose } from '../krakie/Krakie'
 import { useI18n } from '../i18n'
 import { onAssistantContext, onAssistantOpen, type AssistantContext, type OpenAssistantOptions } from '../lib/assistantContext'
 import { aapi, type AStatus } from '../screens/assistant/aapi'
+import { DocImport } from '../screens/assistant/DocImport'
+import { DocResult } from '../screens/assistant/DocResult'
+import { ProposalCards } from '../screens/assistant/ProposalCards'
+import { useProposal } from '../lib/proposal'
 import { ActionCards } from './ActionCards'
 import { effectiveContext, forSend, ROUTE_SCREEN, type CtxMode } from './context'
 import { runChat, go } from './run'
@@ -23,6 +27,8 @@ export function AssistantDock({ p, setP, target, screen, perimeter }: { p: Proje
   const [status, setStatus] = useState<AStatus | null>(null)
   const [declared, setDeclared] = useState<AssistantContext | undefined>(undefined)
   const [mode, setMode] = useState<CtxMode>('full')
+  const [docOpen, setDocOpen] = useState(false)
+  const prop = useProposal()
   const [oneShot, setOneShot] = useState<Partial<AssistantContext> | null>(null)
   const taRef = useRef<HTMLTextAreaElement>(null)
   const endRef = useRef<HTMLDivElement>(null)
@@ -126,6 +132,9 @@ export function AssistantDock({ p, setP, target, screen, perimeter }: { p: Proje
                 <div className="ag-bubble">
                   {m.content && <p>{m.content}</p>}
                   {m.warnings?.map((w, i) => <p key={i} className="ag-warn"><Icon name="circle-info" />{w}</p>)}
+                  {m.doc && <DocResult doc={m.doc} />}
+                  {m.doc && prop && prop.projectId === p.id && prop.doc?.id === m.doc.id && prop.items.length > 0 &&
+                    <ProposalCards compact mine={prop} prefixes={p.onto.meta.prefixes} onEditor={() => go(p.id, 'ontologie')} />}
                   {m.actions && m.actions.length > 0 && <ActionCards pid={p.id} msgId={m.id} actions={m.actions} setP={setP} />}
                 </div>
               </div>
@@ -137,9 +146,11 @@ export function AssistantDock({ p, setP, target, screen, perimeter }: { p: Proje
           <div className="ag-compose">
             {suggestions.length > 0 && !text && <div className="ag-sugg" role="group" aria-label={t('ag.suggestions')}>
               {suggestions.map(s => <button key={s} className="ag-pill" disabled={busy} onClick={() => setText(s)}>{s}</button>)}</div>}
+            {docOpen && <DocImport compact p={p} setP={setP} provider={ui.provider || undefined} onBusy={setBusy} onClose={() => setDocOpen(false)} />}
             <div className="ag-box">
               <textarea ref={taRef} rows={2} value={text} placeholder={t('ag.placeholder')} aria-label={t('ag.placeholder')} onChange={e => setText(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void send(text) } }} />
+              <IconButton icon="file-import" label={t('doc.open')} aria-expanded={docOpen} disabled={busy} onClick={() => setDocOpen(o => !o)} />
               <Button variant="primary" icon="paper-plane" disabled={busy || !text.trim()} onClick={() => void send(text)}>{t('asst.send')}</Button>
             </div>
             <span className="muted ag-hint">{t('ag.hint')}</span>

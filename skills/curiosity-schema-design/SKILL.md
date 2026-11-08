@@ -31,14 +31,14 @@ Cible n°1 d'OntoForge. Implémentation : `backend/ontoforge/mapping/profiles/cu
 | Recherche | Plein texte et facettes configurés dans l'espace de travail (S7), pas dans le schéma. | Le générateur recommande, l'humain configure. |
 
 ## Patterns
-1. **Classe -> type de nœud** (C01). Nom PascalCase. Une classe abstraite sans instance directe n'a pas de type (C04).
-2. **Héritage aplati + discriminant** (C02/C03) : recopier les propriétés héritées dans chaque feuille, ajouter `VehicleKind` (string, valeurs = sous-classes, filtrable en facette). Héritage multiple : parent principal (clé + plus de propriétés), autres appartenances en booléens.
-3. **Réification en nœud** (R01/R02) : classe de relation porteuse d'attributs ou n-aire -> type de nœud + une paire d'arêtes par participant, clé calculée (`ownerKey|partKey|date`).
-4. **Énumération -> nœuds de référence** (C08/I01) : un type, une instance par valeur (clé = valeur), arête vers lui ; donne des facettes liées et suit les renommages. Petit ensemble figé : propriété string + validation (`enum_property`). Punning classe/individu (C12) : nommer distinctement le type et le nœud.
-5. **Clés** (K01-K05) : clé métier (`owl:hasKey`) si une seule propriété string ; sinon concaténation `a|b` ; sans clé : IRI. Clé incluant un objet : clé du nœud cible concaténée (K05).
-6. **Arêtes** (O01-O05) : paire aller/retour ; inverse OWL = retour nommé ; `hasPart` -> `PartOf` ; symétrique : même nom (`À VÉRIFIER`). Un nom d'arête peut servir plusieurs couples de types (O03).
-7. **Perte assumée** : transitivité, chaînes, sous-propriétés -> matérialiser l'arête dérivée dans le connecteur ou traverser à la requête ; disjonction, cardinalité, `only`, réflexivité -> validation applicative.
-8. **Littéraux multilingues** (D06) : une propriété par langue (`LabelFr`).
+1. Classe -> type de nœud (C01). Nom PascalCase. Une classe abstraite sans instance directe n'a pas de type (C04).
+2. Héritage aplati + discriminant (C02/C03) : recopier les propriétés héritées dans chaque feuille, ajouter `VehicleKind` (string, valeurs = sous-classes, filtrable en facette). Héritage multiple : parent principal (clé + plus de propriétés), autres appartenances en booléens.
+3. Réification en nœud (R01/R02) : classe de relation porteuse d'attributs ou n-aire -> type de nœud + une paire d'arêtes par participant, clé calculée (`ownerKey|partKey|date`).
+4. Énumération -> nœuds de référence (C08/I01) : un type, une instance par valeur (clé = valeur), arête vers lui ; donne des facettes liées et suit les renommages. Petit ensemble figé : propriété string + validation (`enum_property`). Punning classe/individu (C12) : nommer distinctement le type et le nœud.
+5. Clés (K01-K05) : clé métier (`owl:hasKey`) si une seule propriété string ; sinon concaténation `a|b` ; sans clé : IRI. Clé incluant un objet : clé du nœud cible concaténée (K05).
+6. Arêtes (O01-O05) : paire aller/retour ; inverse OWL = retour nommé ; `hasPart` -> `PartOf` ; symétrique : même nom (`À VÉRIFIER`). Un nom d'arête peut servir plusieurs couples de types (O03).
+7. Perte assumée : transitivité, chaînes, sous-propriétés -> matérialiser l'arête dérivée dans le connecteur ou traverser à la requête ; disjonction, cardinalité, `only`, réflexivité -> validation applicative.
+8. Littéraux multilingues (D06) : une propriété par langue (`LabelFr`).
 
 ## API C# vérifiée
 ```csharp

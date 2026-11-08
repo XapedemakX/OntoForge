@@ -53,6 +53,9 @@ def describe(d: Path) -> dict:
         role = _classify(f)
         if role:
             roles[role].append(f)
+    # Turtle d'abord : c'est lui qui porte les préfixes d'origine (le RDF/XML sérialisé par rdflib n'en garde que les standards)
+    for k in roles:
+        roles[k].sort(key=lambda n: (0 if n.lower().endswith(".ttl") else 1, n))
     return {"name": d.name, "title": _title(d), "files": files, **roles}
 
 

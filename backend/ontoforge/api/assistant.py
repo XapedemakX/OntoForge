@@ -170,3 +170,79 @@ async def upload(file: UploadFile = File(...)) -> Any:
         sep = max((",", ";", "\t"), key=lines[0].count)
         preview["columns"] = [c.strip() for c in lines[0].split(sep)]
     return {"name": name, "kind": kind, "preview": preview, "size": len(data), "content": text}
+
+
+# ----------------------------------------------------------------------------- L25 : amorcer depuis un document
+class DocPage(BaseModel):
+    page: int
+    text: str
+
+
+class DocPayload(BaseModel):
+    name: str
+    pages: list[DocPage]
+
+
+class DocEstimateRequest(BaseModel):
+    document: DocPayload
+    provider_id: Optional[str] = None
+
+
+class DocDraftRequest(BaseModel):
+    project_id: str
+    document: DocPayload
+    provider_id: Optional[str] = None
+    confirm_hosted: bool = False
+
+
+def _doc_of(payload: DocPayload) -> Any:
+    from ..assistant import document as docs
+    lim = docs.limits()
+    doc = docs.Document(payload.name[:200], [docs.Page(p.page, p.text) for p in payload.pages])
+    if len(doc.pages) > max(lim["max_pages"], 1) * 60 or doc.chars > lim["max_chars"]:
+        raise HTTPException(status_code=413, detail="Document trop volumineux.")
+    if not doc.pages or not doc.chars:
+        raise HTTPException(status_code=422, detail="Document vide.")
+    return doc
+
+
+@router.get("/document/demo")
+def document_demo() -> Any:
+    """Cahier des charges de démonstration (samples/automaint), en lecture seule : nom de fichier fixe, aucun paramètre."""
+    from fastapi.responses import Response
+    from .. import samples as samples_mod
+    f = samples_mod.samples_root() / "automaint" / "automaint-cahier-des-charges.pdf"
+    if not f.is_file():
+        raise HTTPException(status_code=404, detail="Document de démonstration absent de cette installation.")
+    return Response(f.read_bytes(), media_type="application/pdf", headers={"Content-Disposition": 'inline; filename="automaint-cahier-des-charges.pdf"'})
+
+
+@router.post("/document/upload")
+async def document_upload(file: UploadFile = File(...)) -> Any:
+    """Lit un .txt, .md ou .pdf (texte natif) : pages de texte, tailles, limites. Aucun appel réseau, rien n'est analysé ici."""
+    from ..assistant import document as docs
+    from ..localize import ui_lang
+    lim = docs.limits()
+    data = await file.read(lim["max_bytes"] + 1)
+    try:
+        doc = docs.extract(os.path.basename(file.filename or "document"), data)
+    except docs.DocumentError as exc:
+        raise HTTPException(status_code=exc.status, detail=exc.message(ui_lang())) from None
+    return {"name": doc.name, "size": len(data), "pages": [{"page": p.page, "text": p.text} for p in doc.pages], "page_count": len(doc.pages),
+            "chars": doc.chars, "limits": lim}
+
+
+@router.post("/document/estimate")
+def document_estimate(body: DocEstimateRequest) -> Any:
+    """Nombre d'appels et taille envoyée, et si le fournisseur est hébergé (avertissement de confidentialité) ; n'envoie rien."""
+    from ..assistant import docdraft, service
+    return docdraft.plan(_doc_of(body.document), service._provider(body.provider_id))
+
+
+@router.post("/document/draft")
+def document_draft(body: DocDraftRequest) -> Any:
+    """Brouillon d'ontologie traçable depuis un document. Rien n'est appliqué : le front soumet chaque élément à confirmation."""
+    from ..assistant import docdraft, service
+    from ..localize import ui_lang
+    p = load_project(body.project_id)
+    return dump(docdraft.draft_document(p, _doc_of(body.document), service._provider(body.provider_id), ui_lang(), body.confirm_hosted))

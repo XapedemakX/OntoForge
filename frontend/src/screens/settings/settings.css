@@ -31,3 +31,5 @@
   .set-table td { border: 0; padding: 2px 8px; }
   .set-table .acts { text-align: left; }
 }
+
+.set-retro { margin-top: var(--s5, 24px); font-size: var(--fs-xs); opacity: .55; text-align: center; }

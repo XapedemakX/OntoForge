@@ -33,6 +33,18 @@ export interface NlResult { guided: Guided | null; explanation?: string; confide
 export interface Endpoint { id: string; name: string; url: string }
 /** Endpoint temporaire : gardé en mémoire dans le navigateur, jamais persisté (le secret non plus). */
 export interface InlineEndpoint { url: string; auth: 'none' | 'basic' | 'bearer'; username?: string; secret?: string; default_graph?: string }
+/** Triplestore local du projet (L19) : `endpoint: {kind: 'local'}` à la place de `endpoint_id` ou d'un endpoint temporaire. */
+export interface LocalEndpoint { kind: 'local'; timeout_s?: number }
+export type InlineOrLocal = InlineEndpoint | LocalEndpoint
+export type Semantics = 'rdfs' | 'owlrl' | 'both'
+export interface StoreGraph { graph: string; kind: 'ontology' | 'individuals' | 'data' | 'inferred'; name: string; triples: number; format?: string; source?: string }
+export interface StoreStats {
+  exists: boolean; triples: number; graphs: StoreGraph[]; ontology_stale: boolean; size_kb?: number; engine: string
+  inference: { semantics: Semantics; triples: number; source_triples: number; stale: boolean; notes?: string[] } | null
+  demo: { sample: string; file: string } | null
+  limits: { max_triples: number; max_upload_mb: number; max_inference_triples: number; query_timeout_s: number }
+}
+export interface ShaclCheck { conforms: boolean; validated_triples: number; warnings?: string[]; results: { focus: string; path?: string | null; severity: string; message?: string | null }[] }
 export interface OptionValue { value: string; label: string; is_iri: boolean; lang?: string | null; source?: string }
 export interface OptionsResult { kind: string; known_count: number; enumerated: boolean; values: OptionValue[]; truncated: boolean }
 
@@ -51,12 +63,23 @@ async function call<T>(method: string, path: string, body?: unknown): Promise<T>
 const q = (o: Record<string, string | undefined>) => '?' + Object.entries(o).filter(([, v]) => v !== undefined && v !== '').map(([k, v]) => `${k}=${encodeURIComponent(v!)}`).join('&')
 const P = (id: string) => `/projects/${encodeURIComponent(id)}`
 
+async function formCall<T>(path: string, fd: FormData): Promise<T> {
+  let r: Response
+  try { r = await fetch('/api' + path, { method: 'POST', body: fd }) } catch { throw new ApiError(0, 'Serveur injoignable.') }
+  if (!r.ok) {
+    let d = tr('ui.http', { s: r.status })
+    try { const j = await r.json(); if (typeof j.detail === 'string') d = j.detail } catch { /* corps non JSON */ }
+    throw new ApiError(r.status, d)
+  }
+  return r.json() as Promise<T>
+}
+
 export const qapi = {
   roots: (id: string, lang?: string) => call<{ classes: RootClass[] }>('GET', P(id) + '/query/suggest' + q({ lang })),
   suggest: (id: string, cls: string, lang?: string) => call<ClassSuggest>('GET', P(id) + '/query/suggest' + q({ class: cls, lang })),
   build: (id: string, guided: Guided, target?: string) => call<BuildResult>('POST', P(id) + '/query/build', { guided, target }),
-  run: (id: string, b: { guided?: Guided; sparql?: string; endpoint_id?: string; endpoint?: InlineEndpoint; limit?: number }) => call<RunResult>('POST', P(id) + '/query/run', b),
-  values: (id: string, cls: string, prop: string | null, text: string, endpoint_id?: string, endpoint?: InlineEndpoint | null) => endpoint
+  run: (id: string, b: { guided?: Guided; sparql?: string; endpoint_id?: string; endpoint?: InlineOrLocal; limit?: number }) => call<RunResult>('POST', P(id) + '/query/run', b),
+  values: (id: string, cls: string, prop: string | null, text: string, endpoint_id?: string, endpoint?: InlineOrLocal | null) => endpoint
     ? call<{ values: ValueSuggestion[]; truncated: boolean }>('POST', P(id) + '/query/values', { class: cls, property: prop || undefined, q: text, endpoint })
     : call<{ values: ValueSuggestion[]; truncated: boolean }>('GET', P(id) + '/query/values' + q({ class: cls, property: prop ?? undefined, q: text, endpoint_id })),
   options: (id: string, cls: string, prop: string | null, text: string, lang?: string) => call<OptionsResult>('GET', P(id) + '/query/options' + q({ class: cls, property: prop ?? undefined, q: text, lang })),
@@ -68,6 +91,16 @@ export const qapi = {
   update: (id: string, qid: string, b: { name: string; description?: string; guided?: Guided | null; sparql?: string | null }) => call<SavedQuery>('PUT', P(id) + `/queries/saved/${qid}`, b),
   remove: (id: string, qid: string) => call<{ deleted: boolean }>('DELETE', P(id) + `/queries/saved/${qid}`),
   competency: (id: string, target?: string) => call<Competency[]>('GET', P(id) + '/queries/competency/guided' + q({ target })),
+  storeStats: (id: string) => call<StoreStats>('GET', P(id) + '/store/stats'),
+  storeLoad: (id: string, o: { file?: File; sample?: string; inference?: Semantics | 'none' }) => {
+    const fd = new FormData()
+    if (o.file) fd.append('file', o.file)
+    if (o.sample) fd.append('sample', o.sample)
+    if (o.inference) fd.append('inference', o.inference)
+    return formCall<StoreStats>(P(id) + '/store/load', fd)
+  },
+  storeClear: (id: string) => call<StoreStats>('DELETE', P(id) + '/store'),
+  storeValidate: (id: string, inference?: string) => call<ShaclCheck>('POST', P(id) + '/store/validate', { inference: inference || 'none' }),
   endpoints: () => call<{ endpoints: Endpoint[]; active_endpoint_id: string | null }>('GET', '/settings/endpoints'),
   setActive: (eid: string | null) => call<{ active_endpoint_id: string | null }>('PUT', '/settings/endpoints/active', { id: eid }),
 }

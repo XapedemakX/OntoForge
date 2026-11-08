@@ -87,3 +87,15 @@ Le lead a figé `backend/ontoforge/core/` (onto_model, shapes_model, pg_model, p
 - D-L14-01 (lead, 4/11) : SHACL piège via projet = 8 violations (oracle inchangé). Cause de la 9e (`ro_2026_0001`, QualifiedMinCount sur `includesOperation`) : l'API passait l'`OntoModel` entier comme `ont_graph` pySHACL, donc **les individus de l'ontologie** (`trap.ttl`, dont `ro_2026_0001` avec `op_oil_change` typé `PreventiveOperation`, sans inférence donc pas `MaintenanceOperation`) étaient fusionnés aux données et validés. Ce n'est pas une perte d'aller-retour : export/import ShapesModel vérifié identique (8). Correction : `shacl.validate` ne fournit que la TBox (individus retirés) ; test `test_trap_with_project_ontology_still_eight`. Docs inchangées sur le nombre (8), note ajoutée dans limites.md et plan de recette.
 - D-L14-02 (lead, 4/11) : `POST /decisions/{target}/accept-recommended` n'accepte plus les constats `lost` par défaut (principe : ce qui se perd est arbitré par l'humain) ; `?include_lost=true` pour le mode « tout ». Le front envoie `include_lost=true` seulement si « seulement les constats à arbitrer » est décoché. Tests : `test_accept_recommended.py`.
 - D-L14-03 (lead, 4/11) : cosmétiques — classe CSV nommée d'après le fichier (PascalCase singulier) pour les pièces jointes du chat ; entrée Concevoir > Shapes = écran SHACL (onglet shapes), Vérifier > SHACL ouvre l'onglet validation ; écrans et CodeMirror chargés en `React.lazy` (JS initial 621 → 243 ko ; `dist` total reste 2,7 Mo : polices + Krakie 780 ko + CodeMirror chargé à la demande).
+
+## D-L21-01 (7/11, Jerem) : pas de veille mensuelle planifiée pour l'instant
+La tâche planifiée proposée dans docs/veille/processus-mise-a-jour.md n'est pas créée. La veille se fait à la demande.
+
+## D-L21-02 (7/11, Jerem) : pas de montée de version, on reste sur une base stable
+rdflib 7.1.1, pyshacl 0.29.1, owlrl, React 18 et Vite 5 restent aux versions actuelles. Dependabot peut signaler les mises à jour, mais aucune n'est fusionnée sans décision de Jerem (mises à jour de sécurité comprises : elles sont proposées, puis arbitrées).
+
+## D-L21-03 (7/11, Jerem) : validation Neo4j et Curiosity manuelle
+Les fichiers générés (Cypher Neo4j, C# Curiosity) sont validés par Jerem, par import manuel dans Neo4j et dans Curiosity. Pas de testcontainers Neo4j ni de compilation Curiosity automatisée en CI pour l'instant. La CI se limite aux tests backend, au build front et aux recettes.
+
+## D-L19-01 (8/11, query) : graphe par défaut du triplestore local = union dédupliquée matérialisée
+Oxigraph 0.5.13 sert `use_default_graph_as_union` et plusieurs `FROM` en multi-ensemble (COUNT = 2 pour un triplet dans deux graphes), écart à SPARQL 1.1 §13. Le graphe par défaut du magasin est désormais reconstruit à chaque écriture (union dédupliquée des graphes nommés), l'option n'est plus utilisée ; plusieurs `FROM` sont fusionnés en ensemble dans un magasin mémoire temporaire du processus fils. `FROM` / `FROM NAMED` remplacent le jeu de données. Coût mesuré dans `journal/L19/fix-it1.md`. CONTRACTS §6.1 et guide §11 mis à jour.

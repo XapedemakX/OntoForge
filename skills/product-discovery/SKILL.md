@@ -1,6 +1,6 @@
 ---
 name: product-discovery
-description: Méthode de découverte produit pour des outils d'ingénierie (modélisation de données, ontologies, générateurs de code) : partir des irritants d'un ingénieur en ESN, faire une veille ciblée, recueillir les frustrations des autres agents, produire un carnet d'idées priorisé (valeur, effort, risque, lot) et un benchmark. À utiliser quand on doit décider quoi construire ensuite.
+description: Méthode de découverte produit pour des outils d'ingénierie (modélisation de données, ontologies, générateurs de code). Partir des irritants d'un ingénieur en ESN, faire une veille ciblée, recueillir les frustrations des autres agents, produire un carnet d'idées priorisé (valeur, effort, risque, lot) et un benchmark. À utiliser quand on doit décider quoi construire ensuite.
 ---
 # Découverte produit pour outils d'ingénierie
 

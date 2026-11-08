@@ -2,14 +2,14 @@
 
 Préfixe `/api`, JSON, erreurs `{"detail": "…"}` (messages en français). Spécification OpenAPI complète : `GET /openapi.json` ; documentation interactive : `/docs` (FastAPI, port du backend 8000 ; derrière nginx, seul `/api` est proxifié). Contrat normatif : `docs/CONTRACTS.md`.
 
-Les exemples ci-dessous sont des **réponses réelles** (backend lancé avec `ONTOFORGE_LLM_PROVIDER=mock`, exemple `automaint`, données dans un dossier temporaire) ; les champs volumineux sont abrégés (`…`, `{…}` = objet abrégé, `[…]` = liste abrégée). Dans les commandes, `$P` est l'identifiant du projet et `$B` l'URL de base (`http://localhost:8000` en développement ; `http://localhost:8088` derrière nginx).
+Les exemples ci-dessous sont des réponses réelles (backend lancé avec `ONTOFORGE_LLM_PROVIDER=mock`, exemple `automaint`, données dans un dossier temporaire). Les champs volumineux sont abrégés (`…`, `{…}` = objet abrégé, `[…]` = liste abrégée). Dans les commandes, `$P` est l'identifiant du projet et `$B` l'URL de base (`http://localhost:8000` en développement ; `http://localhost:8088` derrière nginx).
 
 ## Conventions
 
-- **Cible** : `curiosity` ou `neo4j` (paramètre `target`, ou segment de chemin). Sur `analyze`, `queries/translate` et `queries/competency`, `target` est facultatif : défaut = cible du projet (`Project.target`). Toute autre valeur → `422 Cible inconnue « x » : attendu curiosity ou neo4j`.
-- **Erreurs** : `404` projet / exemple / constat introuvable, `422` entrée invalide (corps, fichier vide ou illisible, format inconnu), `413` fichier trop volumineux (assistant), `501` module absent (`module … pas encore disponible`), `502` / `503` assistant (réponse LLM invalide / non configuré). Les erreurs de validation pydantic donnent `422` avec `detail` (résumé lisible) et `errors` (liste détaillée).
-- **Identifiants de constat** : `<règle>:<IRI sujet>[:<suffixe>]` ; une décision groupée s'écrit `"<règle>:*"`.
-- **IRIs** absolues dans tous les modèles.
+- Cible : `curiosity` ou `neo4j` (paramètre `target`, ou segment de chemin). Sur `analyze`, `queries/translate` et `queries/competency`, `target` est facultatif : défaut = cible du projet (`Project.target`). Toute autre valeur → `422 Cible inconnue « x » : attendu curiosity ou neo4j`.
+- Erreurs : `404` projet / exemple / constat introuvable, `422` entrée invalide (corps, fichier vide ou illisible, format inconnu), `413` fichier trop volumineux (assistant), `501` module absent (`module … pas encore disponible`), `502` / `503` assistant (réponse LLM invalide / non configuré). Les erreurs de validation pydantic donnent `422` avec `detail` (résumé lisible) et `errors` (liste détaillée).
+- Identifiants de constat : `<règle>:<IRI sujet>[:<suffixe>]` ; une décision groupée s'écrit `"<règle>:*"`.
+- IRIs absolues dans tous les modèles.
 
 ## Récapitulatif des routes
 
@@ -569,7 +569,7 @@ Génère des shapes depuis l'ontologie. `merge: true` conserve les shapes exista
 
 ### `POST /api/projects/{pid}/shacl/validate`
 
-Valide un fichier RDF (multipart `file`) contre les shapes du projet, **sans inférence** (D-034). Fichier vide → `422`.
+Valide un fichier RDF (multipart `file`) contre les shapes du projet, sans inférence (D-034). Fichier vide → `422`.
 
 **Requête**
 
@@ -612,7 +612,7 @@ curl -X POST $B/api/projects/$P/shacl/validate -F file=@samples/automaint/automa
 
 ### `POST /api/projects/{pid}/analyze?target=curiosity`
 
-Lance le moteur sur l'ontologie et les shapes du projet ; **les décisions enregistrées pour la cible sont appliquées**. Réponse : `PGModel` (voir [`architecture.md`](architecture.md) §5). Sur l'exemple automaint : 18 types de nœuds, 24 relations, 83 validations, 159 constats ({'auto': 117, 'review': 41, 'lost': 1}).
+Lance le moteur sur l'ontologie et les shapes du projet ; les décisions enregistrées pour la cible sont appliquées. Réponse : `PGModel` (voir [`architecture.md`](architecture.md) §5). Sur l'exemple automaint : 18 types de nœuds, 24 relations, 83 validations, 159 constats ({'auto': 117, 'review': 41, 'lost': 1}).
 
 **Réponse 200**
 
@@ -706,7 +706,7 @@ Fusionne des décisions `{constat: option}` dans le projet et renvoie le `PGMode
 
 ### `POST /api/projects/{pid}/decisions/{target}/accept-recommended`
 
-Enregistre l'option recommandée des constats **à arbitrer** (`review`) comme décision. Les constats **perdus** (`lost`) restent à arbitrer par l'humain, sauf si `?include_lost=true` (mode « tout »). Réponse : `PGModel` ; sur automaint, `decisions` ne contient plus que les constats `review` (+ les `lost` avec `include_lost=true`).
+Enregistre l'option recommandée des constats à arbitrer (`review`) comme décision. Les constats perdus (`lost`) restent à arbitrer par l'humain, sauf si `?include_lost=true` (mode « tout »). Réponse : `PGModel` ; sur automaint, `decisions` ne contient plus que les constats `review` (+ les `lost` avec `include_lost=true`).
 
 **Réponse 200**
 
@@ -727,7 +727,7 @@ Enregistre l'option recommandée des constats **à arbitrer** (`review`) comme d
 
 ### `GET /api/projects/{pid}/generate/{target}`
 
-Fichiers de la cible + `schema.graphql` + `README-graphql.md` + `rapport-transposition.md`, **en tenant compte des décisions**. Réponse : `{files: {nom: contenu}}` (tailles en octets sur automaint : `Connector.cs` 65516, `Edges.cs` 7479, `README-curiosity.md` 22903, `RegisterSchema.cs` 1973, `Schema.cs` 18624, `schema.graphql` 26451, `README-graphql.md` 3106, `rapport-transposition.md` 33721).
+Fichiers de la cible + `schema.graphql` + `README-graphql.md` + `rapport-transposition.md`, en tenant compte des décisions. Réponse : `{files: {nom: contenu}}` (tailles en octets sur automaint : `Connector.cs` 65516, `Edges.cs` 7479, `README-curiosity.md` 22903, `RegisterSchema.cs` 1973, `Schema.cs` 18624, `schema.graphql` 26451, `README-graphql.md` 3106, `rapport-transposition.md` 33721).
 
 **Réponse 200**
 
@@ -962,7 +962,7 @@ Les trois routes `POST /api/assistant/*` acceptent aussi un champ facultatif `pr
 
 ## Itération 2 : paramètres, assistant, éditeur, requêtage
 
-Contrats normatifs : `docs/CONTRACTS.md` §4 (paramètres, assistant), §5 (éditeur), §6 (requêtage), §7 (générations) ; ces routes sont stabilisées à la clôture de L8, L9, L10, L15. Code : `api/settings.py`, `api/assistant.py`, `api/editing.py`, `api/queries.py`. Les exemples ci-dessous sont **construits d'après les contrats et les modèles pydantic** (ils n'ont pas été rejoués contre un backend lancé : `httpx` est absent de l'environnement du documentaliste) ; les champs volumineux sont abrégés.
+Contrats normatifs : `docs/CONTRACTS.md` §4 (paramètres, assistant), §5 (éditeur), §6 (requêtage), §7 (générations). Ces routes sont stabilisées à la clôture de L8, L9, L10, L15. Code : `api/settings.py`, `api/assistant.py`, `api/editing.py`, `api/queries.py`. Les exemples ci-dessous sont construits d'après les contrats et les modèles pydantic (ils n'ont pas été rejoués contre un backend lancé : `httpx` est absent de l'environnement du documentaliste). Les champs volumineux sont abrégés.
 
 ### Paramètres — `/api/settings`
 
@@ -1014,7 +1014,7 @@ curl -s -X POST $B/api/projects/$P/ops -H 'content-type: application/json' -d '{
 # → {"ok":true,"project":{…},"applied":1,"errors":[],"warnings":[],"can_undo":true,"can_redo":false}
 ```
 
-`POST /ops` est **tout ou rien** : en cas d'erreur, HTTP **200** avec `ok=false`, `errors: [{index, message}]` et projet inchangé (500 opérations max par appel). Liste des opérations et règles de validation (IRI absolue, pas de cycle, propriétés simples, datatypes de la carte OWL 2…) : CONTRACTS §5. `POST /ops/undo` et `/ops/redo` répondent comme `/ops` plus `label` (409 si la pile est vide) ; `GET /ops/history` donne `{undo, redo, limit: 200, can_undo, can_redo}`.
+`POST /ops` est tout ou rien : en cas d'erreur, HTTP **200** avec `ok=false`, `errors: [{index, message}]` et projet inchangé (500 opérations max par appel). Liste des opérations et règles de validation (IRI absolue, pas de cycle, propriétés simples, datatypes de la carte OWL 2…) : CONTRACTS §5. `POST /ops/undo` et `/ops/redo` répondent comme `/ops` plus `label` (409 si la pile est vide) ; `GET /ops/history` donne `{undo, redo, limit: 200, can_undo, can_redo}`.
 
 `GET /api/projects/{pid}/graph?perimeter=&lang=fr&include=datatypes,individuals` → `{nodes, edges, skipped}` (nœuds `{id, label, kind, icon, position, abstract, deprecated, collapsed}` ; arêtes `{id, source, target, kind, label, iri}`, `id = kind|iri|source|target`, tri stable). `GET /api/icons?q=` → `{icons:[{id:"fa-car", style, label:{fr,en}, keywords}], total}` (recherche insensible aux accents).
 
@@ -1055,4 +1055,4 @@ Sans raisonnement côté endpoint, `a C` ne ramène pas les sous-classes : utili
 
 ### Sémantique de `chosen` et des décisions
 
-`Finding.chosen` vaut l'identifiant d'option **décidée par l'humain** (`None` = non arbitré) ; `Finding.recommended` est l'option appliquée par défaut. `PGModel.decisions` conserve aussi les décisions dont le constat a disparu, pour les rejouer s'il réapparaît (`mapping/decisions.py`, docstring).
+`Finding.chosen` vaut l'identifiant d'option décidée par l'humain (`None` = non arbitré) ; `Finding.recommended` est l'option appliquée par défaut. `PGModel.decisions` conserve aussi les décisions dont le constat a disparu, pour les rejouer s'il réapparaît (`mapping/decisions.py`, docstring).

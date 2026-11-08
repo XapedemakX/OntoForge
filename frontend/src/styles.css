@@ -66,7 +66,8 @@ label.f > :not(span) { color: var(--ink); }
 .notice.soon { background: var(--info-soft); border-color: var(--info); color: var(--info); }
 .notice.warn { background: var(--review-soft); border-color: var(--review); color: var(--review); }
 .muted { color: var(--muted); }
-.toasts { position: fixed; right: 14px; bottom: 14px; display: flex; flex-direction: column; gap: 6px; z-index: 50; }
+.toasts { position: fixed; right: 14px; top: 60px; pointer-events: none; display: flex; flex-direction: column; gap: 6px; z-index: 50; }
+@media (min-width: 900px) { .toasts { top: 10px; right: auto; left: 380px; } }
 .toast { background: var(--ink); color: var(--bg); padding: 7px 12px; border-radius: var(--r-sm); max-width: 420px; }
 
 /* tables */

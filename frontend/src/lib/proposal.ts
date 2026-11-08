@@ -20,7 +20,13 @@ export interface ProposalItem {
   target?: string
   /** Éléments dont celui-ci dépend (classes ajoutées dans la même proposition) : acceptés avec lui. */
   needs?: string[]
+  /** Document d'origine (amorçage L25) : extrait cité ; l'élément reste « à confirmer » tant qu'il n'est pas accepté. */
+  provenance?: { document: string; page: number; excerpt: string }
+  /** Avertissements du lint W3C pour cet élément (autres que les libellés manquants). */
+  lint?: { code: string; message: string; level: string }[]
 }
+/** Résumé du document d'origine, pour l'en-tête de la proposition. */
+export interface ProposalDoc { id: string; name: string; lint: { code: string; message: string; level: string }[]; approximate: boolean; skipped: number; lang?: string }
 export interface ProposalState {
   projectId: string
   onto: OntoModel
@@ -30,8 +36,9 @@ export interface ProposalState {
   rejected: number
   busy: boolean
   error: string | null
+  doc?: ProposalDoc
 }
-type SetInput = { projectId: string; onto: OntoModel; source: string; items: ProposalItem[]; onProject?: (p: Project) => void }
+type SetInput = { projectId: string; onto: OntoModel; source: string; items: ProposalItem[]; doc?: ProposalDoc; onProject?: (p: Project) => void }
 
 const KEY = 'ontoforge.proposal'
 let state: ProposalState | null = null
@@ -46,7 +53,7 @@ try { const raw = localStorage.getItem(KEY); if (raw) state = { ...JSON.parse(ra
 export function bindProjectSetter(fn: ((p: Project) => void) | null) { onProject = fn }
 export function setProposal(inp: SetInput) {
   if (inp.onProject) onProject = inp.onProject
-  state = { projectId: inp.projectId, onto: inp.onto, source: inp.source, items: inp.items, accepted: 0, rejected: 0, busy: false, error: null }
+  state = { projectId: inp.projectId, onto: inp.onto, source: inp.source, items: inp.items, doc: inp.doc, accepted: 0, rejected: 0, busy: false, error: null }
   emit()
 }
 export function clear() { state = null; emit() }
@@ -57,10 +64,11 @@ export function useProposal(): ProposalState | null {
 
 async function apply(ids: string[]): Promise<boolean> {
   const s = state; if (!s || s.busy) return false
-  const chosen = new Set<string>()
-  const add = (id: string) => { const it = s.items.find(i => i.id === id); if (!it || chosen.has(id)) return; (it.needs ?? []).forEach(add); chosen.add(id) }
+  const chosen = new Set<string>(); const seen = new Set<string>(); const order: ProposalItem[] = []
+  // les éléments dont dépend un autre (classe parente, domaine, portée) passent d'abord : sinon « classe parente inconnue » à l'application
+  const add = (id: string) => { const it = s.items.find(i => i.id === id); if (!it || seen.has(id)) return; seen.add(id); (it.needs ?? []).forEach(add); chosen.add(id); order.push(it) }
   ids.forEach(add)
-  const list = s.items.filter(i => chosen.has(i.id))
+  const list = order
   const ops = list.flatMap(i => i.ops)
   if (!list.length) return false
   state = { ...s, busy: true, error: null }; emit()
@@ -82,6 +90,8 @@ async function apply(ids: string[]): Promise<boolean> {
   }
 }
 export const acceptItem = (id: string) => apply([id])
+/** Accepte un sous-ensemble (un groupe de la liste) ; les éléments dont ils dépendent suivent. */
+export const acceptIds = (ids: string[]) => apply(ids)
 export const acceptAll = () => apply((state?.items ?? []).map(i => i.id))
 export function rejectItem(id: string) {
   if (!state) return

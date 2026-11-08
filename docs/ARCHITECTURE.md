@@ -1,6 +1,6 @@
-# OntoForge — Structuration du projet
+# OntoForge : structuration du projet
 
-Outil de conception d'ontologies et de transposition **OWL 2 / RDFS (+ SHACL) → Labeled Property Graph (LPG)** prêt à l'emploi pour **Neo4j** et **Curiosity**.
+Outil de conception d'ontologies et de transposition OWL 2 / RDFS (+ SHACL) vers un Labeled Property Graph (LPG) prêt à l'emploi pour Neo4j et Curiosity.
 
 ## 1. Le problème de fond
 
@@ -9,13 +9,13 @@ Une ontologie OWL et un modèle property graph ne disent pas la même chose :
 | | OWL 2 / RDFS | Property graph (LPG) |
 |---|---|---|
 | Hypothèse | Monde ouvert (OWA), pas d'UNA | Monde clos, schéma = contrat d'ingestion |
-| Rôle des axiomes | **Inférer** (raisonneur) | **Contraindre / valider** (ou rien) |
+| Rôle des axiomes | Inférer (raisonneur) | Contraindre / valider (ou rien) |
 | Identité | IRI globale | Clé métier locale (+ id interne) |
 | Typage | Multiple, dynamique, inféré | Labels figés (Neo4j multi-label, Curiosity mono-type) |
 | Relations | Propriétés binaires de 1ère classe, hiérarchisables | Types d'arêtes plats, porteuses de propriétés (Neo4j) ou non (Curiosity) |
 | Littéraux | xsd:*, langString, datatypes custom | Types natifs limités |
 
-Une partie de la transposition est donc **mécanique**, une autre fait **perdre de la sémantique**, et une dernière n'a **aucun équivalent** (elle devient soit une règle de validation, soit une requête, soit de la matérialisation). L'outil classe chaque élément dans l'une de ces trois catégories et fait arbitrer les deux dernières par un humain.
+La transposition se divise donc en trois parts. Une partie est mécanique. Une autre fait perdre de la sémantique. La dernière n'a aucun équivalent et devient une règle de validation, une requête ou de la matérialisation. L'outil classe chaque élément dans l'une de ces catégories et fait arbitrer les deux dernières par un humain.
 
 ## 2. Les quatre modules
 
@@ -33,27 +33,27 @@ Une partie de la transposition est donc **mécanique**, une autre fait **perdre 
 - Arbre des classes, propriétés objet, propriétés de données, individus.
 - Éditeur de classe : sous-classes, équivalences, disjonctions, restrictions (some / only / min / max / exactly / value), clés (`owl:hasKey`).
 - Éditeur de propriété : domaine, portée, inverse, caractéristiques (fonctionnelle, inverse-fonctionnelle, transitive, symétrique, asymétrique, réflexive, irréflexive), sous-propriétés, chaînes.
-- **Saisie rapide (DSL)** : une ligne = un axiome, pour dégrossir une ontologie en quelques minutes.
+- Saisie rapide (DSL) : une ligne = un axiome, pour dégrossir une ontologie en quelques minutes.
 - Import : Turtle, N-Triples, RDF/XML (OWL exporté par Protégé), JSON-LD simple. Export Turtle.
 - Projet sauvegardé en JSON (ontologie + décisions d'arbitrage).
 
-### 2.2 Analyser — moteur de règles
-Entrée : méta-modèle ontologique (§3.1) + **profil cible** (Neo4j ou Curiosity).
-Sortie : liste de **constats** (`Finding`), chacun :
-- `severity` : `auto` (transposition triviale), `review` (perte possible, à arbitrer), `lost` (pas d'équivalent natif, perte certaine si rien n'est fait) ;
-- `options` : alternatives de transposition, chacune avec son impact ;
-- `recommended` : l'option conseillée **pour la cible choisie** ;
-- `rule` : identifiant de la règle (traçabilité).
+### 2.2 Analyser : moteur de règles
+Entrée : méta-modèle ontologique (§3.1) + profil cible (Neo4j ou Curiosity).
+Sortie : liste de constats (`Finding`), chacun avec :
+- `severity` : `auto` (transposition triviale), `review` (perte possible, à arbitrer), `lost` (pas d'équivalent natif, perte certaine si rien n'est fait)
+- `options` : alternatives de transposition, chacune avec son impact
+- `recommended` : l'option conseillée pour la cible choisie
+- `rule` : identifiant de la règle (traçabilité)
 
 ### 2.3 Arbitrer
-- Vue par sévérité : ce qui passe tout seul est replié ; ce qui est à risque est mis en avant.
-- Chaque arbitrage est stocké (`decisions[findingId] = optionId`) et rejoué à la ré-analyse : modifier l'ontologie ne fait pas perdre les choix déjà faits.
+- Vue par sévérité : ce qui passe tout seul est replié, ce qui est à risque est mis en avant.
+- Chaque arbitrage est stocké (`decisions[findingId] = optionId`) et rejoué à la ré-analyse. Modifier l'ontologie ne fait pas perdre les choix déjà faits.
 - « Accepter toutes les recommandations » pour aller vite, puis affiner.
 
 ### 2.4 Générer
-- **Neo4j** : DDL Cypher (contraintes d'unicité / de clé / d'existence / de type, index), templates d'ingestion `MERGE`, schéma JSON, diagramme.
-- **Curiosity** : classes C# `[Node]` / `[Key]` / `[Property]`, classe `Edges` (paires aller/retour), code d'enregistrement du schéma, squelette de connecteur.
-- **Rapport de transposition** (Markdown) : ce qui a été perdu, pourquoi, et quelle compensation a été retenue (validation applicative, requête, matérialisation).
+- Neo4j : DDL Cypher (contraintes d'unicité / de clé / d'existence / de type, index), templates d'ingestion `MERGE`, schéma JSON, diagramme.
+- Curiosity : classes C# `[Node]` / `[Key]` / `[Property]`, classe `Edges` (paires aller/retour), code d'enregistrement du schéma, squelette de connecteur.
+- Rapport de transposition (Markdown) : ce qui a été perdu, pourquoi, et la compensation retenue (validation applicative, requête, matérialisation).
 
 ## 3. Contrats de données
 
@@ -146,9 +146,9 @@ Sortie : liste de **constats** (`Finding`), chacun :
 
 ## 5. Recommandations par profil cible
 
-**Neo4j** : multi-labels → l'héritage passe bien ; relations porteuses de propriétés → la réification se dé-réifie ; contraintes Cypher limitées aux nœuds/propriétés → les cardinalités deviennent de la validation.
+Neo4j : les multi-labels font passer l'héritage, les relations porteuses de propriétés permettent de dé-réifier, et les contraintes Cypher ne portent que sur les nœuds et propriétés, donc les cardinalités deviennent de la validation.
 
-**Curiosity** : un nœud = un type, une clé `string` ; edges typés **sans propriétés**, déclarés par paires aller/retour → l'héritage s'aplatit, la réification reste un nœud, les inverses sont gratuits.
+Curiosity : un nœud = un type, une clé `string`. Les edges sont typés, sans propriétés, déclarés par paires aller/retour. L'héritage s'aplatit, la réification reste un nœud et les inverses sont gratuits.
 
 ## 6. Arborescence du prototype
 
@@ -176,6 +176,6 @@ OntoForge/
 
 ## 7. Feuille de route
 
-- **v0.1 (ce prototype)** : éditeur, DSL, import TTL/RDF-XML, moteur de règles, arbitrage, génération Neo4j + Curiosity + rapport, diagramme.
-- **v0.2** : import SHACL (les shapes sont plus proches d'un schéma LPG qu'OWL : priorité aux shapes quand elles existent), diff entre deux versions d'ontologie, export SHACL depuis les décisions de validation.
-- **v0.3** : assistant de conception (génération d'ontologie depuis un texte / un CSV / un schéma SQL), alignement avec des ontologies de référence (schema.org, gist, BFO…), cibles supplémentaires (Neptune openCypher, Memgraph, GQL / PG-Schema).
+- v0.1 (ce prototype) : éditeur, DSL, import TTL/RDF-XML, moteur de règles, arbitrage, génération Neo4j + Curiosity + rapport, diagramme.
+- v0.2 : import SHACL (les shapes sont plus proches d'un schéma LPG qu'OWL : priorité aux shapes quand elles existent), diff entre deux versions d'ontologie, export SHACL depuis les décisions de validation.
+- v0.3 : assistant de conception (génération d'ontologie depuis un texte / un CSV / un schéma SQL), alignement avec des ontologies de référence (schema.org, gist, BFO…), cibles supplémentaires (Neptune openCypher, Memgraph, GQL / PG-Schema).

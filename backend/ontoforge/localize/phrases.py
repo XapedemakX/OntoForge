@@ -690,3 +690,52 @@ PHRASES.update({
     "Entrée invalide — ": "Invalid input — ",
     "entrée : ": "input: ",
 })
+
+# ---- L19 : triplestore local embarqué (messages de localstore/ et api/local_store.py)
+PHRASES.update({
+    "Requête refusée : SERVICE (requête fédérée) n'est pas autorisé sur le triplestore local, qui n'a aucun accès réseau.":
+        "Query refused: SERVICE (federated query) is not allowed on the local triplestore, which has no network access.",
+    "Délai dépassé (": "Time limit exceeded (",
+    " s) : la requête a été interrompue sur le triplestore local.": " s): the query was stopped on the local triplestore.",
+    "La requête a été arrêtée sur le triplestore local (": "The query was stopped on the local triplestore (",
+    "mémoire ou temps CPU plafonnés": "memory or CPU time capped",
+    "erreur interne": "internal error",
+    "Simplifiez-la ou ajoutez un LIMIT.": "Simplify it or add a LIMIT.",
+    "Le triplestore local est verrouillé ou illisible (": "The local triplestore is locked or unreadable (",
+    "Le triplestore local est illisible (": "The local triplestore is unreadable (",
+    "Fichier trop volumineux (plafond ": "File too large (limit ",
+    " Mo).": " MB).",
+    " est vide.": " is empty.",
+    "Plafond de ": "Limit of ",
+    " triplets dépassé (": " triples exceeded (",
+    " après chargement).": " after loading).",
+    "Inférence limitée à ": "Inference limited to ",
+    " triplets sources (": " source triples (",
+    " ici) : owlrl est un moteur Python qui matérialise en mémoire. Réduisez les données ou utilisez un endpoint avec raisonnement.":
+        " here): owlrl is a Python engine that materialises in memory. Reduce the data or use an endpoint with reasoning.",
+    "Inférence ": "Inference ",
+    " interrompue après ": " stopped after ",
+    " s (graphe trop gros ou trop riche pour owlrl).": " s (graph too large or too rich for owlrl).",
+    "Échec de l'inférence : ": "Inference failed: ",
+    "Inférence inconnue « ": "Unknown inference “",
+    "(attendu : none, rdfs, owlrl, both)": "(expected: none, rdfs, owlrl, both)",
+    "owl:hasKey ignoré (": "owl:hasKey ignored (",
+    " axiomes) : la règle prp-key d'OWL 2 RL (qui déduirait owl:sameAs entre individus de mêmes valeurs de clé) est trop lente dans owlrl ; "
+    "cherchez les doublons de clé par une requête SPARQL (GROUP BY sur les propriétés clés, HAVING (COUNT(*) > 1)).":
+        " axioms): the OWL 2 RL prp-key rule (which would infer owl:sameAs between individuals with the same key values) is too slow "
+        "in owlrl; look for duplicate keys with a SPARQL query (GROUP BY on the key properties, HAVING (COUNT(*) > 1)).",
+    " triplets owl:sameAs déduits (pas d'hypothèse de noms uniques en OWL : propriété fonctionnelle ou inverse fonctionnelle à plusieurs "
+    "valeurs) : à vérifier, c'est souvent une erreur de données.":
+        " owl:sameAs triples inferred (OWL makes no unique name assumption: functional or inverse functional property with several "
+        "values): check them, it is often a data error.",
+    "Incohérence OWL RL détectée par owlrl : ": "OWL RL inconsistency detected by owlrl: ",
+    "le contexte JSON-LD distant est refusé (aucun accès réseau depuis le triplestore local) ; intégrez le contexte dans le fichier.":
+        "the remote JSON-LD context is refused (no network access from the local triplestore); embed the context in the file.",
+    " : fichier RDF illisible — ": ": unreadable RDF file — ",
+    "Validation limitée à ": "Validation limited to ",
+    "Aucun jeu de données de démonstration pour ce projet (il ne vient pas d'un exemple livré avec un jeu de démo).":
+        "No demo dataset for this project (it does not come from a sample shipped with a demo dataset).",
+    "n'a pas de fichier de données.": "has no data file.",
+    "Le triplestore local ne contient encore aucune donnée à valider (chargez un fichier ou les données de démonstration).":
+        "The local triplestore holds no data to validate yet (load a file or the demo data).",
+})

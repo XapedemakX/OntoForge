@@ -11,6 +11,8 @@ import { Library } from './Library'
 import { FreeSparql } from './FreeSparql'
 import { NlBox } from './NlBox'
 import { TempEndpointForm } from './TempEndpoint'
+import { LocalStorePanel } from './LocalStorePanel'
+import { LOCAL, localMode, useLocalMode } from './localStore'
 import { tempStore, useTempEndpoint } from './tempEndpoint'
 import { qapi, type BuildResult, type Endpoint, type Guided, type RootClass, type RunResult, type SavedQuery } from './qapi'
 import { EMPTY, allNodes, fromGuided, localName, toGuided, type QState } from './model'
@@ -21,9 +23,12 @@ export function Queries({ p, target }: ScreenProps) {
   const t = useT(); const { lang } = useI18n(); const toast = useToast()
   const savedActive = useActiveEndpoint()
   const { temp, using } = useTempEndpoint()
-  const inline = using ? temp : null
-  const active = inline ? { id: 'temporaire', name: t('q.tmp.name.short'), url: inline.url } : savedActive
+  const { local } = useLocalMode()
+  const inline = local ? LOCAL : using ? temp : null
+  const active = local ? { id: 'local', name: t('q.local.opt'), url: '' } : inline && 'url' in inline ? { id: 'temporaire', name: t('q.tmp.name.short'), url: inline.url } : savedActive
+
   const [tmpOpen, setTmpOpen] = useState(false)
+  useEffect(() => { if (using) localMode.set(false) }, [using])  // un endpoint temporaire choisi remplace le triplestore local
   const [mode, setMode] = useState<'guided' | 'free'>('guided')
   const [state, setState] = useState<QState>(EMPTY)
   const [free, setFree] = useState(() => `PREFIX : <${(p.onto.meta.iri ?? 'https://example.org/onto').replace(/[#/]?$/, '#')}>\nSELECT ?s ?o WHERE {\n  ?s a :Vehicle .\n  ?s ?p ?o .\n} LIMIT 10`)
@@ -94,6 +99,8 @@ export function Queries({ p, target }: ScreenProps) {
   }
   const pickEndpoint = async (id: string) => {
     if (id === '__new') { setTmpOpen(true); return }
+    if (id === '__local') { tempStore.use(false); localMode.set(true); return }
+    localMode.set(false)
     if (id === '__temp') { tempStore.use(true); return }
     tempStore.use(false)
     try { await qapi.setActive(id || null); const e = endpoints.find(x => x.id === id); announceActiveEndpoint(e ? { id: e.id, name: e.name, url: e.url } : null) } catch (e) { toast((e as Error).message) }
@@ -111,13 +118,15 @@ export function Queries({ p, target }: ScreenProps) {
         <h1>{t('nav.requetes')}</h1>
         <span className="grow" />
         <label className="qep" data-tour="q-endpoint"><Icon name="plug" /><span className="sr">{t('head.sparql')}</span>
-          <select value={inline ? '__temp' : savedActive?.id ?? ''} onChange={e => void pickEndpoint(e.target.value)} aria-label={t('head.sparql')}>
+          <select value={local ? '__local' : inline ? '__temp' : savedActive?.id ?? ''} onChange={e => void pickEndpoint(e.target.value)} aria-label={t('head.sparql')}>
             {!active && <option value="">{t('head.sparqlNone')}</option>}
             {endpoints.map(e => <option key={e.id} value={e.id}>{e.name || e.url}</option>)}
+            <option value="__local">{t('q.local.opt')}</option>
             {temp && <option value="__temp">{t('q.tmp.opt', { u: temp.url.replace(/^https?:\/\//, '') })}</option>}
             <option value="__new">{t('q.tmp.new')}</option>
           </select></label>
       </div>
+      {local && <LocalStorePanel pid={p.id} version={p.updated_at} />}
       {tmpOpen && <TempEndpointForm pid={p.id} initial={temp} onClose={() => setTmpOpen(false)} onSaved={id => void savedAsActive(id)} />}
       <div className="desk"><NlBox pid={p.id} onResult={r => { if (r.guided) { setMode('guided'); setActiveSaved(null); setState(fromGuided(r.guided, labelOf)); setRes(null) } }}
         onTerm={w => { setMode('guided'); setSeed(w); setOpenAdd(state.root?.id ?? null); if (!state.root) setState(EMPTY) }} /></div>

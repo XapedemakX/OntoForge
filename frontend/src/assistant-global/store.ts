@@ -9,7 +9,12 @@ export interface AgentAction {
   status?: 'idle' | 'busy' | 'applied' | 'undone' | 'error' | 'dismissed'
   error?: string
 }
-export interface Msg { id: string; role: 'user' | 'assistant'; content: string; warnings?: string[]; files?: string[]; count?: number; error?: boolean; actions?: AgentAction[] }
+export interface DocMsg {
+  id: string; name: string; pages: number; provider: string; approximate: boolean; calls: number; items: number; skipped: number
+  questions: { id: string; text: string; covered: boolean; terms: string[] }[]
+  lint: { code: string; message: string; level: string }[]
+}
+export interface Msg { id: string; role: 'user' | 'assistant'; content: string; warnings?: string[]; files?: string[]; count?: number; error?: boolean; actions?: AgentAction[]; doc?: DocMsg }
 
 const storeKey = (id: string) => `ontoforge.assistant.${id}`
 const mem = new Map<string, Msg[]>()

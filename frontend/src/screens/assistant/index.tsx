@@ -4,9 +4,12 @@ import type { ScreenProps } from '../../shell/types'
 import { Button, Icon, IconButton, Krakie, Select, useToast } from '../../kit'
 import type { Pose } from '../../krakie/Krakie'
 import { useI18n } from '../../i18n'
-import { acceptAll, acceptItem, bindProjectSetter, buildItems, clear, rejectAll, rejectItem, setProposal, useProposal } from '../../lib/proposal'
+import { bindProjectSetter, clear, useProposal } from '../../lib/proposal'
 import { aapi, type AStatus, type FileKind, type UploadedFile } from './aapi'
 import { MiniGraph } from './MiniGraph'
+import { DocImport } from './DocImport'
+import { DocResult } from './DocResult'
+import { ProposalCards } from './ProposalCards'
 import './assistant.css'
 
 import { ActionCards, runChat } from '../../assistant-global'
@@ -51,6 +54,8 @@ export function AssistantScreen({ p, setP, target }: ScreenProps) {
   const [picked, setPicked] = useState<string | null>(null)
   const [shapes, setShapes] = useState<{ model: ShapesModel; n: number } | null>(null)
   const [explainOpen, setExplainOpen] = useState(false)
+  const [docOpen, setDocOpen] = useState(false)
+  const [docFile, setDocFile] = useState<File | null>(null)
   const [findings, setFindings] = useState<Finding[] | null>(null)
   const [findingId, setFindingId] = useState('')
   const endRef = useRef<HTMLDivElement>(null)
@@ -64,7 +69,12 @@ export function AssistantScreen({ p, setP, target }: ScreenProps) {
     try { const raw = sessionStorage.getItem('of-handoff-' + p.id); if (raw) { handoff = JSON.parse(raw); setTimeout(() => { try { sessionStorage.removeItem('of-handoff-' + p.id) } catch { /* ignoré */ } }, 1500) } } catch { /* stockage indisponible */ }
     setFiles(handoff ? [handoff] : [])
   }, [p.id])
-  useEffect(() => { endRef.current?.scrollIntoView({ block: 'end' }) }, [msgs, busy])
+  useEffect(() => {
+    // un résultat de document est long : on montre son début (« J'ai lu… »), pas sa fin
+    const last = msgs[msgs.length - 1]
+    const el = last?.doc && !busy ? document.getElementById('msg-' + last.id) : null
+    if (el) el.scrollIntoView({ block: 'start' }); else endRef.current?.scrollIntoView({ block: 'end' })
+  }, [msgs, busy])
   useEffect(() => {
     aapi.status().then(s => { setStatus(s); setProv(v => v || s.default_provider_id || s.providers?.find(x => x.default)?.id || s.providers?.[0]?.id || '') }).catch(() => setStErr(true))
     api.settings().then(s => { void s }).catch(() => { /* paramètres indisponibles */ })
@@ -79,6 +89,7 @@ export function AssistantScreen({ p, setP, target }: ScreenProps) {
   async function addFiles(list: FileList | File[]) {
     for (const f of Array.from(list).slice(0, 4)) {
       const ext = f.name.split('.').pop()?.toLowerCase() ?? ''
+      if (ext === 'pdf') { setDocFile(f); setDocOpen(true); continue }
       if (!EXT[ext]) { toast(t('asst.file.bad', { name: f.name })); continue }
       try { const u = await aapi.upload(f); setFiles(x => [...x.filter(y => y.name !== u.name), u]) }
       catch (e) { toast(e instanceof Error ? e.message : String(e)) }
@@ -166,14 +177,15 @@ export function AssistantScreen({ p, setP, target }: ScreenProps) {
             </div>
           )}
           {msgs.map(m => (
-            <div key={m.id} className={'as-msg ' + m.role + (m.error ? ' err' : '')}>
+            <div key={m.id} id={'msg-' + m.id} className={'as-msg ' + m.role + (m.error ? ' err' : '')}>
               {m.role === 'assistant' && <Krakie pose={m.error ? 'inquiete' : m.count ? 'contente' : 'accueil'} size={32} float={false} />}
               <div className="as-bubble">
                 {m.files?.map(f => <span key={f} className="as-chip file"><Icon name="paperclip" />{f}</span>)}
                 <p>{m.content}</p>
                 {m.warnings?.map((w, i) => <p key={i} className="as-warn"><Icon name="circle-info" />{w}</p>)}
+                {m.doc && <DocResult doc={m.doc} onReview={() => setTab('prop')} />}
                 {m.actions && m.actions.length > 0 && <ActionCards pid={p.id} msgId={m.id} actions={m.actions} setP={setP} />}
-                {m.count !== undefined && <button className="as-link" onClick={() => setTab('prop')}><Icon name="arrow-right" />{m.count ? t('asst.seeProp', { n: m.count }) : t('asst.nothingNew')}</button>}
+                {m.count !== undefined && !m.doc && <button className="as-link" onClick={() => setTab('prop')}><Icon name="arrow-right" />{m.count ? t('asst.seeProp', { n: m.count }) : t('asst.nothingNew')}</button>}
               </div>
             </div>
           ))}
@@ -189,16 +201,18 @@ export function AssistantScreen({ p, setP, target }: ScreenProps) {
           </div>}
           <div className="as-qa" role="group" aria-label={t('asst.qa')}>
             <Button size="sm" icon="file-circle-plus" disabled={busy || !csvLike} title={csvLike ? undefined : t('asst.qa.needFile')} onClick={() => send(t('asst.qa.draft.msg'))}>{t('asst.qa.draft')}</Button>
+            <Button size="sm" icon="file-import" disabled={busy} aria-expanded={docOpen} onClick={() => setDocOpen(o => !o)}>{t('doc.open')}</Button>
             <Button size="sm" icon="shield-halved" disabled={busy} onClick={genShapes}>{t('asst.qa.shapes')}</Button>
             <Button size="sm" icon="circle-question" disabled={busy} onClick={openExplain} aria-expanded={explainOpen}>{t('asst.qa.explain')}</Button>
             <Button size="sm" icon="link" disabled={busy} onClick={() => send(t('asst.qa.align.msg'))}>{t('asst.qa.align')}</Button>
           </div>
+          {docOpen && <DocImport p={p} setP={setP} provider={prov || undefined} initialFile={docFile} onBusy={setBusy} onClose={() => { setDocOpen(false); setDocFile(null) }} />}
           {files.map(f => <FilePreview key={f.name} f={f} onRemove={() => setFiles(x => x.filter(y => y !== f))} />)}
           <div className={'as-drop' + (drag ? ' on' : '')}>
             <textarea rows={2} value={text} placeholder={t('asst.placeholder')} aria-label={t('asst.placeholder')} onChange={e => setText(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void send(text) } }} />
             <div className="as-actions">
-              <input ref={fileIn} type="file" hidden multiple accept=".csv,.tsv,.sql,.txt,.md,.markdown" onChange={e => { if (e.target.files) void addFiles(e.target.files); e.target.value = '' }} />
+              <input ref={fileIn} type="file" hidden multiple accept=".csv,.tsv,.sql,.txt,.md,.markdown,.pdf" onChange={e => { if (e.target.files) void addFiles(e.target.files); e.target.value = '' }} />
               <Button size="sm" variant="ghost" icon="paperclip" onClick={() => fileIn.current?.click()}>{t('asst.attach')}</Button>
               <span className="muted as-hint">{t('asst.dropHint')}</span><span className="grow" />
               <Button variant="primary" icon="paper-plane" disabled={busy || !text.trim()} onClick={() => send(text)}>{t('asst.send')}</Button>
@@ -219,33 +233,19 @@ export function AssistantScreen({ p, setP, target }: ScreenProps) {
         {mine && (
           <div className="as-pbody">
             <p className="muted as-src"><Icon name="file-lines" /> {mine.source}</p>
-            <MiniGraph onto={mine.onto} cur={p.onto} items={mine.items} lang={lang} picked={picked} onPick={id => { setPicked(id); document.getElementById('as-' + id)?.scrollIntoView({ block: 'nearest' }) }} />
+            {mine.doc
+              ? <details className="as-graph"><summary><Icon name="diagram-project" />{t('doc.graph')}</summary><MiniGraph onto={mine.onto} cur={p.onto} items={mine.items} lang={lang} picked={picked} onPick={id => { setPicked(id); document.getElementById('as-' + id)?.scrollIntoView({ block: 'nearest' }) }} /><div className="as-legend"><span className="add"><i />{t('asst.add')}</span><span className="modify"><i />{t('asst.modify')}</span><span className="ctx"><i />{t('asst.ctx')}</span></div></details>
+              : <>
+                <MiniGraph onto={mine.onto} cur={p.onto} items={mine.items} lang={lang} picked={picked} onPick={id => { setPicked(id); document.getElementById('as-' + id)?.scrollIntoView({ block: 'nearest' }) }} />
             <div className="as-legend"><span className="add"><i />{t('asst.add')}</span><span className="modify"><i />{t('asst.modify')}</span><span className="ctx"><i />{t('asst.ctx')}</span></div>
+              </>}
             {mine.error && <div className="as-note warn" role="alert"><Icon name="triangle-exclamation" /><span>{mine.error}</span></div>}
             {pending === 0 ? (
               <div className="as-done"><Krakie pose="contente" size={64} /><b>{t('asst.done', { a: mine.accepted, r: mine.rejected })}</b>
                 <div className="as-row"><Button variant="primary" icon="diagram-project" onClick={toEditor}>{t('asst.toEditor')}</Button><Button variant="ghost" onClick={clear}>{t('asst.close')}</Button></div></div>
             ) : (<>
-              <ul className="as-items">
-                {grouped.map(it => (
-                  <li key={it.id} id={'as-' + it.id} className={'as-item ' + it.kind + (picked === it.id ? ' picked' : '')}>
-                    <Icon name={it.type === 'class' ? 'circle-nodes' : it.type === 'subClassOf' ? 'turn-up' : it.type === 'objectProperty' ? 'right-long' : 'tag'} />
-                    <div className="as-item-t">
-                      <b>{it.type === 'subClassOf' ? `${curie(it.source!, pf)} ⊂ ${curie(it.target!, pf)}` : it.label}</b>
-                      <span className="muted">{t('asst.type.' + it.type)}{it.detail ? ' · ' + it.detail : ''}{it.type === 'objectProperty' && it.source ? ` · ${curie(it.source, pf)} → ${it.target ? curie(it.target, pf) : '?'}` : ''}</span>
-                    </div>
-                    <span className={'as-tag ' + it.kind}><Icon name={it.kind === 'add' ? 'plus' : 'pen'} />{t(it.kind === 'add' ? 'asst.add' : 'asst.modify')}</span>
-                    <IconButton icon="check" label={t('asst.accept') + ' ' + it.label} className="ok" disabled={mine.busy} onClick={() => void acceptItem(it.id)} />
-                    <IconButton icon="xmark" label={t('asst.reject') + ' ' + it.label} className="ko" disabled={mine.busy} onClick={() => rejectItem(it.id)} />
-                  </li>
-                ))}
-              </ul>
-              <div className="as-foot">
-                <Button variant="primary" icon="check-double" disabled={mine.busy} onClick={() => void acceptAll()}>{t('asst.acceptAll')}</Button>
-                <Button icon="ban" disabled={mine.busy} onClick={rejectAll}>{t('asst.rejectAll')}</Button>
-                <span className="grow" />
-                <Button icon="diagram-project" onClick={toEditor}>{t('asst.toEditor')}</Button>
-              </div></>)}
+              <ProposalCards mine={mine} prefixes={pf} picked={picked} onEditor={toEditor} />
+            </>)}
           </div>
         )}
         {shapes && (

@@ -10,6 +10,7 @@ const Model = lazy(() => import('../screens/Model').then(m => ({ default: m.Mode
 const Exports = lazy(() => import('../screens/Exports').then(m => ({ default: m.Exports })))
 const Queries = lazy(() => import('../screens/queries').then(m => ({ default: m.Queries })))
 const Dashboard = lazy(() => import('../screens/Dashboard').then(m => ({ default: m.Dashboard })))
+const Files = lazy(() => import('../screens/files').then(m => ({ default: m.Files })))
 const AssistantScreen = lazy(() => import('../screens/assistant').then(m => ({ default: m.AssistantScreen })))
 
 export type StepKey = 'concevoir' | 'verifier' | 'transposer' | 'generer'
@@ -28,6 +29,7 @@ export const SCREENS: ScreenDef[] = [
   { key: 'ontologie', labelKey: 'nav.ontologie', icon: 'sitemap', step: 'concevoir', editing: true, fullBleed: true, render: p => <Editor {...p} /> },
   { key: 'ontologie-liste', labelKey: 'nav.liste', icon: 'list-ul', step: 'concevoir', editing: true, fullBleed: true, render: p => <Ontology {...p} /> },
   { key: 'shapes', labelKey: 'nav.shapes', icon: 'shapes', step: 'concevoir', editing: true, render: p => <Shacl {...p} initialTab="shapes" /> },
+  { key: 'fichiers', labelKey: 'nav.fichiers', icon: 'file-code', step: 'concevoir', editing: true, fullBleed: true, render: p => <Files {...p} /> },
   { key: 'conformite', labelKey: 'nav.conformite', icon: 'clipboard-check', step: 'verifier', render: p => <Conformance {...p} /> },
   { key: 'shacl', labelKey: 'nav.shacl', icon: 'shield-halved', step: 'verifier', render: p => <Shacl {...p} initialTab="valid" /> },
   { key: 'analyse', labelKey: 'nav.analyse', icon: 'scale-balanced', step: 'transposer', badge: 'pending', render: p => <Analysis {...p} /> },

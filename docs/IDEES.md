@@ -265,6 +265,38 @@ Positionnement en une phrase : **OntoForge est le seul outil de la liste qui par
 
 ---
 
+## Veille 7/11
+
+Auteur : agent `veille` (lot L21). Idées issues des fiches `docs/veille/nvidia-auto-ontology.md`, `neonto.md`, `normes.md`, `processus-mise-a-jour.md`. Mention « veille ». Gain 1-5, effort S / M / L. Classées par rapport gain / effort, la meilleure en premier. Identifiants V-xx pour ne pas heurter P-xx.
+
+| # | Idée | Gain | Effort | Source | Détail |
+|---|---|---|---|---|---|
+| V-01 | Tester le DDL Neo4j sur 5.26 et 2026.10, en `CYPHER 5` et `CYPHER 25` | 5 | M | normes.md §2 | Neo4j est passé aux versions calendaires et à Cypher 25. Aucune preuve que notre DDL passe partout. Rejoint P-09. D-L21-03 : test manuel par Jerem, pas de matrice en CI. |
+| V-02 | Exécuter `check-curiosity.ps1` avec `Curiosity.Library` 26.11.7740 et lever les À VÉRIFIER | 5 | S | normes.md §3 | Le script n'a jamais tourné. La doc du SDK confirme maintenant les noms d'appels utilisés. D-L21-03 : validation manuelle par Jerem. |
+| V-03 | Montée groupée rdflib 7.6, pyshacl 0.40, owlrl 7.6 | 4 | S | normes.md §4.1 | Onze versions mineures de retard sur pyshacl. 0.40 casse `ConjunctiveGraph` (non utilisé chez nous). Écartée par D-L21-02 : pas de montée de version. |
+| V-04 | Dependabot actif avec la configuration du dépôt | 4 | S | processus §2 | `.github/dependabot.yml` est prêt. Reste à activer les alertes côté GitHub. D-L21-02 : Dependabot signale, rien n'est fusionné sans l'accord de Jerem. |
+| V-05 | Suites de tests W3C en CI (RDF 1.1, SHACL 1.0 bloquants ; RDF 1.2 et SHACL 1.2 en suivi) | 4 | M | processus §3.1 | Les suites existent (`w3c/rdf-tests`, `w3c/data-shapes`, dossier `shacl12-test-suite`). Un taux de réussite suivi dit quand coder la 1.2. D-L21-03 limite la CI aux tests backend, au build front et aux recettes : hors CI pour l'instant. |
+| V-06 | Veille mensuelle programmée + `standards.json` | 4 | S | processus §1 | Prompt prêt. Sortie : diff de `normes.md`, lot si écart. Écartée par D-L21-01 : veille à la demande. |
+| V-07 | Amorcer une ontologie depuis du texte et des PDF dans l'assistant, avec extrait source obligatoire | 3 | M | nvidia-auto-ontology.md | Le texte existe déjà (pièce jointe tronquée à 12 000 caractères). Ajouter extraction PDF, découpage, traçabilité, avertissement de confidentialité. |
+| V-08 | Option de génération « graph type » Neo4j | 3 | M | normes.md §2 | Disponible en version générale depuis 2026.06. Équivalent Neo4j de PG-Schema. Rejoint P-20. |
+| V-09 | Contrôles déterministes sur les propositions de l'assistant (schéma strict, noms, doublons, IRI) | 4 | S | nvidia-auto-ontology.md | Même approche que NVIDIA : sortie structurée stricte puis règles. L'essai à blanc existe déjà pour les opérations ; l'étendre aux propositions. |
+| V-10 | Métriques de qualité d'ontologie avec seuils | 3 | S | neonto.md | Rejoint P-33. neonto en fait un produit, donc un besoin. S'appuyer sur la littérature d'Achim Reiz. |
+| V-11 | « Krakie, mets-toi à jour » : panneau caché d'état des normes et bibliothèques, lu dans `standards.json` | 3 | S à M | processus §4 | Proposé, non codé. Réponse à « votre outil est-il à jour de SHACL 1.2 ? ». À décider par Jerem. |
+| V-12 | Détection de ce que le modèle ne couvre pas, appliquée aux questions de compétence | 4 | M | nvidia-auto-ontology.md | Idée du `check_answerable` de NVIDIA. Rejoint P-12. |
+| V-13 | Épingler la version de `Curiosity.Library` dans les sorties et README générés | 3 | S | normes.md §3 | Aujourd'hui : « version à aligner ». Demander à Curiosity la règle de compatibilité avec le serveur. |
+| V-14 | Actualiser les en-têtes générés « Neo4j 5.x » vers la numérotation calendaire | 3 | S | normes.md §2 | Cosmétique mais crédibilité auprès d'un client qui a Neo4j 2026. |
+| V-15 | Attribut `[Timestamp]` pour les propriétés de date et heure côté Curiosity | 2 | S | normes.md §3 | Présent dans la doc des schémas. À valider par l'expert Curiosity. |
+| V-16 | Serveur MCP en lecture sur le projet (ontologie, constats, rapport) | 3 | M | neonto.md, nvidia | NVIDIA et TopQuadrant exposent leur contexte aux agents par MCP. |
+| V-17 | Page de comparaison « OntoForge, Protégé, n10s, Curiosity » pour les clients | 2 | S | neonto.md | Messages de positionnement déjà rédigés. À relire par w3c, neo4j, curiosity avant diffusion. |
+| V-18 | Export YAML Apache Ossie | 2 | M | nvidia | Seulement sur demande client. Spécification non lue (site inaccessible). |
+| V-19 | Montée React 19, Vite 8, TypeScript 7 | 2 | L | normes.md §4.2 | Pas urgent. Lot dédié, hors période de livraison. Écartée par D-L21-02. |
+| V-20 | Suivre RDF 1.2 (passage en recommandation) puis règle « triple annoté vers relation porteuse de propriétés » | 3 | M | normes.md §1 | Remplace RDF-star. Ne pas coder avant CR confirmé et support de bibliothèque. Précise P-29. |
+| V-21 | Ne pas faire : éditeur dans VS Code, SaaS par utilisateur | 1 | L | neonto.md | Champ occupé par Protégé et neonto. OntoForge se distingue sur le dernier kilomètre et la perte de sémantique. |
+
+Remarque sur P-29 : au 7/11/2026, SHACL 1.2 Core est un brouillon du 02/11/2026 et RDF 1.2 Concepts est CR depuis le 07/04/2026 (normes.md). La prudence de P-29 reste de mise.
+
+---
+
 ## 7. Sources
 
 1. Neo4j, « Discover AuraDB Free: week 16 – the CSV data importer tool » — https://neo4j.com/developer-blog/discover-auradb-free-week-16-the-csv-data-importer-tool

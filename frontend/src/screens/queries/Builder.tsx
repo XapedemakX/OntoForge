@@ -2,12 +2,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Button, EmptyState, Icon, IconButton } from '../../kit'
 import { useT } from '../../i18n'
 import { ClassChip } from './ClassChip'
-import { qapi, type InlineEndpoint, type OptionValue, type ClassSuggest, type DataSuggest, type FilterKind, type ObjSuggest, type RootClass, type Target } from './qapi'
+import { qapi, type InlineOrLocal, type OptionValue, type ClassSuggest, type DataSuggest, type FilterKind, type ObjSuggest, type RootClass, type Target } from './qapi'
 import { allNodes, entityFilter, isEntityFilter, localName, colId, defaultFilter, effectiveCols, isActive, mapNode, uid, varFor, walk, type QFilter, type QNode, type QState } from './model'
 
 export type SugMap = Record<string, ClassSuggest | 'loading' | 'error'>
 export interface Ctx {
-  pid: string; lang: string; endpointId: string | null; inline: InlineEndpoint | null; sug: SugMap; roots: RootClass[]
+  pid: string; lang: string; endpointId: string | null; inline: InlineOrLocal | null; sug: SugMap; roots: RootClass[]
   set: (f: (s: QState) => QState) => void; state: QState
   openAdd: string | null; setOpenAdd: (id: string | null) => void
   seed: string; setSeed: (s: string) => void

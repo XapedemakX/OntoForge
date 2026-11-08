@@ -22,13 +22,13 @@ Code : `backend/ontoforge/queries/translate.py` (`translate(sparql, pg, onto=Non
 | `ASK` | `RETURN count(*)>0` | — | `.Any()` |
 
 ## Intraduisible et compensations
-- **Raisonnement (RDFS/OWL)** : `rdfs:subClassOf*`, `subPropertyOf`, `inverseOf`, transitivité ne sont pas inférés en PG. Compenser : labels multiples ou discriminant (Neo4j / Curiosity), edges `derived` matérialisés, `reverse` pour l'inverse, `*1..` pour la fermeture.
-- **Prédicat variable `?p`**, métamodèle (`?s a ?c`) : relations et propriétés sont du schéma ; énumérer les types connus ou passer par `CALL db.labels()`.
-- **Graphes nommés (`GRAPH`)** : propriété `graph`/`source` sur les nœuds ; sinon perte signalée.
-- **Hypothèse du monde ouvert**, `NOT EXISTS` : lu en monde clos en PG.
-- **Propriété ontologique non transposée** (ex. inverse non retenue) : note `[perte]`, triplet ignoré -> décision humaine à arbitrer.
-- **Curiosity** : pas de tuples ni de jointure externe ; la Query API renvoie les nœuds de fin de traversée.
-- **Écarts sans perte** : `DISTINCT` ajouté sur chemins variables ; sémantique `=~` complète.
+- Raisonnement (RDFS/OWL) : `rdfs:subClassOf*`, `subPropertyOf`, `inverseOf`, transitivité ne sont pas inférés en PG. Compenser : labels multiples ou discriminant (Neo4j / Curiosity), edges `derived` matérialisés, `reverse` pour l'inverse, `*1..` pour la fermeture.
+- Prédicat variable `?p`, métamodèle (`?s a ?c`) : relations et propriétés sont du schéma ; énumérer les types connus ou passer par `CALL db.labels()`.
+- Graphes nommés (`GRAPH`) : propriété `graph`/`source` sur les nœuds ; sinon perte signalée.
+- Hypothèse du monde ouvert, `NOT EXISTS` : lu en monde clos en PG.
+- Propriété ontologique non transposée (ex. inverse non retenue) : note `[perte]`, triplet ignoré -> décision humaine à arbitrer.
+- Curiosity : pas de tuples ni de jointure externe ; la Query API renvoie les nœuds de fin de traversée.
+- Écarts sans perte : `DISTINCT` ajouté sur chemins variables ; sémantique `=~` complète.
 
 ## Patrons de requêtes de validation
 1. Comptage par type : `MATCH (n:T) RETURN count(n)` vs `SELECT (COUNT(?x)...) { ?x a :T }` : doivent être égaux après chargement.

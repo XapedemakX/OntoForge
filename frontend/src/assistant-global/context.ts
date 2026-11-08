@@ -6,6 +6,7 @@ export const ROUTE_SCREEN: Record<string, { name: string; aliases: string[] }> =
   ontologie: { name: 'editor', aliases: ['editor', 'ontology'] },
   'ontologie-liste': { name: 'ontology-list', aliases: ['ontology-list', 'list'] },
   shapes: { name: 'shapes', aliases: ['shapes'] },
+  fichiers: { name: 'files', aliases: ['files'] },
   conformite: { name: 'conformance', aliases: ['conformance'] },
   shacl: { name: 'shacl', aliases: ['shacl'] },
   analyse: { name: 'analysis', aliases: ['analysis'] },

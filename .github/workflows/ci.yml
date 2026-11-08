@@ -1,0 +1,110 @@
+# Intégration continue OntoForge (lot L24). Aucun secret requis.
+# Périmètre fixé par D-L21-03 : tests backend, build du front, recettes (manuelles).
+# Pas de Neo4j ni de compilation Curiosity en CI : ces fichiers sont validés à la main par Jerem.
+# Actions épinglées par SHA de commit, version en commentaire ; les mises à jour passent par Dependabot
+# (signalées seulement, jamais fusionnées sans l'accord de Jerem, D-L21-02).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      recettes:
+        description: "Lancer aussi les recettes Playwright"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (pytest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+      - name: Installer le backend
+        run: pip install -e "backend[dev]"
+      - name: Tests
+        working-directory: backend
+        env:
+          ONTOFORGE_LLM_PROVIDER: mock
+        run: pytest -q
+
+  frontend:
+    name: Frontend (build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Installer les dépendances
+        working-directory: frontend
+        run: npm ci
+      - name: Build
+        working-directory: frontend
+        run: npm run build
+
+  recettes:
+    name: Recettes Playwright (manuel)
+    if: github.event_name == 'workflow_dispatch' && inputs.recettes
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Installer le backend
+        run: pip install -e "backend[dev]"
+      - name: Build du front
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+      - name: Installer Playwright et son navigateur
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      # Les scripts tools/recette/*.mjs cherchent `playwright` via require() puis /opt/node22/... :
+      # NODE_PATH le rend visible depuis le dossier de travail. Le chemin Python des scripts est
+      # codé en dur (/home/claude/venv/bin/python) : on le recrée par un lien vers l'interpréteur de la CI.
+      - name: Lancer les recettes
+        env:
+          NODE_PATH: ${{ github.workspace }}/node_modules
+        run: |
+          sudo mkdir -p /home/claude/venv/bin
+          sudo ln -sf "$(command -v python)" /home/claude/venv/bin/python
+          node tools/recette/e2e_ui.mjs
+          python tools/recette/e2e_api.py
+      - name: Captures des recettes
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: recettes-captures
+          path: journal/L14/screens
+          if-no-files-found: ignore

@@ -10,4 +10,5 @@ journal/L18/video/frames/
 journal/L18/video/check/
 journal/L18/video/chk/
 journal/L18/video/*.mp4
-ref/
+*.whl
+frontend/tsconfig.tsbuildinfo
