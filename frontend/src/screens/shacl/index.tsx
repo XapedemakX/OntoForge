@@ -4,6 +4,7 @@ import type { ScreenProps } from '../../shell/types'
 import { CodeEditor, ErrorView, download } from '../../ui'
 import { Button, EmptyState, Icon, Tabs, useToast } from '../../kit'
 import { useI18n } from '../../i18n'
+import { KrakieStatus, useResultFlash } from '../../krakie/Krakie'
 import { openAssistant, useAssistantContext } from '../../lib/assistantContext'
 import { eapi } from '../editor/types'
 import { ShapeList } from './ShapeList'
@@ -57,14 +58,19 @@ export function Shacl({ p, setP, initialTab = 'shapes' }: ScreenProps & { initia
     suggestions: shape ? [t('sh.k.add', { v: sTitle }), t('sh.k.explain', { v: sTitle }), ...(rep && !rep.conforms ? [t('sh.k.whyAny')] : [])] : [t('sh.k.gen')],
   }, [tab, shapes.length, dirty, rep])
 
+  const [genning, setGenning] = useState(false)
+  const genDone = useResultFlash(genning, !!diff)
   const run = async (f: () => Promise<void>) => { setErr(null); setBusy(true); try { await f() } catch (e) { setErr(e) } finally { setBusy(false) } }
   const ask = (prompt: string, extra?: Record<string, unknown>) => openAssistant({ prompt, send: true, context: { screen: tab === 'valid' ? 'shacl' : 'shapes', projectId: p.id, selection: shape ? { kind: 'shape', id: shape.id, label: sTitle } : null, extra } })
   const upd = (fn: (s: NodeShape) => void) => { if (!sel) return; setDraft(d => { const n = clone(d); fn(n.shapes[sel]); return n }) }
   const save = () => run(async () => { const np = await api.putShapes(p.id, draft); setP(np); toast(t('sh.saved')) })
   const gen = () => run(async () => {
     // Aperçu (dry_run) : le serveur ne modifie pas le projet ; rien n'est appliqué avant confirmation.
-    const r = await api.shaclGenerateDry(p.id)
-    setDiff({ d: diffGenerated(draft, r.generated), notes: r.notes })
+    setGenning(true)
+    try {
+      const r = await api.shaclGenerateDry(p.id)
+      setDiff({ d: diffGenerated(draft, r.generated), notes: r.notes })
+    } finally { setGenning(false) }
   })
   const applyGen = () => { if (!diff) return; setDraft(diff.d.merged); setDiff(null); toast(t('sh.gen.staged')) }
   const imp = (f: File) => run(async () => { const r = await api.importFile(p.id, f, 'shapes'); setP(r.project); toast(t('sh.imported')) })
@@ -103,6 +109,7 @@ export function Shacl({ p, setP, initialTab = 'shapes' }: ScreenProps & { initia
           {diff.notes.length > 0 && <details className="shdiff-notes"><summary>{t('sh.diff.notes', { n: diff.notes.length })}</summary><ul>{diff.notes.map((n, i) => <li key={i}>{n}</li>)}</ul></details>}
         </section>
       )}
+      <KrakieStatus busy={genning} done={genDone} label={t('krakie.forge.shapes')} doneLabel={t('krakie.done.shapes')} />
       <Tabs value={tab} onChange={setTab} items={[['shapes', t('sh.tab.shapes', { n: shapes.length })], ['valid', t('sh.tab.valid') + (rep ? (rep.conforms ? ' ✓' : ` (${rep.results.length})`) : '')], ['ttl', t('sh.tab.ttl')]]} />
       {tab === 'shapes' && (empty
         ? <EmptyState title={t('sh.empty.t')} pose="accueil" action={<><Button variant="primary" icon="wand-magic-sparkles" onClick={gen}>{t('sh.gen')}</Button><Button icon="comment-dots" onClick={() => openAssistant({ prompt: t('sh.k.gen'), send: true, context: { screen: 'shapes', projectId: p.id } })}>{t('sh.empty.krakie')}</Button></>}>{t('sh.empty.d')}</EmptyState>

@@ -1,5 +1,6 @@
 /** Chargement des frames de Krakie (mêmes SVG animés que le composant Krakie) en canvas 32×32 pour le jeu. */
-export type GamePose = 'accueil' | 'graphe' | 'inquiete' | 'contente'
+export type GamePose = 'nage' | 'nage_clin' | 'nage_ravie' | 'nage_surprise' | 'nage_grimace' | 'nage_inquiete'
+export const GAME_POSES: GamePose[] = ['nage', 'nage_clin', 'nage_ravie', 'nage_surprise', 'nage_grimace', 'nage_inquiete']
 export interface PoseFrames { frames: HTMLCanvasElement[]; durations: number[] }
 export type KrakieSprites = Partial<Record<GamePose, PoseFrames>>
 

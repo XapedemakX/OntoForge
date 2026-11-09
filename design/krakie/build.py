@@ -41,6 +41,16 @@ PALETTE = {
     "R": "#D6453D",  # bolide
     "r": "#8F2420",  # bolide ombre
     "g": "#8A99A3",  # jante / traits de vitesse
+    # palette de forge (L29)
+    "Y": "#FFE27A",  # métal chauffé à blanc, étincelles, nœuds du trophée
+    "O": "#F5861F",  # orange de forge
+    "E": "#B8321F",  # rouge braise
+    "e": "#6E1E14",  # braise sombre
+    "N": "#4B5A64",  # acier sombre
+    "n": "#C4D0D8",  # acier clair
+    "d": "#7A4A26",  # bois
+    "w": "#D9A066",  # bois clair (manche, contraste avec le contour)
+    "c": "#3A3F46",  # pierre du foyer
 }
 
 POSES = ["accueil", "reflechit", "lit", "loupe", "graphe", "contente", "inquiete", "bolide"]
@@ -48,6 +58,8 @@ LABELS = {
     "accueil": "fait coucou", "reflechit": "réfléchit", "lit": "lit un livre (documentation)",
     "loupe": "examine à la loupe (conformité)", "graphe": "tire des fils entre des nœuds (graphe)",
     "contente": "contente", "inquiete": "inquiète", "bolide": "pilote un petit bolide (génération)",
+    "forge": "forgeronne : frappe en alternance avec deux marteaux (traitement en cours)",
+    "trophee": "brandit un trophée en forme de graphe (génération réussie)",
 }
 
 

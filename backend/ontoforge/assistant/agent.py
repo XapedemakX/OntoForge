@@ -11,6 +11,8 @@ from __future__ import annotations
 import json
 import re
 import unicodedata
+from functools import lru_cache
+from pathlib import Path as FsPath
 from typing import Any, Optional
 
 from ..core.onto_model import XSD, OntoModel, local_name
@@ -416,10 +418,53 @@ def _fix_last(ops: list[dict], onto: OntoModel) -> list[dict]:
     return ops
 
 
+# ---- aide en contexte (L28) ----------------------------------------------------------------------------------------
+HELP_MAP_PATH = FsPath(__file__).with_name("help_map.json")
+
+
+@lru_cache(maxsize=1)
+def help_map() -> dict[str, Any]:
+    """Table écran -> section du guide (source unique, partagée avec le front)."""
+    return json.loads(HELP_MAP_PATH.read_text(encoding="utf-8"))["screens"]
+
+
+# écran déclaré par le contexte (vocabulaire des écrans) -> clé de la table
+_HELP_ALIASES = {"ontology": "editor", "list": "ontology-list", "dashboard": "dashboard", "tableau": "dashboard", "ontologie": "editor"}
+
+
+def help_section(screen: Any, lang: str = "fr") -> dict[str, Any]:
+    """Page, ancre, titre et résumé du guide pour l'écran courant ; section générale si l'écran est inconnu."""
+    tbl = help_map()
+    key = str(screen or "")
+    key = _HELP_ALIASES.get(key, key)
+    e = tbl.get(key) or tbl["default"]
+    ll = "en" if lang == "en" else "fr"
+    return {"screen": key if key in tbl else "default", "page": e["page"], "anchor": e["anchor"], "title": e["title"][ll], "summary": e["summary"][ll]}
+
+
+_HELP_FR = (r"(?:(?:j['’]ai\s+besoin\s+d['’])?l['’]\s*aide|aide(?:-moi)?|(?:à|a)\s+l['’]aide|documentation|doc|docs|manuel|mode\s+d['’]emploi|guide)"
+            r"(?:\s+(?:sur|de|pour|à\s+propos\s+de)?\s*(?:cet|cette|ce|l['’])?\s*(?:écran|ecran|page|ici))?"
+            r"|(?:ouvre|affiche|montre|donne(?:-moi)?)\s+(?:moi\s+)?(?:la\s+|l['’]\s*)?(?:doc|docs|documentation|aide|manuel|guide)(?:\s+(?:de\s+)?(?:cet|cette|ce)?\s*(?:écran|ecran|page|ici))?"
+            r"|comment\s+(?:ça|ca|cela)\s+(?:marche|fonctionne)(?:\s+(?:ici|sur\s+(?:cet|cette)\s+(?:écran|ecran|page)))?"
+            r"|comment\s+(?:on\s+)?(?:s['’]en\s+sert|l['’]utilise|utiliser\s+(?:cet\s+(?:écran|ecran)|ça|ca|ceci))"
+            r"|(?:à|a)\s+quoi\s+(?:sert|ça\s+sert|ca\s+sert)\s+(?:cet\s+(?:écran|ecran)|cette\s+page|ceci|ça|ca)")
+_HELP_EN = (r"(?:help(?:\s+me)?|docs?|documentation|manual|user\s+guide|guide)(?:\s+(?:on|about|for|with)\s+(?:this\s+)?(?:screen|page|here))?"
+            r"|(?:open|show|display|give\s+me|get)\s+(?:me\s+)?(?:the\s+)?(?:docs?|documentation|help|manual|user\s+guide)(?:\s+(?:for|of|on)\s+(?:this\s+)?(?:screen|page|here))?"
+            r"|how\s+(?:does|do)\s+(?:this|it|that)(?:\s+(?:screen|page))?\s+work(?:\s+here)?"
+            r"|how\s+(?:do\s+i|can\s+i|to)\s+use\s+(?:this|it)(?:\s+(?:screen|page))?"
+            r"|what(?:['’]s|\s+is)\s+(?:this|that)\s+(?:screen|page)(?:\s+for)?")
+
+
+def is_help_request(text: str) -> bool:
+    """Intention « aide » (fr / en) : aide, doc, comment ça marche ici, help, how does this work…"""
+    t = _split_sentence(text)
+    return bool(re.fullmatch(_HELP_FR, t, re.I) or re.fullmatch(_HELP_EN, t, re.I))
+
+
 # ---- langue de la conversation ------------------------------------------------------------------------------------
 _EN_WORDS = {"add", "create", "make", "set", "delete", "remove", "drop", "open", "show", "find", "list", "give", "which", "what", "how", "many", "the", "a",
              "an", "to", "of", "under", "with", "whose", "where", "in", "on", "for", "class", "property", "required", "mandatory", "constraint", "shape",
-             "subclass", "go", "display", "me", "is", "are", "has", "have", "that", "from", "and"}
+             "subclass", "go", "display", "me", "is", "are", "has", "have", "that", "from", "and", "help", "does", "this", "work", "here", "screen"}
 _FR_WORDS = {"ajoute", "ajouter", "crée", "cree", "créer", "creer", "rends", "rendre", "supprime", "supprimer", "efface", "retire", "ouvre", "affiche", "cherche",
              "trouve", "liste", "donne", "quels", "quelles", "combien", "le", "la", "les", "une", "un", "des", "du", "de", "sous", "avec", "dont", "classe",
              "propriété", "propriete", "obligatoire", "contrainte", "pour", "sur", "dans", "et", "est", "sont", "à"}
@@ -470,6 +515,7 @@ MSG: dict[str, dict[str, str]] = {
         "del_not_found": "Je ne trouve pas « {t} » dans l'ontologie.",
         "del_reply": "Je propose de supprimer « {t} ». Les axiomes qui s'y rattachent sont retirés aussi : relisez l'aperçu.",
         "nav_reply": "Voici le raccourci.", "nav_summary": "Ouvrir : {s}",
+        "doc_reply": "Voici la section du guide qui décrit l'écran « {t} ».",
         "query_reply": "Je transforme votre question en requête guidée, modifiable dans l'écran Requêtes.",
         "label_hint": "Aucun libellé français n'a été créé pour « {n} » : ajoutez-le si l'ontologie est bilingue.",
         "help": "Sans fournisseur LLM je comprends des demandes simples : « ajoute la classe Pneu sous Pièce », « ajoute la propriété pression à Pneu », "
@@ -490,6 +536,7 @@ MSG: dict[str, dict[str, str]] = {
         "del_not_found": "I can't find “{t}” in the ontology.",
         "del_reply": "I suggest deleting “{t}”. The axioms attached to it are removed too: review the preview.",
         "nav_reply": "Here is the shortcut.", "nav_summary": "Open: {s}",
+        "doc_reply": "Here is the guide section that describes the “{t}” screen.",
         "query_reply": "I'm turning your question into a guided query, which you can edit in the Queries screen.",
         "label_hint": "No French label was created for “{n}”: add one if the ontology is bilingual.",
         "help": "Without an LLM provider I understand simple requests: “add the class Tyre under Part with a property pressure in bar”, "
@@ -506,7 +553,50 @@ SCREENS = {"shapes": "shapes", "shape": "shapes", "requetes": "requetes", "queri
            "tableaudebord": "tableau", "tableau": "tableau", "dashboard": "tableau", "exports": "exports", "export": "exports", "analyse": "analyse",
            "analysis": "analyse", "conformite": "conformite", "conformance": "conformite", "compliance": "conformite", "parametres": "parametres",
            "settings": "parametres", "preferences": "parametres", "modele": "modele", "model": "modele", "targetmodel": "modele", "assistant": "assistant",
-           "shacl": "shacl", "list": "ontologie-liste", "ontologylist": "ontologie-liste", "listview": "ontologie-liste", "vueliste": "ontologie-liste"}
+           "shacl": "shacl", "versions": "versions", "version": "versions", "list": "ontologie-liste", "ontologylist": "ontologie-liste", "listview": "ontologie-liste", "vueliste": "ontologie-liste"}
+
+
+_VER_SHOW = re.compile(r"^(?:quelles?(?: sont)?(?: les)? versions?(?: [\w' ]+)?|quelle version(?: [\w' ]+)?|versions?|(?:donne|affiche|montre)(?:-moi| moi)? (?:les|mes) versions?(?: [\w' ]+)?|"
+                       r"which versions?(?: [\w' ]+)?|what versions?(?: [\w' ]+)?|what(?:'s| is| are) (?:the |my )?(?:target )?versions?(?: [\w' ]+)?|show (?:me )?(?:the |my )?versions?(?: [\w' ]+)?)$")
+_VER_UPDATE = re.compile(r"^(?:mets?|mettre) a jour (?:les |mes )?versions?(?: cibl\w+| du projet| recommandees?)?$|^applique[rz]? (?:les )?versions? recommandees?$|"
+                         r"^(?:update|upgrade|bump) (?:the |my )?(?:target )?versions?(?: to (?:the )?recommended(?: ones)?)?$|^apply (?:the )?recommended versions?$")
+
+
+def _ascii_low(text: str) -> str:
+    t = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode().lower()
+    return re.sub(r"\s+", " ", re.sub(r"[?!.;]+$", "", t.strip())).strip()
+
+
+def _versions_intent(project: Any, message: str, lang: str) -> dict[str, Any]:
+    """« quelles versions ? » / « which versions » (réponse + action d'ouverture) et « mets à jour les versions » (action confirmée par l'utilisateur)."""
+    from .. import standards
+    low = _ascii_low(message)
+    en = lang == "en"
+    upd = bool(_VER_UPDATE.match(low))
+    if not upd and not _VER_SHOW.match(low):
+        return {}
+    explicit = dict(getattr(project, "target_versions", None) or {})
+    rows = standards.describe(explicit, lang)
+    chk = standards.check(explicit, lang)
+    open_act = {"kind": "navigate", "screen": "versions", "summary": "Open the versions" if en else "Ouvrir les versions"}
+    if upd:
+        patch = chk["recommended"]
+        if not patch:
+            return {"reply": "The project versions already match the recommended ones. Nothing to change." if en else
+                    "Les versions du projet sont déjà les recommandées. Rien à changer.", "actions": [open_act], "warnings": []}
+        eff = chk["versions"]
+        fam = {r["key"]: r["family"] for r in rows}
+        changes = [{"key": k, "family": fam[k], "from": eff[k], "to": v} for k, v in patch.items()]
+        txt = ("I suggest applying the recommended versions: " if en else "Je propose d'appliquer les versions recommandées : ") + \
+              ", ".join(f"{c['family']} {c['from']} → {c['to']}" for c in changes) + (". Check, then apply." if en else ". Vérifiez, puis appliquez.")
+        return {"reply": txt, "actions": [{"kind": "versions", "changes": changes}], "warnings": []}
+    parts = [f"{r['family']} {r['value']} ({r['status']}" + (", " + ("project" if en else "projet") if r["pinned"] else (", default" if en else ", défaut")) + ")" for r in rows]
+    txt = ("Versions targeted by this project: " if en else "Versions ciblées par ce projet : ") + " · ".join(parts) + "."
+    gaps = [g for g in chk["gaps"] if g["severity"] in ("warning", "error")]
+    if gaps:
+        txt += ("\n\nPoints to watch: " if en else "\n\nPoints d'attention : ") + " ".join(
+            g["message"] + (" " + g["recommendation"]["message"] if g.get("recommendation") else "") for g in gaps)
+    return {"reply": txt, "actions": [open_act], "warnings": []}
 
 
 def deterministic(project: Any, message: str, ctx: dict, lang: str = "fr") -> dict[str, Any]:
@@ -514,6 +604,9 @@ def deterministic(project: Any, message: str, ctx: dict, lang: str = "fr") -> di
 
     ``lang`` : langue des textes de réponse (« en » si le message est en anglais ou si l'assistant / l'interface sont en anglais) ;
     le libellé des entités créées suit la langue du message."""
+    vi = _versions_intent(project, message, lang)
+    if vi:
+        return vi
     onto: OntoModel = project.onto
     res = Resolver(onto)
     m = _split_sentence(message)
@@ -643,6 +736,11 @@ def deterministic(project: Any, message: str, ctx: dict, lang: str = "fr") -> di
         return {"reply": M["del_reply"].format(t=onto.label(iri, "en" if lang == "en" else "fr")),
                 "actions": [{"kind": "ops", "ops": [{"op": "delete_entity", "iri": iri}]}], "warnings": []}
 
+    # aide en contexte : « aide », « comment ça marche ici », « doc » / « help », « how does this work »
+    if is_help_request(m):
+        sec = help_section(ctx.get("screen"), lang)
+        return {"reply": M["doc_reply"].format(t=sec["title"]), "actions": [{"kind": "help", "screen": sec["screen"]}], "warnings": []}
+
     # navigation : « ouvre les shapes » / « open the shapes »
     mm = re.match(r"^(?:ouvre|va|aller|affiche)\s+(?:à|a|au|aux|sur)?\s*(?:les\s+|l[ae']\s*|le\s+|la\s+)?(.+)$", m, re.I)
     if not mm:
@@ -671,7 +769,7 @@ Réponds par UN objet JSON : {"reply":"...","actions":[...],"warnings":[]}. Type
 - {"kind":"proposal","ontology":{format d'ontologie : classes[{name,label_fr,label_en,comment,parent}], object_properties[...], datatype_properties[...]}} pour un modèle plus large.
 - {"kind":"shapes","patches":[{"class":"Classe","property":"propriété","constraints":{"min_count":1,"max_count":1,"min_inclusive":"0","pattern":"...","min_length":n}}]}
 - {"kind":"guided_query","question":"question en français sur les données"}
-- {"kind":"navigate","screen":"tableau|ontologie|shapes|requetes|analyse|exports"}
+- {"kind":"navigate","screen":"tableau|ontologie|shapes|requetes|analyse|exports|versions"}
 Si la demande est une simple question, réponds sans action. Si elle est ambiguë, pose UNE question dans reply, sans action. Aucun texte hors du JSON.
 """
 
@@ -746,9 +844,22 @@ def build_actions(project: Any, raw_actions: Any, provider: Any, ctx: dict) -> t
                 res = _guided(project, q, provider, ctx.get("target"), lang)
                 out.append({"kind": "guided_query", "payload": json.loads(json.dumps({**res, "question": q}, default=str)),
                             "summary": str(res.get("explanation") or "")[:200] or ("Guided query" if en else "Requête guidée")})
+        elif kind == "help":
+            sec = help_section(ctx.get("screen") if ctx.get("screen") not in (None, "", "unknown") else a.get("screen"), lang)
+            out.append({"kind": "help", "payload": {k: sec[k] for k in ("screen", "page", "anchor", "title")}, "summary": sec["summary"]})
+        elif kind == "versions":  # L31 : le serveur recalcule les versions recommandées, la demande brute n'est jamais appliquée telle quelle
+            from .. import standards
+            explicit = dict(getattr(project, "target_versions", None) or {})
+            chk = standards.check(explicit, lang)
+            fam = {r["key"]: r["family"] for r in standards.describe(explicit, lang)}
+            changes = [{"key": k, "family": fam[k], "from": chk["versions"][k], "to": v} for k, v in chk["recommended"].items()]
+            if changes:
+                out.append({"kind": "versions", "payload": {"changes": changes, "patch": chk["recommended"], "before": explicit,
+                                                            "preview": [{"text": f"{c['family']} {c['from']} → {c['to']}"} for c in changes]},
+                            "summary": f"{len(changes)} version(s) to update" if en else f"{len(changes)} version(s) à mettre à jour"})
         elif kind == "navigate":
             scr = str(a.get("screen") or "")
-            if scr in {"tableau", "ontologie", "ontologie-liste", "shapes", "requetes", "analyse", "exports", "conformite", "shacl", "modele", "assistant", "parametres"}:
+            if scr in {"tableau", "ontologie", "ontologie-liste", "shapes", "requetes", "analyse", "exports", "conformite", "shacl", "modele", "assistant", "parametres", "versions"}:
                 out.append({"kind": "navigate", "payload": {"screen": scr}, "summary": str(a.get("summary") or (f"Open {scr}" if en else f"Ouvrir {scr}"))})
     return out, warns
 
@@ -773,6 +884,12 @@ def run(project: Any, messages: list[dict[str, Any]], context: dict[str, Any], p
         p = None  # aucun fournisseur exploitable : repli déterministe
     real = p is not None and p.configured and getattr(p, "name", "mock") != "mock"
     warns: list[str] = []
+
+    from . import reasoning  # L32 : « raisonne », « vérifie la cohérence », « run the reasoner » (HermiT), avec ou sans LLM
+    rz = reasoning.answer(project, last, rl)
+    if rz is not None:
+        actions, w = build_actions(project, rz["actions"], p, ctx)
+        return {"reply": rz["reply"], "actions": actions, "proposal": None, "warnings": [*rz["warnings"], *w]}
 
     if real:
         lang = _lang_name(rl)

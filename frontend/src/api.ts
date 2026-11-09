@@ -114,6 +114,20 @@ export interface Project {
   id: string; name: string; description: string; created_at: string; updated_at: string; target: Target
   onto: OntoModel; shapes: ShapesModel; decisions: Record<string, Record<string, string>>
   source_files: string[]; notes?: string | null
+  target_versions?: Partial<Record<VersionKey, string>>
+}
+export type VersionKey = 'neo4j' | 'cypher' | 'curiosity_library' | 'shacl' | 'sparql' | 'rdf'
+export type Support = 'recommended' | 'supported' | 'obsolete' | 'end_of_support' | 'unknown'
+export interface VersionChoice { id: string; label: string; support: Support; maturity?: string | null; note: string }
+export interface VersionRow { key: VersionKey; family: string; value: string; pinned: boolean; source: 'project' | 'default'; support: Support; status: string; maturity?: string | null; note: string; choices: VersionChoice[] }
+export interface VersionGap { key: VersionKey; family: string; value: string; kind: string; severity: 'info' | 'warning' | 'error'; message: string; recommendation: { key: VersionKey; value: string; message: string } | null }
+export interface VersionCheck { updated: string; versions: Record<VersionKey, string>; explicit: Partial<Record<VersionKey, string>>; gaps: VersionGap[]; ok: boolean; needs_attention: boolean; recommended: Partial<Record<VersionKey, string>> }
+export interface ProjectVersions { versions: Record<VersionKey, string>; explicit: Partial<Record<VersionKey, string>>; defaults: Record<VersionKey, string>; rows: VersionRow[]; standards_updated: string }
+export interface ShaclFeature { id: string; since: string; maturity: string; implemented: boolean; label: string }
+export interface StandardsRef {
+  updated: string; lang: string; legend: Record<string, string>
+  w3c: { shacl: { features: ShaclFeature[] } }
+  libraries: { note: string; items: { id: string; used: string; latest: string | null; support: Support }[] }
 }
 export interface ProjectSummary {
   id: string; name: string; description: string; created_at: string; updated_at: string; source_files: string[]; target: Target
@@ -125,6 +139,14 @@ export interface PublicSettings { language?: { ui?: string; labels?: string; ass
 export interface Sample { name: string; title: string; files: unknown }
 export interface ConformanceIssue { level: 'error' | 'warning' | 'info'; code: string; message: string; subject?: string | null; spec_ref?: string | null }
 export interface ConformanceReport { profiles: Record<string, boolean>; issues: ConformanceIssue[] }
+export interface ReasonResult {
+  reasoner: string; version: string; status: 'ok' | 'timeout' | 'error'; consistent: boolean | null; duration_ms: number; timeout_s: number; max_memory_mb: number
+  dl: { conformant: boolean; violations: string[] }; warnings: string[]; error: string | null
+  explanation: null | { justification: boolean; source: string; note: string; individuals: string[]; classes: string[]; items: { individual: string; classes: string[]; kind: string; message: string }[] }
+  unsatisfiable: string[]
+  hierarchy: { new_subclass: { sub: string; sup: string }[]; new_equivalent: string[][]; counts: Record<string, number> }
+  reclassified: { individual: string; declared: string[]; inferred: string[] }[]
+}
 export interface TranslationResult { cypher?: string | null; curiosity?: string | null; graphql?: string | null; notes: string[]; lossy: boolean }
 export interface CompetencyQuestion { question: string; sparql: string; cypher?: string; curiosity?: string }
 export interface GenerateResult { files: Record<string, string>; missing?: string[] }
@@ -176,6 +198,7 @@ export const api = {
   dsl: (id: string, text: string, merge: boolean) => req<{ project: Project; errors: { line: number; message: string }[] }>('POST', p(id) + '/dsl', { text, merge }),
   exportOntology: (id: string, format: string) => req<string>('GET', p(id) + `/export/ontology?format=${format}`, undefined, undefined, true),
   exportShapes: (id: string) => req<string>('GET', p(id) + '/export/shapes?format=turtle', undefined, undefined, true),
+  reason: (id: string, timeout?: number) => req<ReasonResult>('POST', p(id) + '/reason', { reasoner: 'hermit', ...(timeout ? { timeout } : {}) }),
   conformance: (id: string) => req<ConformanceReport>('GET', p(id) + '/conformance'),
   shaclGenerate: (id: string, merge: boolean) => req<{ project: Project; notes: string[] }>('POST', p(id) + '/shacl/generate', { merge }),
   shaclGenerateDry: (id: string) => req<{ generated: ShapesModel; notes: string[] }>('POST', p(id) + '/shacl/generate', { merge: false, dry_run: true }),
@@ -189,6 +212,10 @@ export const api = {
   translate: (id: string, t: Target, sparql: string) => req<TranslationResult>('POST', p(id) + `/queries/translate?target=${t}`, { sparql }),
   competency: (id: string, t: Target) => req<CompetencyQuestion[]>('GET', p(id) + `/queries/competency?target=${t}`),
   settings: () => req<PublicSettings>('GET', '/settings'),
+  standards: () => req<StandardsRef>('GET', '/standards'),
+  versions: (id: string) => req<ProjectVersions>('GET', p(id) + '/versions'),
+  putVersions: (id: string, patch: Partial<Record<VersionKey, string | null>>) => req<ProjectVersions>('PUT', p(id) + '/versions', patch),
+  versionsCheck: (id: string) => req<VersionCheck>('GET', p(id) + '/versions/check'),
   perimeters: (id: string) => req<Perimeter[]>('GET', p(id) + '/perimeters'),
   setActivePerimeter: (id: string, pid: string | null) => req<{ active_perimeter: string | null }>('PUT', p(id) + '/perimeters/active', { id: pid }),
   assistantStatus: () => req<AssistantStatus>('GET', '/assistant/status'),

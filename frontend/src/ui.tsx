@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, lazy, Suspense, type ReactNode } from 'react'
 import { ApiError } from './api'
-import { Krakie } from './krakie/Krakie'
+import { Krakie, type Pose } from './krakie/Krakie'
 import { useT, tr } from './i18n'
 
 // ---------- chargement asynchrone ----------
@@ -35,16 +35,17 @@ export function Empty({ title, children }: { title: string; children?: ReactNode
 export const Spin = () => { const t = useT(); return <div className="muted" style={{ padding: 12 }}>{t('common.loading')}</div> }
 
 // ---------- toasts ----------
-const ToastCtx = createContext<(m: string) => void>(() => {})
+export type ToastOpts = { pose?: Pose; ms?: number }
+const ToastCtx = createContext<(m: string, o?: ToastOpts) => void>(() => {})
 export const useToast = () => useContext(ToastCtx)
 export function ToastHost({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<{ id: number; m: string }[]>([])
-  const push = useCallback((m: string) => {
+  const [items, setItems] = useState<{ id: number; m: string; pose?: Pose }[]>([])
+  const push = useCallback((m: string, o?: ToastOpts) => {
     const id = Date.now() + Math.random()
-    setItems(x => [...x, { id, m }])
-    setTimeout(() => setItems(x => x.filter(i => i.id !== id)), 3500)
+    setItems(x => [...x, { id, m, pose: o?.pose }])
+    setTimeout(() => setItems(x => x.filter(i => i.id !== id)), o?.ms ?? (o?.pose ? 2600 : 3500))
   }, [])
-  return <ToastCtx.Provider value={push}>{children}<div className="toasts" role="status">{items.map(i => <div key={i.id} className="toast">{i.m}</div>)}</div></ToastCtx.Provider>
+  return <ToastCtx.Provider value={push}>{children}<div className="toasts" role="status">{items.map(i => <div key={i.id} className={i.pose ? 'toast with-krakie' : 'toast'}>{i.pose && <Krakie pose={i.pose} size={40} float={false} />}<span>{i.m}</span></div>)}</div></ToastCtx.Provider>
 }
 
 // ---------- petits composants ----------

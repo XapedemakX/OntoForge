@@ -4,7 +4,8 @@ import { api, curie, type Finding, type FindingSeverity } from '../api'
 import type { ScreenProps } from '../shell/types'
 import { Button, Card, Icon } from '../kit'
 import { useT } from '../i18n'
-import { Empty, ErrorView, Spin, esc, useLoad, useToast } from '../ui'
+import { KrakieStatus, useResultFlash } from '../krakie/Krakie'
+import { Empty, ErrorView, esc, useLoad, useToast } from '../ui'
 
 
 export function Analysis({ p, target }: ScreenProps) {
@@ -19,6 +20,7 @@ export function Analysis({ p, target }: ScreenProps) {
   const [openAuto, setOpenAuto] = useState(false)
   const [busy, setBusy] = useState(false)
   const pf = p.onto.meta.prefixes
+  const done = useResultFlash(loading, !!pg && !error)
 
   const decide = async (fid: string, opt: string | null) => {
     setErr(null)
@@ -65,7 +67,7 @@ export function Analysis({ p, target }: ScreenProps) {
         <div className="row"><Button variant="primary" icon="check" disabled={busy} onClick={acceptAll}>{t('an.confirm.go', { n: onlyReview ? pend('review') : pend('review') + pend('lost') })}</Button>
           <Button variant="ghost" onClick={() => setConfirm(false)}>{t('an.confirm.cancel')}</Button></div>
       </Card>}
-      {loading && !pg && <Spin />}
+      <KrakieStatus busy={loading} done={done} label={t('krakie.forge.analysis')} doneLabel={t('krakie.done.analysis')} />
       <ErrorView error={error} what={t('an.what')} /><ErrorView error={err} what={t('an.what.decide')} />
       {pg && sum && <>
         <div className="card triage" data-tour="an-counters">

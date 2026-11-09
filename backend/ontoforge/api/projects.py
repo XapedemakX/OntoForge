@@ -7,7 +7,7 @@ from fastapi import APIRouter, File, Form, HTTPException, Query, UploadFile
 from fastapi.responses import Response
 from pydantic import BaseModel
 
-from .. import samples as samples_mod
+from .. import samples as samples_mod, standards
 from ..core.onto_model import OntoModel
 from ..core.project import Project
 from ..core.shapes_model import ShapesModel
@@ -213,5 +213,7 @@ def export_shapes(pid: str, format: str = Query("turtle")) -> Response:
     serialize_shapes = service("shacl.export_shapes", "serialize_shapes")
     media, ext = ONTO_MEDIA[format]
     text = serialize_shapes(p.shapes, format)
+    if format in ("turtle", "ttl"):  # L31 : l'en-tête rappelle la version SHACL ciblée (fonctions 1.2 désactivées) ; commentaire Turtle, sans effet sur le graphe
+        text = standards.shacl_header(standards.for_project(p)["shacl"]) + text
     return Response(content=text, media_type=f"{media}; charset=utf-8",
                     headers={"Content-Disposition": f'attachment; filename="{p.id}-shapes.{ext}"'})

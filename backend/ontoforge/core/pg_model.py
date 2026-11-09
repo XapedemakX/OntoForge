@@ -120,6 +120,7 @@ class PGMeta(BaseModel):
     iri: Optional[str] = None
     generated_at: Optional[str] = None
     ontoforge_version: str = "0.1.0"
+    target_versions: dict[str, str] = Field(default_factory=dict)  # L31 : versions utilisées pour générer (en-têtes, rapport)
 
 
 class PGModel(BaseModel):

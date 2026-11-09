@@ -4,6 +4,7 @@ import { Button, Icon, IconButton, useToast } from '../../kit'
 import { useI18n } from '../../i18n'
 import { buildItems, setProposal } from '../../lib/proposal'
 import { setMsgs, uid, type Msg } from '../../assistant-global/store'
+import { KrakieStatus } from '../../krakie/Krakie'
 import { aapi, type DocDraft, type DocFile, type DocPlan } from './aapi'
 import './doc.css'
 
@@ -69,7 +70,7 @@ export function DocImport({ p, setP, provider, onClose, initialFile, compact, on
       doc: { id, name: r.document.name, pages: r.document.pages, provider: r.provider, approximate: r.approximate, calls: r.stats.calls, items: items.length, skipped: r.skipped.length, questions: r.questions, lint: docLint },
     }
     setMsgs(p.id, m => [...m, { id: uid(), role: 'user', content: t('doc.msg.user', { name: r.document.name }), files: [r.document.name] }, reply])
-    toast(t('doc.toast', { n: items.length }))
+    toast(t('doc.toast', { n: items.length }), items.length ? { pose: 'trophee' } : undefined)
   }
 
   const needOk = !!plan?.hosted
@@ -87,6 +88,7 @@ export function DocImport({ p, setP, provider, onClose, initialFile, compact, on
       )}
       {!file && phase !== 'reading' && <button className="di-demo" onClick={() => void demo()}><Icon name="wand-magic-sparkles" />{t('doc.demo')}</button>}
       <input ref={input} type="file" hidden accept={ACCEPT} onChange={e => { const f = e.target.files?.[0]; if (f) void read(f); e.target.value = '' }} />
+      <KrakieStatus busy={phase === 'running'} done={false} label={t('krakie.forge.doc')} doneLabel="" size={48} />
       {phase === 'reading' && <p className="di-wait" role="status"><Icon name="spinner" className="fa-spin" />{t('doc.reading')}</p>}
       {file && (
         <div className="di-file">

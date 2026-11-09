@@ -1,0 +1,12 @@
+@prefix : <http://example.org/reason#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+<http://example.org/reason> a owl:Ontology .
+:Person a owl:Class . :Vehicle a owl:Class . :Car a owl:Class ; rdfs:subClassOf :Vehicle .
+:owns a owl:ObjectProperty .
+:CarOwner a owl:Class ; owl:equivalentClass [ a owl:Restriction ; owl:onProperty :owns ; owl:someValuesFrom :Car ] .
+:Motorist a owl:Class ; owl:equivalentClass [ a owl:Class ; owl:intersectionOf ( :Person [ a owl:Restriction ; owl:onProperty :owns ; owl:someValuesFrom :Car ] ) ] .
+:Driver a owl:Class ; rdfs:subClassOf :Person, [ a owl:Restriction ; owl:onProperty :owns ; owl:someValuesFrom :Car ] .
+:Twin a owl:Class ; owl:equivalentClass [ a owl:Restriction ; owl:onProperty :owns ; owl:someValuesFrom :Car ] .
+:alice a owl:NamedIndividual, :Person ; :owns :c1 .
+:c1 a owl:NamedIndividual, :Car .

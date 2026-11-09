@@ -12,8 +12,10 @@ export const ROUTE_SCREEN: Record<string, { name: string; aliases: string[] }> =
   analyse: { name: 'analysis', aliases: ['analysis'] },
   modele: { name: 'model', aliases: ['model'] },
   exports: { name: 'exports', aliases: ['exports'] },
+  versions: { name: 'versions', aliases: ['versions'] },
   requetes: { name: 'queries', aliases: ['queries'] },
   assistant: { name: 'assistant', aliases: ['assistant'] },
+  documentation: { name: 'documentation', aliases: ['documentation'] },
 }
 
 export type CtxMode = 'full' | 'screen' | 'none'

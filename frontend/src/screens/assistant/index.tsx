@@ -45,6 +45,7 @@ export function AssistantScreen({ p, setP, target }: ScreenProps) {
   const [text, setText] = useState('')
   const [files, setFiles] = useState<UploadedFile[]>([])
   const [busy, setBusy] = useState(false)
+  const [forging, setForging] = useState(false)   // génération (shapes, brouillon) : Krakie forgeronne au lieu de « réfléchit »
   const [drag, setDrag] = useState(false)
   const [status, setStatus] = useState<AStatus | null>(null)
   const [stErr, setStErr] = useState(false)
@@ -83,7 +84,7 @@ export function AssistantScreen({ p, setP, target }: ScreenProps) {
   const providers = status?.providers ?? []
   const real = providers.filter(x => x.kind !== 'mock' && x.configured)
   const onlyMock = !!status && real.length === 0
-  const pose: Pose = busy ? 'reflechit' : happy ? 'contente' : 'accueil'
+  const pose: Pose = busy && forging ? 'forge' : busy ? 'reflechit' : happy ? 'contente' : 'accueil'
   const say = (m: Omit<Msg, 'id'>) => setMsgs(x => [...x, { ...m, id: uid() }])
 
   async function addFiles(list: FileList | File[]) {
@@ -109,20 +110,20 @@ export function AssistantScreen({ p, setP, target }: ScreenProps) {
 
   async function genShapes() {
     if (busy) return
-    say({ role: 'user', content: t('asst.qa.shapes') }); setBusy(true); setHappy(false)
+    say({ role: 'user', content: t('asst.qa.shapes') }); setBusy(true); setForging(true); setHappy(false)
     try {
       const r = await aapi.shapes(p.id, prov || undefined)
       const n = Object.keys(r.proposal.shapes).length
       setShapes({ model: r.proposal, n }); setHappy(true)
       say({ role: 'assistant', content: r.explanation, count: undefined, warnings: [t('asst.shapes.msg', { n })] })
     } catch (e) { say({ role: 'assistant', content: e instanceof Error ? e.message : String(e), error: true }) }
-    finally { setBusy(false) }
+    finally { setBusy(false); setForging(false) }
   }
   async function applyShapes() {
     if (!shapes) return
     const m = structuredClone(p.shapes)
     Object.assign(m.shapes, shapes.model.shapes); Object.assign(m.property_shapes, shapes.model.property_shapes); m.prefixes = { ...m.prefixes, ...shapes.model.prefixes }
-    try { setP(await api.putShapes(p.id, m)); toast(t('asst.shapes.done', { n: shapes.n })); setShapes(null) } catch (e) { toast(e instanceof Error ? e.message : String(e)) }
+    try { setP(await api.putShapes(p.id, m)); toast(t('asst.shapes.done', { n: shapes.n }), { pose: 'trophee' }); setShapes(null) } catch (e) { toast(e instanceof Error ? e.message : String(e)) }
   }
   async function openExplain() {
     setExplainOpen(o => !o)
@@ -189,7 +190,7 @@ export function AssistantScreen({ p, setP, target }: ScreenProps) {
               </div>
             </div>
           ))}
-          {busy && <div className="as-msg assistant"><Krakie pose="reflechit" size={32} float={false} /><div className="as-bubble as-dots" aria-label={t('asst.thinking')}><i /><i /><i /></div></div>}
+          {busy && <div className="as-msg assistant"><Krakie pose={forging ? 'forge' : 'reflechit'} size={32} float={false} /><div className="as-bubble as-dots" aria-label={t('asst.thinking')}><i /><i /><i /></div></div>}
           <div ref={endRef} />
         </div>
 
@@ -200,7 +201,7 @@ export function AssistantScreen({ p, setP, target }: ScreenProps) {
               <Button size="sm" variant="primary" onClick={explain}>{t('asst.explain.go')}</Button></>}
           </div>}
           <div className="as-qa" role="group" aria-label={t('asst.qa')}>
-            <Button size="sm" icon="file-circle-plus" disabled={busy || !csvLike} title={csvLike ? undefined : t('asst.qa.needFile')} onClick={() => send(t('asst.qa.draft.msg'))}>{t('asst.qa.draft')}</Button>
+            <Button size="sm" icon="file-circle-plus" disabled={busy || !csvLike} title={csvLike ? undefined : t('asst.qa.needFile')} onClick={() => { setForging(true); void Promise.resolve(send(t('asst.qa.draft.msg'))).finally(() => setForging(false)) }}>{t('asst.qa.draft')}</Button>
             <Button size="sm" icon="file-import" disabled={busy} aria-expanded={docOpen} onClick={() => setDocOpen(o => !o)}>{t('doc.open')}</Button>
             <Button size="sm" icon="shield-halved" disabled={busy} onClick={genShapes}>{t('asst.qa.shapes')}</Button>
             <Button size="sm" icon="circle-question" disabled={busy} onClick={openExplain} aria-expanded={explainOpen}>{t('asst.qa.explain')}</Button>

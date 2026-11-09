@@ -15,7 +15,9 @@ services:
       interval: 10s
       retries: 5
   frontend:
-    build: ./frontend
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
     ports: ["${ONTOFORGE_PORT:-8088}:80"]
     depends_on: [backend]
 volumes:

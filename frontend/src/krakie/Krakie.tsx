@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type RefObject } from 'react'
 import draft from './krakie-draft-20px.json'
 
-export type Pose = 'accueil' | 'reflechit' | 'lit' | 'loupe' | 'graphe' | 'contente' | 'inquiete' | 'bolide'
+export type Pose = 'accueil' | 'reflechit' | 'lit' | 'loupe' | 'graphe' | 'contente' | 'inquiete' | 'forge' | 'trophee'
 const PAL = draft.palette as Record<string, string>
 const BASE = draft.base as string[]
 
@@ -112,7 +112,8 @@ const ACC: Partial<Record<Pose, Px[]>> = {
   lit: [...rect(6, 14, 8, 4, 'K'), ...rect(7, 15, 3, 2, 'p'), ...rect(10, 15, 3, 2, 'p')],
   loupe: [...rect(15, 11, 3, 1, 'K'), ...rect(14, 12, 1, 3, 'K'), ...rect(18, 12, 1, 3, 'K'), ...rect(15, 15, 3, 1, 'K'), ...rect(15, 12, 3, 3, 'H'), ...rect(18, 16, 1, 2, 'a')],
   graphe: [...rect(0, 2, 2, 2, 'A'), ...rect(18, 1, 2, 2, 'A'), ...rect(17, 15, 2, 2, 'A'), [2, 3, 'a'], [3, 3, 'a'], [16, 2, 'a'], [17, 2, 'a'], [18, 12, 'a'], [18, 13, 'a'], [18, 14, 'a']],
-  bolide: [...rect(1, 16, 4, 2, 'A'), ...rect(15, 16, 4, 2, 'A'), ...rect(0, 6, 3, 1, 'H'), ...rect(0, 9, 4, 1, 'H')],
+  forge: [...rect(0, 14, 4, 2, 'K'), ...rect(16, 14, 4, 2, 'K'), ...rect(5, 16, 10, 1, 'A'), ...rect(3, 17, 14, 2, 'K')],
+  trophee: [...rect(0, 4, 4, 1, 'A'), ...rect(1, 5, 2, 3, 'A'), ...rect(0, 8, 4, 1, 'a')],
   reflechit: [...rect(16, 1, 1, 1, 'K'), ...rect(17, 3, 1, 1, 'K'), ...rect(18, 0, 2, 2, 'W'), ...rect(17, 0, 1, 2, 'K')],
   contente: [...rect(1, 1, 1, 3, 'A'), ...rect(0, 2, 3, 1, 'A'), ...rect(18, 3, 1, 3, 'A'), ...rect(17, 4, 3, 1, 'A')],
   inquiete: [...rect(17, 5, 1, 2, 'H'), ...rect(16, 7, 3, 2, 'H'), ...rect(4, 6, 4, 1, 'K'), ...rect(12, 6, 4, 1, 'K')],
@@ -149,12 +150,41 @@ export function Krakie({ pose = 'accueil', size = 64, title, float = true, anima
   const common = { width: size, height: size, className: cls, role: title ? 'img' : undefined, 'aria-label': title, 'aria-hidden': title ? undefined : true } as const
   if (svgOk) {
     const src = frame >= 0 ? frameUrl(pose, frame + 1) : `/krakie/${pose}.svg`
-    return <img {...common} ref={ref} src={src} alt={title ?? ''} draggable={false}
+    return <img {...common} data-pose={pose} ref={ref} src={src} alt={title ?? ''} draggable={false}
       onError={() => (frame >= 0 ? setAnimOk(false) : setSvgOk(false))} style={{ imageRendering: 'pixelated' }} />
   }
   return (
     <svg {...common} viewBox="0 0 20 19" shapeRendering="crispEdges" preserveAspectRatio="xMidYMid meet">
       {sprite(pose).map(([x, y, c], i) => <rect key={i} x={x} y={y} width={1} height={1} fill={PAL[c] ?? c} />)}
     </svg>
+  )
+}
+
+// ---------------------------------------------------------------- forge + trophée (traitement en cours / fin réussie)
+/** Vrai pendant `ms` après la fin réussie d'un traitement (busy passe de true à false avec ok). */
+export function useResultFlash(busy: boolean, ok: boolean, ms = 2000): boolean {
+  const [on, setOn] = useState(false)
+  const prev = useRef(busy)
+  useEffect(() => {
+    const was = prev.current
+    prev.current = busy
+    if (was && !busy && ok) {
+      setOn(true)
+      const id = setTimeout(() => setOn(false), ms)
+      return () => clearTimeout(id)
+    }
+    if (busy) setOn(false)
+  }, [busy, ok, ms])
+  return on
+}
+
+/** Krakie forgeronne pendant le traitement, puis brièvement avec le trophée à la fin. Image fixe si mouvement réduit (géré par <Krakie>). */
+export function KrakieStatus({ busy, done, label, doneLabel, size = 64, donePose = 'trophee' }: { busy: boolean; done: boolean; label: string; doneLabel: string; size?: number; donePose?: 'trophee' | 'inquiete' }) {
+  if (!busy && !done) return null
+  return (
+    <div className={'kstatus ' + (busy ? 'busy' : 'done')} role="status" aria-live="polite" data-kstatus={busy ? 'forge' : donePose}>
+      <Krakie pose={busy ? 'forge' : donePose} size={size} float={false} />
+      <span>{busy ? label : doneLabel}</span>
+    </div>
   )
 }

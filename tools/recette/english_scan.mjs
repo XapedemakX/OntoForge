@@ -23,6 +23,10 @@ process.on('exit', stop)
 const EXCEPTIONS = [
   // aucune pour l'instant
 ]
+// Exception déclarée (L28, mise à jour L33) : un fichier de docs/guide/ sans version .en.md (architecture, regles, glossaire) s'affiche en français
+// en mode anglais ; l'écran Documentation le marque data-doc-fallback et affiche le bandeau « Documentation available in French only » (ce bandeau,
+// lui, reste scanné). Les fichiers traduits (utilisateur, limites, contribuer, api, CHANGELOG en .en.md) ne portent pas ce marquage : ils sont scannés.
+const EXCEPTION_SELECTORS = ['[data-doc-fallback]']
 const i18nPrefixes = [...new Set(Object.keys(JSON.parse(readFileSync(path.join(ROOT, 'frontend/src/i18n/fr.json'), 'utf8'))).map(k => k.split('.')[0]))]
 
 run('/home/claude/venv/bin/python', ['-m', 'uvicorn', 'ontoforge.main:app', '--port', String(BP), '--log-level', 'warning'],
@@ -41,7 +45,7 @@ await fetch(`${B}/projects/${pid}/analyze?target=curiosity`, { method: 'POST' })
 await fetch(`${B}/projects/${pid}/decisions/curiosity/accept-recommended`, { method: 'POST' })
 
 // ----------------------------------------------------------------------------- détection (exécutée dans la page)
-const SCAN = ({ prefixes }) => {
+const SCAN = ({ prefixes, exceptionSelectors }) => {
   const ACCENT = /[éèàçùêâîôûëïüœ]/i
   const WORDS = new Set(['le', 'la', 'les', 'des', 'du', 'une', 'et', 'pour', 'avec', 'aucun', 'aucune', 'propriété', 'propriétés', 'dans', 'sur', 'est', 'sont',
     'pas', 'cette', 'ces', 'vos', 'votre', 'vous', 'nous', 'ajouter', 'ajoute', 'supprimer', 'modifier', 'ouvrir', 'fermer', 'enregistrer', 'annuler', 'valeur', 'valeurs', 'ontologie',
@@ -51,7 +55,7 @@ const SCAN = ({ prefixes }) => {
   // mots qu'on ne retient que s'ils sont accompagnés d'au moins un autre mot français (ambigus avec l'anglais ou des noms propres)
   const WEAK = new Set(['ou', 'un', 'au', 'ce', 'son', 'sa', 'plus', 'sans', 'est', 'sur', 'ici', 'nom', 'texte', 'relation', 'relations', 'aide', 'dont', 'que', 'qui', 'nombre', 'valeur', 'valeurs'])
   const skipTag = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'CODE', 'PRE', 'TEXTAREA', 'SVG'])
-  const skipSel = '.cm-editor, pre, code, [data-user-content], svg'
+  const skipSel = '.cm-editor, pre, code, [data-user-content], svg, ' + exceptionSelectors.join(', ')
   const cssPath = el => {
     const parts = []
     for (let e = el, n = 0; e && e.nodeType === 1 && e !== document.body && n < 5; e = e.parentElement, n++) {
@@ -70,7 +74,7 @@ const SCAN = ({ prefixes }) => {
   }
   const looksLikeIri = s => /^\S*[#\/]\S*$/.test(s) || /^[A-Za-z][\w.-]*:[\w.-]+$/.test(s) || /^https?:/.test(s)
   const frenchReason = raw => {
-    const s = raw.replace(/\s+/g, ' ').trim()
+    const s = raw.replace(/\s+/g, ' ').replace(/Protégé/g, 'Protege').trim()  // nom propre (L33 : cité dans la doc anglaise)
     if (s.length < 2 || looksLikeIri(s)) return null
     if (/^[a-z]+(\.[A-Za-z0-9_-]+)+$/.test(s) && prefixes.includes(s.split('.')[0])) return 'clé i18n brute'
     if (ACCENT.test(s)) return 'accent'
@@ -107,7 +111,7 @@ let scanned = 0
 async function scan(screen) {
   scanned++
   let hits = []
-  try { hits = await page.evaluate(SCAN, { prefixes: i18nPrefixes }) } catch (e) { console.error('scan KO ' + screen + ' : ' + String(e).slice(0, 120)); return }
+  try { hits = await page.evaluate(SCAN, { prefixes: i18nPrefixes, exceptionSelectors: EXCEPTION_SELECTORS }) } catch (e) { console.error('scan KO ' + screen + ' : ' + String(e).slice(0, 120)); return }
   for (const h of hits) {
     if (EXCEPTIONS.some(x => (x instanceof RegExp ? x.test(h.text) : x === h.text))) continue
     const k = h.text + '\u0000' + h.selector
@@ -125,7 +129,7 @@ async function scanTabs(screen) {
     }
   }
 }
-const screens = ['tableau', 'ontologie', 'ontologie-liste', 'shapes', 'conformite', 'shacl', 'analyse', 'modele', 'exports', 'requetes', 'assistant']
+const screens = ['tableau', 'ontologie', 'ontologie-liste', 'shapes', 'conformite', 'shacl', 'analyse', 'modele', 'exports', 'requetes', 'assistant', 'documentation', 'documentation/limites', 'documentation/contribuer', 'documentation/api', 'documentation/changelog', 'documentation/architecture']
 await go('#/'); await scanTabs('projets')
 await go('#/parametres'); await scanTabs('parametres')
 for (const sc of screens) { await go(`#/projet/${pid}/${sc}`); await scanTabs(sc) }
@@ -165,5 +169,5 @@ await browser.close(); stop()
 // ----------------------------------------------------------------------------- rapport
 const list = [...found.values()]
 for (const h of list) console.log(`FR  [${[...h.screens][0]}${h.screens.size > 1 ? ` +${h.screens.size - 1}` : ''}] ${h.selector}\n      « ${h.text} » (${h.kind}, ${h.why})`)
-console.log(`\n=== ${scanned} vues scannées, ${list.length} texte(s) suspect(s) de français, ${EXCEPTIONS.length} exception(s) déclarée(s)`)
+console.log(`\n=== ${scanned} vues scannées, ${list.length} texte(s) suspect(s) de français, ${EXCEPTIONS.length + EXCEPTION_SELECTORS.length} exception(s) déclarée(s)`)
 process.exit(list.length ? 1 : 0)

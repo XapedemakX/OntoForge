@@ -12,6 +12,7 @@ from pydantic import ValidationError
 
 from .. import netguard
 from ..assistant.providers import LLMError, from_config
+from .. import standards
 from ..settings import store
 from ..settings.models import DEFAULT_MODELS, EndpointConfig, ProviderConfig, Settings, SparqlAuth, SparqlEndpoint
 
@@ -66,6 +67,8 @@ def _view() -> dict[str, Any]:
         for p in view["llm_providers"]:
             if p["kind"] == "mock" and p["name"] == "Mock (démonstration)":
                 p["name"] = "Mock (demo)"
+    view["versions_view"] = standards.describe(None, base=view["versions"])  # L31 : statut de chaque version du défaut global
+    view["versions_check"] = {k: v for k, v in standards.check(None, base=view["versions"]).items() if k in ("gaps", "needs_attention", "recommended", "updated")}
     return view
 
 
@@ -92,6 +95,14 @@ def put_settings(body: dict[str, Any] = Body(...)) -> Any:
         for key, model in (("language", s.language), ("defaults", s.defaults)):
             if isinstance(body.get(key), dict):
                 setattr(s, key, type(model).model_validate({**model.model_dump(), **body[key]}))
+        if isinstance(body.get("versions"), dict):  # L31 : défaut global des versions
+            patch_v: dict[str, str] = {}
+            for k, v in body["versions"].items():
+                err = standards.check_format(k, v)
+                if err:
+                    raise HTTPException(status_code=422, detail=err)
+                patch_v[k] = standards.normalize(k, v)
+            s.versions = type(s.versions).model_validate({**s.versions.model_dump(), **patch_v})
         if "sparql_endpoint" in body:
             s.sparql_endpoint = _patch_sparql(s.sparql_endpoint, body["sparql_endpoint"])
             _sync_legacy(s)

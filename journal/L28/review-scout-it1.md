@@ -1,0 +1,20 @@
+# Revue L28, itération 1 : scout (UX) puis doc (exactitude)
+
+verdict: OK
+
+bloquants:
+  - aucun
+
+corrigé par le relecteur (petits défauts) :
+  - [frontend/src/lib/docs.ts, docs.css] Les 19 captures du guide utilisateur pointent vers `../../journal/...` : hors de l'image Docker (`.dockerignore` exclut `journal/`) et hors du build, elles s'affichaient en icône d'image cassée (visible sur 05b-aide-editeur.png). Le rendu affiche maintenant une légende « Capture : <texte> » (classe `doc-fig`) ; les images http(s) restent rendues. Build, l28_docs.mjs (45/45) et e2e_ui.mjs (30/30) rejoués verts.
+  - [docs/guide/CHANGELOG.md] La ligne L28 était placée avant la phrase d'introduction « Lots L19 à L26, un par ligne » : déplacée en fin de liste. Ce fichier porte aussi une ligne L32 non commitée d'un autre agent : non commité ici, il partira avec L32.
+
+non-bloquants:
+  - Lecture : colonne d'article confortable (environ 820 px, interligne ample), tableaux dans un conteneur défilant, code coloré sur fond distinct, sommaire à deux niveaux avec entrée active, recherche avec compteur « 1 / 23 », surlignage et navigation clavier. Rien à reprocher. Les titres non numérotés (Éditeur de fichiers, Documentation intégrée et aide, Visite guidée, Easter egg) rompent la numérotation du sommaire : à renuméroter au prochain passage de la doc.
+  - Bouton « ? » (5 écrans contrôlés : tableau de bord, éditeur, Shapes, Requêtes, Paramètres) : chaque ancre existe et mène à la bonne section. Limites : Shapes et SHACL pointent la même section « SHACL » (elle couvre bien les deux onglets) ; l'écran Versions, routé, n'a pas d'entrée dans `help_map.json` et retombe sur « Le parcours en un coup d'œil ». À traiter par L31 (versions), qui devra aussi écrire sa section du guide puis ajouter l'entrée.
+  - Krakie « aide » : vérifié sur Shapes et Requêtes (fr et en, « aide », « help », « how does this work », « comment ça marche ici ») : carte avec la bonne section et le bon résumé. Pas de faux positif sur « aide-moi à ajouter la classe Pneu » ni « ajoute la classe Aide ». Sur la capture 06a, la bulle « Première fois ici ? » recouvre la carte : artefact de recette, à fermer avant la capture.
+  - Mode anglais : le bandeau « Documentation available in French only » est acceptable à titre transitoire (clair, discret, interface de l'écran traduite). Il laisse pourtant un contenu entier en français pour un lecteur anglophone. Suite proposée : lot futur « guide en anglais », en commençant par `utilisateur.en.md` et `limites.en.md` (le chargeur gère déjà les fichiers `.en.md`) ; maintenir deux versions exige un test qui compare les titres FR/EN (mêmes ancres) pour que `help_map.json` reste valable dans les deux langues. Les captures (journal/, textes français) devront être refaites en anglais.
+  - Doc : la section « Documentation intégrée et aide » du guide est exacte (entrée Outils, bouton « ? », ancre sans accents ni numéro, repli `.en.md`, intention Krakie, test `test_help_map.py`, `package-data` dans `pyproject.toml`). CONTRACTS §4 (action `help`, payload `{screen, page, anchor, title}`) correspond à `agent.py` (kind help, repli sur `default`). La visite compte bien 20 étapes. Cohérent avec le code.
+  - Docker, relu sans pouvoir lancer `docker build` (indisponible ici) : frontend/Dockerfile et deploy/cloudrun/Dockerfile copient `docs/guide` vers `/docs/guide` et `help_map.json` vers `/backend/ontoforge/assistant/` ; depuis `/app/src/lib`, `../../../` vaut `/`, donc les imports Vite se résolvent. docker-compose passe `context: .` avec `dockerfile: frontend/Dockerfile`, cohérent avec les `COPY frontend/...`. `.dockerignore` : `docs/*` puis `!docs/guide/` laisse passer le guide, `frontend/node_modules` et `dist` restent exclus. L'image backend embarque `help_map.json` via `COPY backend/ontoforge`. À confirmer par un vrai `docker build` en CI ou par le agent deploy.
+
+skill: product-discovery : toute documentation embarquée doit être vérifiée « hors dépôt » (images, liens) ; technical-documentation : ne pas référencer des captures hors du dossier du guide.

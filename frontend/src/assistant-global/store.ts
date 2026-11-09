@@ -1,7 +1,7 @@
 // Conversation du projet partagée entre le panneau global et l'écran Assistant plein écran (même clé localStorage que L10).
 import { useCallback, useSyncExternalStore } from 'react'
 
-export type ActionKind = 'ops' | 'proposal' | 'shapes' | 'guided_query' | 'navigate'
+export type ActionKind = 'ops' | 'proposal' | 'shapes' | 'guided_query' | 'navigate' | 'versions' | 'help'
 export interface AgentAction {
   kind: ActionKind
   payload: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any

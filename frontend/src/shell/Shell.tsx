@@ -7,7 +7,10 @@ import { Projects } from '../screens/Projects'
 import { Settings } from '../screens/Settings'
 import { useActiveEndpoint } from '../screens/settings/activeEndpoint'
 import { AssistantDock } from '../assistant-global'
+import { VersionsNudge } from '../screens/versions/VersionsNudge'
 import { TourHost, tour } from '../tour'
+import { helpFor, openDoc } from '../lib/docs'
+import { ROUTE_SCREEN } from '../assistant-global/context'
 import { SCREENS, STEPS } from './registry'
 import { useAuth } from '../auth/AuthGate'
 import { useTheme } from './theme'
@@ -116,6 +119,7 @@ export function Shell() {
           </>}
           <a className={'endpoint' + (endpoint ? ' on' : '')} href="#/parametres" title={endpoint?.url ?? t('head.sparqlNone')}>
             <Icon name="database" /><span>{endpoint ? (endpoint.name || endpoint.url.replace(/^https?:\/\//, '')) : t('head.sparqlNone')}</span></a>
+          {p && pid && <IconButton icon="circle-question" label={t('docs.helpBtn')} data-testid="help-btn" onClick={() => { const h = helpFor(ROUTE_SCREEN[screen]?.name ?? screen); openDoc(pid, h.page, h.anchor) }} />}
           <IconButton icon="route" label={t('tour.btn')} onClick={() => void tour.start()} />
           <IconButton icon={themeIcon} label={t('head.theme.' + themePref)} onClick={cycleTheme} />
           {auth.enabled && <button type="button" className="btn sm ghost logout" data-testid="logout" title={auth.user ?? ''} onClick={() => void auth.logout()}><Icon name="right-from-bracket" /><span>{t('auth.logout')}</span></button>}
@@ -129,6 +133,7 @@ export function Shell() {
         </main>
       </div>
       <TourHost />
+      {p && pid && <VersionsNudge p={p} setP={setP} screen={screen} />}
       {p && pid && <AssistantDock p={p} setP={setP} target={target} screen={screen} perimeter={activePeri || null} />}
     </div>
   )

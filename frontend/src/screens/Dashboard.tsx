@@ -26,6 +26,7 @@ export function Dashboard({ p, target }: ScreenProps) {
   const toast = useToast()
   const [genBusy, setGenBusy] = useState(false)
   const [genTick, setGenTick] = useState(0)
+  const [trophy, setTrophy] = useState(false)
   const hist = useLoad(() => api.generations(p.id).catch(() => []), [p.id, genTick])
   // l'état du projet côté serveur (le `p` du shell peut être en retard d'une décision)
   const srv = useLoad(() => api.getProject(p.id).then(x => x.updated_at), [p.id, p.updated_at, genTick])
@@ -35,7 +36,7 @@ export function Dashboard({ p, target }: ScreenProps) {
   for (const g of history) if (!gens[g.target]) gens[g.target] = g   // la plus récente d'abord
   const generate = async () => {
     setGenBusy(true)
-    try { const r = await api.generate(p.id, target); toast(t('dash.gen.done', { target: tn(target), n: Object.keys(r.files).length })); setGenTick(x => x + 1) }
+    try { const r = await api.generate(p.id, target); toast(t('dash.gen.done', { target: tn(target), n: Object.keys(r.files).length }), { pose: 'trophee' }); setGenTick(x => x + 1); setTrophy(true); setTimeout(() => setTrophy(false), 2000) }
     catch (e) { toast((e as Error).message) } finally { setGenBusy(false) }
   }
   const o = p.onto
@@ -59,8 +60,8 @@ export function Dashboard({ p, target }: ScreenProps) {
   else if (nShapes === 0) next = { pose: 'lit', title: t('dash.next.shapes.t'), text: t('dash.next.shapes.d'), action: t('dash.next.shapes.a'), to: 'shacl' }
   else if (cc.lost > 0) next = { pose: 'inquiete', title: t('dash.next.lost.t', { n: cc.lost, ...tp }), text: t('dash.next.lost.d'), action: t('dash.next.lost.a'), to: 'analyse' }
   else if (cc.review > 0) next = { pose: 'graphe', title: t('dash.next.review.t', { n: cc.review, ...tp }), text: t('dash.next.review.d'), action: t('dash.next.review.a'), to: 'analyse' }
-  else if (stale(target)) next = { pose: 'bolide', title: t('dash.next.regen.t', tp), text: t('dash.next.regen.d', tp), action: t('dash.gen.btn', tp), run: generate }
-  else if (!gens[target]) next = { pose: 'bolide', title: t('dash.next.gen.t', tp), text: t('dash.next.gen.d', tp), action: t('dash.gen.btn', tp), run: generate }
+  else if (stale(target)) next = { pose: 'forge', title: t('dash.next.regen.t', tp), text: t('dash.next.regen.d', tp), action: t('dash.gen.btn', tp), run: generate }
+  else if (!gens[target]) next = { pose: 'forge', title: t('dash.next.gen.t', tp), text: t('dash.next.gen.d', tp), action: t('dash.gen.btn', tp), run: generate }
   else next = { pose: 'contente', title: t('dash.next.done.t', tp), text: t('dash.next.done.d'), action: t('dash.next.done.a'), run: undefined, to: undefined,
     extra: [{ label: t('dash.gen.files'), icon: 'file-lines', to: 'exports' }, { label: t('dash.next.ok.a'), icon: 'magnifying-glass-chart', to: 'requetes' }] }
   if (!loaded && nCls > 0) next = { ...next, pose: 'reflechit' }
@@ -82,7 +83,7 @@ export function Dashboard({ p, target }: ScreenProps) {
       <div className="page-head"><div><h1>{t('dash.title')}</h1><div className="sub">{t('dash.subtitle', { name: p.name })}</div></div></div>
 
       <section className={`next ${next.pose}`} aria-label={t('dash.next')} data-tour="dash-next">
-        <Krakie pose={next.pose} size={96} title="Krakie" />
+        <Krakie pose={genBusy ? 'forge' : trophy ? 'trophee' : next.pose} size={96} title="Krakie" />
         <div className="bubble">
           <h2>{next.title}</h2>
           <p>{next.text}</p>

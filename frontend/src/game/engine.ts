@@ -5,6 +5,7 @@ import type { GamePose, KrakieSprites } from './sprites'
 
 export type Phase = 'ready' | 'playing' | 'paused' | 'over'
 export interface HudState { score: number; lives: number; level: number; triples: number; chain: string[]; shield: boolean }
+export const EXPRESSIONS: Record<GamePose, string> = { nage: 'neutral', nage_clin: 'wink', nage_ravie: 'delight', nage_surprise: 'surprise', nage_grimace: 'grimace', nage_inquiete: 'worried' }
 export interface Result { score: number; triples: number; level: number }
 export interface EngineOpts {
   canvas: HTMLCanvasElement; reduced: boolean; sfx: Sfx; sprites: () => KrakieSprites; labels: { score: string; level: string }
@@ -112,7 +113,8 @@ export class Engine {
   private keyL = false; private keyR = false; private ptr: number | null = null
   private spawnT = 0.6; private bonusT = 6
   private invuln = 0; private shield = false; private shake = 0; private flash = 0
-  private poseT = 0; private pose: GamePose = 'accueil'; private animT = 0
+  private poseT = 0; private pose: GamePose = 'nage'; private animT = 0
+  private lean = 0; private trail = 0; private infT = 0; private vx = 0
   private overT = 0
 
   constructor(private o: EngineOpts) {
@@ -127,7 +129,7 @@ export class Engine {
   newGame() {
     this.score = 0; this.lives = 3; this.triples = 0; this.level = 1; this.chain = []; this.graph = []
     this.items = []; this.parts = []; this.pops = []; this.spawnT = 0.5; this.bonusT = 7; this.invuln = 0; this.shield = false
-    this.shake = 0; this.flash = 0; this.pose = 'accueil'; this.poseT = 0; this.kx = this.W / 2
+    this.shake = 0; this.flash = 0; this.pose = 'nage'; this.poseT = 0; this.infT = 0; this.lean = 0; this.trail = 0; this.vx = 0; this.kx = this.W / 2
     this.setPhase('playing'); this.emit()
   }
   pause() { if (this.phase === 'playing') this.setPhase('paused') }
@@ -159,6 +161,17 @@ export class Engine {
     return { phase: this.phase, W: this.W, H: this.H, kx: this.kx, score: this.score, lives: this.lives, level: this.level, triples: this.triples, chain: this.chain, want: opt.labels, kind: opt.kind,
       items: this.items.map(i => ({ type: i.type, kind: i.kind, label: i.label, cx: i.x + i.w / 2, y: i.y })) }
   }
+  /** Expression courante de Krakie pour la recette (fixe sous mouvement réduit). */
+  state() {
+    const pose = this.curPose
+    return { expression: EXPRESSIONS[pose], pose, phase: this.phase, shield: this.shield, inference: this.infT > 0, lean: this.o.reduced ? 0 : Math.round(this.lean * 10) / 10, lives: this.lives, score: this.score, reduced: this.o.reduced }
+  }
+  /** Pose affichée : expression brève en cours, sinon inquiète à une seule vie (ou fin de partie), sinon nage. */
+  private get curPose(): GamePose {
+    if (this.phase === 'over') return 'nage_inquiete'
+    if (this.poseT > 0) return this.pose
+    return this.phase === 'playing' && this.lives === 1 ? 'nage_inquiete' : 'nage'
+  }
   private emit() { this.o.on.hud({ score: this.score, lives: this.lives, level: this.level, triples: this.triples, chain: [...this.chain], shield: this.shield }) }
   private say(k: string, p?: Record<string, string | number>) { this.o.on.say(k, p) }
 
@@ -188,8 +201,8 @@ export class Engine {
 
   private update(dt: number) {
     this.updateAmbient(dt); this.updateParts(dt)
-    this.animT += dt * 1000
-    if (this.poseT > 0) { this.poseT -= dt; if (this.poseT <= 0) { this.pose = 'accueil'; this.animT = 0 } }
+    if (this.poseT > 0) { this.poseT -= dt; if (this.poseT <= 0) this.pose = 'nage' }
+    this.infT = Math.max(0, this.infT - dt)
     this.invuln = Math.max(0, this.invuln - dt); this.shake = Math.max(0, this.shake - dt); this.flash = Math.max(0, this.flash - dt)
     // déplacement de Krakie
     const maxV = 120
@@ -198,6 +211,9 @@ export class Engine {
     else v = ((this.keyR ? 1 : 0) - (this.keyL ? 1 : 0)) * maxV
     this.kx = Math.min(this.W - 14, Math.max(14, this.kx + v * dt))
     if (v > 1) this.face = 1; else if (v < -1) this.face = -1
+    this.vx = v
+    this.lean += (Math.max(-1, Math.min(1, v / 110)) * 3 - this.lean) * Math.min(1, dt * 12)
+    this.animT += dt * 1000 * (Math.abs(v) > 5 ? 1.7 : 0.8)
     // apparitions
     this.spawnT -= dt
     this.bonusT -= dt
@@ -212,7 +228,7 @@ export class Engine {
     }
     this.items = this.items.filter(i => i.y < 9000)
     if (this.lives <= 0 && this.phase === 'playing') {
-      this.overT = 0; this.pose = 'inquiete'; this.poseT = 99; this.animT = 0
+      this.overT = 0; this.poseT = 0; this.animT = 0
       this.setPhase('over'); this.o.sfx.play('over'); this.say('game.say.over', { score: this.score })
       this.o.on.over({ score: this.score, triples: this.triples, level: this.level })
     }
@@ -234,8 +250,17 @@ export class Engine {
     } else {
       const opt = options(this.chain)
       const haveCont = this.items.some(i => i.type === 'tok' && i.kind === opt.kind && opt.labels.includes(i.label))
-      if (!haveCont || Math.random() < 0.4) { const l = pick(opt.labels); it = mkItem('tok', opt.kind, l, pill(opt.kind, l)) }
-      else { const k = pick<Kind>(['S', 'P', 'O']); const l = pick(ALL[k]); it = mkItem('tok', k, l, pill(k, l)) }
+      if (!haveCont || Math.random() < 0.4) { const free = opt.labels.filter(l => !this.items.some(o => o.type === 'tok' && o.label === l && o.kind !== opt.kind)); const l = pick(free.length ? free : opt.labels); it = mkItem('tok', opt.kind, l, pill(opt.kind, l)) }
+      else {
+        // distracteur : jamais le même mot qu'une cible d'une autre catégorie, ni qu'un élément déjà à l'écran sous une autre catégorie
+        for (let n = 0; n < 12 && !it; n++) {
+          const k = pick<Kind>(['S', 'P', 'O']); const l = pick(ALL[k])
+          if (k !== opt.kind && opt.labels.includes(l)) continue
+          if (this.items.some(o => o.type === 'tok' && o.label === l && o.kind !== k)) continue
+          it = mkItem('tok', k, l, pill(k, l))
+        }
+        if (!it) { const l = pick(opt.labels); it = mkItem('tok', opt.kind, l, pill(opt.kind, l)) }
+      }
     }
     // abscisse : éviter de superposer les derniers éléments encore hauts
     for (let n = 0; n < 8; n++) {
@@ -248,19 +273,19 @@ export class Engine {
   private collide(it: Item) {
     const cx = it.x + it.w / 2, cy = it.y + it.h / 2
     if (it.type === 'tok') return this.catchTok(it.kind!, it.label, cx, cy)
-    if (it.type === 'inf') { this.o.sfx.play('bonus'); this.setPose('contente', 0.7); this.burst(cx, cy, C.purple, 10); this.say('game.say.inf'); this.autoCatch(); return }
-    if (it.type === 'shacl') { this.shield = true; this.o.sfx.play('bonus'); this.setPose('contente', 0.7); this.burst(cx, cy, C.glass, 10); this.say('game.say.shacl'); this.emit(); return }
+    if (it.type === 'inf') { this.o.sfx.play('bonus'); this.setPose('nage_surprise', 0.7); this.infT = 1.5; this.burst(cx, cy, C.purple, 14); this.say('game.say.inf'); this.autoCatch(); return }
+    if (it.type === 'shacl') { this.shield = true; this.o.sfx.play('bonus'); this.setPose('nage_surprise', 0.7); this.burst(cx, cy, C.glass, 10); this.say('game.say.shacl'); this.emit(); return }
     // dangers
-    if (this.shield) { this.shield = false; this.o.sfx.play('shield'); this.burst(cx, cy, C.glass, 12); this.say('game.say.shield'); this.emit(); return }
+    if (this.shield) { this.shield = false; this.setPose('nage_surprise', 0.4); this.o.sfx.play('shield'); this.burst(cx, cy, C.glass, 12); this.say('game.say.shield'); this.emit(); return }
     if (this.invuln > 0) return
     this.lives--; this.invuln = 1.5; this.shake = this.o.reduced ? 0 : 0.28; this.flash = this.o.reduced ? 0 : 0.18
-    this.setPose('inquiete', 0.9); this.burst(cx, cy, C.red, 12); this.o.sfx.play('hit')
+    this.setPose('nage_grimace', 0.6); this.burst(cx, cy, C.red, 12); this.o.sfx.play('hit')
     if (it.type === 'iri') { this.chain = []; this.pop(this.kx, this.ky, 'IRI?', C.grey) }
     this.say('game.say.life', { lives: this.lives }); this.emit()
   }
   private catchTok(kind: Kind, label: string, cx: number, cy: number) {
     const ok = options(this.chain)
-    if (kind === ok.kind && ok.labels.includes(label)) { this.chain.push(label); this.score += 10; this.o.sfx.play('catch'); this.burst(cx, cy, KCOL[kind][0], 6); this.pop(cx, cy, '+10', KCOL[kind][0]); this.afterPush(); return }
+    if (kind === ok.kind && ok.labels.includes(label)) { this.chain.push(label); this.score += 10; this.setPose('nage_clin', 0.45); this.o.sfx.play('catch'); this.burst(cx, cy, KCOL[kind][0], 6); this.pop(cx, cy, '+10', KCOL[kind][0]); this.afterPush(); return }
     // maillon incohérent : un sujet relance une chaîne, tout autre élément se dissout sans effet
     if (kind === 'S') {
       const had = this.chain.length > 0
@@ -283,7 +308,7 @@ export class Engine {
       const gain = 100 + 25 * (this.level - 1); this.score += gain
       this.graph.push({ s, p, o, t: this.clock }); if (this.graph.length > 7) this.graph.shift()
       this.chain = []
-      this.setPose('graphe', 1.0); this.o.sfx.play('triple'); this.pop(this.kx, this.ky - 8, '+' + gain, C.white)
+      this.setPose('nage_ravie', 0.8); this.burst(this.kx, this.ky + 8, C.amberHi, 14); this.o.sfx.play('triple'); this.pop(this.kx, this.ky - 6, '+' + gain, C.white)
       this.say('game.say.triple', { s, p, o, score: this.score })
       const lv = 1 + Math.floor(this.triples / 2)
       if (lv > this.level) { this.level = lv; this.o.sfx.play('level'); this.say('game.say.level', { level: lv }); this.pop(this.W / 2 - 10, 40, norm(this.o.labels.level) + ' ' + lv, C.amberHi) }
@@ -336,7 +361,7 @@ export class Engine {
   }
 
   private drawGraph() {
-    const x = this.ctx, top = 34, bot = Math.floor(this.H * 0.55)
+    const x = this.ctx, top = 46, bot = Math.max(top + 20, Math.floor(this.H * 0.55))
     const pos = (n: string) => ({ x: 14 + Math.floor(hash('x' + n) * (this.W - 28)), y: top + Math.floor(hash('y' + n) * (bot - top)) })
     for (const t of this.graph) {
       const age = this.clock - t.t, fresh = Math.max(0, 1 - age / 2.5)
@@ -346,7 +371,7 @@ export class Engine {
       line(x, a.x, a.y, b.x, b.y)
       const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2
       x.fillRect(Math.round(a.x + (b.x - a.x) * 0.78) - 1, Math.round(a.y + (b.y - a.y) * 0.78) - 1, 3, 3) // pointe de flèche
-      drawText(x, t.p, mx - textWidth(norm(t.p)) / 2, my - 7, fresh > 0.2 ? C.white : '#7FDCD4')
+      drawText(x, t.p, mx - textWidth(norm(t.p)) / 2, Math.max(37, my - 7), fresh > 0.2 ? C.white : '#7FDCD4')
       for (const [n, p] of [[t.s, a], [t.o, b]] as const) {
         x.fillStyle = C.ink; x.fillRect(p.x - 3, p.y - 3, 7, 7)
         x.fillStyle = n === t.s ? C.amber : C.lav; x.fillRect(p.x - 2, p.y - 2, 5, 5)
@@ -358,21 +383,58 @@ export class Engine {
   }
 
   private drawKrakie() {
-    const x = this.ctx, fr = this.o.sprites()[this.pose] ?? this.o.sprites().accueil
+    const x = this.ctx, sp = this.o.sprites(), pose = this.curPose, fr = sp[pose] ?? sp.nage
+    const kx = Math.round(this.kx), ky = this.ky, cy = ky + 17, red = this.o.reduced
+    this.drawAuras(kx, cy)
     if (this.invuln > 0 && Math.floor(this.clock * 14) % 2 === 0 && this.phase === 'playing') return
-    const kx = Math.round(this.kx), ky = this.ky
     if (!fr) { x.fillStyle = C.lagL; x.fillRect(kx - 10, ky + 6, 20, 20); return }
+    // image : cycle de nage (fixe sous mouvement réduit)
     let f = 0
-    if (!this.o.reduced && fr.frames.length > 1) {
+    if (!red && fr.frames.length > 1) {
       const tot = fr.durations.reduce((a, b) => a + b, 0); let t = this.animT % tot
       while (f < fr.frames.length - 1 && t >= fr.durations[f]) { t -= fr.durations[f]; f++ }
     }
-    x.save(); x.translate(kx, 0); x.scale(this.face, 1); x.drawImage(fr.frames[f], -16, ky); x.restore()
-    if (this.shield) { // anneau de bouclier, en pointillé
-      const cx = kx, cy = ky + 17, R = 20 + (this.o.reduced ? 0 : Math.round(Math.sin(this.clock * 4)))
-      x.fillStyle = C.glass
-      for (let a = 0; a < 360; a += 6) { if ((a / 6) % 2) continue; x.fillRect(Math.round(cx + Math.cos(a * Math.PI / 180) * R), Math.round(cy + Math.sin(a * Math.PI / 180) * R), 1, 1) }
+    // tremblement de la grimace. Pas de rotation ni de cisaillement : le sprite 32 px reste intact, positions entières.
+    // « Inclinaison » = les tentacules (rangées 20 et +) traînent d'un pixel, état discret avec hystérésis (pas de scintillement).
+    const jit = !red && pose === 'nage_grimace' ? (Math.floor(this.clock * 40) % 2 ? 1 : -1) : 0
+    const lean = red ? 0 : this.lean, img = fr.frames[f]
+    if (lean > 1.4) this.trail = 1; else if (lean < -1.4) this.trail = -1; else if (Math.abs(lean) < 0.6) this.trail = 0
+    const ox = kx - 16 + jit, tr = red ? 0 : this.trail
+    if (tr === 0) x.drawImage(img, ox, ky)
+    else { x.drawImage(img, 0, 0, 32, 20, ox, ky, 32, 20); x.drawImage(img, 0, 20, 32, 12, ox - tr, ky + 20, 32, 12) }
+    if (this.shield) this.drawShieldFront(kx, cy)
+  }
+
+  /** Halo de bouclier SHACL (disque de verre translucide, anneau, reflets qui tournent) et effet d'inférence. */
+  private drawAuras(kx: number, cy: number) {
+    const x = this.ctx, red = this.o.reduced
+    if (this.shield) {
+      const R = 21 + (red ? 0 : Math.round(Math.sin(this.clock * 4)))
+      x.fillStyle = 'rgba(205,239,245,0.16)'
+      for (let j = -R; j <= R; j++) { const w = Math.floor(Math.sqrt(R * R - j * j)); x.fillRect(kx - w, cy + j, w * 2 + 1, 1) }
     }
+    if (this.infT > 0) {
+      const k = 1 - this.infT / 1.5, ph = red ? 0 : this.clock * 5
+      x.fillStyle = 'rgba(199,155,242,0.20)'
+      const R = red ? 18 : 12 + Math.round(k * 12)
+      for (let j = -R; j <= R; j++) { const w = Math.floor(Math.sqrt(R * R - j * j)); x.fillRect(kx - w, cy + j, w * 2 + 1, 1) }
+      for (let i = 0; i < 8; i++) { // étincelles violettes en orbite
+        const a = ph + (i * Math.PI) / 4, r = 19 + (i % 2) * 3
+        const px = Math.round(kx + Math.cos(a) * r), py = Math.round(cy + Math.sin(a) * r * 0.9)
+        x.fillStyle = i % 2 ? C.white : C.purple
+        x.fillRect(px, py, 1, 1); if (i % 2 === 0) { x.fillRect(px - 1, py, 3, 1); x.fillRect(px, py - 1, 1, 3) }
+      }
+    }
+  }
+  private drawShieldFront(kx: number, cy: number) {
+    const x = this.ctx, red = this.o.reduced, R = 21 + (red ? 0 : Math.round(Math.sin(this.clock * 4)))
+    for (let a = 0; a < 360; a += 4) {
+      const rad = (a * Math.PI) / 180, px = Math.round(kx + Math.cos(rad) * R), py = Math.round(cy + Math.sin(rad) * R)
+      x.fillStyle = (a / 4) % 3 === 0 ? C.white : C.glass; x.fillRect(px, py, 1, 1)
+    }
+    const g = red ? 225 : (this.clock * 120) % 360 // reflet qui glisse sur l'anneau
+    x.fillStyle = C.white
+    for (let d = 0; d < 28; d += 4) { const rad = ((g + d) * Math.PI) / 180; x.fillRect(Math.round(kx + Math.cos(rad) * (R - 1)), Math.round(cy + Math.sin(rad) * (R - 1)), 1, 1) }
   }
 
   private drawHud() {

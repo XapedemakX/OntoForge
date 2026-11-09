@@ -21,6 +21,7 @@ import { resolvePal } from './glyphs'
 import { buildSvg, download, svgToPng } from './exporter'
 import { Tree } from './Tree'
 import { QuickInput } from './QuickInput'
+import { clearReasonerFlags, consumeFocus, useReasonerFlags } from '../../lib/reasonerFlags'
 import { useAssistantContext } from '../../lib/assistantContext'
 import { acceptAll, acceptItem, bindProjectSetter, rejectAll, rejectItem, useProposal } from '../../lib/proposal'
 import { eapi, type GraphData, type Op, type OpResult, type ProposalItem, type Sel } from './types'
@@ -97,7 +98,9 @@ function Inner({ p, setP }: EditorProps) {
   const [menu, setMenu] = useState<{ src: string; tgt: string; x: number; y: number; step: 'choose' | 'name' } | null>(null)
   const [propName, setPropName] = useState('')
   const [errors, setErrors] = useState<string[]>([])
-  const [errIris, setErrIris] = useState<Set<string>>(new Set())
+  const [flashIris, setErrIris] = useState<Set<string>>(new Set())
+  const rz = useReasonerFlags(p.id) // classes insatisfiables de HermiT : même rendu rouge que les erreurs d'opérations
+  const errIris = useMemo(() => new Set([...flashIris, ...rz.unsat]), [flashIris, rz.unsat])
   const [can, setCan] = useState({ undo: false, redo: false })
   const [q, setQ] = useState(''); const [qOpen, setQOpen] = useState(false)
   const [periForm, setPeriForm] = useState<{ name: string; desc: boolean } | null>(null)
@@ -376,6 +379,7 @@ function Inner({ p, setP }: EditorProps) {
 
   // ---------- recherche ----------
   const hits = useMemo(() => q.trim() ? (graph?.nodes ?? []).filter(n => n.label.toLowerCase().includes(q.toLowerCase()) || localName(n.id).toLowerCase().includes(q.toLowerCase())).slice(0, 8) : [], [q, graph])
+  useEffect(() => { if (rz.focus && graph?.nodes.some(n => n.id === rz.focus)) { const f = rz.focus; consumeFocus(); setTimeout(() => selectClass(f, false), 700) } }, [rz.focus, graph]) // eslint-disable-line react-hooks/exhaustive-deps
   const goTo = (iri: string) => { setQ(''); setQOpen(false); selectClass(iri, false) }
 
   /** Position de l'écran → coordonnées classiques mémorisées (le VOWL élargit l'espacement et ancre les cercles par leur centre). */
@@ -464,6 +468,7 @@ function Inner({ p, setP }: EditorProps) {
             <MiniMap pannable zoomable position="bottom-right" ariaLabel={t('ed.minimap')} nodeStrokeWidth={4} nodeColor={n => ((n.data as ClassNodeData)?.status === 'add' ? 'var(--ed-add)' : 'var(--accent)')} maskColor="var(--ed-mask)" />
           </ReactFlow>
 
+          {rz.unsat.length > 0 && <div className="of-errors" role="status" data-testid="unsat-banner"><Icon name="triangle-exclamation" /><div className="grow"><b>{t('rz.banner', { n: rz.unsat.length })}</b></div><IconButton icon="xmark" label={t('ed.close')} onClick={clearReasonerFlags} /></div>}
           {errors.length > 0 && <div className="of-errors" role="alert"><Icon name="triangle-exclamation" /><div className="grow"><b>{t('ed.err.title')}</b><ul>{errors.slice(0, 4).map((m, i) => <li key={i}>{m}</li>)}</ul></div><IconButton icon="xmark" label={t('ed.close')} onClick={() => setErrors([])} /></div>}
 
           {empty && <div className="of-empty"><EmptyState pose="graphe" title={t('ed.empty.t')}

@@ -9,7 +9,7 @@ from fastapi import APIRouter, Body, File, HTTPException, Query, UploadFile
 from fastapi.responses import Response
 from pydantic import BaseModel
 
-from .. import localize
+from .. import localize, standards
 from ..core.lang import LABEL_LANG
 from ..core.pg_model import PGModel
 from ..core.project import GenerationRecord, Project
@@ -55,6 +55,7 @@ def run_analysis(p: Project, target: str, perimeter: Optional[str] = None) -> PG
         LABEL_LANG.reset(token)
     if notes:
         pg.findings.extend(notes)
+    pg.meta.target_versions = standards.for_project(p)  # L31 : en-têtes et rapport affichent les versions utilisées
     for nt in pg.node_types.values():  # D-L9-02 : icône de la première classe source qui en a une
         nt.icon = next((p.view.icons[c] for c in nt.source if c in p.view.icons), None)
     return pg
@@ -110,6 +111,28 @@ def conformance(pid: str) -> Any:
     p = load_project(pid)
     check = service("conformance.profiles", "check_conformance")
     return localize.localize_conformance(dump(check(p.onto, None)), localize.ui_lang())
+
+
+class ReasonRequest(BaseModel):
+    reasoner: str = "hermit"  # extensible : seul « hermit » existe aujourd'hui
+    timeout: Optional[float] = None  # secondes ; défaut ONTOFORGE_HERMIT_TIMEOUT (30), plafond ONTOFORGE_HERMIT_MAX_TIMEOUT
+
+
+@router.post("/reason")
+def reason(pid: str, body: ReasonRequest = Body(default_factory=ReasonRequest)) -> Any:
+    """Raisonnement OWL 2 DL (HermiT) : cohérence, classes insatisfiables, inférences, individus reclassés. 501 si Java/owlready2 manquent."""
+    from ..conformance import hermit as hm
+    if body.reasoner != "hermit":
+        raise HTTPException(status_code=422, detail=f"Raisonneur inconnu « {body.reasoner} » : attendu hermit")
+    p = load_project(pid)
+    lang = localize.ui_lang()
+    from ..io.rdf_export import model_to_graph
+    try:
+        return hm.run_hermit(model_to_graph(p.onto), timeout=body.timeout, lang=lang)
+    except hm.HermitUnavailable as exc:
+        raise HTTPException(status_code=501, detail=hm.unavailable_message(exc, lang)) from None
+    except hm.HermitBusy as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from None
 
 
 # ---- SHACL -----------------------------------------------------------------------------------

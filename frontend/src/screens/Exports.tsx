@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
 import type { ScreenProps } from '../shell/types'
-import { CodeEditor, Empty, ErrorView, Spin, copy, download, useLoad, useToast } from '../ui'
+import { CodeEditor, Empty, ErrorView, copy, download, useLoad, useToast } from '../ui'
 import { useT } from '../i18n'
+import { KrakieStatus, useResultFlash } from '../krakie/Krakie'
 
 export function Exports({ p, target }: ScreenProps) {
   const t = useT()
   const toast = useToast()
   const { data, error, loading, reload } = useLoad(() => api.generate(p.id, target), [p.id, target, p.updated_at])
   const [file, setFile] = useState('')
+  const done = useResultFlash(loading, !!data && !error)
   const names = data ? Object.keys(data.files).sort() : []
   useEffect(() => { if (names.length && !names.includes(file)) setFile(names[0]) }, [data])
   const content = data?.files[file] ?? ''
@@ -18,7 +20,8 @@ export function Exports({ p, target }: ScreenProps) {
         <span className="badge">{target === 'curiosity' ? 'Curiosity' : 'Neo4j'}</span>
         <span className="grow" /><button className="btn" onClick={reload}>{t('ex.regen')}</button>
         <a className="btn" href={api.zipUrl(p.id, target)} style={{ textDecoration: 'none', color: 'inherit' }}>{t('ex.zip')}</a></div>
-      {loading && !data && <Spin />}<ErrorView error={error} what={t('ex.what')} />
+      <KrakieStatus busy={loading} done={done} label={t('krakie.forge.exports')} doneLabel={t('krakie.done.exports')} />
+      <ErrorView error={error} what={t('ex.what')} />
       {data?.missing && data.missing.length > 0 && <div className="notice soon">{t('ex.missing', { list: data.missing.join(', ') })}</div>}
       {data && names.length === 0 && <Empty title={t('ex.empty.t')}>{t('ex.empty.b')}</Empty>}
       {data && names.length > 0 && <div className="exports" data-tour="exports">

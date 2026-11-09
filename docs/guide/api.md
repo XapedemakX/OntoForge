@@ -1,17 +1,17 @@
-# API REST d'OntoForge
+# API REST d'OntoForge {#api-rest-d-ontoforge}
 
 Préfixe `/api`, JSON, erreurs `{"detail": "…"}` (messages en français). Spécification OpenAPI complète : `GET /openapi.json` ; documentation interactive : `/docs` (FastAPI, port du backend 8000 ; derrière nginx, seul `/api` est proxifié). Contrat normatif : `docs/CONTRACTS.md`.
 
 Les exemples ci-dessous sont des réponses réelles (backend lancé avec `ONTOFORGE_LLM_PROVIDER=mock`, exemple `automaint`, données dans un dossier temporaire). Les champs volumineux sont abrégés (`…`, `{…}` = objet abrégé, `[…]` = liste abrégée). Dans les commandes, `$P` est l'identifiant du projet et `$B` l'URL de base (`http://localhost:8000` en développement ; `http://localhost:8088` derrière nginx).
 
-## Conventions
+## Conventions {#conventions}
 
 - Cible : `curiosity` ou `neo4j` (paramètre `target`, ou segment de chemin). Sur `analyze`, `queries/translate` et `queries/competency`, `target` est facultatif : défaut = cible du projet (`Project.target`). Toute autre valeur → `422 Cible inconnue « x » : attendu curiosity ou neo4j`.
 - Erreurs : `404` projet / exemple / constat introuvable, `422` entrée invalide (corps, fichier vide ou illisible, format inconnu), `413` fichier trop volumineux (assistant), `501` module absent (`module … pas encore disponible`), `502` / `503` assistant (réponse LLM invalide / non configuré). Les erreurs de validation pydantic donnent `422` avec `detail` (résumé lisible) et `errors` (liste détaillée).
 - Identifiants de constat : `<règle>:<IRI sujet>[:<suffixe>]` ; une décision groupée s'écrit `"<règle>:*"`.
 - IRIs absolues dans tous les modèles.
 
-## Récapitulatif des routes
+## Récapitulatif des routes {#recapitulatif-des-routes}
 
 | Méthode | Chemin | Rôle |
 |---|---|---|
@@ -52,10 +52,10 @@ Les exemples ci-dessous sont des réponses réelles (backend lancé avec `ONTOFO
 | GET / POST | `/api/projects/{pid}/query/suggest` · `/query/build` · `/query/run` · `/query/values` · `/query/nl` | requêtage guidé |
 | GET / POST / PUT / DELETE | `/api/projects/{pid}/queries/saved[/{qid}]` · GET `/queries/competency/guided` | requêtes sauvegardées |
 
-## Système
+## Système {#systeme}
 
 
-### `GET /api/health`
+### `GET /api/health` {#get-api-health}
 
 Santé du backend (utilisée par le healthcheck Docker).
 
@@ -68,7 +68,7 @@ Santé du backend (utilisée par le healthcheck Docker).
 }
 ```
 
-### `GET /api/samples`
+### `GET /api/samples` {#get-api-samples}
 
 Exemples livrés dans `samples/` (les fichiers `*-nondl.*` sont ignorés, D-037).
 
@@ -116,10 +116,10 @@ Exemples livrés dans `samples/` (les fichiers `*-nondl.*` sont ignorés, D-037)
 ]
 ```
 
-## Projets
+## Projets {#projets}
 
 
-### `POST /api/projects`
+### `POST /api/projects` {#post-api-projects}
 
 Crée un projet. `name` obligatoire ; `sample` (`automaint` | `trap`) charge ontologie, shapes et décisions initiales ; sans `sample`, projet vide. Réponse : `Project` complet (`onto`, `shapes`, `decisions`…).
 
@@ -215,7 +215,7 @@ curl -X POST $B/api/projects -H "Content-Type: application/json" \
 }
 ```
 
-### `GET /api/projects`
+### `GET /api/projects` {#get-api-projects}
 
 Résumés (sans le contenu des modèles).
 
@@ -240,7 +240,7 @@ Résumés (sans le contenu des modèles).
 ]
 ```
 
-### `GET /api/projects/{pid}`
+### `GET /api/projects/{pid}` {#get-api-projects-pid}
 
 Le `Project` complet. `404` si l'identifiant est inconnu :
 
@@ -337,15 +337,15 @@ Exemple d'erreur :
 }
 ```
 
-### `PUT /api/projects/{pid}`
+### `PUT /api/projects/{pid}` {#put-api-projects-pid}
 
 Remplace le projet (corps = `Project`, mêmes champs que la réponse de `GET`) ; `updated_at` est mis à jour. Sert au changement de cible par défaut (`target`). Réponse : `Project`.
 
-### `DELETE /api/projects/{pid}`
+### `DELETE /api/projects/{pid}` {#delete-api-projects-pid}
 
 Supprime le dossier du projet ; renvoie le `Project` supprimé.
 
-### `POST /api/projects/{pid}/import`
+### `POST /api/projects/{pid}/import` {#post-api-projects-pid-import}
 
 Import multipart : champ `file` et `kind` = `ontology` | `shapes` | `auto` (détection par contenu). Formats d'ontologie : Turtle, RDF/XML, JSON-LD, N-Triples, N3, TriG ; `warnings` liste ce que l'import n'a pas pu structurer.
 
@@ -389,11 +389,11 @@ curl -X POST $B/api/projects/$P/import -F file=@samples/automaint/automaint.ttl 
 }
 ```
 
-### `PUT /api/projects/{pid}/onto` et `PUT /api/projects/{pid}/shapes`
+### `PUT /api/projects/{pid}/onto` et `PUT /api/projects/{pid}/shapes` {#put-api-projects-pid-onto-et-put-api-projects-pid-shapes}
 
 Remplacent respectivement l'`OntoModel` et le `ShapesModel` (corps = le modèle, cf. [`architecture.md`](architecture.md) §5). Réponse : `Project`. Utilisés par les écrans d'édition.
 
-### `POST /api/projects/{pid}/dsl`
+### `POST /api/projects/{pid}/dsl` {#post-api-projects-pid-dsl}
 
 Applique la saisie rapide (une ligne = un axiome). `merge: true` fusionne avec l'ontologie existante, `false` la remplace. Les erreurs de syntaxe ne lèvent pas d'exception : elles sont renvoyées par ligne, le reste est appliqué.
 
@@ -447,7 +447,7 @@ Exemple d'erreur de ligne :
 }
 ```
 
-### `GET /api/projects/{pid}/export/ontology?format=turtle`
+### `GET /api/projects/{pid}/export/ontology?format=turtle` {#get-api-projects-pid-export-ontology-format-turtle}
 
 Ontologie sérialisée. `format` : `turtle` (défaut), `xml` (RDF/XML), `json-ld`, `nt`, `n3`. Réponse en texte (`text/turtle`, `application/rdf+xml`, `application/ld+json`, `application/n-triples`, `text/n3`). Format inconnu → `422`.
 
@@ -465,7 +465,7 @@ Ontologie sérialisée. `format` : `turtle` (défaut), `xml` (RDF/XML), `json-ld
 …
 ```
 
-### `GET /api/projects/{pid}/export/shapes?format=turtle`
+### `GET /api/projects/{pid}/export/shapes?format=turtle` {#get-api-projects-pid-export-shapes-format-turtle}
 
 Shapes du projet en Turtle.
 
@@ -485,7 +485,7 @@ ams:BrandShape a sh:NodeShape ;
 …
 ```
 
-### `GET /api/projects/{pid}/conformance`
+### `GET /api/projects/{pid}/conformance` {#get-api-projects-pid-conformance}
 
 `ConformanceReport` : `profiles` (DL, EL, QL, RL, RDFS), `profile_violations` (raisons par profil), `issues` (`level` = `error` | `warning` | `info`, `code` W01–W07 / BP01–BP07, `message`, `subject`, `spec_ref`).
 
@@ -541,7 +541,7 @@ ams:BrandShape a sh:NodeShape ;
 }
 ```
 
-### `POST /api/projects/{pid}/shacl/generate`
+### `POST /api/projects/{pid}/shacl/generate` {#post-api-projects-pid-shacl-generate}
 
 Génère des shapes depuis l'ontologie. `merge: true` conserve les shapes existantes, `false` les remplace. `notes` : ce qui n'est pas équivalent. Avec `dry_run: true`, rien n'est enregistré : la réponse est `{project, generated, notes, dry_run: true}` (`project` inchangé, `generated` = shapes produites), utilisé par l'aperçu de l'écran Shapes.
 
@@ -567,7 +567,7 @@ Génère des shapes depuis l'ontologie. `merge: true` conserve les shapes exista
 }
 ```
 
-### `POST /api/projects/{pid}/shacl/validate`
+### `POST /api/projects/{pid}/shacl/validate` {#post-api-projects-pid-shacl-validate}
 
 Valide un fichier RDF (multipart `file`) contre les shapes du projet, sans inférence (D-034). Fichier vide → `422`.
 
@@ -607,10 +607,10 @@ curl -X POST $B/api/projects/$P/shacl/validate -F file=@samples/automaint/automa
 }
 ```
 
-## Analyse et arbitrage
+## Analyse et arbitrage {#analyse-et-arbitrage}
 
 
-### `POST /api/projects/{pid}/analyze?target=curiosity`
+### `POST /api/projects/{pid}/analyze?target=curiosity` {#post-api-projects-pid-analyze-target-curiosity}
 
 Lance le moteur sur l'ontologie et les shapes du projet ; les décisions enregistrées pour la cible sont appliquées. Réponse : `PGModel` (voir [`architecture.md`](architecture.md) §5). Sur l'exemple automaint : 18 types de nœuds, 24 relations, 83 validations, 159 constats ({'auto': 117, 'review': 41, 'lost': 1}).
 
@@ -679,7 +679,7 @@ Lance le moteur sur l'ontologie et les shapes du projet ; les décisions enregis
 }
 ```
 
-### `PUT /api/projects/{pid}/decisions/{target}`
+### `PUT /api/projects/{pid}/decisions/{target}` {#put-api-projects-pid-decisions-target}
 
 Fusionne des décisions `{constat: option}` dans le projet et renvoie le `PGModel` recalculé. Une valeur `null` retire la décision. Clé groupée `"<règle>:*"` : appliquée à tous les constats de la règle sans décision individuelle. Option inconnue pour la cible → ignorée, constat `G02`.
 
@@ -704,7 +704,7 @@ Fusionne des décisions `{constat: option}` dans le projet et renvoie le `PGMode
 }
 ```
 
-### `POST /api/projects/{pid}/decisions/{target}/accept-recommended`
+### `POST /api/projects/{pid}/decisions/{target}/accept-recommended` {#post-api-projects-pid-decisions-target-accept-recommended}
 
 Enregistre l'option recommandée des constats à arbitrer (`review`) comme décision. Les constats perdus (`lost`) restent à arbitrer par l'humain, sauf si `?include_lost=true` (mode « tout »). Réponse : `PGModel` ; sur automaint, `decisions` ne contient plus que les constats `review` (+ les `lost` avec `include_lost=true`).
 
@@ -722,10 +722,10 @@ Enregistre l'option recommandée des constats à arbitrer (`review`) comme déci
 }
 ```
 
-## Génération
+## Génération {#generation}
 
 
-### `GET /api/projects/{pid}/generate/{target}`
+### `GET /api/projects/{pid}/generate/{target}` {#get-api-projects-pid-generate-target}
 
 Fichiers de la cible + `schema.graphql` + `README-graphql.md` + `rapport-transposition.md`, en tenant compte des décisions. Réponse : `{files: {nom: contenu}}` (tailles en octets sur automaint : `Connector.cs` 65516, `Edges.cs` 7479, `README-curiosity.md` 22903, `RegisterSchema.cs` 1973, `Schema.cs` 18624, `schema.graphql` 26451, `README-graphql.md` 3106, `rapport-transposition.md` 33721).
 
@@ -744,14 +744,14 @@ Fichiers de la cible + `schema.graphql` + `README-graphql.md` + `rapport-transpo
 
 Pour Neo4j : `README-neo4j.md`, `ingest.cypher`, `model.mmd`, `schema.cypher`, `validation.cypher`, `schema.graphql`, `README-graphql.md`, `rapport-transposition.md`.
 
-### `GET /api/projects/{pid}/generate/{target}/zip`
+### `GET /api/projects/{pid}/generate/{target}/zip` {#get-api-projects-pid-generate-target-zip}
 
 Les mêmes fichiers en archive. En-têtes réels : `content-type: application/zip`, `content-disposition: attachment; filename="<pid>-neo4j.zip"`.
 
-## Requêtes
+## Requêtes {#requetes}
 
 
-### `POST /api/projects/{pid}/queries/translate?target=neo4j`
+### `POST /api/projects/{pid}/queries/translate?target=neo4j` {#post-api-projects-pid-queries-translate-target-neo4j}
 
 Traduit une requête SPARQL `SELECT` en Cypher, Curiosity (pseudo-C# de la Query API, `À VÉRIFIER`) et GraphQL. `lossy: true` signale une perte ; `notes` détaille chaque perte (`[perte]`, `[curiosity]`, `[graphql]`).
 
@@ -782,7 +782,7 @@ Traduit une requête SPARQL `SELECT` en Cypher, Curiosity (pseudo-C# de la Query
 }
 ```
 
-### `GET /api/projects/{pid}/queries/competency?target=neo4j`
+### `GET /api/projects/{pid}/queries/competency?target=neo4j` {#get-api-projects-pid-queries-competency-target-neo4j}
 
 Questions de compétence déduites du modèle : chacune porte sa traduction.
 
@@ -807,10 +807,10 @@ Questions de compétence déduites du modèle : chacune porte sa traduction.
 ]
 ```
 
-## Assistant
+## Assistant {#assistant}
 
 
-### `GET /api/assistant/status`
+### `GET /api/assistant/status` {#get-api-assistant-status}
 
 Fournisseur actif.
 
@@ -835,7 +835,7 @@ Fournisseur actif.
 }
 ```
 
-### `POST /api/assistant/draft`
+### `POST /api/assistant/draft` {#post-api-assistant-draft}
 
 Brouillon d'`OntoModel` depuis un texte (`kind` = `text`), un CSV (`csv`) ou un `CREATE TABLE` (`sql`). `base_iri` facultatif. **Ne modifie aucun projet** : le front applique les éléments acceptés via `PUT /onto`. Erreurs : `422` (texte vide / kind), `413` (trop long), `503` (non configuré), `502` (JSON du LLM invalide après relance).
 
@@ -895,7 +895,7 @@ Brouillon d'`OntoModel` depuis un texte (`kind` = `text`), un CSV (`csv`) ou un 
 }
 ```
 
-### `POST /api/assistant/shapes`
+### `POST /api/assistant/shapes` {#post-api-assistant-shapes}
 
 Shapes proposées pour un projet (génération déterministe `generate_shapes` + enrichissement LLM : motifs, plages, énumérations).
 
@@ -936,7 +936,7 @@ Shapes proposées pour un projet (génération déterministe `generate_shapes` +
 }
 ```
 
-### `POST /api/assistant/explain`
+### `POST /api/assistant/explain` {#post-api-assistant-explain}
 
 Explication en langage naturel d'un constat (repli déterministe sans LLM). `404` si le constat n'existe pas.
 
@@ -960,11 +960,11 @@ Explication en langage naturel d'un constat (repli déterministe sans LLM). `404
 
 Les trois routes `POST /api/assistant/*` acceptent aussi un champ facultatif `provider_id` (fournisseur à utiliser) : fonctionnalité de l'itération 2 en cours de livraison.
 
-## Itération 2 : paramètres, assistant, éditeur, requêtage
+## Itération 2 : paramètres, assistant, éditeur, requêtage {#iteration-2-parametres-assistant-editeur-requetage}
 
 Contrats normatifs : `docs/CONTRACTS.md` §4 (paramètres, assistant), §5 (éditeur), §6 (requêtage), §7 (générations). Ces routes sont stabilisées à la clôture de L8, L9, L10, L15. Code : `api/settings.py`, `api/assistant.py`, `api/editing.py`, `api/queries.py`. Les exemples ci-dessous sont construits d'après les contrats et les modèles pydantic (ils n'ont pas été rejoués contre un backend lancé : `httpx` est absent de l'environnement du documentaliste). Les champs volumineux sont abrégés.
 
-### Paramètres — `/api/settings`
+### Paramètres — `/api/settings` {#parametres-api-settings}
 
 | Méthode | Chemin | Remarques |
 |---|---|---|
@@ -994,7 +994,7 @@ curl -s -X PUT $B/api/settings/endpoints/active -H 'content-type: application/js
 
 L'ancien champ `sparql_endpoint` est migré vers l'endpoint `default` et reste accepté en `PUT` (miroir).
 
-### Assistant (extension)
+### Assistant (extension) {#assistant-extension}
 
 `GET /api/assistant/status` renvoie en plus `default_provider_id` et `providers: [{id, name, kind, model, configured, default}]`. `draft`, `shapes`, `explain` acceptent `provider_id?` (inconnu : 404 ; non configuré : 503).
 
@@ -1005,7 +1005,7 @@ L'ancien champ `sparql_endpoint` est migré vers l'endpoint `default` et reste a
 
 `content` (texte décodé) est renvoyé pour que le front le remette tel quel dans `attachments`. Extensions reconnues : `.csv`, `.tsv`, `.sql`, `.md`, `.markdown`, `.txt`, sinon détection par le contenu.
 
-### Éditeur — opérations, graphe, périmètres
+### Éditeur — opérations, graphe, périmètres {#editeur-operations-graphe-perimetres}
 
 ```bash
 curl -s -X POST $B/api/projects/$P/ops -H 'content-type: application/json' -d '{
@@ -1020,7 +1020,7 @@ curl -s -X POST $B/api/projects/$P/ops -H 'content-type: application/json' -d '{
 
 Périmètres : `GET|POST /perimeters`, `GET|PUT|DELETE /perimeters/{id}`, `GET /perimeters/{id}/preview` → `{counts, excluded:[{id, rule, title, detail}]}`, `PUT /perimeters/active` `{id|null}` (état d'interface). Classes et propriétés inconnues : 422 ; identifiant pris : 409 ; périmètre inconnu : 404. `?perimeter=<id>` s'applique à `analyze`, `generate/{target}` et `generate/{target}/zip` (sans le paramètre, `all` ou `none` : ontologie complète ; l'état actif n'est jamais appliqué implicitement).
 
-### Requêtage guidé
+### Requêtage guidé {#requetage-guide}
 
 ```bash
 curl -s "$B/api/projects/$P/query/suggest?class=https://w3id.org/ontoforge/automaint%23Vehicle"
@@ -1049,10 +1049,10 @@ curl -s -X POST $B/api/projects/$P/query/run -H 'content-type: application/json'
 
 Sans raisonnement côté endpoint, `a C` ne ramène pas les sous-classes : utiliser `subclasses: true`. Les sous-propriétés ne sont pas développées dans la requête générée.
 
-### Historique des générations
+### Historique des générations {#historique-des-generations}
 
 `GET /api/projects/{pid}/generations` → liste, la plus récente d'abord : `{target, perimeter, at, files, findings_summary, project_updated_at}` (`findings_summary` : nombres auto / review / lost et `pending`). Chaque `GET /generate/{target}` (pas le zip) ajoute une entrée (50 maximum) sans avancer `updated_at` ; une génération est « obsolète » si `project_updated_at` est antérieur à la dernière modification du projet. `GET /api/projects` expose aussi `created_at` et `source_files`.
 
-### Sémantique de `chosen` et des décisions
+### Sémantique de `chosen` et des décisions {#semantique-de-chosen-et-des-decisions}
 
 `Finding.chosen` vaut l'identifiant d'option décidée par l'humain (`None` = non arbitré) ; `Finding.recommended` est l'option appliquée par défaut. `PGModel.decisions` conserve aussi les décisions dont le constat a disparu, pour les rejouer s'il réapparaît (`mapping/decisions.py`, docstring).

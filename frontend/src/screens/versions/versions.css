@@ -1,0 +1,13 @@
+.ver-page { max-width: 1040px; display: flex; flex-direction: column; gap: var(--s3); }
+.ver-table select { min-width: 190px; max-width: 100%; }
+.ver-note { font-size: var(--fs-sm); max-width: 46ch; }
+.ver-origin { font-size: var(--fs-xs); }
+.ver-gaps { margin: 0 0 var(--s3); padding-left: 1.1em; display: flex; flex-direction: column; gap: 4px; }
+.ver-gaps li.error { color: var(--lost); }
+.ver-feat { margin: 0; padding-left: 1.1em; display: flex; flex-direction: column; gap: 4px; }
+.ver-feat code { font-family: var(--mono); font-size: var(--fs-sm); }
+.ver-nudge { position: fixed; right: 18px; bottom: 92px; z-index: 34; width: min(340px, calc(100vw - 36px)); display: flex; gap: 10px; align-items: flex-start;
+  padding: 10px 12px; background: var(--panel); border: 1px solid var(--line-strong); border-radius: var(--r-lg); box-shadow: var(--shadow-pop); font-size: var(--fs-sm); }
+.ver-nudge p { margin: 0 0 8px; line-height: 1.4; }
+.ver-nudge .acts { display: flex; gap: 6px; flex-wrap: wrap; }
+@media (max-width: 700px) { .ver-note { max-width: none; } }

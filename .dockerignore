@@ -11,7 +11,8 @@ tools/
 .env
 .env.*
 !.env.example
-docs/
+docs/*
+!docs/guide/
 ref/
 design/
 *.whl

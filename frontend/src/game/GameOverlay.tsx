@@ -7,7 +7,7 @@ import { Icon } from '../kit'
 import { Krakie } from '../krakie/Krakie'
 import { Engine, type EngineOpts, type HudState, type Phase, type Result } from './engine'
 import { Sfx } from './audio'
-import { loadKrakieSprites, type KrakieSprites } from './sprites'
+import { GAME_POSES, loadKrakieSprites, type KrakieSprites } from './sprites'
 
 const BEST_KEY = 'ontoforge.game.best', SND_KEY = 'ontoforge.game.sound'
 const store = {
@@ -70,19 +70,22 @@ export default function GameOverlay({ onClose }: { onClose: () => void }) {
     const onMq = () => { opts.reduced = !!mq?.matches }
     mq?.addEventListener?.('change', onMq)
     let alive = true
-    void loadKrakieSprites(['accueil', 'graphe', 'inquiete', 'contente']).then(sp => { if (alive) sprites.current = sp })
+    void loadKrakieSprites(GAME_POSES).then(sp => { if (alive) sprites.current = sp })
     const fit = () => { const st = stageRef.current; if (st) eng.resize(st.clientWidth - 8, st.clientHeight - 8) }
     fit()
     const ro = new ResizeObserver(fit); if (stageRef.current) ro.observe(stageRef.current)
     eng.start()
-    if (store.get('ontoforge.game.debug') === '1') (window as unknown as { __ontoforgeGame?: unknown }).__ontoforgeGame = eng
+    if (store.get('ontoforge.game.debug') === '1') {
+      const w = window as unknown as { __ontoforgeGame?: unknown; __krakieGame?: unknown }
+      w.__ontoforgeGame = eng; w.__krakieGame = { state: () => eng.state(), snapshot: () => eng.snapshot() }
+    }
     const onVis = () => { if (document.hidden) eng.pause() }
     document.addEventListener('visibilitychange', onVis)
     dialogRef.current?.focus()
     return () => {
       alive = false; eng.destroy(); ro.disconnect(); mq?.removeEventListener?.('change', onMq)
       document.removeEventListener('visibilitychange', onVis); s.close(); engine.current = null
-      delete (window as unknown as { __ontoforgeGame?: unknown }).__ontoforgeGame
+      delete (window as unknown as { __ontoforgeGame?: unknown }).__ontoforgeGame; delete (window as unknown as { __krakieGame?: unknown }).__krakieGame
       if (root) root.inert = false
       prev?.focus?.()
     }
@@ -120,7 +123,7 @@ export default function GameOverlay({ onClose }: { onClose: () => void }) {
     onPointerUp: () => { keys.current[side] = false; sync() }, onPointerCancel: () => { keys.current[side] = false; sync() },
   })
 
-  const pose = end ? (end.score >= HAPPY || end.record ? 'contente' : 'inquiete') : 'accueil'
+  const pose = end ? (end.score >= HAPPY || end.record ? 'trophee' : 'inquiete') : 'accueil'
   const legend = (cls: string, label: string, text: string) => <li><span className={`g-chip ${cls}`} aria-hidden="true">{label}</span><span>{text}</span></li>
 
   return createPortal(

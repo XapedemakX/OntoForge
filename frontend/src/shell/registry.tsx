@@ -9,8 +9,10 @@ const Analysis = lazy(() => import('../screens/Analysis').then(m => ({ default: 
 const Model = lazy(() => import('../screens/Model').then(m => ({ default: m.Model })))
 const Exports = lazy(() => import('../screens/Exports').then(m => ({ default: m.Exports })))
 const Queries = lazy(() => import('../screens/queries').then(m => ({ default: m.Queries })))
+const Versions = lazy(() => import('../screens/versions/Versions').then(m => ({ default: m.Versions })))
 const Dashboard = lazy(() => import('../screens/Dashboard').then(m => ({ default: m.Dashboard })))
 const Files = lazy(() => import('../screens/files').then(m => ({ default: m.Files })))
+const Documentation = lazy(() => import('../screens/documentation/Documentation').then(m => ({ default: m.Documentation })))
 const AssistantScreen = lazy(() => import('../screens/assistant').then(m => ({ default: m.AssistantScreen })))
 
 export type StepKey = 'concevoir' | 'verifier' | 'transposer' | 'generer'
@@ -35,7 +37,9 @@ export const SCREENS: ScreenDef[] = [
   { key: 'analyse', labelKey: 'nav.analyse', icon: 'scale-balanced', step: 'transposer', badge: 'pending', render: p => <Analysis {...p} /> },
   { key: 'modele', labelKey: 'nav.modele', icon: 'diagram-project', step: 'transposer', render: p => <Model {...p} /> },
   { key: 'exports', labelKey: 'nav.exports', icon: 'file-export', step: 'generer', render: p => <Exports {...p} /> },
+  { key: 'versions', labelKey: 'nav.versions', icon: 'tags', step: 'generer', render: p => <Versions {...p} /> },
   { key: 'requetes', labelKey: 'nav.requetes', icon: 'magnifying-glass-chart', step: 'generer', editing: true, render: p => <Queries {...p} /> },
   { key: 'assistant', labelKey: 'nav.assistant', icon: 'wand-magic-sparkles', fullBleed: true, render: p => <AssistantScreen {...p} /> },
+  { key: 'documentation', labelKey: 'nav.documentation', icon: 'book-open', fullBleed: true, render: p => <Documentation {...p} /> },
 ]
 export const STEPS: StepKey[] = ['concevoir', 'verifier', 'transposer', 'generer']

@@ -1,4 +1,5 @@
 import { tr } from '../../i18n'
+import type { VersionGap, VersionKey, VersionRow } from '../../api'
 // Client API des paramètres (L8 + endpoints SPARQL L15). Contrat : docs/CONTRACTS.md §4 et §6.
 // Les secrets ne sont jamais relus : seuls has_key / key_last4 / has_secret sont exposés.
 
@@ -12,6 +13,8 @@ export interface SettingsView {
   language: { ui: Lang; labels: Lang; assistant: Lang }
   defaults: { base_iri: string; prefixes: Record<string, string>; target: Target; naming: Record<string, string> }
   active_endpoint_id?: string | null
+  versions: Record<VersionKey, string>; versions_view: VersionRow[]
+  versions_check: { gaps: VersionGap[]; needs_attention: boolean; recommended: Partial<Record<VersionKey, string>>; updated: string }
 }
 export type EndpointAuth = 'none' | 'basic' | 'bearer'
 export interface EndpointView { id: string; name: string; url: string; auth: EndpointAuth; username?: string | null; has_secret: boolean; secret_unreadable: boolean; default_graph?: string | null; timeout_s: number }
@@ -39,7 +42,7 @@ async function sreq<T>(method: string, path: string, body?: unknown): Promise<T>
 
 export const settingsApi = {
   get: () => sreq<SettingsView>('GET', ''),
-  put: (b: Partial<{ default_provider_id: string; language: SettingsView['language']; defaults: SettingsView['defaults'] }>) => sreq<SettingsView>('PUT', '', b),
+  put: (b: Partial<{ default_provider_id: string; language: SettingsView['language']; defaults: SettingsView['defaults']; versions: Partial<Record<VersionKey, string>> }>) => sreq<SettingsView>('PUT', '', b),
   addProvider: (b: ProviderInput) => sreq<ProviderView>('POST', '/providers', b),
   updateProvider: (id: string, b: ProviderInput) => sreq<ProviderView>('PUT', `/providers/${encodeURIComponent(id)}`, b),
   deleteProvider: (id: string) => sreq<{ deleted: string; default_provider_id: string }>('DELETE', `/providers/${encodeURIComponent(id)}`),

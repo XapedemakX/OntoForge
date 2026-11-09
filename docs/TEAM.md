@@ -55,7 +55,12 @@ Au minimum : au démarrage, à chaque verdict de revue (avec `to` = pilote), à 
 ## Limite d'usage (règle du 4/11)
 - Dès qu'un agent échoue avec une erreur 429, le lead programme **dans la même réponse** une reprise `send_later` à l'heure de remise à zéro indiquée.
 - Filet de sécurité : relances automatiques toutes les 3 à 4 h jusqu'à la livraison du vendredi (mercredi 19h, 22h ; jeudi 1h, 4h, 7h30, 11h, 14h30, 18h démo). À chaque relance : lire les notifications, relancer les agents arrêtés, continuer le plan, ne rien faire s'il n'y a rien à faire.
-- Maximum 4 agents en parallèle ; Sonnet par défaut, Opus pour les revues sémantiques et le design.
+- Maximum 4 agents en parallèle.
+- Modèles (règle de coûts du 8/11) :
+  - Haiku pour le mécanique : publication GitHub, Salle des agents, relance de recettes existantes, doc-ok simple.
+  - Sonnet par défaut : production, corrections, relectures UX et documentaliste, humaniseur.
+  - Opus seulement pour les relectures sémantiques W3C sensibles (OWL, raisonneur) et le design visuel.
+  - Après une limite, on relance l'agent arrêté (SendMessage) au lieu d'en recréer un.
 
 ## Relectures croisées (matrice, depuis le 7/11)
 | Type de livrable | Relecteurs obligatoires | Dernière passe |

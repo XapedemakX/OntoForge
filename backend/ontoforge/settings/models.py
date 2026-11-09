@@ -7,6 +7,8 @@ from typing import Any, Literal, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from ..standards import TargetVersions
+
 Kind = Literal["anthropic", "openai_compat", "ollama", "mock"]
 DEFAULT_MODELS = {"anthropic": "claude-sonnet-5-5", "openai_compat": "gpt-4o", "ollama": "llama3.1", "mock": "mock"}
 _ID = re.compile(r"^[a-z0-9][a-z0-9_-]{0,47}$")
@@ -137,6 +139,7 @@ class Settings(BaseModel):
     sparql_endpoint: SparqlEndpoint = Field(default_factory=SparqlEndpoint)  # historique (L8), migré vers sparql_endpoints
     sparql_endpoints: list[EndpointConfig] = Field(default_factory=list)  # L15
     active_endpoint_id: Optional[str] = None
+    versions: TargetVersions = Field(default_factory=TargetVersions)  # L31 : défaut global des versions de normes et de cibles
 
     def endpoint(self, eid: Optional[str]) -> Optional[EndpointConfig]:
         return next((e for e in self.sparql_endpoints if e.id == eid), None)
@@ -151,4 +154,5 @@ class Settings(BaseModel):
         return {"llm_providers": [p.public() for p in self.llm_providers], "default_provider_id": self.default_provider_id,
                 "language": self.language.model_dump(), "defaults": self.defaults.model_dump(),
                 "sparql_endpoint": self.sparql_endpoint.public(),
-                "sparql_endpoints": [e.public() for e in self.sparql_endpoints], "active_endpoint_id": self.active_endpoint_id}
+                "sparql_endpoints": [e.public() for e in self.sparql_endpoints], "active_endpoint_id": self.active_endpoint_id,
+                "versions": self.versions.model_dump()}

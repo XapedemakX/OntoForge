@@ -92,7 +92,7 @@ Vocabulaire d'OntoForge, du monde OWL/SHACL et du monde property graph. Les réf
 | **Recopie dans les feuilles** | Sous une classe abstraite fusionnée (C04 `merge_into_leaves`), propriétés et relations de l'ancêtre dupliquées dans chaque sous-type concret (D-L15-01). |
 | **Fournisseur LLM** | Configuration `{type, URL, modèle, clé}` (`anthropic`, `openai_compat`, `ollama`, `mock`) ; la clé est chiffrée côté serveur. |
 | **Clé maître** | `ONTOFORGE_SECRET_KEY` : dérive la clé de chiffrement (Fernet) des secrets ; à défaut, fichier `.secret`. |
-| **Krakie** | Mascotte d'OntoForge : petite pieuvre en pixel art couleur lagon, 8 poses (accueil, réfléchit, lit, loupe, graphe, contente, inquiète, bolide). |
+| **Krakie** | Mascotte d'OntoForge : petite pieuvre en pixel art couleur lagon, 9 poses (accueil, réfléchit, lit, loupe, graphe, contente, inquiète, forge, trophée). Elle forge (deux marteaux sur une enclume) pendant une génération ou une transposition, puis brandit un trophée en forme de graphe quand c'est fini. |
 | **Tableau de bord** | Écran d'accueil d'un projet : état des quatre étapes et prochaine action. |
 | **Saisie rapide** | Panneau de l'éditeur : une ligne de DSL = un axiome. |
 

@@ -1,6 +1,6 @@
 // Envoi d'un message à l'assistant (panneau global et écran plein écran) + application des actions validées par l'utilisateur.
 import { tr } from '../i18n'
-import type { OntoModel, Project } from '../api'
+import { api, type OntoModel, type Project, type VersionKey } from '../api'
 import type { AssistantContext } from '../lib/assistantContext'
 import { buildItems, setProposal } from '../lib/proposal'
 import { gapi } from './gapi'
@@ -42,6 +42,10 @@ export async function applyAction(pid: string, msgId: string, idx: number, a: Ag
     } else if (a.kind === 'shapes') {
       const r = await gapi.shapes(pid, a.payload.patches)
       setP(r.project); notify(r.project)
+    } else if (a.kind === 'versions') {   // L31 : le serveur a recalculé la mise à jour ; rien n'est appliqué avant ce clic
+      await api.putVersions(pid, a.payload.patch)
+      const pr = await api.getProject(pid)
+      setP(pr); notify(pr)
     }
     patchAction(pid, msgId, idx, { status: 'applied' })
     setLastApplied(pid, `${msgId}:${idx}`)
@@ -52,10 +56,17 @@ export async function applyAction(pid: string, msgId: string, idx: number, a: Ag
   }
 }
 
-export async function undoAction(pid: string, msgId: string, idx: number, setP: (p: Project) => void): Promise<boolean> {
+export async function undoAction(pid: string, msgId: string, idx: number, setP: (p: Project) => void, a?: AgentAction): Promise<boolean> {
   try {
-    const r = await gapi.undo(pid)
-    setP(r.project); notify(r.project)
+    if (a?.kind === 'versions') {   // retour aux valeurs d'avant (absentes = défaut global)
+      const before = (a.payload.before ?? {}) as Partial<Record<VersionKey, string>>
+      await api.putVersions(pid, Object.fromEntries(Object.keys(a.payload.patch).map(k => [k, before[k as VersionKey] ?? null])))
+      const pr = await api.getProject(pid)
+      setP(pr); notify(pr)
+    } else {
+      const r = await gapi.undo(pid)
+      setP(r.project); notify(r.project)
+    }
     patchAction(pid, msgId, idx, { status: 'undone' }); setLastApplied(pid, null)
     return true
   } catch (e) {

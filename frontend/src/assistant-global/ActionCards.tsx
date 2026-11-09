@@ -2,10 +2,11 @@ import { useState } from 'react'
 import type { Project } from '../api'
 import { Button, Icon } from '../kit'
 import { useI18n } from '../i18n'
+import { openDoc } from '../lib/docs'
 import { applyAction, go, openGuidedQuery, undoAction } from './run'
 import { getLastApplied, useDockUi, type AgentAction } from './store'
 
-const ICON: Record<string, string> = { ops: 'pen-ruler', proposal: 'wand-magic-sparkles', shapes: 'shield-halved', guided_query: 'magnifying-glass-chart', navigate: 'arrow-up-right-from-square' }
+const ICON: Record<string, string> = { ops: 'pen-ruler', proposal: 'wand-magic-sparkles', shapes: 'shield-halved', guided_query: 'magnifying-glass-chart', navigate: 'arrow-up-right-from-square', help: 'circle-question', versions: 'tags' }
 
 /** Cartes d'actions d'un message : aperçu lisible, puis « Appliquer » (jamais automatique) et « Annuler ». */
 export function ActionCards({ pid, msgId, actions, setP }: { pid: string; msgId: string; actions: AgentAction[]; setP: (p: Project) => void }) {
@@ -25,7 +26,7 @@ export function ActionCards({ pid, msgId, actions, setP }: { pid: string; msgId:
               {st === 'applied' && <span className="ag-state ok"><Icon name="check" />{t('ag.applied')}</span>}
               {st === 'undone' && <span className="ag-state"><Icon name="rotate-left" />{t('ag.undone')}</span>}
             </header>
-            {(a.kind === 'ops' || a.kind === 'shapes') && (
+            {(a.kind === 'ops' || a.kind === 'shapes' || a.kind === 'versions') && (
               <ul className="ag-preview">{preview.map((x, j) => <li key={j}>{x.text}</li>)}</ul>
             )}
             {a.kind === 'proposal' && (
@@ -44,12 +45,16 @@ export function ActionCards({ pid, msgId, actions, setP }: { pid: string; msgId:
               </div>
             )}
             {a.kind === 'navigate' && <p>{a.summary}</p>}
+            {a.kind === 'help' && <div className="ag-help"><b>{a.payload.title}</b><p>{a.summary}</p></div>}
             {a.error && <p className="ag-err" role="alert"><Icon name="triangle-exclamation" />{a.error}</p>}
             <footer>
               {a.kind === 'ops' && st !== 'applied' && st !== 'undone' && <Button size="sm" variant="primary" icon="check" disabled={busy} onClick={() => void applyAction(pid, msgId, i, a, setP)}>{busy ? '…' : t('ag.apply')}</Button>}
               {a.kind === 'shapes' && st !== 'applied' && st !== 'undone' && <Button size="sm" variant="primary" icon="check" disabled={busy} onClick={() => void applyAction(pid, msgId, i, a, setP)}>{busy ? '…' : t('ag.apply')}</Button>}
+              {a.kind === 'versions' && st !== 'applied' && st !== 'undone' && <Button size="sm" variant="primary" icon="check" disabled={busy} onClick={() => void applyAction(pid, msgId, i, a, setP)}>{busy ? '…' : t('ag.apply')}</Button>}
+              {a.kind === 'versions' && st === 'applied' && <Button size="sm" icon="rotate-left" disabled={!canUndo} onClick={() => void undoAction(pid, msgId, i, setP, a)}>{t('ag.undo')}</Button>}
               {a.kind === 'proposal' && <Button size="sm" variant="primary" icon="diagram-project" onClick={() => go(pid, 'ontologie')}>{t('asst.toEditor')}</Button>}
               {a.kind === 'guided_query' && <Button size="sm" variant="primary" icon="magnifying-glass-chart" onClick={() => openGuidedQuery(pid, a)}>{t('ag.openQuery')}</Button>}
+              {a.kind === 'help' && <Button size="sm" variant="primary" icon="book-open" data-testid="ag-open-help" onClick={() => openDoc(pid, a.payload.page, a.payload.anchor)}>{t('ag.openHelp')}</Button>}
               {a.kind === 'navigate' && <Button size="sm" variant="primary" icon="arrow-right" onClick={() => go(pid, a.payload.screen)}>{t('ag.open')}</Button>}
               {a.kind === 'shapes' && st === 'applied' && <Button size="sm" icon="rotate-left" disabled={!canUndo} onClick={() => void undoAction(pid, msgId, i, setP)}>{t('ag.undo')}</Button>}
               {a.kind === 'ops' && st === 'applied' && <>

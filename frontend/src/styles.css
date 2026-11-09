@@ -173,3 +173,13 @@ table.t tr:hover td { background: var(--panel2); }
 }
 .cmhost > .cm-editor { flex: 1; min-width: 0; max-height: none; }
 .exports .cmhost > .cm-editor, .pane .cmhost > .cm-editor { max-height: 72vh; }
+
+/* L32 : carte du raisonneur */
+.rz-stack { display: flex; flex-direction: column; gap: 10px; }
+ul.plain { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+
+/* Krakie forgeronne (traitement en cours) et trophée (fin réussie) — L29 */
+.kstatus { display: flex; align-items: center; gap: 10px; padding: 6px 12px; margin: 0 0 10px; border: 1px solid var(--line, rgba(127,127,127,.25)); border-radius: var(--r-sm); background: var(--bg-2, transparent); width: fit-content; max-width: 100%; }
+.kstatus.done { border-color: var(--ok, #1fa39e); }
+.toast.with-krakie { display: flex; align-items: center; gap: 8px; padding: 4px 12px 4px 6px; }
+.toast.with-krakie img { flex: none; }

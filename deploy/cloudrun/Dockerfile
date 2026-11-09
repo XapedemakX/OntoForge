@@ -1,7 +1,7 @@
 # OntoForge pour Google Cloud Run : UN seul conteneur, FastAPI sert l'API et le front compilé.
 # Contexte de build = racine du dépôt :
-#   docker build -f deploy/cloudrun/Dockerfile -t ontoforge .
-#   docker build -f deploy/cloudrun/Dockerfile --build-arg WITH_REASONER=1 -t ontoforge:reasoner .   # variante avec Java (HermiT)
+#   docker build -f deploy/cloudrun/Dockerfile -t ontoforge .                                   # avec Java + HermiT (défaut depuis L32)
+#   docker build -f deploy/cloudrun/Dockerfile --build-arg WITH_REASONER=0 -t ontoforge:slim .   # variante légère, sans raisonneur
 #
 # Pourquoi pas nginx + uvicorn dans le même conteneur ? Cloud Run exécute un seul processus principal : il faudrait un
 # superviseur (supervisord, s6) pour en tenir deux, ce qui ajoute une image plus lourde, un point de panne et des journaux mêlés.
@@ -14,13 +14,19 @@ WORKDIR /app
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci
 COPY frontend/ ./
+# documentation embarquée (L28) : import Vite ../../../docs/guide/*.md et ../../../backend/…/help_map.json, relatifs à /app/src/lib
+COPY docs/guide /docs/guide
+COPY backend/ontoforge/assistant/help_map.json /backend/ontoforge/assistant/help_map.json
 RUN npm run build
 
 # ---- 2. exécution ------------------------------------------------------------------------------------------------
 FROM python:3.12-slim AS runtime
-# WITH_REASONER=1 ajoute Java (default-jre-headless) et owlready2 pour le raisonneur OWL 2 DL HermiT : environ 290 Mo de plus.
-# Le raisonneur est OPTIONNEL : sans lui la conformité (W01-W07, profils OWL 2) fonctionne et indique « HermiT non utilisé ».
-ARG WITH_REASONER=0
+# WITH_REASONER=1 (défaut depuis L32) ajoute Java (default-jre-headless) et owlready2 pour le raisonneur OWL 2 DL HermiT :
+# environ 290 Mo de plus (image ~ 3x plus lourde que la variante légère ; démarrage à froid un peu plus long). Le bouton « Raisonner avec HermiT »
+# en dépend. Avec --build-arg WITH_REASONER=0 l'image reste légère : la conformité (W01-W07, profils OWL 2) fonctionne et
+# POST /reason répond 501 avec la marche à suivre. Plafonds (variables d'environnement) : ONTOFORGE_HERMIT_TIMEOUT (30 s),
+# ONTOFORGE_HERMIT_MAX_TIMEOUT (300 s), ONTOFORGE_HERMIT_MAX_MB (1024 Mo de tas Java), ONTOFORGE_HERMIT_SLOTS (2 calculs en parallèle).
+ARG WITH_REASONER=1
 RUN if [ "$WITH_REASONER" = "1" ]; then \
       apt-get update && apt-get install -y --no-install-recommends default-jre-headless && rm -rf /var/lib/apt/lists/*; \
     fi

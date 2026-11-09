@@ -1,8 +1,8 @@
-# FAQ des limites connues (itération 2)
+# FAQ des limites connues (itération 2) {#faq-des-limites-connues-iteration-2}
 
 Chaque réponse cite sa source (rapport de lot, revue, décision ou code). Ce qui n'est pas résolu par le code est une question ouverte dans `journal/doc/questions.md` (identifiants `Q-DOC-nn`). État au 4 novembre 2026, mise à jour de l'itération 2 (lot L14). Tests non rejoués par le documentaliste (httpx absent) : 528 verts d'après `journal/L15/review-curiosity-it1.md`.
 
-## Code généré : qu'est-ce qui est vérifié ?
+## Code généré : qu'est-ce qui est vérifié ? {#code-genere-qu-est-ce-qui-est-verifie}
 
 **Le code C# Curiosity compile-t-il ?**
 Non vérifié. Il n'y a aucun SDK .NET dans l'environnement de construction. La syntaxe C# est contrôlée par tree-sitter (D-038), pas par un compilateur. Les appels à `Curiosity.Library` non confirmés portent la mention `À VÉRIFIER` dans le code : retour de `AddOrUpdate`, `Link(a, b, X, X)` pour une arête symétrique, `SetAutoCommitCost`, type `Node`, tableaux `T[]`, indexation. Le script `tools/dotnet/check-curiosity.ps1` (projet temporaire net8.0 + `dotnet build`) permet de le vérifier chez vous. Il n'a pas été exécuté (pas de SDK, pas de Windows) et le nom exact du paquet NuGet reste à confirmer (`journal/L13/rapport.md`). Voir Q-DOC-01.
@@ -19,7 +19,7 @@ Pour Neo4j, il repose sur les directives de la Neo4j GraphQL Library (`@relation
 **Et les requêtes Curiosity produites par le traducteur ?**
 Du pseudo-C# de la Query API (`StartAt`, `Where`, accesseurs `n.UID`…), entièrement marqué `À VÉRIFIER`, sans vérification en environnement réel (`journal/L4/rapport-requetes.md`).
 
-## Transposition
+## Transposition {#transposition}
 
 **Pourquoi tant de constats « à arbitrer » ?**
 Sur l'ontologie piège, le moteur produisait à l'origine environ 130 constats `review` (un I01 par individu, un K03 par type racine). Le bruit a été réduit depuis : D13 `max 1` seul, K03 avec clé IRI et C07 garanti par construction en Curiosity passent en `auto`. Les constats sont groupés par règle dans l'interface et une décision groupée `"<règle>:*"` s'applique à toute une règle (`journal/L3/rapport-moteur.md`, `docs/RULES.md` « Itération 2 »).
@@ -51,13 +51,17 @@ Avec réserves (rapport du moteur L3, état avant L13) : O05 `edge_pair` côté 
 **`owl:imports` est-il résolu ?**
 Non, l'outil est hors ligne. Les termes importés sont référencés par IRI et signalés (M02, BP05). L'exemple *trap* est conforme DL « sous réserve de la fermeture d'import PROV-O ».
 
-## Conformité OWL et SHACL
+## Conformité OWL et SHACL {#conformite-owl-et-shacl}
 
 **La conformité aux profils EL / QL / RL est-elle fiable ?**
 Elle est fondée sur les listes de datatypes et de constructions des *OWL 2 Profiles* recopiées de mémoire, à relire (`journal/L2/rapport-conformite.md`). W06 (RL) est une heuristique (disjonction, complément, `Nothing`) sans propagation par les restrictions. Le classement de `DisjointUnion` hors EL/QL/RL a été confirmé par la revue W3C. Voir Q-DOC-05.
 
 **Et le raisonneur HermiT ?**
-Optionnel (via `owlready2`, sous-processus de 30 s, jamais bloquant). L'intégration n'a pas été testée sur une ontologie non triviale. Le `backend/Dockerfile` installe `default-jre-headless`, car le paquet `openjdk-17-jre-headless` visé par D-040 n'existe pas dans Debian 13. L'installation dans l'image n'a pas pu être vérifiée (Docker indisponible à la construction). HermiT reste « Could » (US-40).
+Depuis L32, il a son propre bouton (écran Conformité) et sa route `POST /api/projects/{id}/reason` : cohérence, classes insatisfiables, sous-classes et équivalences inférées, individus reclassés. Il tourne dans un sous-processus Java (30 s, 1 Go) fourni par `owlready2` (HermiT 1.3.8).
+
+Limites : pas de justification d'incohérence (la ligne de commande n'en donne pas, OntoForge ne propose que des candidats), monde ouvert, garanties seulement pour OWL 2 DL. Les `owl:imports` ne sont pas suivis (raisonnement sur le seul contenu du projet) et aucune équivalence n'est ajoutable depuis l'éditeur graphique.
+
+Les images (`backend/Dockerfile`, et `deploy/cloudrun/Dockerfile` par défaut) incluent Java ; sans Java ou `owlready2`, la route répond 501. Les tests qui lancent Java sont ignorés si Java manque ; leur exécution dans l'image Docker n'a pas été vérifiée ici (Docker indisponible).
 
 **La validation SHACL utilise-t-elle l'inférence ?**
 Non par défaut (D-034) : sans inférence, les 8 violations de `trap-data.ttl` (y compris via un projet : seule la TBox de l'ontologie est fournie à pySHACL, pas ses individus, D-L14-01) et les 4 de `automaint-data.ttl` sont garanties ; avec RDFS, `sh:closed` voit les super-propriétés. Une option d'inférence existe côté service (`inference="rdfs"`), mais l'API HTTP ne l'expose pas (aucun paramètre `inference` dans `api/analysis.py`).
@@ -65,7 +69,7 @@ Non par défaut (D-034) : sans inférence, les 8 violations de `trap-data.ttl` (
 **Les shapes générées équivalent-elles à l'ontologie ?**
 Non : un axiome OWL n'est pas une contrainte SHACL. L'écran liste « ce que la génération ne reproduit pas à l'identique » (notes de `generate_shapes`).
 
-## Interface
+## Interface {#interface}
 
 **Qu'est-ce qui est en lecture seule dans l'éditeur ?**
 Domaine/portée en union, chaînes de propriétés, équivalences complexes, faits des individus et autres superclasses anonymes : conservés et transposés, mais non modifiables à l'écran (`journal/L5/rapport-front.md`). L'IRI d'une entité n'est pas renommable après création.
@@ -88,7 +92,7 @@ Interface fr/en (Paramètres). Les libellés d'ontologie s'affichent dans la lan
 **Pourquoi la page est-elle lourde ?**
 Le bundle dépasse 500 ko (CodeMirror + Cytoscape), sans impact fonctionnel.
 
-## Assistant IA
+## Assistant IA {#assistant-ia}
 
 **Que se passe-t-il sans clé ?**
 Fournisseur `mock` : il ne connaît que le domaine automobile pour le texte libre et relaie un squelette pour CSV/SQL. Aucune proposition n'est appliquée sans votre acceptation.
@@ -108,7 +112,7 @@ Le prompt `[TASK:agent]` n'a pas été essayé sur un vrai fournisseur (pas de r
 **Quelles sont les limites des écrans refaits en L17 ?**
 Vue liste : faits d'individus, équivalences et expressions complexes en lecture seule. Shapes : contraintes motif, plage et liste non éditables en ligne. Requêtes : l'autocomplétion de libellés mélange le français et l'anglais (`journal/L17/cloture.md`).
 
-## Exploitation
+## Exploitation {#exploitation}
 
 **`docker compose up --build` a-t-il été vérifié ?**
 Non dans l'environnement de construction (Docker Hub inaccessible, D-012) : le Dockerfile et le compose sont relus statiquement ; la recette réelle se fait chez vous. Le port publié est `ONTOFORGE_PORT` (8088 par défaut dans `docker-compose.yml` et `.env.example`) ; `CLAUDE.md` et `journal/L7/plan-recette.md` mentionnent encore 8080. Voir Q-DOC-07.
@@ -119,7 +123,7 @@ Non : l'API n'est pas authentifiée et le CORS est ouvert par défaut (`ONTOFORG
 **Où sont mes données ?**
 Dans le volume Docker `ontoforge-data` (`/data/projects/<id>/`). Aucune donnée n'est envoyée à un service externe, sauf si vous configurez un fournisseur LLM (le contenu soumis à l'assistant part alors chez ce fournisseur).
 
-## Paramètres, secrets et endpoints SPARQL
+## Paramètres, secrets et endpoints SPARQL {#parametres-secrets-et-endpoints-sparql}
 
 **Où sont les clés d'API, et sont-elles protégées ?**
 Chiffrées côté serveur (Fernet, clé dérivée de `ONTOFORGE_SECRET_KEY`), jamais renvoyées au navigateur ; sans clé maître, une clé est générée dans `$ONTOFORGE_DATA/.secret`. Une mauvaise clé maître rend les clés `key_unreadable` (à ressaisir) ; la rotation annule tout sans rien écrire si l'ancienne clé est fausse. Il n'y a pas de filtrage SSRF sur les URL de fournisseur et d'endpoint (outil mono-utilisateur auto-hébergé, D-L8-01) : à revoir avant toute exposition publique. `cryptography` s'installe via `pyproject.toml` ; l'image Docker n'a pas été reconstruite pour le vérifier.

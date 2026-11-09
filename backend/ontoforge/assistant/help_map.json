@@ -1,0 +1,209 @@
+{
+ "_doc": "Table écran -> section du guide. Source unique : lue par le front (bouton « ? », écran Documentation) et par Krakie (intention « aide »). Les ancres sont testées (backend/tests/test_help_map.py).",
+ "screens": {
+  "dashboard": {
+   "page": "utilisateur",
+   "anchor": "tableau-de-bord",
+   "title": {
+    "fr": "Tableau de bord",
+    "en": "Dashboard"
+   },
+   "summary": {
+    "fr": "Le tableau de bord résume l'état du projet : conformité, constats à arbitrer, dernières générations. La carte « prochaine étape » vous dit quoi faire ensuite.",
+    "en": "The dashboard sums up the project: conformance, findings to review and past generations. The next-step card tells you what to do next."
+   }
+  },
+  "editor": {
+   "page": "utilisateur",
+   "anchor": "ontologie-l-editeur-graphique",
+   "title": {
+    "fr": "L'éditeur graphique",
+    "en": "The graphical editor"
+   },
+   "summary": {
+    "fr": "L'éditeur dessine l'ontologie en graphe. Sélectionnez un nœud pour modifier ses propriétés dans l'inspecteur, ou tapez une ligne dans la Saisie rapide.",
+    "en": "The editor draws the ontology as a graph. Select a node to edit its properties in the inspector, or type a line in Quick entry."
+   }
+  },
+  "ontology-list": {
+   "page": "utilisateur",
+   "anchor": "vue-liste",
+   "title": {
+    "fr": "Vue liste",
+    "en": "List view"
+   },
+   "summary": {
+    "fr": "La vue liste affiche les classes et propriétés sous forme d'arbre, avec une fiche détaillée pour chaque élément. Pratique pour les grandes ontologies.",
+    "en": "The list view shows classes and properties as a tree, with a detail sheet for each item. Handy for large ontologies."
+   }
+  },
+  "shapes": {
+   "page": "utilisateur",
+   "anchor": "shacl",
+   "title": {
+    "fr": "Shapes SHACL",
+    "en": "SHACL shapes"
+   },
+   "summary": {
+    "fr": "Les shapes décrivent les données attendues : champs obligatoires, cardinalités, valeurs permises. Générez-les depuis l'ontologie, puis ajustez-les.",
+    "en": "Shapes describe the expected data: required fields, cardinalities, allowed values. Generate them from the ontology, then adjust."
+   }
+  },
+  "files": {
+   "page": "utilisateur",
+   "anchor": "editeur-de-fichiers",
+   "title": {
+    "fr": "Éditeur de fichiers",
+    "en": "File editor"
+   },
+   "summary": {
+    "fr": "L'éditeur de fichiers permet de modifier directement le source de l'ontologie (Turtle, RDF/XML, JSON-LD…) avec coloration et contrôle de syntaxe.",
+    "en": "The file editor lets you edit the ontology source directly (Turtle, RDF/XML, JSON-LD…) with highlighting and syntax checks."
+   }
+  },
+  "conformance": {
+   "page": "utilisateur",
+   "anchor": "conformite-owl",
+   "title": {
+    "fr": "Conformité OWL",
+    "en": "OWL conformance"
+   },
+   "summary": {
+    "fr": "La conformité vérifie l'ontologie contre les profils OWL 2 (DL, EL, QL, RL) et les bonnes pratiques. Chaque constat cite sa référence.",
+    "en": "Conformance checks the ontology against the OWL 2 profiles (DL, EL, QL, RL) and best practices. Each finding cites its reference."
+   }
+  },
+  "shacl": {
+   "page": "utilisateur",
+   "anchor": "shacl",
+   "title": {
+    "fr": "Validation SHACL",
+    "en": "SHACL validation"
+   },
+   "summary": {
+    "fr": "Cet écran valide des données contre les shapes du projet et liste chaque violation avec le nœud concerné.",
+    "en": "This screen validates data against the project's shapes and lists each violation with the node concerned."
+   }
+  },
+  "analysis": {
+   "page": "utilisateur",
+   "anchor": "analyse-arbitrage",
+   "title": {
+    "fr": "Analyse et arbitrage",
+    "en": "Analysis and arbitration"
+   },
+   "summary": {
+    "fr": "L'analyse classe chaque élément de l'ontologie : transposé automatiquement, à arbitrer par vous, ou perdu. Ouvrez un constat pour choisir une option.",
+    "en": "The analysis sorts every ontology element: transposed automatically, for you to arbitrate, or lost. Open a finding to pick an option."
+   }
+  },
+  "model": {
+   "page": "utilisateur",
+   "anchor": "modele-cible",
+   "title": {
+    "fr": "Modèle cible",
+    "en": "Target model"
+   },
+   "summary": {
+    "fr": "Le modèle cible montre le property graph obtenu pour Curiosity ou Neo4j : types de nœuds, relations, propriétés et validations.",
+    "en": "The target model shows the resulting property graph for Curiosity or Neo4j: node types, relations, properties and validations."
+   }
+  },
+  "exports": {
+   "page": "utilisateur",
+   "anchor": "exports",
+   "title": {
+    "fr": "Exports",
+    "en": "Exports"
+   },
+   "summary": {
+    "fr": "Les exports produisent les fichiers prêts à charger dans la cible choisie. Copiez un fichier ou téléchargez l'archive complète.",
+    "en": "Exports produce the files ready to load into the chosen target. Copy a file or download the full archive."
+   }
+  },
+  "queries": {
+   "page": "utilisateur",
+   "anchor": "requetes-requetage-interactif",
+   "title": {
+    "fr": "Requêtes",
+    "en": "Queries"
+   },
+   "summary": {
+    "fr": "Posez une question en langage naturel ou construisez la requête pas à pas ; l'écran la traduit en SPARQL, Cypher ou requête Curiosity.",
+    "en": "Ask a question in plain language or build the query step by step; the screen translates it to SPARQL, Cypher or a Curiosity query."
+   }
+  },
+  "assistant": {
+   "page": "utilisateur",
+   "anchor": "assistant-plein-ecran",
+   "title": {
+    "fr": "Assistant plein écran",
+    "en": "Full-screen assistant"
+   },
+   "summary": {
+    "fr": "L'assistant plein écran sert à concevoir une ontologie en conversation ou à partir d'un document. Rien n'est appliqué sans votre validation.",
+    "en": "The full-screen assistant helps design an ontology by conversation or from a document. Nothing is applied without your approval."
+   }
+  },
+  "settings": {
+   "page": "utilisateur",
+   "anchor": "parametres",
+   "title": {
+    "fr": "Paramètres",
+    "en": "Settings"
+   },
+   "summary": {
+    "fr": "Les paramètres règlent les langues, les fournisseurs LLM, le point d'accès SPARQL et les valeurs par défaut des nouveaux projets.",
+    "en": "Settings cover languages, LLM providers, the SPARQL endpoint and the defaults for new projects."
+   }
+  },
+  "projects": {
+   "page": "utilisateur",
+   "anchor": "projets",
+   "title": {
+    "fr": "Projets",
+    "en": "Projects"
+   },
+   "summary": {
+    "fr": "La liste des projets permet d'en créer un (vide, depuis un exemple ou un fichier), de l'ouvrir, de le dupliquer ou de l'exporter.",
+    "en": "The project list lets you create a project (empty, from a sample or from a file), open it, duplicate it or export it."
+   }
+  },
+  "documentation": {
+   "page": "utilisateur",
+   "anchor": "documentation-integree-et-aide",
+   "title": {
+    "fr": "Documentation intégrée et aide",
+    "en": "Built-in documentation and help"
+   },
+   "summary": {
+    "fr": "L'écran Documentation regroupe les guides, avec sommaire, recherche dans la page et liens entre fichiers. Le bouton « ? » ouvre la section de l'écran courant.",
+    "en": "The Documentation screen gathers the guides, with a table of contents, in-page search and links between files. The ? button opens the section for the current screen."
+   }
+  },
+  "default": {
+   "page": "utilisateur",
+   "anchor": "le-parcours-en-un-coup-d-oeil",
+   "title": {
+    "fr": "Le parcours en un coup d'œil",
+    "en": "The workflow at a glance"
+   },
+   "summary": {
+    "fr": "OntoForge suit quatre étapes : concevoir, vérifier, transposer, générer. Le guide présente chaque écran du parcours.",
+    "en": "OntoForge follows four steps: design, check, transpose, generate. The guide describes each screen of the workflow."
+   }
+  },
+  "versions": {
+   "page": "utilisateur",
+   "anchor": "versions-des-normes-et-des-cibles",
+   "title": {
+    "fr": "Versions des normes et des cibles",
+    "en": "Standard and target versions"
+   },
+   "summary": {
+    "fr": "L'écran Versions règle les versions de Neo4j, Cypher, Curiosity.Library, SHACL, SPARQL et RDF que visent les générateurs, avec le statut de chacune. Le défaut global se règle dans Paramètres.",
+    "en": "The Versions screen sets the Neo4j, Cypher, Curiosity.Library, SHACL, SPARQL and RDF versions the generators aim at, with the status of each. The global default is set in Settings."
+   }
+  }
+ }
+}

@@ -58,3 +58,6 @@ class Project(BaseModel):
     perimeters: list[Perimeter] = Field(default_factory=list)  # L9
     active_perimeter: Optional[str] = None  # L9 : état d'interface, n'influe pas sur analyze/generate
     generations: list[GenerationRecord] = Field(default_factory=list)  # L14, rétrocompatible
+    # L31 : versions de normes et de cibles propres au projet {neo4j, cypher, curiosity_library, shacl, sparql, rdf}.
+    # Rétrocompatible : une clé absente prend le défaut global des paramètres (un ancien projet n'en a aucune).
+    target_versions: dict[str, str] = Field(default_factory=dict)

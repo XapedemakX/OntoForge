@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from typing import Optional
 
+from .. import standards
 from ..core.onto_model import OntoModel, local_name
 from ..core.pg_model import Finding, PGModel
 
@@ -65,6 +66,23 @@ def _option(f: Finding) -> tuple[str, str]:
     return label, (opt.impact if opt else "")
 
 
+def _versions_section(pg: PGModel) -> list[str]:
+    """Versions de normes et de cibles utilisées pour cette génération, avec leur statut et les écarts connus (contrôle local)."""
+    v = {**standards.defaults(), **{k: x for k, x in (pg.meta.target_versions or {}).items() if x}}
+    keys = ("neo4j", "cypher") if pg.target == "neo4j" else ("curiosity_library",)
+    keys += ("rdf", "shacl", "sparql")
+    out = ["## Versions utilisées", "", "| Norme ou cible | Version | Statut |", "|---|---|---|"]
+    for k in keys:
+        out.append(f"| {standards._TXT['fr']['fam'][k]} | {v[k]} | {standards.status_label(k, v[k], 'fr')} |")
+    out.append("")
+    gaps = standards.check(v, "fr", base=standards.defaults())["gaps"]
+    out += [f"- {g['message']}" + (f" {g['recommendation']['message']}" if g.get("recommendation") else "") for g in gaps]
+    out.append(f"Référence des versions : standards.json du {standards.updated()}. "
+               "Ce qui n'est pas vérifiable (compatibilité avec le serveur Curiosity, support exact de Neo4j) est marqué À VÉRIFIER.")
+    out.append("")
+    return out
+
+
 def generate(pg: PGModel, onto: Optional[OntoModel] = None) -> dict[str, str]:
     t = TARGET_NAME.get(pg.target, pg.target)
     s = pg.summary()
@@ -77,6 +95,7 @@ def generate(pg: PGModel, onto: Optional[OntoModel] = None) -> dict[str, str]:
     if pg.meta.iri:
         L.append(f"Ontologie source : `{pg.meta.iri}` · cible : **{t}** · OntoForge {pg.meta.ontoforge_version}")
         L.append("")
+    L.extend(_versions_section(pg))
     L.append("## Synthèse")
     L.append("")
     L.append("| Indicateur | Valeur |")

@@ -1,0 +1,301 @@
+{
+ "schema": 1,
+ "updated": "2026-11-08",
+ "source": "docs/veille/normes.md (état du 7/11/2026) ; fiche maintenue par l'agent veille, livrée avec l'application",
+ "defaults": {
+  "neo4j": "5.26",
+  "cypher": "5",
+  "curiosity_library": "26.11.7740",
+  "shacl": "1.0",
+  "sparql": "1.1",
+  "rdf": "1.1"
+ },
+ "w3c": {
+  "rdf": {
+   "label": "RDF",
+   "versions": [
+    {
+     "id": "1.1",
+     "label": "RDF 1.1",
+     "maturity": "REC",
+     "date": "2014-02-25",
+     "support": "recommended",
+     "note": "Seule version que le code lit et écrit (rdflib).",
+     "note_en": "The only version the code reads and writes (rdflib)."
+    },
+    {
+     "id": "1.2",
+     "label": "RDF 1.2",
+     "maturity": "CR",
+     "date": "2026-04-07",
+     "support": "supported",
+     "note": "Candidate à la recommandation. Triples imbriqués et direction de texte non gérés : OntoForge n'émet que du RDF 1.1. À VÉRIFIER avant d'en dépendre.",
+     "note_en": "Candidate Recommendation. Quoted triples and text direction are not handled: OntoForge only emits RDF 1.1. TO VERIFY before relying on it."
+    }
+   ]
+  },
+  "owl": {
+   "label": "OWL",
+   "info_only": true,
+   "versions": [
+    {
+     "id": "2",
+     "label": "OWL 2",
+     "maturity": "REC",
+     "date": "2012-12-11",
+     "support": "recommended",
+     "note": "Aucun travail OWL 3 annoncé. Profils EL, QL, RL gérés par le contrôle de conformité.",
+     "note_en": "No OWL 3 work announced. The EL, QL and RL profiles are covered by the conformance check."
+    }
+   ]
+  },
+  "shacl": {
+   "label": "SHACL",
+   "versions": [
+    {
+     "id": "1.0",
+     "label": "SHACL 1.0 (2017)",
+     "label_en": "SHACL 1.0 (2017)",
+     "maturity": "REC",
+     "date": "2017-07-20",
+     "support": "recommended",
+     "note": "Recommandation W3C du 20 juillet 2017, seule version publiée. « SHACL 1.1 » n'existe pas officiellement. Version validée par pyshacl. Par tolérance, la valeur « 1.1 » est lue comme « 1.0 ».",
+     "note_en": "W3C Recommendation of 20 July 2017, the only published version. “SHACL 1.1” does not officially exist. The version validated by pyshacl. As a courtesy, the value “1.1” is read as “1.0”."
+    },
+    {
+     "id": "1.2",
+     "label": "SHACL 1.2",
+     "maturity": "WD",
+     "date": "2026-11-02",
+     "support": "supported",
+     "note": "Core est un brouillon de travail (WD), pas citable. pyshacl ne se présente pas comme une implémentation de SHACL 1.2 : les fonctions 1.2 restent désactivées. À VÉRIFIER.",
+     "note_en": "Core is a Working Draft (WD), not citable. pyshacl does not present itself as a SHACL 1.2 implementation: the 1.2 features stay disabled. TO VERIFY."
+    }
+   ],
+   "aliases": {
+    "1.1": "1.0"
+   },
+   "features": [
+    {
+     "id": "sh:values",
+     "since": "1.2",
+     "maturity": "WD",
+     "implemented": false,
+     "label": "sh:values (expressions de nœud)",
+     "label_en": "sh:values (node expressions)"
+    },
+    {
+     "id": "sh:defaultValue",
+     "since": "1.2",
+     "maturity": "WD",
+     "implemented": false,
+     "label": "sh:defaultValue calculée (1.2). Le sh:defaultValue non validant de 2017 est déjà lu et écrit",
+     "label_en": "computed sh:defaultValue (1.2). The non-validating 2017 sh:defaultValue is already read and written"
+    },
+    {
+     "id": "sh:ShapeClass",
+     "since": "1.2",
+     "maturity": "WD",
+     "implemented": false,
+     "label": "sh:ShapeClass",
+     "label_en": "sh:ShapeClass"
+    },
+    {
+     "id": "sh:targetWhere",
+     "since": "1.2",
+     "maturity": "WD",
+     "implemented": false,
+     "label": "sh:targetWhere",
+     "label_en": "sh:targetWhere"
+    },
+    {
+     "id": "sh:entailment",
+     "since": "1.2",
+     "maturity": "WD",
+     "implemented": false,
+     "label": "sh:entailment",
+     "label_en": "sh:entailment"
+    },
+    {
+     "id": "sh:reifier",
+     "since": "1.2",
+     "maturity": "WD",
+     "implemented": false,
+     "label": "sh:severity et sh:message sur réificateurs",
+     "label_en": "sh:severity and sh:message on reifiers"
+    }
+   ]
+  },
+  "sparql": {
+   "label": "SPARQL",
+   "versions": [
+    {
+     "id": "1.1",
+     "label": "SPARQL 1.1",
+     "maturity": "REC",
+     "date": "2013-03-21",
+     "support": "recommended",
+     "note": "Version envoyée aux points d'accès et exécutée par le triplestore local.",
+     "note_en": "The version sent to endpoints and run by the local triplestore."
+    },
+    {
+     "id": "1.2",
+     "label": "SPARQL 1.2",
+     "maturity": "WD",
+     "date": "2026-11-01",
+     "support": "supported",
+     "note": "Brouillon de travail. Nouveautés (triples imbriqués, VERSION, LANGDIR, TRIPLE()) non utilisées par OntoForge. À VÉRIFIER.",
+     "note_en": "Working Draft. The new features (quoted triples, VERSION, LANGDIR, TRIPLE()) are not used by OntoForge. TO VERIFY."
+    }
+   ]
+  }
+ },
+ "neo4j": {
+  "label": "Neo4j",
+  "versions": [
+   {
+    "id": "4.4",
+    "label": "Neo4j 4.4",
+    "support": "end_of_support",
+    "date": "2025-11",
+    "cypher": [],
+    "note": "Hors support depuis novembre 2025. Seul schema.cypher a une variante (syntaxe ASSERT, À VÉRIFIER) ; ingest.cypher et validation.cypher utilisent des fonctions de Neo4j 5.",
+    "note_en": "Out of support since November 2025. Only schema.cypher has a variant (ASSERT syntax, TO VERIFY); ingest.cypher and validation.cypher use Neo4j 5 functions."
+   },
+   {
+    "id": "5.26",
+    "label": "Neo4j 5.26 LTS",
+    "support": "recommended",
+    "lts": true,
+    "date": "2024-12",
+    "supported_until": "2028-06-06",
+    "cypher": [
+     "5"
+    ],
+    "note": "Seule version LTS : correctifs jusqu'au 6 juin 2028. Cypher 25 n'y existe pas.",
+    "note_en": "The only LTS version: fixes until 6 June 2028. Cypher 25 does not exist there."
+   },
+   {
+    "id": "2026.10",
+    "label": "Neo4j 2026.10",
+    "support": "supported",
+    "lts": false,
+    "date": "2026-10-20",
+    "cypher": [
+     "5",
+     "25"
+    ],
+    "note": "Version calendaire, pas LTS : correctifs jusqu'à la version 2026.11. La date de la 2026.10.1 n'est pas affichée sur la page de notes de version (À VÉRIFIER).",
+    "note_en": "Calendar version, not LTS: fixes until version 2026.11. The date of 2026.10.1 is not shown on the release-notes page (TO VERIFY)."
+   }
+  ],
+  "rules": [
+   {
+    "match": "^5\\.(\\d+)$",
+    "below": 26,
+    "support": "obsolete",
+    "cypher": [
+     "5"
+    ],
+    "note": "Version 5.x antérieure à la LTS 5.26 : plus de correctifs. Passer à 5.26.",
+    "note_en": "A 5.x version older than the 5.26 LTS: no more fixes. Move to 5.26."
+   },
+   {
+    "match": "^(20\\d\\d)\\.(\\d+)$",
+    "support": "obsolete",
+    "cypher": [
+     "5",
+     "25"
+    ],
+    "note": "Version calendaire antérieure à 2026.10 : seule la plus récente reçoit des correctifs. À VÉRIFIER (calendrier de support non lu en entier).",
+    "note_en": "A calendar version older than 2026.10: only the latest gets fixes. TO VERIFY (support calendar not read in full)."
+   }
+  ],
+  "features": {
+   "note": "Seuils de version repris du manuel Cypher et des relectures L21 (journal/L21/review-neo4j-it1.md).",
+   "rel_unique": "5.7",
+   "type_constraint": "5.9",
+   "type_constraint_list": "5.10",
+   "call_in_transactions_scoped": "5.23",
+   "cypher25": "2025.06"
+  },
+  "cypher": {
+   "label": "Cypher",
+   "versions": [
+    {
+     "id": "5",
+     "label": "Cypher 5",
+     "support": "recommended",
+     "note": "Gelé : correctifs seulement. Langage des scripts générés jusqu'ici.",
+     "note_en": "Frozen: fixes only. The language of the scripts generated so far."
+    },
+    {
+     "id": "25",
+     "label": "Cypher 25",
+     "support": "supported",
+     "note": "Reçoit les nouveautés depuis Neo4j 2025.06 et devient la valeur par défaut des nouvelles bases à partir de 2026.02 (À VÉRIFIER : la page « Cypher versioning » lue le 8/11 dit encore Cypher 5 par défaut). Absent de Neo4j 5.26.",
+     "note_en": "Receives the new features since Neo4j 2025.06 and becomes the default of new databases from 2026.02 (TO VERIFY: the “Cypher versioning” page read on 8 Nov still says Cypher 5 is the default). Absent from Neo4j 5.26."
+    }
+   ]
+  }
+ },
+ "curiosity": {
+  "label": "Curiosity.Library (NuGet)",
+  "versions": [
+   {
+    "id": "26.11.7740",
+    "label": "26.11.7740",
+    "support": "recommended",
+    "date": "2026-11-05",
+    "note": "Dernière version relevée sur NuGet. Compilation du code généré non vérifiée (validation manuelle, D-L21-03).",
+    "note_en": "Latest version seen on NuGet. Compilation of the generated code not verified (manual validation, D-L21-03)."
+   },
+   {
+    "id": "26.10.6546",
+    "label": "26.10.6546",
+    "support": "supported",
+    "date": "2026-10-09",
+    "note": "Version relevée le 9 octobre 2026, remplacée par la 26.11.7740.",
+    "note_en": "Version seen on 9 October 2026, replaced by 26.11.7740."
+   }
+  ],
+  "note": "Une dizaine de versions par mois. Une version absente de cette liste est acceptée mais reste À VÉRIFIER. La compatibilité avec la version du serveur Curiosity n'est écrite nulle part dans la documentation lue.",
+  "note_en": "About ten versions a month. A version missing from this list is accepted but stays TO VERIFY. Compatibility with the Curiosity server version is not written anywhere in the documentation read."
+ },
+ "libraries": {
+  "note": "Information seulement : bibliothèques internes d'OntoForge, figées par D-L21-02. Elles ne se règlent pas par projet.",
+  "note_en": "Information only: OntoForge's internal libraries, frozen by D-L21-02. They are not set per project.",
+  "items": [
+   {
+    "id": "rdflib",
+    "used": "7.1.1",
+    "latest": "7.6.0",
+    "support": "supported"
+   },
+   {
+    "id": "pyshacl",
+    "used": "0.29.1",
+    "latest": "0.40.2",
+    "support": "supported"
+   },
+   {
+    "id": "owlrl",
+    "used": "7.1.2",
+    "latest": "7.6.2",
+    "support": "supported"
+   },
+   {
+    "id": "pyoxigraph",
+    "used": "0.5.13",
+    "latest": "0.5.13",
+    "support": "recommended"
+   },
+   {
+    "id": "pypdf",
+    "used": "7.0.0",
+    "latest": null,
+    "support": "supported"
+   }
+  ]
+ }
+}

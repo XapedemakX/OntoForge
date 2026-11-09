@@ -1,8 +1,8 @@
-# Contribuer : comment l'équipe d'agents travaille
+# Contribuer : comment l'équipe d'agents travaille {#contribuer-comment-l-equipe-d-agents-travaille}
 
 OntoForge est construit par une équipe d'agents Claude qui s'auto-valident, sous le pilotage de Jerem (qui ne valide que les démos, D-009). Ce guide décrit le fonctionnement, pour qu'un nouvel agent ou un humain puisse reprendre le travail sans historique. Sources : `docs/TEAM.md` (protocole normatif), `docs/PLAN.md`, `docs/PLAN-IT2.md`, `lots/`, `journal/decisions.md`, `skills/ontoforge-delivery/SKILL.md`.
 
-## 1. Les rôles
+## 1. Les rôles {#les-roles}
 
 | id | Agent | Fiche | Skill maintenu |
 |---|---|---|---|
@@ -18,7 +18,7 @@ OntoForge est construit par une équipe d'agents Claude qui s'auto-valident, sou
 
 Modèles : Sonnet par défaut, Opus pour le design et les revues sémantiques, Haiku pour exécuter la recette. Quatre agents en parallèle au maximum (`docs/PLAN-IT2.md`).
 
-## 2. Le cycle d'un lot
+## 2. Le cycle d'un lot {#le-cycle-d-un-lot}
 
 Un lot (`lots/Lx.md`) est l'unité de travail. Son cycle (`docs/TEAM.md`) :
 
@@ -40,7 +40,7 @@ Un lot (`lots/Lx.md`) est l'unité de travail. Son cycle (`docs/TEAM.md`) :
 
 Exemple vécu : la revue W3C de L4 (`journal/L4/review-w3c-it1.md`, KO) a fait corriger le traducteur (classe absente = motif vide + perte). L'itération 2 (KO) a révélé le même défaut pour les propriétés, corrigé ensuite.
 
-## 3. Règles du jeu
+## 3. Règles du jeu {#regles-du-jeu}
 
 - Un fichier = un propriétaire par lot. Le fichier d'un autre agent ne se modifie pas : on le demande dans la revue ou via le lead. Fichiers transverses à propriétaire permanent : `backend/pyproject.toml`, `Dockerfile`, `docker-compose.yml`, `main.py`, `tests/conftest.py`, `frontend/**` → lead (D-015).
 - Les contrats d'interface sont normatifs : `backend/ontoforge/core/*.py` et `docs/CONTRACTS.md` (D-028) ne changent que par une décision tracée dans `journal/decisions.md`. Une demande d'évolution s'écrit dans `journal/Lx/demandes-contrat.md`.
@@ -53,11 +53,11 @@ Exemple vécu : la revue W3C de L4 (`journal/L4/review-w3c-it1.md`, KO) a fait c
 - Ordre de coupe si le délai menace (D-018) : HermiT/owlready2 → traduction Curiosity des requêtes → GraphQL → ingestion/validations Neo4j → fournisseurs LLM autres qu'Anthropic → DDL Neo4j. Jamais coupés : import, conformité de base, validation SHACL, analyse et génération Curiosity, arbitrage, export.
 - Limite d'usage : au premier refus (429), ne rien relancer. La reprise est programmée à l'heure de remise à zéro (`journal/reprise.md`).
 
-## 4. Questions aux experts (documentaliste)
+## 4. Questions aux experts (documentaliste) {#questions-aux-experts-documentaliste}
 
 Quand une décision ou une limite n'est pas expliquée par le code, le documentaliste ne devine jamais : il écrit la question dans `journal/doc/questions.md` (question, destinataire parmi `w3c`, `shacl`, `query`, `curiosity`, `neo4j`, `lead`, `chef`, contexte). Le lead relaie et note la réponse ; en attendant, le guide porte la mention `À CONFIRMER`.
 
-## 5. Salle des agents (suivi en direct)
+## 5. Salle des agents (suivi en direct) {#salle-des-agents-suivi-en-direct}
 
 Base de données de l'artifact `https://claude.ai/artifact/UoUzdNu1a6md7T9GN6qmKq`, collection `events`. Chaque agent publie avec l'outil `ArtifactData` (à charger via `ToolSearch` : `select:ArtifactData`) :
 
@@ -70,11 +70,11 @@ data: { ts: "<ISO 8601 UTC>", agent: "<id>", type: "<start|progress|message|revi
 
 Au minimum : au démarrage, à chaque verdict de revue (avec `to` = pilote), à chaque correction (avec `to` = relecteur), à la fin. Pas plus d'un événement toutes les quelques minutes. Outil indisponible : ajouter la même ligne JSON dans `journal/events.jsonl` (le lead la republiera).
 
-## 6. Skills
+## 6. Skills {#skills}
 
 Un skill (`skills/<nom>/SKILL.md`, frontmatter `name` / `description`) est une méthode réutilisable maintenue par son agent à chaque lot. Il garde ce que le projet a appris, hors du contexte d'OntoForge autant que possible. Les relecteurs y reportent leurs remarques (ligne `skill:` de la revue). État : 9 skills (transposition OWL → LPG, SHACL, conformité W3C, Curiosity, Neo4j, requêtes, conception rapide d'ontologies, pilotage d'équipe d'agents, découverte produit), plus `technical-documentation` (documentation d'un logiciel construit par une équipe d'agents).
 
-## 7. Travailler sur le code
+## 7. Travailler sur le code {#travailler-sur-le-code}
 
 ```bash
 cd backend && python -m venv .venv && . .venv/bin/activate && pip install -e ".[dev]"
@@ -86,20 +86,22 @@ npm run build                                                         # doit res
 
 Conventions de test : `backend/tests/test_<module>.py`, fixtures dans `samples/`, aucun accès réseau (fournisseur `mock`). Les générateurs se testent par déterminisme, invariants et formes autorisées, pas par fichiers « golden » (D-038). Pour ajouter ou modifier une règle de transposition : modifier `mapping/rules/catalog.py` (source unique), la détection dans le module de famille correspondant, l'oracle si le comportement attendu change, puis régénérer `docs/RULES.md` ; le documentaliste met à jour [`regles.md`](regles.md).
 
-## 8. Documentation : définition de « terminé »
+## 8. Documentation : définition de « terminé » {#documentation-definition-de-termine}
 
 Depuis l'itération 2, un lot n'est clos que si la documentation reflète le lot : `journal/<lot>/doc-ok.md` écrit par le documentaliste après vérification contre le code ou un test (chaque affirmation cite sa source). Le guide vit dans `docs/guide/` : [`utilisateur.md`](utilisateur.md), [`architecture.md`](architecture.md), [`api.md`](api.md), [`regles.md`](regles.md), [`glossaire.md`](glossaire.md), [`limites.md`](limites.md), [`CHANGELOG.md`](CHANGELOG.md) et ce fichier. `api.md` est généré depuis l'application FastAPI (`app.openapi()`) et complété d'exemples réels.
 
-## 9. Versionnage, publication et CI (agent `git`)
+Chaque titre d'un fichier traduit se termine par un `{#id}` explicite. Les fichiers `<nom>.md` et `<nom>.en.md` d'une page portent les mêmes identifiants, car le bouton « ? », Krakie et `help_map.json` pointent vers `page#id`. On traduit le texte du titre, jamais l'identifiant. `backend/tests/test_help_map.py` échoue si les ancres françaises et anglaises diffèrent. `tools/doc_ids.py` pose les identifiants sur un fichier français qui n'en a pas.
+
+## 9. Versionnage, publication et CI (agent `git`) {#versionnage-publication-et-ci-agent-git}
 
 Deux dépôts coexistent : le dépôt de travail (`/home/claude/OntoForge`, historique local lourd, jamais poussé tel quel) et le clone de publication (`/home/claude/ontoforge-pub`, branche `main` de `https://github.com/XapedemakX/ontoforge`). Seul le second reçoit un `push`, et seulement sur demande du lead (tests verts, revues OK, `doc-ok.md`, passe de l'humaniseur ; voir `docs/TEAM.md`).
 
-### Branches et commits
+### Branches et commits {#branches-et-commits}
 
 - Un lot = une branche `lot/Lxx-sujet` (par exemple `lot/L22-editeur-de-fichiers`), fusionnée dans `main` après revue. Les agents ne touchent qu'à leurs fichiers (un fichier = un propriétaire) : on commite avec `git add` ciblé, jamais `git add -A` dans le dépôt de travail.
 - Messages en français, une ligne de titre qui commence par le lot (« L22 : … »), terminés par les trailers `Co-Authored-By` et `Claude-Session` demandés par la session.
 
-### Publication avec `tools/git/publish.sh`
+### Publication avec `tools/git/publish.sh` {#publication-avec-tools-git-publish-sh}
 
 ```bash
 tools/git/publish.sh "Lot L22 : éditeur de fichiers"          # commit local dans le clone, pas de push
@@ -116,11 +118,11 @@ Le script :
 
 Pour annuler un commit d'essai : `git -C /home/claude/ontoforge-pub reset --hard HEAD~1` (dans le clone de publication uniquement). Variables facultatives : `ONTOFORGE_SRC`, `ONTOFORGE_PUB`, `PUBLISH_BRANCH`.
 
-### Tags de version
+### Tags de version {#tags-de-version}
 
 Un tag `vX.Y.Z` par livraison, posé sur le clone de publication après le push (`git tag -a v0.2.0 -m "Itération 2"` puis `git push origin v0.2.0`). Les notes de version viennent de [`CHANGELOG.md`](CHANGELOG.md) : ajouter l'entrée de la version avant de tagger, et garder la version de `backend/pyproject.toml` alignée.
 
-### Intégration continue
+### Intégration continue {#integration-continue}
 
 Le workflow `.github/workflows/ci.yml` ne demande aucun secret :
 
@@ -132,6 +134,6 @@ Le workflow `.github/workflows/ci.yml` ne demande aucun secret :
 
 Les actions sont épinglées par SHA de commit (version en commentaire) ; caches pip et npm activés. Neo4j et Curiosity ne sont pas testés en CI : Jerem valide les fichiers générés à la main (D-L21-03).
 
-### Dépendances
+### Dépendances {#dependances}
 
 Dependabot (`.github/dependabot.yml`) signale les mises à jour, ignore les versions majeures et limite les demandes ouvertes. Rien n'est fusionné sans l'accord de Jerem, mises à jour de sécurité comprises (D-L21-02).

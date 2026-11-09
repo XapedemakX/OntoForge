@@ -3,6 +3,8 @@
 Auteur : agent `veille`. Lot L21. Rédigé le 7 nov. 2026.
 Question de Jerem : « comment s'assurer d'être aux dernières normes W3C ou aux standards Neo4j / Curiosity, comment mettre à jour le code automatiquement ».
 
+> État depuis L31 (8 nov. 2026). `standards.json` est réel : `backend/ontoforge/standards/standards.json`, livré avec l'application et lu par l'API (`GET /api/standards`), les générateurs et le contrôle de versions d'un projet. Il remplace l'emplacement `docs/veille/standards.json` cité plus bas. La veille le met à jour en même temps que `normes.md`, champ `updated` compris : c'est lui qui réarme la bulle « plus tard » de Krakie. Il porte W3C (RDF, OWL, SHACL, SPARQL : statut et date), Neo4j (5.26 LTS, 2026.10, 4.4) et Cypher, Curiosity.Library, et les bibliothèques internes à titre d'information. Les dépréciations de syntaxe se traduisent par une entrée `rules` ou `features` du fichier, pas par du code.
+
 ## Réponse courte
 
 On ne met pas un code sémantique à jour « automatiquement » sans filet. On automatise trois étapes (détecter, proposer, prouver) et on garde une quatrième, humaine (décider) :

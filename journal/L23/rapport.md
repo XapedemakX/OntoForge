@@ -68,3 +68,22 @@ Agent : humain. Périmètre : section « Lire le graphe : légende et notation V
 Questions laissées sans réponse, hors périmètre de l'humanisation :
 - Le rapport L26 dit en décision 3 « Légende fermée par défaut », alors que doc-ok.md et le guide décrivent une légende ouverte au premier usage depuis la revue scout.
 - La section « Relectures » du rapport L26 dit que les relectures ne sont pas faites, alors que review-w3c-it1.md, review-scout-it1.md et doc-ok.md existent.
+
+
+# L28 à L32, passe d'humanisation
+
+Agent : humain. Base de comparaison : d2aa081 (le commit e5399ee n'existe pas dans ce dépôt). Périmètre : sections « Raisonner avec HermiT », « Versions des normes et des cibles » et « Documentation intégrée et aide » de docs/guide/utilisateur.md, paragraphe HermiT de docs/guide/limites.md, prose de docs/CONTRACTS.md (§11 seulement), encadré L31 de docs/veille/processus-mise-a-jour.md, journal/L28 à L32/rapport.md. Même contrôle automatique avant/après (HEAD contre fichier) : blocs de code, code en ligne, liens, nombres, lignes de tableau, `À VÉRIFIER`, titres. Aucun écart. `backend/tests/test_help_map.py` : 30 passed.
+
+| Fichier | Lignes modifiées | Doutes |
+|---|---|---|
+| docs/guide/utilisateur.md | 18 | Gras de début de puce retiré (HermiT, Versions, Documentation). Deux longs paragraphes scindés. « Ce n'est pas une validation de données » devient « Il ne valide pas des données comme le fait SHACL ». Section « Easter egg » : non modifiée par L30, non touchée. |
+| docs/guide/limites.md | 1 | Paragraphe HermiT scindé en trois. |
+| docs/CONTRACTS.md | 1 | §11, puce Krakie. §12 et §4 sans tic. |
+| docs/veille/processus-mise-a-jour.md | 2 | Encadré L31 : gras du libellé retiré, parenthèse transformée en proposition. |
+| journal/L28/rapport.md | 1 | Première puce de « Livré » scindée. |
+| journal/L29/rapport.md | 18 | Étiquettes en gras de début de puce remplacées par « Étiquette : ». |
+| journal/L30/rapport.md | 7 | Idem. |
+| journal/L31/rapport.md, L32/rapport.md | 0 | Pas de tic notable. Titre « Limites honnêtes » de L32 laissé tel quel (titre). |
+
+Non touchés : architecture.md et glossaire.md (lignes de tableau), CHANGELOG.md (autre agent), revues, doc-ok existants hors la ligne ajoutée.
+Question laissée : la ligne CHANGELOG et le rapport L28 évoquent encore « humain : à faire » alors que cette passe est faite.

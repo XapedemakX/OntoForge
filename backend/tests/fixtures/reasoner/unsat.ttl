@@ -1,0 +1,7 @@
+@prefix : <http://example.org/reason#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+<http://example.org/reason> a owl:Ontology .
+:Dog a owl:Class ; owl:disjointWith :Cat . :Cat a owl:Class .
+:Chimera a owl:Class ; rdfs:subClassOf :Dog, :Cat .
+:Animal a owl:Class .

@@ -1,12 +1,33 @@
-# Journal des versions
+# Journal des versions {#journal-des-versions}
 
 Format : par version, ce qui change pour l'utilisateur, puis le détail par lot. Sources : rapports `journal/L*/rapport*.md`, revues, `journal/decisions.md`. Les lots sont décrits dans `lots/`.
 
-## 0.1.0 : Itération 1 (livraison prévue le mardi 3 novembre 2026, ~19 h, Paris, D-022)
+## L30 : Krakie vivante dans le jeu caché (8 nov. 2026) {#l30-krakie-vivante-dans-le-jeu-cache-8-nov-2026}
+
+- Correctif : Krakie ne se déforme plus en se déplaçant (plus de cisaillement du sprite : corps intact, seuls les tentacules traînent d'un pixel).
+- Dans « Krakie's Triple Catch », Krakie nage (6 images, tentacules en onde, léger rebond) et s'incline dans le sens du déplacement.
+- Expressions brèves : clin d'œil à chaque élément attrapé, grand sourire et étincelles pour un triplet complet, surprise pour un bonus, grimace avec léger tremblement pour un constat perdu ou une IRI cassée, inquiète en continu à une seule vie. Halo de verre pendant le bouclier SHACL, effet violet pendant l'inférence. Fin de partie : trophée si record ou 400 points, inquiète sinon.
+- Un mot n'est plus à la fois cible et distracteur d'une autre catégorie ; le graphe de fond reste sous le bandeau de score. Avec `prefers-reduced-motion` : expressions fixes, ni tremblement, ni rebond, ni inclinaison.
+
+## L29 : Krakie forgeronne (8 nov. 2026) {#l29-krakie-forgeronne-8-nov-2026}
+
+- Krakie forge (deux marteaux sur une enclume) pendant les exports, l'analyse, la génération de shapes et le brouillon depuis un document, à la place de Krakie au volant, puis brandit un trophée en forme de graphe pendant environ 2 s à la fin d'un traitement réussi. Images fixes avec `prefers-reduced-motion`.
+- Nouvelles poses `forge` (8 images) et `trophee` (4 images) ; la pose « bolide » reste dans les sources de `design/krakie/` mais n'est plus affichée.
+
+## L31 : versions des normes et des cibles (8 nov. 2026) {#l31-versions-des-normes-et-des-cibles-8-nov-2026}
+
+- Référence `standards.json` embarquée (W3C, Neo4j, Cypher, Curiosity.Library, bibliothèques internes) ; `GET /api/standards`.
+- Versions par projet avec défaut global dans les Paramètres ; contrôle local `versions/check` ; écran Versions.
+- Neo4j : préfixe `CYPHER 25` / `CYPHER 5` requête par requête, contraintes selon la version ; Curiosity : version de Curiosity.Library dans les en-têtes et le README ; le rapport de transposition liste les versions ; fonctions SHACL 1.2 désactivées.
+- Krakie : « quelles versions ? », « mets à jour les versions », bulle d'écart une fois par session.
+- SHACL : la seule version publiée est la 1.0 (Recommandation du 20 juillet 2017) ; « SHACL 1.1 » n'existe pas officiellement et n'est lu que comme synonyme de 1.0. Neo4j 4.4 : seul `schema.cypher` a une variante (syntaxe ASSERT, À VÉRIFIER).
+- Correctif Krakie : « help » seul reçoit désormais une réponse en anglais.
+
+## 0.1.0 : Itération 1 (livraison prévue le mardi 3 novembre 2026, ~19 h, Paris, D-022) {#iteration-1-livraison-prevue-le-mardi-3-novembre-2026-19-h-paris-d-022}
 
 > Statut au premier passage de L12 : la recette chez Jerem (`docker compose up --build`, lot L7) n'a pas encore eu lieu et aucun lot n'a de fichier `cloture.md`. Cette version reflète l'état du dépôt le 3 novembre 2026 au soir.
 
-### Nouveautés
+### Nouveautés {#nouveautes}
 
 - Concevoir : projets (vides, depuis les exemples `automaint` et `trap`, ou par dépôt de fichier) ; éditeur d'ontologie façon Protégé ; Saisie rapide (DSL, une ligne = un axiome) ; import Turtle, RDF/XML, JSON-LD, N-Triples, N3, TriG ; export Turtle, RDF/XML, JSON-LD, N-Triples, N3.
 - Vérifier : conformité OWL 2 DL / EL / QL / RL avec références de spécification (W01 à W07) et bonnes pratiques (BP01 à BP07).
@@ -17,7 +38,7 @@ Format : par version, ce qui change pour l'utilisateur, puis le détail par lot.
 - Assistant IA : brouillon d'ontologie depuis texte, CSV ou SQL, acceptation élément par élément ; shapes proposées ; explication d'un constat ; fournisseurs `anthropic`, `openai_compat`, `ollama`, `mock`.
 - Docker : `docker compose up --build` (backend FastAPI + frontend nginx), projets persistés dans le volume `ontoforge-data`.
 
-### Par lot
+### Par lot {#par-lot}
 
 | Lot | Contenu | Revues (verdicts) |
 |---|---|---|
@@ -31,12 +52,12 @@ Format : par version, ce qui change pour l'utilisateur, puis le détail par lot.
 | L7 | Plan de recette (`journal/L7/plan-recette.md`) | recette chez Jerem à venir |
 | L13 (reliquats, itération 2 anticipée) | `Decimal` (Curiosity sans perte), noms de reverse (`mapping/reverse_names.py`), I01/C08 (nœuds de référence), diagramme lisible, script `tools/dotnet/check-curiosity.ps1` | w3c it1 : KO (collisions de noms de reverse) |
 
-### L16 et L17 (4 novembre 2026)
+### L16 et L17 (4 novembre 2026) {#l16-et-l17-4-novembre-2026}
 
 - L16 : Krakie globale (bouton flottant, Ctrl+K, contexte de l'écran, cartes Appliquer / Annuler, intentions sans LLM).
 - L17 : Vue liste refaite, écran Shapes refait (édition en ligne, diff de génération, validation), Requêtes : endpoint temporaire, valeurs possibles sans endpoint, nouveau logo. API : `dry_run` sur `/shacl/generate`, `GET /query/options`, `POST /query/endpoint-test`. Voir `journal/L16/cloture.md` et `journal/L17/cloture.md`.
 
-### Corrections notables issues des revues
+### Corrections notables issues des revues {#corrections-notables-issues-des-revues}
 
 - Catalogue : `owl:hasKey` n'est jamais `auto` (K02, SS §9.5) ; `owl:equivalentClass` nommée = `review` (C05) ; deux `rdfs:domain` / `rdfs:range` = intersection (D12/O21), jamais union ; relation à ≥ 3 rôles = R02, jamais R01.
 - Moteur : cardinalités `some` / `min n` jamais lues comme « exactement 1 » ; héritage aplati sans fausse obligation ; propriétés non simples sans cardinalité ; chaînes de propriétés conservées dans l'ordre ; domaine/portée complexes → G01 explicite.
@@ -44,19 +65,19 @@ Format : par version, ce qui change pour l'utilisateur, puis le détail par lot.
 - Traducteur : classe ou propriété absente du modèle = motif vide + perte (jamais un motif non typé) ; types multiples sur un même discriminant = perte.
 - Conformité : W07 ignore les vocabulaires réutilisés (dcterms, skos…) ; `DisjointUnion` classé hors EL/QL/RL (confirmé).
 
-### Décisions structurantes
+### Décisions structurantes {#decisions-structurantes}
 
 D-002 (FastAPI + React), D-003 (Docker uniquement), D-004 (SHACL dès la v0.1), D-005 (Curiosity prioritaire), D-006 (assistant soumis à revue humaine), D-028 (contrats `core/*` normatifs), D-031 (66 règles), D-034 (validation sans inférence), D-035 (format des identifiants de constat), D-038 (pas de fichiers golden), D-L13-01 (`Decimal`). Liste complète : `journal/decisions.md`.
 
-### Limites connues à la livraison
+### Limites connues à la livraison {#limites-connues-a-la-livraison}
 
 C# Curiosity non compilé, Cypher non exécuté, API externes `À VÉRIFIER`, aucune authentification. Détail dans [`limites.md`](limites.md).
 
-## 0.2.0 : Itération 2 (livraison prévue le vendredi 6 novembre 2026)
+## 0.2.0 : Itération 2 (livraison prévue le vendredi 6 novembre 2026) {#iteration-2-livraison-prevue-le-vendredi-6-novembre-2026}
 
 > Statut au 4 novembre 2026 : lots L8, L9, L10, L11, L13, L14 (données de démo, historique des générations) et L15 livrés côté code ; la recette (L14) et la validation de Jerem restent à faire. Tests backend : 528 verts d'après la revue L15 (non rejoués par le documentaliste). `npm run build` vert d'après les rapports.
 
-### Nouveautés
+### Nouveautés {#nouveautes-2}
 
 - Parcours et tableau de bord : l'interface suit Concevoir → Vérifier → Transposer → Générer ; un tableau de bord par projet (prochaine action de Krakie, étapes, constats par cible, générations, périmètres) ; design system « Abysse » (clair / sombre), IBM Plex ; interface fr / en.
 - Éditeur graphique interactif : canvas + inspecteur rabattable + arbre + saisie rapide ; gestes (double-clic = classe, glisser = sous-classe / propriété / disjonction, F2, Suppr) ; annuler / rétablir (200 niveaux) ; validation OWL 2 de chaque geste (tout ou rien) ; icônes par classe ; zoom sémantique.
@@ -68,7 +89,7 @@ C# Curiosity non compilé, Cypher non exécuté, API externes `À VÉRIFIER`, au
 - Historique des générations côté serveur (`GET /generations`) ; données de démo `samples/automaint/automaint-demo-data.ttl` et `tools/demo/generate_demo_data.py`.
 - Documentation : ce guide mis à jour (utilisateur, architecture, API, limites, glossaire).
 
-### Par lot
+### Par lot {#par-lot-2}
 
 | Lot | Contenu | Revues |
 |---|---|---|
@@ -80,7 +101,7 @@ C# Curiosity non compilé, Cypher non exécuté, API externes `À VÉRIFIER`, au
 | L14 | Historique des générations (§7), données de démo (524 tests verts) | — |
 | L15 | Requêtage guidé, endpoints multiples, `/query/nl` (CONTRACTS §6) ; correctif du moteur (D-L15-01) | curiosity : approuvé sous réserve (1 bloquant corrigé) |
 
-### Corrections notables
+### Corrections notables {#corrections-notables}
 
 - Reverse : un nom de retour dérivé ne peut plus reprendre une propriété OWL existante (repli `<Arête>Of<Source>`).
 - Héritage sous classe abstraite (D-L15-01) : propriétés recopiées dans chaque feuille concrète ; avant, `DisplayName` disparaissait du schéma C# de Technician / Garage / Customer / Brand. Relancez l'analyse des projets existants.
@@ -88,15 +109,15 @@ C# Curiosity non compilé, Cypher non exécuté, API externes `À VÉRIFIER`, au
 - I01 / C08 : plus de constat I01 pour les membres d'`owl:oneOf`.
 - Requêtes : filtre discriminant conservé par le traducteur ; garde-fous de lecture seule.
 
-### Décisions structurantes
+### Décisions structurantes {#decisions-structurantes-2}
 
 D-L2-01, D-L4-02, D-L8-01 (paramètres chiffrés), D-L9-01 (éditeur : `/ops` tout ou rien), D-L9-02 (`NodeType.icon`, sévérité `info` : acceptés, non encore implémentés), D-L13-01 (`Decimal`), D-L15-01 (recopie dans les feuilles). Plan : `docs/PLAN-IT2.md` (arbitrages des 3 et 4 novembre : Krakie, un endpoint actif, requêtage façon Sparnatural avec notre constructeur, langage naturel).
 
-### Limites connues
+### Limites connues {#limites-connues}
 
 C# Curiosity et Query API non vérifiés, Cypher non exécuté, API externes `À VÉRIFIER`, aucune authentification, pas de filtrage SSRF, fournisseurs LLM réels non éprouvés, pas de test automatisé du front. Détail : [`limites.md`](limites.md).
 
-## 0.3.0 (en cours)
+## 0.3.0 (en cours) {#en-cours}
 
 Lots L19 à L26, un par ligne. Les détails sont dans `journal/L<n>/rapport.md`.
 
@@ -107,4 +128,7 @@ Lots L19 à L26, un par ligne. Les détails sont dans `journal/L<n>/rapport.md`.
 - L23 : humanisation de la documentation et des skills, étape 1 (skill `humanizer`).
 - L24 : publication, intégration continue (pytest, build front, recettes en manuel) et Dependabot encadré.
 - L25 : amorcer une ontologie depuis un document (.txt, .md, .pdf) avec extrait source, badge « À confirmer » et contrôles W3C ; revues w3c et scout it1.
+- L32 : raisonner avec HermiT. Bouton « Raisonner avec HermiT » dans Conformité (cohérence, classes insatisfiables cliquables et mises en rouge dans l'éditeur, inférences ajoutables au modèle par `/ops`, individus reclassés ; pendant le calcul, Krakie forgeronne et « HermiT raisonne… (jusqu'à 30 s) », puis trophée si cohérente ou Krakie inquiète sinon), `POST /api/projects/{id}/reason`, intention Krakie « raisonne / vérifie la cohérence / run the reasoner », image Cloud Run avec Java par défaut (`WITH_REASONER=1`). Revues : voir `journal/L32/rapport.md`.
 - L26 : lire le graphe de l'ontologie. Légende flottante qui ne montre que les encodages présents, mode « Notation VOWL » (VOWL 2 : classes en cercles, classes externes, équivalentes, anonymes, types de données, caractéristiques des propriétés), menu « Afficher » avec curseur de densité et compteur, export SVG et PNG du graphe tel qu'affiché, étape « legend » de la visite guidée (19 étapes). `GET /graph` reste rétrocompatible et gagne (`external`, `equivalent`, `include=external,anonymous,thing`). Revues w3c, scout, doc, humaniseur : voir `journal/L26/rapport.md`.
+- L28 : documentation intégrée (entrée Documentation du bandeau, sommaire, recherche, liens entre fichiers, hors ligne), bouton « ? » par écran, action Krakie `help`, étape de visite (20 étapes). Voir « Documentation intégrée et aide » dans `utilisateur.md`.
+- L33 : documentation en anglais. Les pages utilisateur, limites, contribuer, API et journal des versions existent en `.en.md` et s'affichent quand l'interface est en anglais ; le bandeau « French only » ne reste que sur les fichiers non traduits (architecture, règles, glossaire). Chaque titre de ces fichiers porte un identifiant explicite `{#id}`, identique en français et en anglais, pour que le bouton « ? » et Krakie ouvrent la bonne section dans les deux langues. Le test `test_help_map.py` vérifie les ancres dans les deux versions.
