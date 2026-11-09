@@ -7,9 +7,9 @@ dependencies = [
   "fastapi==0.115.6",
   "uvicorn[standard]==0.32.1",
   "pydantic==2.10.3",
-  "rdflib==7.1.1",
-  "pyshacl==0.29.1",
-  "owlrl==7.1.2",
+  "rdflib==7.6.0",
+  "pyshacl==0.40.2",
+  "owlrl==7.6.2",
   "pyoxigraph==0.5.13",
   "httpx==0.28.1",
   "pypdf==7.0.0",
@@ -21,7 +21,7 @@ dependencies = [
 ]
 [project.optional-dependencies]
 dev = ["pytest==8.3.4", "graphql-core==3.2.5"]
-reasoner = ["owlready2==0.47"]
+reasoner = ["owlready2==0.51"]
 
 [build-system]
 requires = ["setuptools>=68"]
