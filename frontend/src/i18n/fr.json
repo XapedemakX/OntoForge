@@ -1591,5 +1591,20 @@
   "krakie.done.exports": "Exports prêts.",
   "krakie.done.analysis": "Transposition terminée.",
   "krakie.forge.shapes": "Krakie forge les shapes…",
-  "krakie.done.shapes": "Brouillon de shapes prêt."
+  "krakie.done.shapes": "Brouillon de shapes prêt.",
+  "nav.collapse": "Replier",
+  "nav.expand": "Déplier",
+  "nav.collapseTip": "Replier le bandeau (Ctrl+B)",
+  "nav.expandTip": "Déplier le bandeau (Ctrl+B)",
+  "nav.stepTip": "Étape {n} : {name}",
+  "settings.tab.display": "Affichage",
+  "settings.display.title": "Bandeau latéral",
+  "settings.display.intro": "Le bandeau de gauche peut se replier en icônes seules pour laisser plus de place au canevas. Ce réglage est mémorisé dans ce navigateur.",
+  "settings.display.side": "Bandeau latéral",
+  "settings.display.auto": "Automatique",
+  "settings.display.open": "Ouvert",
+  "settings.display.closed": "Replié",
+  "settings.display.hint.auto": "Replié sur les écrans de plein canevas (éditeur, vue liste, fichiers, documentation), ouvert ailleurs.",
+  "settings.display.hint.open": "Toujours ouvert, même sur les écrans de plein canevas.",
+  "settings.display.hint.closed": "Toujours replié en icônes. Le bouton en bas du bandeau (ou Ctrl+B) le déplie."
 }

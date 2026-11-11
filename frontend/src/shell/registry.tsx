@@ -24,14 +24,15 @@ export interface ScreenDef {
   render: (props: ScreenProps) => ReactNode
   editing?: boolean              // écran d'édition : bandeau « consultation » sur mobile
   fullBleed?: boolean            // pas de padding : l'écran gère sa mise en page (éditeur, assistant)
+  collapseAuto?: boolean         // écran de plein canevas : le bandeau latéral se replie en mode « automatique »
   badge?: 'pending'              // pastille du nombre de constats à arbitrer
 }
 export const SCREENS: ScreenDef[] = [
   { key: 'tableau', labelKey: 'nav.tableau', icon: 'gauge-high', render: p => <Dashboard {...p} /> },
-  { key: 'ontologie', labelKey: 'nav.ontologie', icon: 'sitemap', step: 'concevoir', editing: true, fullBleed: true, render: p => <Editor {...p} /> },
-  { key: 'ontologie-liste', labelKey: 'nav.liste', icon: 'list-ul', step: 'concevoir', editing: true, fullBleed: true, render: p => <Ontology {...p} /> },
+  { key: 'ontologie', collapseAuto: true, labelKey: 'nav.ontologie', icon: 'sitemap', step: 'concevoir', editing: true, fullBleed: true, render: p => <Editor {...p} /> },
+  { key: 'ontologie-liste', collapseAuto: true, labelKey: 'nav.liste', icon: 'list-ul', step: 'concevoir', editing: true, fullBleed: true, render: p => <Ontology {...p} /> },
   { key: 'shapes', labelKey: 'nav.shapes', icon: 'shapes', step: 'concevoir', editing: true, render: p => <Shacl {...p} initialTab="shapes" /> },
-  { key: 'fichiers', labelKey: 'nav.fichiers', icon: 'file-code', step: 'concevoir', editing: true, fullBleed: true, render: p => <Files {...p} /> },
+  { key: 'fichiers', collapseAuto: true, labelKey: 'nav.fichiers', icon: 'file-code', step: 'concevoir', editing: true, fullBleed: true, render: p => <Files {...p} /> },
   { key: 'conformite', labelKey: 'nav.conformite', icon: 'clipboard-check', step: 'verifier', render: p => <Conformance {...p} /> },
   { key: 'shacl', labelKey: 'nav.shacl', icon: 'shield-halved', step: 'verifier', render: p => <Shacl {...p} initialTab="valid" /> },
   { key: 'analyse', labelKey: 'nav.analyse', icon: 'scale-balanced', step: 'transposer', badge: 'pending', render: p => <Analysis {...p} /> },
@@ -40,6 +41,6 @@ export const SCREENS: ScreenDef[] = [
   { key: 'versions', labelKey: 'nav.versions', icon: 'tags', step: 'generer', render: p => <Versions {...p} /> },
   { key: 'requetes', labelKey: 'nav.requetes', icon: 'magnifying-glass-chart', step: 'generer', editing: true, render: p => <Queries {...p} /> },
   { key: 'assistant', labelKey: 'nav.assistant', icon: 'wand-magic-sparkles', fullBleed: true, render: p => <AssistantScreen {...p} /> },
-  { key: 'documentation', labelKey: 'nav.documentation', icon: 'book-open', fullBleed: true, render: p => <Documentation {...p} /> },
+  { key: 'documentation', collapseAuto: true, labelKey: 'nav.documentation', icon: 'book-open', fullBleed: true, render: p => <Documentation {...p} /> },
 ]
 export const STEPS: StepKey[] = ['concevoir', 'verifier', 'transposer', 'generer']

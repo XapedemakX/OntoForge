@@ -2,6 +2,11 @@
 
 Format: by version, what changes for the user, then the detail per work package. Sources: reports `journal/L*/rapport*.md`, reviews, `journal/decisions.md`. Work packages are described in `lots/`.
 
+## L35: sidebar collapsible to icons (11 Nov 2026) {#l35-bandeau-lateral-repliable-en-icones-11-nov-2026}
+
+- The left menu collapses into a strip of about 56 px (icons only, logo reduced to Krakie's head, steps as badges 1 to 4, tooltips on hover and keyboard focus, number of findings to decide as a badge on the icon). Button at the bottom of the sidebar or Ctrl+B; the choice is remembered in the browser.
+- Automatic collapse on full-canvas screens (graphical editor, list view, files, documentation), unless the sidebar was kept open. Settings, Display tab: Automatic, Open or Collapsed. The editor canvas is refitted when the transition ends; `prefers-reduced-motion` removes the animation. Mobile unchanged.
+
 ## L30: Krakie comes alive in the hidden game (8 Nov 2026) {#l30-krakie-vivante-dans-le-jeu-cache-8-nov-2026}
 
 - Fix: Krakie no longer gets distorted when she moves (no more sprite shear: the body stays intact and only the tentacles trail by one pixel).

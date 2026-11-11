@@ -1,5 +1,5 @@
 /* Coque : barre latérale par projet, en-tête, contenu. */
-.shell { display: grid; grid-template-columns: var(--side-w) minmax(0, 1fr); height: 100%; }
+.shell { --side-w-c: 56px; display: grid; grid-template-columns: var(--side-w) minmax(0, 1fr); height: 100%; transition: grid-template-columns .18s ease; }
 .side { background: var(--side-bg); color: var(--side-ink); display: flex; flex-direction: column; min-height: 0; border-right: 1px solid var(--side-line); }
 /* Logo (L17) : Krakie recadré sur la tête + wordmark */
 .brand { padding: 12px 14px 10px; border-bottom: 1px solid var(--side-line); }
@@ -10,8 +10,10 @@
 .logo-word .o { color: #fff; } .logo-word .f { color: var(--pieuvre); }
 .logo:focus-visible { outline: 2px solid var(--lanterne); outline-offset: 3px; border-radius: 6px; }
 .logo-top { display: none; }
-.nav { display: flex; flex-direction: column; padding: 4px 8px; gap: 1px; overflow: auto; flex: 1; }
-.side button { text-align: left; background: none; border: 0; padding: 6px 10px; border-radius: var(--r-sm); cursor: pointer; display: flex; align-items: center; gap: 10px; color: var(--side-ink); width: 100%; }
+.nav { display: flex; flex-direction: column; padding: 4px 8px; gap: 1px; overflow-y: auto; overflow-x: hidden; flex: 1; }
+/* géométrie commune aux deux modes : l'icône reste au même endroit (centre à 28 px) quand le bandeau se replie, seuls les libellés s'effacent */
+.side button { text-align: left; background: none; border: 0; padding: 6px 12px; border-radius: var(--r-sm); cursor: pointer; display: flex; align-items: center; gap: 0; color: var(--side-ink); width: 100%; position: relative; }
+.side .lbl { padding-left: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; transition: opacity .12s ease; }
 .side button i { width: 16px; text-align: center; color: var(--side-muted); }
 .side button:hover { background: var(--side-line); }
 .side button[aria-current="page"] { background: var(--side-active); color: #fff; font-weight: 600; }
@@ -20,10 +22,12 @@
 .proj-chip { margin: 10px 2px 4px; padding: 6px 10px; border-top: 1px solid var(--side-line); color: #fff; }
 .proj-chip b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .step-group { margin-top: 8px; }
-.step-title { display: flex; align-items: center; gap: 8px; padding: 4px 10px; color: var(--side-muted); font-size: var(--fs-xs); font-weight: 600; }
+.step-title { display: flex; align-items: center; gap: 0; padding: 4px 11px; color: var(--side-muted); font-size: var(--fs-xs); font-weight: 600; }
 .num { width: 18px; height: 18px; border-radius: 50%; background: var(--side-line); color: var(--side-ink); display: inline-flex; align-items: center; justify-content: center; font: 500 11px var(--mono); flex: none; }
 .side .cnt { font: 500 11px var(--mono); background: var(--lanterne); color: #14213d; border-radius: 9px; padding: 0 6px; }
-.side-foot { padding: 8px; border-top: 1px solid var(--side-line); }
+.side-foot { padding: 8px; border-top: 1px solid var(--side-line); display: flex; flex-direction: column; gap: 1px; }
+.side-tip { position: fixed; z-index: 60; transform: translateY(-50%); max-width: 280px; padding: 5px 10px; border-radius: var(--r-sm); background: #0b1324; color: #f2f6fc; border: 1px solid var(--side-line); box-shadow: 0 4px 14px rgba(0, 0, 0, .35); font-size: var(--fs-sm); line-height: 1.3; pointer-events: none; animation: side-tip-in .08s ease-out; }
+@keyframes side-tip-in { from { opacity: 0; } to { opacity: 1; } }
 .main { display: flex; flex-direction: column; min-width: 0; min-height: 0; height: 100%; }
 .topbar { display: flex; align-items: center; gap: var(--s3); min-height: var(--head-h); padding: 6px var(--s4); background: var(--panel); border-bottom: 1px solid var(--line); flex-wrap: wrap; }
 .crumb { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
@@ -59,8 +63,27 @@
 .gens { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .gens li { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 
+/* bandeau replié (L35) : bureau seulement, le tiroir mobile ne change pas */
+@media (min-width: 901px) {
+  .shell.collapsed { grid-template-columns: var(--side-w-c) minmax(0, 1fr); }
+  .side { position: relative; z-index: 20; overflow: hidden; }
+  .collapsed .brand { padding: 12px 0 10px; display: flex; justify-content: center; overflow: hidden; }
+  .collapsed .side .lbl { opacity: 0; width: 0; padding: 0; pointer-events: none; }
+  .collapsed .nav { padding: 4px 8px; }
+  .collapsed .side button[aria-current="page"] { box-shadow: inset 3px 0 0 var(--pieuvre); }
+  .collapsed .side button:focus-visible { outline: 2px solid var(--lanterne); outline-offset: -2px; }
+  .collapsed .proj-chip { margin: 6px 0 2px; padding: 0; height: 0; overflow: hidden; }
+  .collapsed .proj-chip b { display: none; }
+  .collapsed .step-group { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--side-line); }
+  .collapsed .step-group.tools .step-title { display: none; }
+  .collapsed .step-title { padding: 2px 11px 4px; }
+  .collapsed .step-title .num { width: 18px; height: 18px; cursor: default; }
+  .collapsed .side .cnt { position: absolute; top: 0; right: 0; min-width: 15px; height: 15px; padding: 0 4px; font-size: 10px; line-height: 15px; text-align: center; box-shadow: 0 0 0 2px var(--side-bg); }
+  .side-toggle { margin-top: 2px; }
+}
 @media (max-width: 900px) {
   .shell { grid-template-columns: minmax(0, 1fr); }
+  .side-tip { display: none; }
   .side { position: fixed; inset: 0 auto 0 0; width: min(280px, 84vw); z-index: 40; transform: translateX(-100%); transition: transform .18s; }
   .menu-open .side { transform: none; }
   .scrim { display: block; position: fixed; inset: 0; z-index: 30; background: rgba(8, 14, 28, .5); border: 0; }
@@ -76,4 +99,4 @@
 @media (max-width: 520px) {
   .next { flex-direction: column; align-items: flex-start; padding: 14px; gap: 8px; } .steps { grid-template-columns: minmax(0, 1fr); }
 }
-@media (prefers-reduced-motion: reduce) { .side { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .side { transition: none; } .shell { transition: none; } .side .lbl { transition: none; } .side-tip { animation: none; } }

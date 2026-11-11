@@ -1591,5 +1591,20 @@
   "krakie.done.exports": "Exports ready.",
   "krakie.done.analysis": "Transposition complete.",
   "krakie.forge.shapes": "Krakie is forging the shapes…",
-  "krakie.done.shapes": "Shapes draft ready."
+  "krakie.done.shapes": "Shapes draft ready.",
+  "nav.collapse": "Collapse",
+  "nav.expand": "Expand",
+  "nav.collapseTip": "Collapse the sidebar (Ctrl+B)",
+  "nav.expandTip": "Expand the sidebar (Ctrl+B)",
+  "nav.stepTip": "Step {n}: {name}",
+  "settings.tab.display": "Display",
+  "settings.display.title": "Sidebar",
+  "settings.display.intro": "The left sidebar can collapse to icons only to give the canvas more room. This setting is remembered in this browser.",
+  "settings.display.side": "Sidebar",
+  "settings.display.auto": "Automatic",
+  "settings.display.open": "Open",
+  "settings.display.closed": "Collapsed",
+  "settings.display.hint.auto": "Collapsed on full-canvas screens (editor, list view, files, documentation), open elsewhere.",
+  "settings.display.hint.open": "Always open, even on full-canvas screens.",
+  "settings.display.hint.closed": "Always collapsed to icons. The button at the bottom of the sidebar (or Ctrl+B) expands it."
 }

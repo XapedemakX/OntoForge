@@ -5,67 +5,67 @@
   {
    "screen": "01-projets",
    "ok": true,
-   "detail": "texte=674c erreurs=0"
+   "detail": "texte=682c erreurs=0"
   },
   {
    "screen": "02-tableau",
    "ok": true,
-   "detail": "texte=1429c erreurs=0"
+   "detail": "texte=1437c erreurs=0"
   },
   {
    "screen": "03-ontologie-editeur",
    "ok": true,
-   "detail": "texte=2645c erreurs=0"
+   "detail": "texte=2624c erreurs=0"
   },
   {
    "screen": "04-ontologie-liste",
    "ok": true,
-   "detail": "texte=1134c erreurs=0"
+   "detail": "texte=1113c erreurs=0"
   },
   {
    "screen": "05-shapes",
    "ok": true,
-   "detail": "texte=2502c erreurs=0"
+   "detail": "texte=2510c erreurs=0"
   },
   {
    "screen": "06-conformite",
    "ok": true,
-   "detail": "texte=911c erreurs=0"
+   "detail": "texte=919c erreurs=0"
   },
   {
    "screen": "07-shacl",
    "ok": true,
-   "detail": "texte=826c erreurs=0"
+   "detail": "texte=834c erreurs=0"
   },
   {
    "screen": "08-analyse",
    "ok": true,
-   "detail": "texte=1914c erreurs=0"
+   "detail": "texte=1922c erreurs=0"
   },
   {
    "screen": "09-modele",
    "ok": true,
-   "detail": "texte=2186c erreurs=0"
+   "detail": "texte=2194c erreurs=0"
   },
   {
    "screen": "10-exports",
    "ok": true,
-   "detail": "texte=5081c erreurs=0"
+   "detail": "texte=5089c erreurs=0"
   },
   {
    "screen": "11-requetes",
    "ok": true,
-   "detail": "texte=1997c erreurs=0"
+   "detail": "texte=2005c erreurs=0"
   },
   {
    "screen": "12-assistant",
    "ok": true,
-   "detail": "texte=1307c erreurs=0"
+   "detail": "texte=1315c erreurs=0"
   },
   {
    "screen": "13-parametres",
    "ok": true,
-   "detail": "texte=506c erreurs=0"
+   "detail": "texte=524c erreurs=0"
   },
   {
    "screen": "A1-editeur : nœuds rendus + Ctrl+Z",
@@ -150,7 +150,7 @@
   {
    "screen": "m-13-parametres",
    "ok": true,
-   "detail": "texte=433c erreurs=0"
+   "detail": "texte=443c erreurs=0"
   }
  ]
 }

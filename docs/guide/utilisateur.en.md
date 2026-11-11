@@ -60,6 +60,17 @@ The home screen (`#/`) lists the projects with a summary: classes, properties, s
 
 Krakie reacts to the state of the project: she looks worried while lost findings remain, and happy once everything is decided.
 
+### Sidebar {#bandeau-lateral}
+
+The left menu can collapse into a strip of about 56 px showing icons only, which gives the graph more room. When collapsed, the logo becomes Krakie's head, the four steps become numbered badges 1 to 4 that separate the icon groups, and a line separates the Tools group. Every icon has a tooltip (on hover and on keyboard focus; Esc closes it), and the number of findings to decide stays visible as a small badge on the Analysis & decisions icon.
+
+![Collapsed sidebar on the Analysis & decisions screen: icons only, step badges and the number of findings on the analysis icon](img/en/bandeau-replie.png "The collapsed sidebar: 1 a step badge, 2 the badge of findings to decide, 3 the Expand button.")
+
+- Collapse or expand: the button at the bottom of the sidebar, or Ctrl+B (Cmd+B on Mac; ignored while the cursor is in an input field).
+- The choice is remembered in this browser. Settings, Display tab, offers three options: Automatic (default: collapsed on full-canvas screens, that is the graphical editor, the list view, files and documentation, open elsewhere), Open (never collapsed automatically) and Collapsed (always collapsed).
+- The button toggles the current state and remembers it: expanding by hand in the editor amounts to choosing "Open".
+- On mobile (below 900 px) nothing changes: the menu stays a drawer.
+
 ## 5. Ontology: the graphical editor {#ontologie-l-editeur-graphique}
 
 ![Graphical editor on the AutoMaint sample: class tree, graph, toolbar and quick input](img/en/editeur-graphe.png "The editor: 1 the class tree, 2 the graph, 3 the toolbar (filters, modes, perimeter), 4 the quick input.")

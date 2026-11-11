@@ -2,6 +2,11 @@
 
 Format : par version, ce qui change pour l'utilisateur, puis le détail par lot. Sources : rapports `journal/L*/rapport*.md`, revues, `journal/decisions.md`. Les lots sont décrits dans `lots/`.
 
+## L35 : bandeau latéral repliable en icônes (11 nov. 2026) {#l35-bandeau-lateral-repliable-en-icones-11-nov-2026}
+
+- Le menu de gauche se replie en une bande d'environ 56 px (icônes seules, logo réduit à la tête de Krakie, étapes en pastilles 1 à 4, infobulles au survol et au clavier, nombre de constats à arbitrer en pastille sur l'icône). Bouton en bas du bandeau ou Ctrl+B ; choix mémorisé dans le navigateur.
+- Repli automatique sur les écrans de plein canevas (éditeur graphique, vue liste, fichiers, documentation), sauf si le bandeau a été gardé ouvert. Paramètres, onglet Affichage : Automatique, Ouvert ou Replié. Le canevas de l'éditeur est recadré à la fin de la transition ; `prefers-reduced-motion` supprime l'animation. Mobile inchangé.
+
 ## L30 : Krakie vivante dans le jeu caché (8 nov. 2026) {#l30-krakie-vivante-dans-le-jeu-cache-8-nov-2026}
 
 - Correctif : Krakie ne se déforme plus en se déplaçant (plus de cisaillement du sprite : corps intact, seuls les tentacules traînent d'un pixel).

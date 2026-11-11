@@ -33,6 +33,18 @@ cap('tableau', 'visite-guidee', async c => {
   await c.page.evaluate(() => window.ontoforgeTour.stop()); await c.sleep(300)
 })
 
+cap('bandeau', 'bandeau-replie', async c => {
+  await c.goTo('tableau', { wait: '.side nav button' })  // l'origine doit être chargée avant d'écrire le stockage local
+  await c.page.evaluate(() => { try { localStorage.setItem('ontoforge.side', 'closed') } catch {} })
+  await c.goTo('analyse', { wait: '.side .cnt' }); await c.sleep(900)
+  await c.snap('bandeau-replie', { ann: [
+    { at: c.page.locator('.side .step-title .num').nth(1), n: 1, box: false, pos: 'tr', out: true },
+    { at: c.page.locator('.side nav button[aria-current="page"]'), n: 2, box: true, pos: 'br', out: true },
+    { at: c.page.getByTestId('side-toggle'), n: 3, box: true, pos: 'tr', out: true },
+  ] })
+  await c.page.evaluate(() => { try { localStorage.removeItem('ontoforge.side') } catch {} })
+})
+
 // ============================================================================ éditeur graphique
 const openEditor = async c => { await c.goTo('ontologie', { wait: '.react-flow__node' }); await c.sleep(1800) }
 cap('editeur', 'editeur-graphe', async c => {

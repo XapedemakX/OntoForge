@@ -126,6 +126,9 @@ function Inner({ p, setP }: EditorProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pid, p.updated_at, peri, lang, vowl])
   useEffect(() => { fitted.current = false }, [mode])
+  // le bandeau latéral a fini de se replier / déplier (L35) : si le cadrage initial date de moins de 2 s, on le refait à la bonne largeur ; sinon le zoom de l'utilisateur est respecté
+  const fitAt = useRef(0)
+  useEffect(() => { const f = () => { if (Date.now() - fitAt.current < 2000) { fitAt.current = 0; rf.fitView({ padding: fitPad, maxZoom: 1, minZoom: 0.3, duration: 200 }) } }; addEventListener('of:side-settled', f); return () => removeEventListener('of:side-settled', f) })
 
   // proposition de l'assistant : éléments du store convertis (+ arêtes des sous-classes portées par l'ajout d'une classe)
   useEffect(() => { bindProjectSetter(setP); return () => bindProjectSetter(null) }, [setP])
@@ -234,7 +237,7 @@ function Inner({ p, setP }: EditorProps) {
     })
     setShown({ vm, total: { n: all.nodes.length, m: all.edges.length } })
     setNodes(ns); setEdges(es)
-    if (!fitted.current && ns.length) { fitted.current = true; setTimeout(() => rf.fitView({ padding: fitPad, maxZoom: 1, minZoom: 0.3 }), 50) }
+    if (!fitted.current && ns.length) { fitted.current = true; fitAt.current = Date.now(); setTimeout(() => rf.fitView({ padding: fitPad, maxZoom: 1, minZoom: 0.3 }), 50) }
     if (pendingSel.current) { const f = ns.find(n => localName(n.id) === pendingSel.current); if (f) { pendingSel.current = null; setTimeout(() => selectClass(f.id, false), 0) } }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [graph, mode, show, visibleItems, readOnly, errIris, renaming, lang])

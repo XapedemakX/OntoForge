@@ -1,4 +1,4 @@
-import { Suspense, useCallback, useEffect, useState } from 'react'
+import { Suspense, useCallback, useEffect, useRef, useState, type FocusEvent, type MouseEvent } from 'react'
 import { api, type Perimeter, type Project, type Target } from '../api'
 import { Icon, IconButton, Segmented } from '../kit'
 import { ErrorView, useToast } from '../ui'
@@ -15,6 +15,7 @@ import { SCREENS, STEPS } from './registry'
 import { useAuth } from '../auth/AuthGate'
 import { useTheme } from './theme'
 import { Logo } from './Logo'
+import { useMedia, useSidePref } from './sidePref'
 import type { ScreenProps } from './types'
 
 type Route = { kind: 'projects' } | { kind: 'settings' } | { kind: 'project'; id: string; screen: string }
@@ -76,33 +77,74 @@ export function Shell() {
   const endpoint = useActiveEndpoint(route.kind)  // écoute l'événement « ontoforge:endpoint-changed » des Paramètres
   const themeIcon = themePref === 'system' ? 'circle-half-stroke' : themePref === 'light' ? 'sun' : 'moon'
 
-  const navItem = (key: string, labelKey: string, icon: string, active: boolean, onClick: () => void, badge?: number) => (
-    <button key={key} aria-current={active ? 'page' : undefined} onClick={onClick}><Icon name={icon} /><span className="grow">{t(labelKey)}</span>
-      {!!badge && <span className="cnt" title={t('nav.pendingTitle')}>{badge}</span>}</button>)
+  // bandeau repliable (L35) : sur mobile le tiroir reste tel quel
+  const desk = useMedia('(min-width: 901px)')
+  const [sidePref, setSidePref] = useSidePref()
+  const collapsed = desk && (sidePref === 'closed' || (sidePref === 'auto' && !!def?.collapseAuto && route.kind === 'project'))
+  const toggleSide = useCallback(() => setSidePref(collapsed ? 'open' : 'closed'), [collapsed, setSidePref])
+  useEffect(() => {
+    const f = (e: KeyboardEvent) => {
+      if (!(e.ctrlKey || e.metaKey) || e.shiftKey || e.altKey || e.key.toLowerCase() !== 'b') return
+      const el = e.target as HTMLElement | null
+      if (el?.closest?.('input, textarea, select, [contenteditable="true"], .cm-editor, [role=dialog]')) return
+      e.preventDefault(); toggleSide()
+    }
+    addEventListener('keydown', f); return () => removeEventListener('keydown', f)
+  }, [toggleSide])
+  // le canevas de l'éditeur se recadre une fois la transition terminée
+  const firstSide = useRef(true)
+  useEffect(() => {
+    if (firstSide.current) { firstSide.current = false; return }
+    const ms = matchMedia('(prefers-reduced-motion: reduce)').matches ? 30 : 240
+    const id = setTimeout(() => dispatchEvent(new Event('of:side-settled')), ms); return () => clearTimeout(id)
+  }, [collapsed])
+
+  // infobulle unique, en position fixe (le conteneur défilant du bandeau la couperait sinon)
+  const [tip, setTip] = useState<{ text: string; top: number; left: number } | null>(null)
+  const showTip = (e: MouseEvent | FocusEvent) => {
+    if (!collapsed) return
+    const el = (e.target as HTMLElement).closest<HTMLElement>('[data-tip]'); if (!el) return
+    const r = el.getBoundingClientRect(); setTip({ text: el.dataset.tip!, top: r.top + r.height / 2, left: r.right + 8 })
+  }
+  const hideTip = () => setTip(null)
+  useEffect(() => { setTip(null) }, [collapsed, screen, route.kind])
+  useEffect(() => { if (!tip) return; const f = (e: KeyboardEvent) => { if (e.key === 'Escape') setTip(null) }; addEventListener('keydown', f); return () => removeEventListener('keydown', f) }, [tip])
+
+  const navItem = (key: string, labelKey: string, icon: string, active: boolean, onClick: () => void, badge?: number) => {
+    const label = t(labelKey)
+    return (
+      <button key={key} aria-current={active ? 'page' : undefined} aria-label={collapsed && badge ? `${label} (${badge})` : label} data-tip={collapsed ? (badge ? `${label} (${badge})` : label) : undefined} onClick={onClick}>
+        <Icon name={icon} /><span className="grow lbl">{label}</span>
+        {!!badge && <span className="cnt" title={t('nav.pendingTitle')}>{badge}</span>}</button>)
+  }
 
   return (
-    <div className={'shell' + (menu ? ' menu-open' : '')}>
-      <aside className="side" aria-label={t('nav.menu')}>
-        <div className="brand"><Logo /></div>
+    <div className={'shell' + (menu ? ' menu-open' : '') + (collapsed ? ' collapsed' : '')}>
+      <aside className="side" aria-label={t('nav.menu')} onMouseOver={showTip} onMouseOut={hideTip} onFocus={showTip} onBlur={hideTip} data-collapsed={collapsed ? '1' : '0'}>
+        <div className="brand"><Logo variant={collapsed ? 'mark' : 'full'} /></div>
         <nav className="nav" aria-label={t('nav.projectScreens')} data-tour="nav">
           {navItem('projects', 'nav.projets', 'folder-open', route.kind === 'projects', () => { location.hash = '#/' })}
           {p && pid && <>
             <div className="proj-chip"><b title={p.name}>{p.name}</b></div>
             {navItem('tableau', 'nav.tableau', 'gauge-high', screen === 'tableau', () => go('tableau'))}
             {STEPS.map((st, i) => (
-              <div className="step-group" key={st}>
-                <div className="step-title"><span className="num">{i + 1}</span>{t('step.' + st)}</div>
+              <div className="step-group" key={st} role="group" aria-label={t('step.' + st)}>
+                <div className="step-title" data-tip={collapsed ? t('nav.stepTip', { n: i + 1, name: t('step.' + st) }) : undefined}><span className="num">{i + 1}</span><span className="lbl">{t('step.' + st)}</span></div>
                 {SCREENS.filter(s => s.step === st).map(s => navItem(s.key, s.labelKey, s.icon, screen === s.key, () => go(s.key), s.badge === 'pending' ? pending : 0))}
               </div>))}
-            <div className="step-group">
-              <div className="step-title">{t('step.autres')}</div>
+            <div className="step-group tools">
+              <div className="step-title"><span className="lbl">{t('step.autres')}</span></div>
               {SCREENS.filter(s => !s.step && s.key !== 'tableau').map(s => navItem(s.key, s.labelKey, s.icon, screen === s.key, () => go(s.key)))}
             </div>
           </>}
         </nav>
         <div className="side-foot">
           {navItem('settings', 'nav.parametres', 'gear', route.kind === 'settings', () => { location.hash = '#/parametres' })}
+          {desk && <button type="button" className="side-toggle" data-testid="side-toggle" aria-expanded={!collapsed} aria-keyshortcuts="Control+B"
+            aria-label={t(collapsed ? 'nav.expandTip' : 'nav.collapseTip')} data-tip={collapsed ? t('nav.expandTip') : undefined} onClick={toggleSide}>
+            <Icon name={collapsed ? 'angles-right' : 'angles-left'} /><span className="grow lbl">{t(collapsed ? 'nav.expand' : 'nav.collapse')}</span></button>}
         </div>
+        {tip && <div className="side-tip" role="tooltip" style={{ top: tip.top, left: tip.left }}>{tip.text}</div>}
       </aside>
       {menu && <button className="scrim" aria-label={t('common.close')} onClick={() => setMenu(false)} />}
       <div className="main">

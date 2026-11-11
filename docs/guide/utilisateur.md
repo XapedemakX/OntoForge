@@ -60,6 +60,17 @@ L'en-tête porte, sur chaque écran de projet : le choix de la cible (Curiosity 
 
 Exemple de réaction de Krakie : quand il reste des constats perdus, elle prend la pose inquiète ; quand tout est arbitré, la pose contente.
 
+### Bandeau latéral {#bandeau-lateral}
+
+Le menu de gauche peut se replier en une bande d'environ 56 px, avec les icônes seules : c'est utile pour donner de la place au graphe. En mode replié, le logo devient la tête de Krakie, les quatre étapes deviennent des pastilles numérotées de 1 à 4 qui séparent les groupes d'icônes, et un trait sépare le groupe Outils. Chaque icône a une infobulle (au survol et au clavier, Échap la ferme) ; le nombre de constats à arbitrer reste visible en petite pastille sur l'icône d'Analyse & arbitrage.
+
+![Bandeau replié sur l'écran Analyse & arbitrage : icônes seules, pastilles d'étapes et nombre de constats sur l'icône d'analyse](img/fr/bandeau-replie.png "Le bandeau replié : 1 une pastille d'étape, 2 la pastille de constats à arbitrer, 3 le bouton Déplier.")
+
+- Replier ou déplier : le bouton en bas du bandeau, ou Ctrl+B (Cmd+B sur Mac ; sans effet quand le curseur est dans un champ de saisie).
+- Le choix est mémorisé dans ce navigateur. Paramètres, onglet Affichage, propose trois réglages : Automatique (défaut : replié sur les écrans de plein canevas, c'est-à-dire l'éditeur graphique, la vue liste, les fichiers et la documentation, ouvert ailleurs), Ouvert (jamais replié automatiquement) et Replié (toujours replié).
+- Le bouton bascule l'état courant et le mémorise : déplier à la main sur l'éditeur revient à choisir « Ouvert ».
+- Sur mobile (moins de 900 px), rien ne change : le menu reste un tiroir.
+
 ## 5. Ontologie : l'éditeur graphique {#ontologie-l-editeur-graphique}
 
 ![Éditeur graphique de l'exemple AutoMaint : arbre des classes, graphe, barre d'outils et saisie rapide](img/fr/editeur-graphe.png "L'éditeur : 1 l'arbre des classes, 2 le graphe, 3 la barre d'outils (filtres, modes, périmètre), 4 la saisie rapide.")
