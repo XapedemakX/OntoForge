@@ -45,7 +45,7 @@ try {
   await page.getByRole('button', { name: 'Help for this screen' }).click(); await page.waitForSelector('.doc-article h1'); await sleep(700)
   log('bouton « ? » depuis l\'éditeur ouvre la bonne section en anglais', await atTop(HELP.editor.anchor) && (await page.locator('[data-testid=doc-fr-only]').count()) === 0)
   await page.screenshot({ path: path.join(SHOTS, '01-editeur-aide-en.png') })
-  for (const [pg, shot] of [['utilisateur/analyse-arbitrage', '02-analyse-en'], ['limites', '03-limites-en'], ['api', '04-api-en'], ['contribuer', '05-contribuer-en'], ['changelog', '06-changelog-en'], ['architecture', '07-non-traduit-bandeau']]) {
+  for (const [pg, shot] of [['utilisateur/analyse-arbitrage', '02-analyse-en'], ['limites', '03-limites-en'], ['api', '04-api-en'], ['contribuer', '05-contribuer-en'], ['changelog', '06-changelog-en'], ['architecture', '07-architecture-en'], ['glossaire', '08-glossaire-en'], ['regles', '09-regles-en']]) {
     await page.goto(`${base}/#/projet/${pid}/documentation/${pg}`, { waitUntil: 'load' }); await page.waitForSelector('.doc-article h1'); await sleep(600)
     await page.screenshot({ path: path.join(SHOTS, shot + '.png') })
   }

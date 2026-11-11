@@ -1,11 +1,13 @@
-# FAQ des limites connues (itération 2) {#faq-des-limites-connues-iteration-2}
+# FAQ des limites connues {#faq-des-limites-connues-iteration-2}
 
-Chaque réponse cite sa source (rapport de lot, revue, décision ou code). Ce qui n'est pas résolu par le code est une question ouverte dans `journal/doc/questions.md` (identifiants `Q-DOC-nn`). État au 4 novembre 2026, mise à jour de l'itération 2 (lot L14). Tests non rejoués par le documentaliste (httpx absent) : 528 verts d'après `journal/L15/review-curiosity-it1.md`.
+Chaque réponse cite sa source (rapport de lot, revue, décision ou code). Ce qui n'est pas résolu par le code est une question ouverte dans `journal/doc/questions.md` (identifiants `Q-DOC-nn`). État au lot L34 (11 novembre 2026). Tests du backend rejoués à cette date : 990 verts.
 
 ## Code généré : qu'est-ce qui est vérifié ? {#code-genere-qu-est-ce-qui-est-verifie}
 
 **Le code C# Curiosity compile-t-il ?**
 Non vérifié. Il n'y a aucun SDK .NET dans l'environnement de construction. La syntaxe C# est contrôlée par tree-sitter (D-038), pas par un compilateur. Les appels à `Curiosity.Library` non confirmés portent la mention `À VÉRIFIER` dans le code : retour de `AddOrUpdate`, `Link(a, b, X, X)` pour une arête symétrique, `SetAutoCommitCost`, type `Node`, tableaux `T[]`, indexation. Le script `tools/dotnet/check-curiosity.ps1` (projet temporaire net8.0 + `dotnet build`) permet de le vérifier chez vous. Il n'a pas été exécuté (pas de SDK, pas de Windows) et le nom exact du paquet NuGet reste à confirmer (`journal/L13/rapport.md`). Voir Q-DOC-01.
+
+![Fichier Connector.cs généré : les appels non confirmés sont marqués À VÉRIFIER dans les commentaires](img/fr/limites-a-verifier.png "Les appels à Curiosity.Library non confirmés portent la mention « À VÉRIFIER ».")
 
 **Le Cypher Neo4j a-t-il été exécuté ?**
 Non, sur aucune base réelle (question Q-02 de `journal/questions-jerem.md`). Les formes sont celles de Neo4j 5. Points à vérifier : unicité de relation en Community (supposée 5.7+), `CALL (row) { … } IN TRANSACTIONS` (portée de variable 5.23+), noms de procédures et options n10s et APOC (`apoc.refactor.mergeNodes`) (`journal/L4/rapport-neo4j.md`). Voir Q-DOC-02.
@@ -79,6 +81,8 @@ Elle est embarquée dans le front : l'API ne l'expose pas (pas de `GET` d'aide).
 
 **Quelles limites a l'éditeur graphique ?**
 (`journal/L9/rapport-front.md`, `rapport-backend.md`.) Déplacer un nœud crée une entrée d'annulation ; la saisie rapide n'est pas annulable ; une classe créée avec un périmètre actif n'y est pas ajoutée ; les propriétés de données et les équivalences ne sont pas dessinées comme arêtes ; une propriété objet à plusieurs domaines/portées donne une arête par couple (la supprimer supprime la propriété entière) ; annuler restaure les champs de l'entrée même si un `PUT` hors éditeur est intervenu entre-temps ; supprimer une entité ne nettoie pas les shapes (avertissement) ; pas de verrou inter-processus (un seul worker) ; catalogue de 80 icônes Font Awesome (noms à confirmer avec la version embarquée, À VÉRIFIER) ; sur mobile, consultation seulement. L'écran Shapes du parcours est un placeholder « bientôt disponible » ; les shapes se gèrent dans l'écran SHACL.
+
+![Éditeur graphique sur un écran de téléphone : consultation seule, menu replié](img/fr/limites-mobile.png "L'éditeur sur mobile : consultation, sans édition.")
 
 **Les périmètres sont-ils sûrs ?**
 Ils filtrent classes, propriétés (domaine et portée entièrement dans le périmètre), restrictions, clés, individus et shapes ; chaque coupe produit un constat d'information P01 à P03. Ces constats sont émis avec la sévérité `auto` (le niveau `info` accepté par D-L9-02 n'est pas encore dans `core/pg_model.py`) et gonflent donc le compteur « auto ». `OntClass.abstract` n'existe pas encore : l'éditeur déduit « abstrait » d'une union disjointe ou de l'annotation `urn:ontoforge:abstract`. L'icône d'une classe n'est pas transmise au modèle cible (`NodeType.icon` prévu).

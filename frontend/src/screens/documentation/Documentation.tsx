@@ -40,6 +40,10 @@ export function Documentation({ p }: ScreenProps) {
   const [hits, setHits] = useState(0)
   const [tocOpen, setTocOpen] = useState(false)
   const [active, setActive] = useState('')
+  const [zoom, setZoom] = useState<{ src: string; alt: string; cap: string } | null>(null)  // visionneuse d'une capture
+  const [actual, setActual] = useState(false)  // taille réelle (défilable) ou image ajustée
+  const opener = useRef<HTMLElement | null>(null)
+  const closeBtn = useRef<HTMLButtonElement>(null)
   const article = useRef<HTMLElement>(null)
   const scroller = useRef<HTMLDivElement>(null)
   const marks = useRef<HTMLElement[]>([])
@@ -82,7 +86,21 @@ export function Documentation({ p }: ScreenProps) {
     sc.addEventListener('scroll', on, { passive: true }); return () => { sc.removeEventListener('scroll', on); cancelAnimationFrame(raf) }
   }, [rendered])
 
+  const openZoom = (img: HTMLImageElement) => { opener.current = img; setActual(false); setZoom({ src: img.currentSrc || img.src, alt: img.alt, cap: img.dataset.docZoom || img.alt }) }
+  const closeZoom = useCallback(() => { setZoom(null); opener.current?.focus({ preventScroll: true }) }, [])
+  // visionneuse : Échap ferme (avant la recherche), le focus va sur le bouton Fermer puis revient sur l'image
+  useEffect(() => {
+    if (!zoom) return
+    closeBtn.current?.focus()
+    const k = (e: KeyboardEvent) => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeZoom() } }
+    window.addEventListener('keydown', k, true); return () => window.removeEventListener('keydown', k, true)
+  }, [zoom, closeZoom])
+  const onArticleKey = (e: React.KeyboardEvent) => {
+    const img = (e.target as HTMLElement).closest<HTMLImageElement>('img.doc-img')
+    if (img && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openZoom(img) }
+  }
   const onArticleClick = (e: React.MouseEvent) => {
+    const img = (e.target as HTMLElement).closest<HTMLImageElement>('img.doc-img'); if (img) { openZoom(img); return }
     const a = (e.target as HTMLElement).closest<HTMLAnchorElement>('a[data-doc-page]'); if (!a || e.metaKey || e.ctrlKey) return
     e.preventDefault()
     const pg = a.dataset.docPage!, an = a.dataset.docAnchor || null
@@ -126,8 +144,16 @@ export function Documentation({ p }: ScreenProps) {
         <div className="doc-scroll" ref={scroller} data-doc-fallback={fr || undefined}>
           {doc === undefined && <p className="muted doc-msg">…</p>}
           {doc === null && <p className="doc-msg" role="alert">{t('docs.notFound')}</p>}
-          <article ref={article} className="doc-article" lang={doc?.shown} onClick={onArticleClick} data-testid="doc-article" />
+          <article ref={article} className="doc-article" lang={doc?.shown} onClick={onArticleClick} onKeyDown={onArticleKey} data-testid="doc-article" />
         </div>
       </div>
+      {zoom && (
+        <div className="doc-zoom" role="dialog" aria-modal="true" aria-label={zoom.alt || t('docs.zoom.label')} data-testid="doc-zoom" onClick={e => { if (e.target === e.currentTarget) closeZoom() }}>
+          <button type="button" className="btn iconly doc-zoom-x" ref={closeBtn} aria-label={t('docs.zoom.close')} title={t('docs.zoom.close')} onClick={closeZoom} data-testid="doc-zoom-close"><Icon name="xmark" /></button>
+          <div className={'doc-zoom-scroll' + (actual ? ' actual' : '')} onClick={e => { if (e.target === e.currentTarget) closeZoom() }}>
+            <img src={zoom.src} alt={zoom.alt} onClick={() => setActual(a => !a)} data-testid="doc-zoom-img" />
+          </div>
+          <p className="doc-zoom-cap">{zoom.cap} <span className="muted">· {t('docs.zoom.hint')}</span></p>
+        </div>)}
     </div>)
 }

@@ -32,11 +32,12 @@ export function DocImport({ p, setP, provider, onClose, initialFile, compact, on
   }, [])
   const demo = useCallback(async () => {
     try {
-      const r = await fetch('/api/assistant/document/demo')
+      const r = await fetch('/api/assistant/document/demo?lang=' + lang)
       if (!r.ok) throw new Error(String(r.status))
-      await read(new File([await r.blob()], 'automaint-cahier-des-charges.pdf', { type: 'application/pdf' }))
+      const name = /filename="?([^";]+)"?/.exec(r.headers.get('Content-Disposition') ?? '')?.[1] ?? 'automaint-demo.pdf'
+      await read(new File([await r.blob()], name, { type: 'application/pdf' }))
     } catch { setErr(t('doc.demo.err')) }
-  }, [read, t])
+  }, [read, t, lang])
   useEffect(() => { if (initialFile) void read(initialFile) }, [initialFile, read])
   useEffect(() => {
     if (!file) return

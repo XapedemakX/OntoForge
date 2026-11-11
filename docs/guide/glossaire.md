@@ -1,8 +1,8 @@
-# Glossaire
+# Glossaire {#glossaire}
 
 Vocabulaire d'OntoForge, du monde OWL/SHACL et du monde property graph. Les références « SS » sont à la *OWL 2 Structural Specification*.
 
-## Ontologie et W3C
+## Ontologie et W3C {#ontologie-et-w3c}
 
 | Terme | Définition |
 |---|---|
@@ -29,7 +29,7 @@ Vocabulaire d'OntoForge, du monde OWL/SHACL et du monde property graph. Les réf
 | **Raisonneur (HermiT)** | Programme qui calcule les inférences d'une ontologie. Optionnel dans OntoForge (sous-processus, jamais bloquant). |
 | **Règles W01–W07 / BP01–BP07** | Codes de conformité OWL 2 DL (W) et de bonnes pratiques (BP) de l'écran Conformité. Distincts des règles de transposition. |
 
-## SHACL
+## SHACL {#shacl}
 
 | Terme | Définition |
 |---|---|
@@ -39,7 +39,7 @@ Vocabulaire d'OntoForge, du monde OWL/SHACL et du monde property graph. Les réf
 | **Rapport de validation** | `conforms` + liste de résultats (`focus`, `path`, `severity`, `constraint`, `message`, `value`, `shape`). |
 | **Inférence (validation)** | Désactivée par défaut dans OntoForge (D-034) : en RDFS, `sh:closed` verrait les super-propriétés. |
 
-## Property graph et cibles
+## Property graph et cibles {#property-graph-et-cibles}
 
 | Terme | Définition |
 |---|---|
@@ -60,7 +60,7 @@ Vocabulaire d'OntoForge, du monde OWL/SHACL et du monde property graph. Les réf
 | **Enterprise / Community** | Éditions de Neo4j : certaines contraintes (`NODE KEY`, `IS NOT NULL`, types) sont Enterprise-only. |
 | **GraphQL (schéma)** | `schema.graphql` généré pour les deux cibles ; pour Neo4j, directives de la Neo4j GraphQL Library (`À VÉRIFIER`). |
 
-## Arbitrage OntoForge
+## Arbitrage OntoForge {#arbitrage-ontoforge}
 
 | Terme | Définition |
 |---|---|
@@ -77,7 +77,7 @@ Vocabulaire d'OntoForge, du monde OWL/SHACL et du monde property graph. Les réf
 | **`À VÉRIFIER`** | Marque d'une API externe (Curiosity.Library, Neo4j, pySHACL…) dont le comportement n'est pas confirmé par exécution. |
 | **`X00`** | Ancien constat générique pour les règles non implémentées ; plus émis (les 66 règles sont implémentées). |
 
-## Itération 2
+## Itération 2 {#iteration-2}
 
 | Terme | Définition |
 |---|---|
@@ -96,7 +96,7 @@ Vocabulaire d'OntoForge, du monde OWL/SHACL et du monde property graph. Les réf
 | **Tableau de bord** | Écran d'accueil d'un projet : état des quatre étapes et prochaine action. |
 | **Saisie rapide** | Panneau de l'éditeur : une ligne de DSL = un axiome. |
 
-## Équipe d'agents
+## Équipe d'agents {#equipe-d-agents}
 
 | Terme | Définition |
 |---|---|

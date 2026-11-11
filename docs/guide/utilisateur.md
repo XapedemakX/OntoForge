@@ -1,10 +1,10 @@
-# Guide utilisateur — OntoForge (itération 2) {#guide-utilisateur-ontoforge-iteration-2}
+# Guide utilisateur d'OntoForge {#guide-utilisateur-ontoforge-iteration-2}
 
 OntoForge permet de concevoir une ontologie OWL 2 / SHACL, de vérifier sa conformité W3C, puis de la transposer en modèle property graph prêt à l'emploi pour Curiosity (cible prioritaire) ou Neo4j. Ce qui passe tout seul est transposé automatiquement. Ce qui se perd ou risque de se perdre est mis en avant, recommandé, puis arbitré par vous.
 
-L'interface de l'itération 2 suit le parcours Concevoir → Vérifier → Transposer → Générer. Elle comporte un tableau de bord par projet, un éditeur graphique, un assistant plein écran, un écran Paramètres et un requêtage guidé. Votre guide est Krakie, une petite pieuvre en pixel art.
+L'interface suit le parcours Concevoir → Vérifier → Transposer → Générer. Elle comporte un tableau de bord par projet, un éditeur graphique et une vue liste, un éditeur de fichiers, la conformité OWL avec le raisonneur HermiT, un assistant plein écran capable d'amorcer une ontologie depuis un document, un requêtage guidé, un écran Paramètres et un écran Versions des normes et des cibles. La documentation est intégrée en français et en anglais, avec un bouton « ? » par écran et une visite guidée. Votre guide est Krakie, une petite pieuvre en pixel art.
 
-> Captures : `journal/L8/screens/` (Paramètres), `L9/screens/` (éditeur), `L10/screens/` (assistant), `L11/screens/` (tableau de bord), `L15/screens/` (requêtes), prises pendant les lots sur l'exemple AutoMaint (backend `mock`). Les chiffres affichés (constats, types de nœuds) évoluent avec le moteur ; le texte fait foi. Les écrans Analyse, Modèle, Exports, Conformité et SHACL gardent la mise en page de l'itération 1 (captures `journal/L5/screens/`).
+> Les captures de ce guide sont générées par `tools/docs/captures.mjs` sur l'exemple AutoMaint (assistant `mock`, thème clair, 1440×900) ; une seule commande les régénère (voir `contribuer.md`). Cliquez sur une image dans l'application pour l'agrandir. Les chiffres affichés (constats, types de nœuds) évoluent avec le moteur ; le texte fait foi.
 
 ## 1. Démarrer {#demarrer}
 
@@ -18,7 +18,7 @@ Ouvrir http://localhost:8088 (port modifiable avec `ONTOFORGE_PORT` dans `.env`)
 
 Clé maître : les clés d'API des fournisseurs LLM et les secrets des endpoints SPARQL sont chiffrés sur le serveur. Renseignez `ONTOFORGE_SECRET_KEY` dans `.env` ; sinon une clé est générée au premier usage dans `$ONTOFORGE_DATA/.secret` (avertissement dans les journaux). Perdre la clé maître oblige à ressaisir les clés d'API.
 
-Sans Docker (développement) : voir `README.md`, section « Développement sans Docker ».
+Sans Docker (développement) : voir [`README.md`](../../README.md), section « Développement sans Docker ».
 
 ## 2. Le parcours en un coup d'œil {#le-parcours-en-un-coup-d-oeil}
 
@@ -39,14 +39,18 @@ L'en-tête porte, sur chaque écran de projet : le choix de la cible (Curiosity 
 
 Écran d'accueil (`#/`) : liste des projets avec leur résumé (classes, propriétés, shapes, dernière modification, fichiers d'origine). Un projet se renomme (icône crayon) et se supprime avec confirmation.
 
+![Écran Projets : formulaire de création, zone de dépôt de fichier et cartes des projets existants](img/fr/projets-liste.png "Les projets, avec leur résumé : classes, relations, propriétés, shapes.")
+
 - Nouveau projet : un nom, et au choix un projet vide ou un exemple.
   - automaint : maintenance automobile (24 classes, shapes SHACL, données de test), pour apprendre.
   - trap : l'ontologie « piège » qui exerce les 66 règles de transposition, pour tester.
 - Importer : déposer un fichier. Ontologies : Turtle, RDF/XML (export Protégé), JSON-LD, N-Triples, N3, TriG ; shapes SHACL reconnues à leur contenu. Un fichier CSV, SQL, texte ou Markdown déposé est proposé à l'assistant (brouillon d'ontologie).
 
+![Formulaire Nouveau projet : champ Nom et liste Point de départ](img/fr/projets-nouveau.png "Nouveau projet : 1 le nom, 2 le point de départ (projet vide ou exemple).")
+
 ## 4. Tableau de bord {#tableau-de-bord}
 
-![Tableau de bord](../../journal/L11/screens/01-tableau-clair.png)
+![Tableau de bord d'un projet : carte de Krakie, quatre étapes, constats restants par cible](img/fr/tableau-de-bord.png "Le tableau de bord : 1 la prochaine action recommandée, 2 les quatre étapes, 3 les constats restants par cible.")
 
 - Carte de Krakie : la prochaine action recommandée, selon l'état du projet (ontologie vide, écarts OWL 2 DL, aucune shape, constats perdus, constats à arbitrer, génération absente ou obsolète, ou « tout est bon »). Le bouton mène à l'écran concerné.
 - Quatre étapes avec leur état (ex. « 24 classes, 50 propriétés », « OWL 2 DL : conforme · 11 shapes », « 48 à arbitrer ou perdus (Neo4j) »).
@@ -58,7 +62,7 @@ Exemple de réaction de Krakie : quand il reste des constats perdus, elle prend 
 
 ## 5. Ontologie : l'éditeur graphique {#ontologie-l-editeur-graphique}
 
-![Éditeur graphique](../../journal/L9/screens/01-editeur-vide-selection.png)
+![Éditeur graphique de l'exemple AutoMaint : arbre des classes, graphe, barre d'outils et saisie rapide](img/fr/editeur-graphe.png "L'éditeur : 1 l'arbre des classes, 2 le graphe, 3 la barre d'outils (filtres, modes, périmètre), 4 la saisie rapide.")
 
 L'écran Ontologie est un canvas : arbre repliable à gauche (classes, propriétés objet, filtre), graphe au centre, inspecteur à droite (rabattable ; fermé tant que rien n'est sélectionné), saisie rapide en bas. L'écran Vue liste (menu « Concevoir ») est l'autre façon d'éditer : voir ci-dessous.
 
@@ -74,11 +78,17 @@ Gestes.
 | Suppr | Supprimer (confirmation dans la page) |
 | Ctrl+Z / Ctrl+Y (ou Maj+Ctrl+Z) | Annuler / rétablir (200 niveaux) |
 
+![Création d'une classe par double-clic sur le fond : un champ de saisie en place demande le nom](img/fr/editeur-creation.png "Double-clic sur le fond : 1 le nom de la nouvelle classe se saisit en place.")
+
+![Menu qui s'ouvre quand on glisse la poignée d'un nœud vers un autre : sous-classe, nouvelle propriété objet, classes disjointes](img/fr/editeur-geste-menu.png "Glisser la poignée d'un nœud vers un autre : 1 le menu propose les trois gestes.")
+
 Chaque geste est validé côté serveur selon OWL 2 : cycle de sous-classe, disjonction entre une classe et sa super-classe, caractéristiques incompatibles, cardinalité sur une propriété non simple, datatype inconnu… sont refusés avec un message (toast + bandeau, nœuds fautifs surlignés en rouge 6 s) et rien n'est modifié (tout ou rien).
 
-![Erreur de validation](../../journal/L9/screens/10-erreur-validation.png)
+![Geste refusé : un bandeau rouge indique que l'ontologie n'a pas été modifiée et pourquoi (cycle de sous-classes)](img/fr/editeur-erreur-validation.png "Un geste invalide est refusé : 1 le bandeau dit que l'ontologie n'a pas été modifiée, avec la raison.")
 
 Inspecteur. Pour une classe : IRI (renommable partout : ontologie, vue, périmètres, shapes, décisions), labels fr/en, commentaire, parents et enfants, icône (catalogue d'environ 80 icônes), propriétés de données (type et cardinalité ajoutables en ligne), relations, restrictions, clés, disjonctions. Pour une propriété objet : domaine, portée, inverse, caractéristiques.
+
+![Inspecteur d'une classe sélectionnée : libellés, parents, propriétés de données, relations, restrictions](img/fr/editeur-inspecteur.png "L'inspecteur (1) d'une classe : libellés, parents, propriétés de données, relations, restrictions.")
 
 Saisie rapide. Panneau bas, une ligne = un axiome (voir ci-dessous), Ctrl+Entrée pour appliquer ; les lignes refusées restent avec leur erreur. Le raccourci « Ajouter une propriété à X » préremplit la ligne. Attention : la saisie rapide n'est **pas annulable** par Ctrl+Z.
 
@@ -91,15 +101,17 @@ RepairOrder -concerns-> Vehicle [1] inverse hasRepairOrder
 FuelType : {Diesel, Petrol, Electric}
 ```
 
+![Panneau de saisie rapide ouvert avec trois lignes d'axiomes prêtes à être appliquées](img/fr/editeur-saisie-rapide.png "La saisie rapide : 1 une ligne par axiome, appliquée d'un coup avec Ctrl+Entrée.")
+
 Une même propriété citée avec plusieurs classes en domaine est lue comme une union (en RDF pur, plusieurs `rdfs:domain` voudraient dire *intersection*). `[1]`, `[0..1]`, `[1..*]` produisent des restrictions de cardinalité (axiomes OWA, pas des contraintes).
 
 Périmètres. Un périmètre est un sous-ensemble de l'ontologie à transposer (plusieurs par projet). Sélectionnez des classes dans le graphe puis Créer un périmètre : le graphe se réduit et le sélecteur de l'en-tête l'active. L'analyse, le modèle et les exports portent alors sur le périmètre ; la transposition ajoute des constats d'information P00 (bilan), P01 (relation exclue), P02 (héritage coupé), P03 (axiome coupé). Les décisions sont partagées entre périmètres. Une classe créée alors qu'un périmètre est actif n'y est pas ajoutée automatiquement.
 
-![Périmètre](../../journal/L9/screens/11-perimetre.png)
+![Formulaire de création d'un périmètre à partir de quatre classes sélectionnées dans le graphe](img/fr/editeur-perimetre.png "Créer un périmètre depuis la sélection : 1 le formulaire.")
 
 Proposition de l'assistant dans l'éditeur. Quand l'assistant a fait une proposition, l'éditeur la montre sur le graphe : nœuds ajoutés en vert (fantômes pointillés), modifiés en orange, avec ✓ / ✕ sur chaque élément, un panneau « Proposition de l'assistant » et Tout accepter / Tout rejeter.
 
-![Proposition dans l'éditeur](../../journal/L9/screens/08-proposition.png)
+![Proposition de l'assistant affichée sur le graphe : nœuds ajoutés en vert, modifiés en orange, avec les boutons accepter et rejeter](img/fr/editeur-proposition.png "Proposition de l'assistant dans l'éditeur : 1 le panneau, avec ✓ et ✕ sur chaque élément.")
 
 Éléments en lecture seule dans l'inspecteur : domaine/portée en union, chaînes de propriétés, équivalences complexes, faits des individus, autres superclasses anonymes. Ils sont conservés et transposés, mais pas modifiables (voir `limites.md`). En affichage classique, les propriétés de données ne sont pas dessinées ; la notation VOWL les montre (voir la section suivante).
 
@@ -108,6 +120,8 @@ Proposition de l'assistant dans l'éditeur. Quand l'assistant a fait une proposi
 Trois outils aident à lire un graphe chargé : une légende, un second mode de dessin et des filtres.
 
 La légende. Le bouton « Légende », en haut à droite du graphe, ouvre un panneau flottant. Il ne décrit que les éléments présents dans la vue en cours, chacun avec un mini-dessin qui reprend les couleurs et les traits du graphe, et une phrase. Au premier usage, le panneau est ouvert (replié sous 900 px de large) et la vue se cadre pour qu'il ne cache aucun nœud. Le chevron le replie, la croix le ferme. Ce choix est ensuite mémorisé dans le navigateur. La sélection et l'erreur sont toujours expliquées, car elles n'apparaissent que sur un geste. Le panneau suit le mode d'affichage.
+
+![Éditeur avec la légende du graphe ouverte : encodages des classes, liens et états](img/fr/editeur-legende.png "La légende : 1 le panneau flottant, 2 le bouton qui l'ouvre.")
 
 | Encodage (affichage classique) | Ce que cela veut dire |
 |---|---|
@@ -126,6 +140,10 @@ La légende. Le bouton « Légende », en haut à droite du graphe, ouvre un pan
 | Pastille « +n » | n classes voisines repliées par le curseur de densité |
 
 Le mode « Notation VOWL ». Le sélecteur Classique / VOWL de la barre dessine le même graphe avec la notation VOWL 2 (*Visual Notation for OWL Ontologies*), reprise de sa spécification : seule la notation est reprise, aucun code de WebVOWL. Le choix est mémorisé. Les couleurs de la spécification (#acf, #36c, #ccc, #fc3, #9c6) sont adaptées aux thèmes clair et sombre.
+
+![Le même graphe dessiné en notation VOWL : classes en cercles, relations en libellés sur les arêtes](img/fr/editeur-vowl.png "Le graphe en notation VOWL : 1 le sélecteur Classique / VOWL.")
+
+![Notation VOWL avec les types de données (rectangles jaunes) et les propriétés de données affichés](img/fr/editeur-vowl-proprietes.png "VOWL avec les propriétés de données : rectangles jaunes pour les types.")
 
 | Encodage (notation VOWL) | Ce que cela veut dire |
 |---|---|
@@ -149,11 +167,17 @@ Les états d'édition (proposé, modifié, erreur, sélection) restent identique
 
 Le menu « Afficher » masque ou montre les propriétés de données (VOWL seulement), les sous-classes, les relations, les disjonctions et équivalences, les classes dépréciées et les propositions de Krakie. En VOWL, sans les équivalences, les classes équivalentes ne sont plus fusionnées. Les boutons Hiérarchie / Relations / Tout règlent d'un clic les cases sous-classes, relations et disjonctions. Le curseur « Densité » replie les classes qui ont au plus N liens de sous-classe ou de relation (le « degree of collapsing » de WebVOWL). Un badge « +n » signale les voisines repliées. Les nœuds sélectionnés ou proposés ne sont jamais repliés. Le compteur donne « N nœuds / M arêtes affichés sur X / Y », X et Y étant les totaux sans filtre. Les choix sont mémorisés.
 
+![Menu Afficher : cases pour les propriétés de données, sous-classes, relations, disjonctions, classes dépréciées, propositions ; curseur de densité](img/fr/editeur-filtres.png "Le menu Afficher (1) s'ouvre depuis le bouton (2) : cases à cocher et curseur de densité.")
+
 Exporter. Le bouton « Exporter » télécharge le graphe tel qu'il est affiché, en SVG ou en PNG. Le SVG est autonome : styles en ligne, polices de secours, couleurs du thème courant, légende en option au bas de l'image. Le PNG est tiré du SVG, en double résolution.
+
+![Menu d'export du graphe : SVG ou PNG, avec ou sans légende](img/fr/editeur-export.png "L'export du graphe affiché, en SVG ou en PNG.")
 
 ### Vue liste {#vue-liste}
 
 La Vue liste (L17) remplace l'ancien écran arbre + formulaire. Colonne de gauche : recherche, quatre onglets avec compteurs (classes, propriétés objet, propriétés de données, individus), arbre des classes (icône, nombre de propriétés et de sous-classes, classes à plusieurs parents) ; création rapide d'une entrée. À droite, la fiche de l'élément choisi :
+
+![Vue liste : fiche de la classe Ordre de réparation avec en-tête, tableau des propriétés et restrictions en langage naturel](img/fr/liste-classe.png "La fiche d'une classe : 1 l'en-tête, 2 le tableau des propriétés, 3 les restrictions en clair.")
 
 - Classe : en-tête (icône, IRI compacte copiable et renommable, badges), libellés fr/en côte à côte, hiérarchie, tableau des propriétés (type ou cible, cardinalité lisible, obligatoire, clé, origine propre ou héritée, ajout en ligne d'une donnée ou d'une relation), restrictions en langage naturel (avec ajout), disjonctions et équivalences, clés, utilisation (domaine, portée, restrictions, shapes).
 - Propriété objet : domaine, portée, inverse, sept caractéristiques en interrupteurs expliqués. Propriété de données et individu (types, faits) ont leur fiche.
@@ -162,6 +186,8 @@ La Vue liste (L17) remplace l'ancien écran arbre + formulaire. Colonne de gauch
 - Sous 900 px : liste ou fiche, avec un bouton retour.
 
 Lecture seule : les faits des individus, les équivalences et expressions complexes.
+
+![Vue liste : fiche d'une propriété objet avec domaine, portée, inverse et caractéristiques](img/fr/liste-propriete.png "La fiche d'une propriété objet : domaine, portée, inverse, caractéristiques.")
 
 ## 6. Conformité OWL {#conformite-owl}
 
@@ -172,6 +198,8 @@ Lecture seule : les faits des individus, les équivalences et expressions comple
 
 Exemple : l'exemple *trap* est conforme OWL 2 DL « sous réserve de la fermeture d'import PROV-O » (l'import n'est pas résolu hors ligne, voir BP05).
 
+![Écran Conformité OWL : profils DL, EL, QL, RL, RDFS et liste des constats](img/fr/conformite-profils.png "Les profils OWL 2 et les constats ; 1 la carte HermiT.")
+
 ### Raisonner avec HermiT {#raisonner-avec-hermit}
 
 Le bouton « Raisonner avec HermiT » (écran Conformité, étape Vérifier) lance le raisonneur OWL 2 DL HermiT 1.3.8 sur l'ontologie du projet. La carte de résultats affiche :
@@ -181,7 +209,13 @@ Le bouton « Raisonner avec HermiT » (écran Conformité, étape Vérifier) lan
 - les inférences utiles : sous-classes absentes de l'ontologie et déduites d'une définition (`equivalentClass`), et classes équivalentes. « Ajouter au modèle » écrit la relation `subClassOf` par une opération annulable (annuler le dernier ajout, ou Annuler dans l'éditeur) ; une équivalence se déclare dans l'éditeur de fichiers, l'éditeur graphique n'a pas d'opération pour elle. Une sous-classe qui ne fait que découler d'une équivalence inférée (C ⊑ B déclaré, A ≡ B inféré) n'est pas reproposée sous la forme C ⊑ A. Une classe inférée équivalente à `owl:Thing` fait l'objet d'un avertissement ;
 - les individus reclassés : types nouveaux déduits pour un individu.
 
+![Carte HermiT : ontologie cohérente, classe insatisfiable, inférences utiles et individu reclassé](img/fr/hermit-resultats.png "Résultats de HermiT : 1 cohérence, 2 classe insatisfiable, 3 inférences ajoutables au modèle, 4 individu reclassé.")
+
+![Éditeur graphique où la classe insatisfiable Chimère est entourée en rouge, avec un bandeau d'alerte](img/fr/hermit-classe-rouge.png "La classe insatisfiable (2) en rouge dans l'éditeur, avec le bandeau (1).")
+
 La carte indique la durée et la version de HermiT. Le calcul tourne dans un sous-processus Java limité à 30 s et 1 Go de mémoire (variables `ONTOFORGE_HERMIT_TIMEOUT`, `ONTOFORGE_HERMIT_MAX_MB`). Au-delà, il est interrompu et aucun résultat n'est retenu.
+
+![Krakie en forgeronne pendant le calcul de HermiT : « HermiT raisonne… (jusqu'à 30 s) »](img/fr/krakie-forgeronne.png "Pendant le calcul, Krakie forge.")
 
 Si l'ontologie sort d'OWL 2 DL (voir les profils), un avertissement s'affiche et HermiT est quand même lancé. Le résultat est alors indicatif, car HermiT peut ignorer des axiomes qu'il ne comprend pas. Hors OWL 2 DL, il peut aussi refuser l'ontologie (par exemple une propriété transitive dans une cardinalité) : la carte affiche alors son message d'erreur.
 
@@ -198,22 +232,27 @@ Les `owl:imports` ne sont pas suivis : HermiT raisonne sur le seul contenu du pr
 
 Krakie propose le même raisonnement : « raisonne », « vérifie la cohérence », « run the reasoner », « check consistency ». Elle lance HermiT et résume le résultat, avec un bouton pour ouvrir la carte détaillée.
 
-## Éditeur de fichiers {#editeur-de-fichiers}
+## 7. Éditeur de fichiers {#editeur-de-fichiers}
 
 Écran Fichiers (étape *Concevoir*) : un éditeur façon IDE pour modifier directement les fichiers du projet.
 
+![Éditeur de fichiers : arborescence, fichier onto.ttl en Turtle coloré, panneau Problèmes](img/fr/fichiers-editeur.png "L'éditeur de fichiers : 1 l'arborescence, 2 le texte Turtle, 3 le panneau Problèmes.")
+
 - Arborescence à gauche : `onto.ttl` (ontologie en Turtle), `shapes.ttl` (SHACL), `decisions.json` (arbitrages), puis, en lecture seule (cadenas), les fichiers générés de la cible courante (Schema.cs, `*.cypher`, `schema.graphql`, rapport…). Un fichier généré affiche un bandeau « modifiez l'ontologie ou les décisions » : on change la source, puis on régénère.
+  ![Fichier généré en lecture seule : bandeau « modifiez l'ontologie ou les décisions, puis régénérez »](img/fr/fichiers-genere.png "Un fichier généré est en lecture seule : 1 le bandeau, 2 le cadenas dans l'arborescence.")
 - Onglets au centre ; un point orange signale un fichier modifié mais pas encore appliqué. En bas, le panneau Problèmes (repliable) ; un clic sur un problème amène le curseur à la ligne. La barre d'état donne la ligne, la colonne, le format et l'état de validation.
 - Éditeur (CodeMirror 6) : coloration Turtle, JSON, C#, Cypher, GraphQL ; numéros de ligne, repli de code, accolades et parenthèses mises en correspondance, Ctrl+F rechercher, Ctrl+H remplacer, Ctrl+D occurrence suivante, Alt+clic pour plusieurs curseurs. Le thème suit le thème clair ou sombre de l'application.
 - Validation en direct (environ une demi-seconde après la dernière frappe) : les erreurs de syntaxe sont soulignées en rouge avec leur ligne et leur colonne ; les avertissements de conformité OWL 2 et de bonnes pratiques sont rattachés à la ligne du sujet ; pour les shapes, une méta-validation SHACL (shacl-shacl) s'ajoute. Seule une syntaxe invalide empêche d'appliquer.
+  ![Erreur de syntaxe Turtle soulignée en rouge dans l'éditeur et listée dans le panneau Problèmes](img/fr/fichiers-diagnostic.png "Une erreur de syntaxe : 1 soulignée dans le texte, 2 listée avec sa ligne et sa colonne.")
 - Autocomplétion (Ctrl+Espace ou en tapant) : préfixes déclarés, classes et propriétés du projet (par nom local ou par libellé), mots-clés Turtle, termes OWL, RDFS, XSD et SHACL (`sh:path`, `sh:datatype`…).
 - Appliquer (bouton ou Ctrl+S) : un aperçu côte à côte s'ouvre avec le résumé « +N triplets / −M triplets » calculé par le serveur. On confirme, et le projet est remplacé. Les écrans graphe, vue liste et shapes reflètent aussitôt le changement. Si l'import réécrit une partie de votre texte (par exemple une disjonction n-aire éclatée en paires), l'aperçu indique « N triplet(s) de votre texte réécrits de façon équivalente » avec le détail avant / après. Une application qui change le modèle est annulable : bouton « Revenir à la version précédente », ou annulation depuis l'éditeur graphique (même historique). Un changement de commentaires ou de mise en forme seul est enregistré sans toucher au modèle et n'est pas annulable.
+  ![Aperçu avant application : résumé « +3 triplets / −0 triplets » et vue côte à côte des modifications](img/fr/fichiers-diff.png "Avant d'appliquer : 1 le résumé en triplets, 2 la comparaison côte à côte.")
 - Si le projet a changé ailleurs pendant l'édition (autre écran, annulation…), l'application est refusée avec un avertissement : garder son édition, recharger la version du projet ou écraser.
 - Commentaires et mise en forme : si votre texte donne exactement le même graphe RDF que le projet, il est conservé tel quel, commentaires `#` compris, et l'aperçu annonce « vos N lignes de commentaire sont conservées ». Si l'import réécrit une partie du texte, le fichier est réécrit sous forme normalisée et l'aperçu avertit « N ligne(s) de commentaire seront supprimées ». Le texte conservé reste affiché tant que le projet n'est modifié que depuis cet écran : une modification faite ailleurs (graphe, Krakie, annulation) le remplace par la forme normalisée, avec une note qui chiffre les commentaires supprimés ; si l'annulation ramène le même graphe, votre texte revient. Sans préfixe pour l'espace de noms de l'ontologie, un préfixe est ajouté d'après son IRI. Les littéraux numériques peuvent être réécrits sous forme canonique (`"01"^^xsd:integer` devient `1`).
 - Krakie : le bouton « Demander à Krakie » propose « Explique ce bloc » (sélection ou ligne courante) et « Corrige cette erreur » (erreur la plus proche du curseur).
 - Mobile : l'écran est en lecture seule (consultation).
 
-## 7. SHACL {#shacl}
+## 8. SHACL {#shacl}
 
 L'écran SHACL (L17) a deux onglets : les shapes et la validation.
 
@@ -221,52 +260,61 @@ Liste des shapes. Recherche, groupes par classe cible (avec son icône), nombre 
 
 Détail d'une shape. Titre lisible, IRI compacte, « S'applique à chaque … », shape fermée ou ouverte, sévérité. Une grille aligne, pour chaque propriété : libellé et CURIE, cardinalité en clair, type ou classe, autres contraintes en puces (motif, plage, longueur, liste, nodeKind…), sévérité, message.
 
+![Écran Shapes : liste des shapes par classe cible et détail de la shape Ordre de réparation](img/fr/shapes-liste.png "Les shapes : 1 la liste par classe cible, 2 le bouton de génération depuis l'ontologie.")
+
 Édition en ligne. Vous modifiez la cardinalité (préréglages ou valeurs libres), le type ou la classe, la sévérité, le message, le caractère fermé, et vous ajoutez ou supprimez une propriété (celles de la classe d'abord). Une barre « Modifications non enregistrées » enregistre le tout. Les messages sont édités dans la langue de l'interface. Les contraintes motif, plage et liste sont lisibles mais pas encore éditables en ligne.
 
 Générer depuis l'ontologie. Un diff montre d'abord les ajouts (nouvelles shapes, contraintes ajoutées aux shapes existantes) ; les shapes sans contrainte (types, collections) sont écartées et comptées. Appliquer les intègre au brouillon, puis Enregistrer. L'aperçu utilise `dry_run` : rien n'est enregistré avant (voir `api.md`). La génération indique « ce qu'elle ne reproduit pas à l'identique » (un axiome OWL n'est pas une contrainte SHACL).
 
+![Diff de la génération de shapes : nouvelles shapes et contraintes proposées, avant application](img/fr/shapes-generation.png "La génération de shapes montre d'abord un diff : rien n'est enregistré avant Appliquer.")
+
 Valider un fichier de données RDF. Onglet dédié : déposez ou choisissez un fichier. Le contrôle se fait contre les shapes du projet, sans inférence par défaut (décision D-034). Les violations sont groupées par shape puis par nœud, avec le type de contrainte en clair ; Ouvrir la shape la sélectionne et surligne la contrainte. Avec `automaint-data.ttl`, 4 violations en 3 shapes sont attendues.
+
+![Validation SHACL d'un fichier de données : 4 violations groupées par shape et par nœud](img/fr/shacl-validation.png "Validation d'un fichier de données : les violations sont groupées par shape puis par nœud.")
 
 Krakie. Bouton dans l'en-tête de la shape, suggestions (« Ajoute une contrainte… », « Explique cette shape »), « Pourquoi cette violation ? » sur chaque ligne de violation.
 
 Les shapes enrichissent ensuite la transposition (propriété obligatoire, scalaire, énumération, motif, validations) ; un conflit OWL/SHACL devient un constat S01.
 
-## 8. Analyse & arbitrage {#analyse-arbitrage}
+## 9. Analyse & arbitrage {#analyse-arbitrage}
 
-![Analyse et arbitrage, cible Curiosity](../../journal/L5/screens/real-analyse-curiosity.png)
+![Écran Analyse & arbitrage pour la cible Curiosity : compteurs, barre de progression et groupes de constats par règle](img/fr/analyse-synthese.png "L'analyse : 1 le bouton Accepter toutes les recommandations, 2 la synthèse, 3 un groupe de constats par règle.")
 
 1. Choisir la cible (Curiosity ou Neo4j) en haut ; Réanalyser relance le moteur.
 2. Synthèse : « transposés automatiquement », « à arbitrer », « perdus ou à risque », « arbitrés », « restants », avec une barre verte / orange / rouge.
 3. Constats regroupés par règle (identifiant `C07`, titre, nombre de constats, progression `0/3 arbitrés`, option recommandée). Les groupes Perdus puis À arbitrer sont en tête ; les constats `auto` sont repliés. Filtre texte et case « Restants seulement ».
+   ![Un constat perdu ouvert : sa justification, deux options avec leur impact et la recommandation pour Curiosity](img/fr/analyse-constat.png "Un constat ouvert : 1 la justification, 2 les options et leur impact, 3 la recommandation.")
 4. Décider :
    - « Appliquer la recommandation à toute la règle » : une seule décision groupée (`"<règle>:*"`) ;
    - déplier la règle pour arbitrer constat par constat : chaque constat montre le sujet, la justification et les options avec leur impact ;
    - « Accepter toutes les recommandations » en haut, puis affiner.
 5. Tant que vous n'avez pas décidé, la recommandation est appliquée : le modèle et les exports sont toujours complets, mais les points `review` et `lost` restent signalés dans le rapport.
 
-![Une règle appliquée](../../journal/L5/screens/real-analyse-regle-appliquee.png)
+![Analyse après avoir appliqué la recommandation à une règle entière : les compteurs d'arbitrés ont avancé](img/fr/analyse-regle-appliquee.png "Après « Appliquer la recommandation à toute la règle » : 1 les compteurs avancent.")
 
 Les décisions sont enregistrées dans le projet par cible et rejouées à chaque ré-analyse : modifier l'ontologie ne fait pas perdre les choix déjà faits (les identifiants de constat sont stables : `<règle>:<IRI du sujet>`). Une décision vers une option inexistante pour la cible est ignorée et signalée (G02).
 
 La cible Neo4j propose souvent d'autres recommandations (par exemple multi-labels pour l'héritage, `UNIQUE` / `NODE KEY` pour les clés) :
 
-![Analyse, cible Neo4j](../../journal/L5/screens/real-analyse-neo4j.png)
+![Analyse pour la cible Neo4j : d'autres recommandations, par exemple multi-labels pour l'héritage](img/fr/analyse-neo4j.png "La même analyse pour la cible Neo4j.")
 
 Chaque règle est expliquée, avec exemple OWL et transposition par cible, dans [`regles.md`](regles.md). Le bouton Expliquer d'un constat demande à l'assistant de rédiger une explication (repli déterministe sans LLM).
 
-## 9. Modèle cible {#modele-cible}
+## 10. Modèle cible {#modele-cible}
 
-![Modèle cible Curiosity](../../journal/L5/screens/real-modele-curiosity.png)
+![Modèle cible Curiosity : diagramme du property graph et onglets Types de nœuds, Relations, Validations, Matérialisations](img/fr/modele-curiosity.png "Le modèle cible Curiosity : diagramme et tableaux.")
 
 Diagramme du property graph obtenu : trait plein = relation du schéma, pointillé = relation dérivée (matérialisée), bordure tiretée = type abstrait ; survol d'un nœud pour voir les noms de relations. Sous le diagramme, quatre onglets : Types de nœuds, Relations, Validations, Matérialisations. Cliquer un nœud ou une arête affiche ses détails dans le panneau de droite : labels, clé, discriminant, propriétés (requis, indexé), source OWL, cardinalité, inverse, symétrie.
 
-![Modèle cible Neo4j](../../journal/L5/screens/real-modele-neo4j.png)
+![Modèle cible avec le type RepairOrder sélectionné : détails dans le panneau de droite](img/fr/modele-detail.png "Un type de nœud sélectionné (1) : ses propriétés et sa source OWL s'affichent à droite.")
+
+![Modèle cible Neo4j : les nœuds portent plusieurs labels](img/fr/modele-neo4j.png "Le modèle cible Neo4j : plusieurs labels par nœud.")
 
 En Neo4j, les nœuds portent plusieurs labels (l'héritage est conservé) ; en Curiosity, un seul.
 
-## 10. Exports {#exports}
+## 11. Exports {#exports}
 
-![Exports Curiosity](../../journal/L5/screens/real-exports-curiosity.png)
+![Écran Exports pour Curiosity : liste des fichiers générés et contenu de Schema.cs](img/fr/exports-curiosity.png "Les exports Curiosity : 1 la liste des fichiers, 2 Copier et Télécharger.")
 
 Liste des fichiers générés à gauche, contenu à droite (Copier, Télécharger) ; Télécharger le zip pour tout récupérer ; Régénérer après un changement.
 
@@ -276,7 +324,7 @@ Liste des fichiers générés à gauche, contenu à droite (Copier, Télécharge
 | **Neo4j** | `schema.cypher` (contraintes et index), `ingest.cypher` (`MERGE`), `validation.cypher` (requêtes de détection), `model.mmd` (diagramme Mermaid), `README-neo4j.md` |
 | **Les deux** | `schema.graphql`, `README-graphql.md`, **`rapport-transposition.md`** |
 
-![Exports Neo4j](../../journal/L5/screens/real-exports-neo4j.png)
+![Écran Exports pour Neo4j : contraintes et index dans schema.cypher](img/fr/exports-neo4j.png "Les exports Neo4j : `schema.cypher`.")
 
 À lire avant d'utiliser le code généré :
 
@@ -284,21 +332,26 @@ Liste des fichiers générés à gauche, contenu à droite (Copier, Télécharge
 - Le **Cypher n'a pas été exécuté** sur une base réelle. Les contraintes Enterprise-only (`NODE KEY`, `IS NOT NULL`, types de propriété) sont séparées et commentées ; en Community, l'unicité (`IS UNIQUE`) est proposée.
 - Le rapport de transposition liste, par constat, ce qui a été perdu, pourquoi, et la compensation retenue (validation applicative, requête, matérialisation).
 
-## 11. Requêtes : requêtage interactif {#requetes-requetage-interactif}
+## 12. Requêtes : requêtage interactif {#requetes-requetage-interactif}
 
 L'écran Requêtes construit une requête par une phrase guidée pilotée par l'ontologie et les shapes, l'exécute sur un endpoint SPARQL et traduit la requête pour la cible.
 
-![Question en langage naturel](../../journal/L15/screens/09-nl-rempli.png)
+![Écran Requêtes : question en langage naturel, phrase guidée remplie et code SPARQL généré](img/fr/requetes-question.png "Une question en langage naturel : 1 le champ, 2 le bouton Demander ; la phrase guidée se remplit.")
 
 1. Choisir l'endpoint : liste en haut à droite (les endpoints se déclarent dans Paramètres) ; un seul est actif à la fois. L'option + Endpoint temporaire… ouvre un formulaire en ligne : URL, authentification (aucune, basic, bearer), secret, graphe par défaut. Tester vérifie la connexion, Utiliser l'active. Il n'est gardé qu'en mémoire du navigateur (ni stockage local, ni serveur) et disparaît au rechargement ; la case « Enregistrer dans les paramètres » en fait un endpoint permanent. Les mêmes garde-fous s'appliquent (lecture seule, délai, secret jamais renvoyé).
+   ![Formulaire de l'endpoint temporaire : URL, authentification, secret, graphe par défaut](img/fr/requetes-endpoint-temporaire.png "Endpoint temporaire : 1 l'URL ; il n'est gardé qu'en mémoire du navigateur.")
 2. Poser une question en langage naturel (champ « Pose ta question », bouton Demander) : par exemple « véhicules réparés par Camille ». La réponse remplit la phrase guidée, que vous pouvez modifier, avec une explication, un indicateur de confiance et les termes non reconnus (cliquables : ils ouvrent la recherche de relation). Le mode est « llm » si le fournisseur choisi est réel et configuré, sinon un repli déterministe (correspondance avec les labels de l'ontologie). Tout ce que le LLM invente (classe, relation, filtre inconnus) est retiré avant affichage.
 3. Ou construire la phrase à la main : « Je cherche » une classe ; Ajouter une relation sortante ou entrante proposée (jamais une relation absurde pour la classe) ; chaque étape peut être facultative ou niée (« pas ») ; filtres selon le type (contient, égal, regex, langue, plage numérique, plage de dates, liste) ; plusieurs branches possibles depuis une même variable.
 4. Colonnes, tri et limite : choisir et réordonner (flèches) les colonnes (identifiant, libellé, propriétés de données), le tri, la limite (100 par défaut), et « Inclure les sous-classes » (global, utile si l'endpoint ne raisonne pas).
 5. Exécuter : tableau (tri par colonne, export CSV) ou graphe, durée, indication « tronqué ». Lecture seule : toute requête de modification est refusée.
+   ![Résultats d'une requête sous forme de tableau triable : 10 lignes, durée, export CSV](img/fr/requetes-resultats-tableau.png "Les résultats en tableau, avec export CSV.")
 6. Code de la requête (colonne de droite) : onglets SPARQL / Cypher / Curiosity / GraphQL, case « Côté à côte », notes `Perte` / `À vérifier` / `Info` et Copier.
+   ![Panneau Code de la requête : onglets SPARQL, Cypher, Curiosity, GraphQL et notes de traduction](img/fr/requetes-code.png "Le code de la requête dans chaque cible, avec ses notes À vérifier.")
 7. Bibliothèque : requêtes sauvegardées (exécuter, ouvrir, renommer, supprimer) et questions de compétence rejouables en un clic.
 
 Triplestore local (test). Sans endpoint externe, l'option Triplestore local (test) du sélecteur interroge un petit magasin RDF embarqué dans le projet (toujours disponible, sans réseau, en lecture seule). Il contient l'ontologie, les individus du projet et les fichiers que vous chargez. Le panneau affiche le nombre de triplets par origine et propose : Charger les données de démo (exemples livrés), Charger un fichier… (Turtle, N-Triples, JSON-LD, RDF/XML ; 25 Mo au plus), la case Inférence (RDFS, OWL RL ou les deux : les sous-classes sont alors retrouvées par leur super-classe ; RDFS applique domaine, portée, sous-propriétés et sous-classes, OWL RL les règles du profil OWL 2 RL, volontairement incomplet pour le reste de OWL 2, et seuls les faits sur les individus sont ajoutés), Valider (SHACL) le contenu et Vider. Le contenu est conservé entre deux sessions (volume de données). Seuls SELECT, ASK, CONSTRUCT et DESCRIBE sont acceptés. Le graphe par défaut est l'union sans doublon de tous les graphes (un triplet présent dans deux fichiers compte une fois), `FROM` choisit les graphes à interroger et `GRAPH ?g` les distingue. Sur un endpoint externe, le graphe par défaut n'est pas toujours cette union : une requête libre peut y donner un autre résultat. Une requête est interrompue après 20 s. Après un chargement ou un vidage, le magasin recalcule l'union des graphes (environ 4 s pour 186 000 triplets) : une requête lancée à ce moment attend la fin, et ne rend jamais de résultat périmé. Un chargement qui échoue est annulé en entier. Limites : l'inférence reste réservée aux petits jeux (30 000 triplets sources), `owl:hasKey` n'est pas matérialisé (cherchez les doublons de clé par GROUP BY / HAVING), `SERVICE` est refusé. C'est un outil de test, pas un remplaçant d'un vrai triplestore.
+
+![Panneau du triplestore local de test : nombre de triplets par origine, données de démo, inférence, validation SHACL](img/fr/requetes-triplestore-local.png "Le triplestore local de test : 1 le panneau, avec le nombre de triplets par origine.")
 
 Valeurs possibles (sans endpoint). L'ontologie suffit à proposer des valeurs (`GET /query/options`) : individus d'une classe énumérée (`owl:oneOf`) ou typée, sous-classes comprises ; individus de la portée d'une propriété objet ; `sh:in` des shapes, `DataOneOf` ou énumération du modèle cible pour une propriété de données. Dans la phrase guidée :
 - une étape vers une classe énumérée ou peuplée (40 valeurs au plus) ajoute un filtre « est l'un de » à cocher (avec automaint : Diesel, Essence, Hydrogène, Électricité) ; sinon un bouton « est l'un de… » ;
@@ -307,15 +360,17 @@ Valeurs possibles (sans endpoint). L'ontologie suffit à proposer des valeurs (`
 - la classe racine affiche « N connu(s) ».
 Avec un endpoint, la liste est complétée par ses valeurs. Limite : l'autocomplétion de libellés mélange les langues (fr et en).
 
+![Phrase guidée avec le filtre « est l'un de » : cases à cocher Diesel, Essence, Hydrogène, Électricité](img/fr/requetes-valeurs-possibles.png "Valeurs possibles tirées de l'ontologie : 1 les cases à cocher.")
+
 Le mode SPARQL libre accepte une requête `SELECT`/`ASK`/`CONSTRUCT`/`DESCRIBE`, la traduit et l'exécute. Sur mobile, seuls la bibliothèque, l'exécution des requêtes sauvegardées et les résultats sont proposés.
 
-![Résultats](../../journal/L15/screens/04-resultats.png)
+![Résultats d'une requête sous forme de graphe : un carburant relié à des moteurs et à des véhicules](img/fr/requetes-resultats-graphe.png "Les mêmes résultats en graphe.")
 
 À savoir : les traductions Curiosity relèvent de la Query API, non vérifiée : tout est `À VÉRIFIER` ; la Query API ne renvoie que les nœuds de fin de traversée, donc les colonnes multiples se lisent en C# après coup. Aucun comptage, agrégat ou tri en langage naturel. « Toulouse » est cherché dans le nom affiché (l'ontologie AutoMaint n'a pas de propriété ville).
 
-## 12. Assistant plein écran {#assistant-plein-ecran}
+## 13. Assistant plein écran {#assistant-plein-ecran}
 
-![Assistant](../../journal/L10/screens/03-proposition.png)
+![Écran Assistant : suggestions de départ, boutons d'actions rapides et zone de saisie](img/fr/assistant-ecran.png "L'Assistant : 1 une suggestion de départ, 2 la saisie, 3 l'amorçage depuis un document.")
 
 L'Assistant (menu « Outils ») est une conversation par projet (historique conservé dans le navigateur, 80 messages), avec Krakie en avatar (elle réfléchit pendant l'appel, se réjouit d'une proposition, s'inquiète d'une erreur).
 
@@ -323,8 +378,9 @@ L'Assistant (menu « Outils ») est une conversation par projet (historique cons
 - Dépôt de fichiers : glisser-déposer ou bouton ; formats CSV, SQL, texte, Markdown (2 Mo maximum), avec aperçu (colonnes, tables, 20 premières lignes) et retrait possible.
 - Actions rapides : brouillon d'ontologie depuis le fichier ; shapes (carte « Appliquer » : fusion avec les shapes existantes) ; expliquer un constat ; alignements SKOS / schema.org.
 - Proposition : affichée à droite en mini-graphe (vert = ajout, orange = modification, pointillé = existant) et en liste ; ✓ / ✕ élément par élément, Tout accepter / Tout rejeter, Voir dans l'éditeur. L'acceptation passe par les mêmes opérations validées que l'éditeur (tout ou rien) et accepte d'abord les classes dont dépend un élément. Rien ne change dans l'ontologie avant votre acceptation (décision D-006). Sur mobile : onglets Conversation / Proposition.
+  ![Assistant après un message : réponse de Krakie et panneau Proposition avec mini-graphe, éléments à accepter ou rejeter](img/fr/assistant-proposition.png "Une proposition : 1 le panneau avec mini-graphe, liste d'éléments et ✓ / ✕.")
 
-![Dépôt d'un fichier](../../journal/L10/screens/02-fichier.png)
+![Fichier CSV déposé dans l'Assistant : colonnes détectées et aperçu des premières lignes](img/fr/assistant-fichier.png "Un fichier CSV joint : 1 aperçu des colonnes et des premières lignes.")
 
 Sans fournisseur réel, le mode `mock` ne renvoie qu'un squelette (domaine automobile pour le texte ; analyseur déterministe pour CSV et SQL).
 
@@ -334,6 +390,7 @@ Sans fournisseur réel, le mode `mock` ne renvoie qu'un squelette (domaine autom
 
 1. Dans l'Assistant, cliquez sur Amorcer depuis un document (dans le panneau Krakie : l'icône de fichier à côté de « Envoyer »), ou glissez un PDF dans la conversation. Pour essayer sans fichier, le lien Essayer avec le cahier des charges de démo charge d'un clic le PDF d'exemple. Formats : PDF à texte natif, `.txt`, `.md`. Un PDF scanné est refusé (pas de reconnaissance de caractères) ; par défaut 10 Mo et 60 pages au plus, réglables par variables d'environnement (voir `docs/CONTRACTS.md` §9).
 2. L'outil lit le document sur place et affiche le nombre de pages, de caractères et d'appels prévus. Avec un fournisseur hébergé (Anthropic, compatible OpenAI), un avertissement de confidentialité apparaît et il faut cocher la confirmation avant l'envoi. Avec `mock` ou Ollama, rien ne part vers un service hébergé.
+   ![Import d'un document : cahier des charges de démo lu, nombre de pages et de caractères, bouton Lancer l'analyse](img/fr/assistant-document-import.png "Amorcer depuis un document : 1 le fichier lu et l'estimation, 2 Lancer l'analyse.")
 3. Lancer l'analyse. Le résultat commence par 5 à 10 questions de compétence tirées du document. Chacune porte un badge Couvert ou Non couvert : une question non couverte ne trouve aucun terme dans le brouillon, donc il manque probablement une classe ou une propriété.
 4. La proposition est groupée en Classes, Relations et Propriétés de données, avec un compteur par groupe. Tous les éléments portent le sablier À confirmer. Cliquez sur un nom pour déplier son extrait source (phrase et page d'origine). Acceptez ✓ ou rejetez ✕ élément par élément, utilisez Tout accepter dans l'en-tête d'un groupe, ou celui du bas pour tout prendre. À partir de 8 éléments, un champ de filtre cherche dans les noms, détails et extraits. Le lint W3C est résumé au-dessus de la liste : les libellés absents dans l'autre langue (cas normal d'un document écrit dans une seule langue) forment une ligne d'information repliable, sans alerte ; un vrai avertissement s'affiche en orange. L'aperçu du graphe est replié sous « Aperçu du graphe ».
 5. Voir dans l'éditeur : les éléments acceptés y sont, annulables comme n'importe quelle modification.
@@ -342,7 +399,7 @@ Les longs documents sont découpés en morceaux, puis les propositions sont fusi
 
 Sans LLM (fournisseur `mock`, non configuré ou en panne), un repli déterministe repère les termes en majuscule fréquents et les tournures « un X est un Y » ou « un X a un Y », en français et en anglais. Le brouillon est alors étiqueté Approximatif : il suffit pour une démonstration, relisez chaque extrait. Un PDF de démonstration (cahier des charges de maintenance automobile, 2 pages) est fourni dans `samples/automaint/`, avec son script de génération ; le lien de démo de la zone d'import le charge directement.
 
-![Proposition depuis un document](../../journal/L25/screens/04-extrait.png)
+![Résultat de l'analyse d'un document : questions de compétence couvertes et élément proposé avec son extrait source](img/fr/assistant-document-extrait.png "Résultat : 1 les questions de compétence, 2 l'extrait source d'un élément proposé.")
 
 ### Krakie, l'assistant global {#krakie-l-assistant-global}
 
@@ -350,7 +407,9 @@ Krakie est présente sur tous les écrans du projet (L16), en plus de l'écran p
 
 - Ouvrir : bouton flottant en bas à droite, ou Ctrl+K (Cmd+K sur Mac). Le panneau latéral se redimensionne à la souris ou aux flèches gauche/droite sur la poignée ; sous 900 px il passe en plein écran ; il reste ouvert quand vous changez d'écran. Échap dans la zone de saisie le ferme.
 - Contexte : une ligne « Contexte : [écran] [sélection] » indique ce que Krakie voit. Elle reçoit l'écran, l'élément sélectionné (classe avec ses propriétés et restrictions, shape, propriété) et, dans Requêtes, la requête en cours. Vous pouvez retirer la sélection ou tout le contexte, puis le rétablir. Des puces de suggestions propres à l'écran remplissent la saisie. Les boutons Krakie des fiches (Vue liste, Shapes) ouvrent le panneau avec leur élément en contexte.
+  ![Panneau de Krakie ouvert sur l'écran Shapes : ligne de contexte avec la shape sélectionnée et puces de suggestions](img/fr/krakie-contexte.png "Krakie sait ce que vous regardez : 1 la ligne de contexte, 2 les suggestions de l'écran.")
 - Cartes d'actions : Krakie ne modifie jamais rien seule. Sa réponse contient des cartes avec un aperçu en français. Appliquer exécute les opérations (même chemin validé que l'éditeur) ; Annuler défait la modification, mais seulement tant que c'est la dernière. Selon la carte : Voir dans l'éditeur, Ouvrir dans Requêtes (la requête guidée est chargée dans le constructeur), shapes à appliquer. Une opération invalide ou une référence inconnue est retirée avec un avertissement : rien n'est inventé.
+  ![Krakie propose d'ajouter une classe : carte d'action avec aperçu des modifications et bouton Appliquer](img/fr/krakie-carte-action.png "Une carte d'action (1) : un aperçu, et rien n'est modifié avant Appliquer.")
 - Conversation : partagée avec l'écran Assistant (même historique par projet). Vous choisissez le fournisseur dans le panneau.
 - Intentions comprises sans LLM (fournisseur `mock` ou non configuré), en français :
   - « ajoute la classe X [sous Y] [avec une propriété p [en unité] [de type T]] » ;
@@ -365,24 +424,28 @@ Krakie est présente sur tous les écrans du projet (L16), en plus de l'écran p
   Toute autre phrase retombe sur l'ancien chat (proposition automobile du mock).
 - Avec un fournisseur réel, le modèle propose des actions (opérations, proposition, shapes, requête guidée, navigation) validées de la même manière. Ce chemin n'a pas été éprouvé sur un vrai modèle (voir `limites.md`).
 
-## 13. Paramètres {#parametres}
+## 14. Paramètres {#parametres}
 
 Route globale `#/parametres` (engrenage en bas du menu), quatre onglets ; chaque onglet s'enregistre explicitement (« Enregistré »).
 
-![Fournisseurs LLM](../../journal/L8/screens/01-llm.png)
+![Paramètres, onglet Fournisseurs LLM : fournisseur de démonstration et fournisseur avec clé factice masquée](img/fr/parametres-llm.png "Les fournisseurs LLM (1) : la clé n'est jamais réaffichée, seuls ses quatre derniers caractères.")
 
 - LLM : un tableau de fournisseurs (nom, type, modèle, URL, clé affichée « •••• abcd »). Types : `anthropic`, `openai_compat` (Azure OpenAI, vLLM, LM Studio…), `ollama`, `mock` (toujours présent, non supprimable). Un fournisseur par défaut, un bouton Tester (latence, modèle, message ; 15 s). La clé est chiffrée sur le serveur et jamais renvoyée au navigateur : on ne peut que la remplacer ou la supprimer. Pour tester un nouveau fournisseur, enregistrez-le d'abord.
 - Langues : interface (fr/en, appliquée immédiatement), langue des labels (affichage du graphe et des listes), langue de l'assistant.
+  ![Paramètres, onglet Langues : interface, libellés, assistant](img/fr/parametres-langues.png "Les trois langues : interface, libellés, assistant.")
 - Défauts : IRI de base (utilisée par l'assistant pour ses brouillons), préfixes (table éditable), cible par défaut, conventions de nommage.
+  ![Paramètres, onglet Valeurs par défaut : IRI de base, cible, nommage, préfixes](img/fr/parametres-defauts.png "Les valeurs par défaut.")
 - Endpoints SPARQL : plusieurs endpoints (nom, URL, authentification aucune / basic / bearer, secret masqué et chiffré, graphe par défaut, délai 1-300 s), Tester (`ASK {}`), un actif à la fois, suppression confirmée.
 
-![Endpoints SPARQL](../../journal/L8/screens/07-endpoints.png)
+![Paramètres, onglet Endpoints SPARQL : un endpoint actif avec son URL, son délai et les boutons Tester, Modifier, Supprimer](img/fr/parametres-endpoints.png "Les endpoints SPARQL.")
 
 Les variables d'environnement (`ONTOFORGE_LLM_PROVIDER`, `ANTHROPIC_API_KEY`…) ne servent qu'à initialiser `settings.json` au premier démarrage.
 
-## Versions des normes et des cibles {#versions-des-normes-et-des-cibles}
+## 15. Versions des normes et des cibles {#versions-des-normes-et-des-cibles}
 
 L'écran Versions (étape Générer) règle les versions que visent les générateurs : Neo4j, Cypher, Curiosity.Library, SHACL, SPARQL et RDF. Chaque version porte un statut tiré de la référence embarquée (`standards.json`) : recommandée, supportée, obsolète ou fin de support. Rien n'est lu sur Internet.
+
+![Écran Versions : choix des versions de Neo4j, Cypher, Curiosity.Library, SHACL, SPARQL et RDF avec leur statut](img/fr/versions-ecran.png "L'écran Versions.")
 
 - Défaut global : Paramètres, onglet Versions. Un projet qui n'a rien fixé le suit, y compris les projets créés avant ce réglage. Les valeurs d'usine sont Neo4j 5.26 (LTS), Cypher 5, Curiosity.Library 26.11.7740, SHACL 1.0, SPARQL 1.1, RDF 1.1.
 - Par projet : sélecteurs de l'écran Versions ; « Défaut global » ramène une famille au défaut.
@@ -395,21 +458,25 @@ Krakie répond à « quelles versions ? » (« which versions? ») et propose un
 
 À l'ouverture d'un projet dont une version est obsolète ou en fin de support, Krakie l'annonce une fois par session dans une bulle discrète ; « Plus tard » est mémorisé pour ce projet jusqu'à la prochaine mise à jour de la référence.
 
-## Documentation intégrée et aide {#documentation-integree-et-aide}
+## 16. Documentation intégrée et aide {#documentation-integree-et-aide}
 
 Le guide est embarqué dans l'application (L28) : il se lit hors ligne et correspond toujours à la version installée, car il est compilé avec le front à partir de `docs/guide/*.md`.
 
 - Ouvrir : entrée Documentation de la section Outils du bandeau latéral, ou bouton « ? » de l'en-tête de chaque écran de projet. Le bouton ouvre directement la section qui décrit l'écran courant.
 - Lire : sommaire à gauche (replié derrière le bouton « Sommaire » sur mobile), liste des pages du guide au-dessus (utilisateur, limites, contribuer, API, architecture, règles, glossaire, journal des versions). Les titres, tableaux, blocs de code colorés et liens sont rendus ; les liens vers un autre fichier `.md` du guide ouvrent la page correspondante dans l'écran.
+  ![Écran Documentation : liste des pages du guide, champ de recherche et sommaire à gauche, texte à droite](img/fr/documentation.png "La documentation intégrée : 1 les pages du guide, 2 la recherche, 3 le sommaire.")
 - Chercher : le champ de recherche surligne les occurrences dans la page affichée et donne leur nombre ; Entrée et Maj+Entrée passent à la suivante ou à la précédente, Échap efface.
 - Adresse stable : `#/projet/<id>/documentation/<page>/<ancre>`. L'ancre est écrite explicitement en fin de titre dans les fichiers traduits (`## 8. Analyse & arbitrage {#analyse-arbitrage}`), donc elle ne change pas quand on renumérote ou reformule un titre. Sans `{#id}`, l'ancre est le titre sans accents ni numéro de section.
 - Langue : si une version anglaise d'un fichier existe (`<nom>.en.md`), elle s'affiche quand l'interface est en anglais. Sinon la version française s'affiche avec le bandeau « Documentation available in French only ». Les pages utilisateur, limites, contribuer, API et journal des versions existent en anglais. Les fichiers français et anglais d'une page portent les mêmes ancres `{#id}` : le bouton « ? » et Krakie ouvrent la bonne section dans les deux langues.
 - Krakie : les demandes « aide », « comment ça marche ici », « doc » (en anglais « help », « how does this work ») renvoient une carte Aide avec le titre de la section de l'écran courant, un résumé de deux ou trois lignes et le bouton « Ouvrir l'aide ».
+  ![Carte d'aide de Krakie : titre de la section du guide pour l'écran courant et bouton Ouvrir l'aide](img/fr/krakie-aide.png "La carte d'aide : 1 le bouton qui ouvre la bonne section du guide.")
 - Pour les mainteneurs : la correspondance écran vers section vit dans `backend/ontoforge/assistant/help_map.json` ; `backend/tests/test_help_map.py` vérifie que chaque ancre existe dans le guide français et dans sa version `.en.md`. Un nouveau fichier dans `docs/guide/` apparaît tout seul dans l'écran à la prochaine compilation.
 
-## Visite guidée {#visite-guidee}
+## 17. Visite guidée {#visite-guidee}
 
 Krakie peut vous faire le tour de l'outil en 20 étapes (environ 5 minutes) : l'écran s'assombrit, l'élément expliqué est entouré d'un halo teal et une bulle dit à quoi il sert. La visite suit le parcours Concevoir → Vérifier → Transposer → Générer sur le projet de démo automaint.
+
+![Visite guidée : écran assombri, bulle de Krakie qui explique l'éditeur graphique](img/fr/visite-guidee.png "Une étape de la visite guidée : la bulle de Krakie explique l'élément entouré.")
 
 - Lancer : bouton route (« Visite guidée ») dans la barre du haut, carte « Découvrir OntoForge » du tableau de bord, ou proposition affichée à la première ouverture d'un projet. Sans projet ouvert, la visite propose de créer le projet de démo « Démo automaint ».
 - Naviguer : boutons Précédent / Suivant, ou touches ← et →. Échap ou « Passer la visite » ferme la visite ; elle ne se reproposera plus (mémorisé dans le navigateur, clé `ontoforge.tour.done`).
@@ -417,11 +484,11 @@ Krakie peut vous faire le tour de l'outil en 20 étapes (environ 5 minutes) : l'
 - Lien direct : ajouter `?tour=1` à l'adresse, par exemple `#/projet/<id>/tableau?tour=1`.
 - Enregistrement vidéo : `window.ontoforgeTour.start()` (ou `start({ demo: true })` pour créer la démo sans demander), `goto(i)`, `next()`, `prev()`, `stop()` et `state()`.
 
-## Easter egg {#easter-egg}
+## 18. Easter egg {#easter-egg}
 
 OntoForge cache un petit jeu avec Krakie. Il n'a aucun lien avec le travail sur les ontologies et ne touche à aucune donnée de vos projets. Un indice discret est caché dans la page Paramètres : à vous de le trouver. Le jeu se joue au clavier ou au doigt, se met en pause tout seul quand l'onglet est masqué, respecte la préférence « réduire les animations » et se quitte avec Échap.
 
-## 14. Un exemple de bout en bout (10 minutes) {#un-exemple-de-bout-en-bout-10-minutes}
+## 19. Un exemple de bout en bout (10 minutes) {#un-exemple-de-bout-en-bout-10-minutes}
 
 1. Projets → « Nouveau projet » depuis automaint ; le tableau de bord s'ouvre.
 2. Ontologie : repérer le graphe, double-cliquer sur le fond pour créer une classe, Ctrl+Z pour annuler ; créer un périmètre depuis deux classes.
@@ -431,7 +498,7 @@ OntoForge cache un petit jeu avec Krakie. Il n'a aucun lien avec le travail sur 
 6. Requêtes : « véhicules réparés par Camille » → ajuster la phrase → Exécuter → graphe.
 7. Assistant : déposer un CSV, lancer le brouillon, accepter deux éléments, Voir dans l'éditeur.
 
-## 15. Aller plus loin {#aller-plus-loin}
+## 20. Aller plus loin {#aller-plus-loin}
 
 - Comprendre une règle : [`regles.md`](regles.md) ; vocabulaire : [`glossaire.md`](glossaire.md).
 - Ce que l'outil ne fait pas (encore) : [`limites.md`](limites.md).

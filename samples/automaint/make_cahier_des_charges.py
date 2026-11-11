@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
-"""Génère samples/automaint/automaint-cahier-des-charges.pdf : un cahier des charges de maintenance automobile, 2 pages, en français.
+"""Génère le document de démonstration de l'import : un cahier des charges de maintenance automobile, 2 pages.
 
-Usage : python samples/automaint/make_cahier_des_charges.py [sortie.pdf]
+- français (défaut) : samples/automaint/automaint-cahier-des-charges.pdf ;
+- anglais (``--lang en``) : samples/automaint/automaint-requirements.pdf.
+
+Usage : python samples/automaint/make_cahier_des_charges.py [--lang fr|en] [sortie.pdf]
 Utilise reportlab s'il est installé ; sinon écrit un PDF minimal à la main (Helvetica, texte natif, aucune dépendance).
 Le texte est volontairement générique : aucune donnée d'entreprise réelle.
 """
@@ -39,6 +42,37 @@ PAGES = [
      (P, "Quel mécanicien a réalisé chaque intervention ?"),
      (P, "Quelles voitures ont dépassé 100 000 kilomètres ?")],
 ]
+
+
+PAGES_EN = [
+    [(B, "Requirements specification: car maintenance tracking"),
+     (P, "Version 1.0 - Application for Martin Garage"),
+     (H, "1. Context"),
+     (P, "Martin Garage wants to track the servicing of its customers' vehicles. A Garage receives several "
+         "Vehicles every day and carries out maintenance jobs. The application must replace the paper binder."),
+     (H, "2. Definitions"),
+     (P, "Vehicle: road machine entrusted to the garage for servicing or repair."),
+     (P, "Garage: workshop that receives vehicles and employs mechanics."),
+     (P, "Tyre: rubber part fitted on a wheel of the vehicle."),
+     (P, "Technical inspection: statutory inspection of a vehicle."),
+     (H, "3. Requirements on vehicles"),
+     (P, "A Vehicle has a VIN number, a plate, a mileage and a purchase date. A Vehicle is fitted with Tyres."),
+     (P, "A Sedan is a light Vehicle. A Sedan has a fiscal horsepower. A Truck is a heavy Vehicle.")],
+    [(H, "4. Tyres"),
+     (P, "A Tyre is a Part. A Tyre has a reference, a size, a pressure and a manufacturing date. "
+         "The Garage replaces the Tyre when the tread depth is insufficient."),
+     (H, "5. Technical inspection"),
+     (P, "The Technical inspection is mandatory every two years. A Technical inspection concerns a Vehicle."),
+     (P, "A Technical inspection has a date, a result and an approved centre."),
+     (H, "6. Competency questions"),
+     (P, "Which vehicles have a technical inspection to renew this month?"),
+     (P, "Which tyres are fitted on a given vehicle?"),
+     (P, "What is the date of the last technical inspection of a vehicle?"),
+     (P, "Which mechanic carried out each job?"),
+     (P, "Which sedans exceed 100,000 kilometres?")],
+]
+PAGES_BY_LANG = {"fr": PAGES, "en": PAGES_EN}
+FILENAMES = {"fr": "automaint-cahier-des-charges.pdf", "en": "automaint-requirements.pdf"}
 
 
 def _esc(s: str) -> bytes:
@@ -112,15 +146,24 @@ def build_with_reportlab(pages=PAGES) -> bytes:
     return bio.getvalue()
 
 
-def make(path: pathlib.Path) -> None:
+def make(path: pathlib.Path, lang: str = "fr") -> None:
+    pages = PAGES_BY_LANG[lang]
     try:
-        data = build_with_reportlab()
+        data = build_with_reportlab(pages)
     except ImportError:
-        data = build_pdf()
+        data = build_pdf(pages)
     path.write_bytes(data)
 
 
 if __name__ == "__main__":
-    out = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else pathlib.Path(__file__).with_name("automaint-cahier-des-charges.pdf")
-    make(out)
+    args = sys.argv[1:]
+    lang = "fr"
+    if "--lang" in args:
+        k = args.index("--lang")
+        lang = args[k + 1] if k + 1 < len(args) else ""
+        del args[k:k + 2]
+    if lang not in PAGES_BY_LANG:
+        sys.exit("--lang doit valoir fr ou en / --lang must be fr or en")
+    out = pathlib.Path(args[0]) if args else pathlib.Path(__file__).with_name(FILENAMES[lang])
+    make(out, lang)
     print(out, out.stat().st_size, "octets")

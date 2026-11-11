@@ -744,9 +744,11 @@ Fichiers de la cible + `schema.graphql` + `README-graphql.md` + `rapport-transpo
 
 Pour Neo4j : `README-neo4j.md`, `ingest.cypher`, `model.mmd`, `schema.cypher`, `validation.cypher`, `schema.graphql`, `README-graphql.md`, `rapport-transposition.md`.
 
+**Langue des fichiers** : paramètre optionnel `?lang=fr|en` (422 si autre valeur). Sans lui, la langue de l'interface (`settings.language.ui`). Elle règle les commentaires, en-têtes, README, messages d'exécution du connecteur et le rapport de transposition. Le code (identifiants, noms de types, d'arêtes et de propriétés) et les libellés ou commentaires de l'ontologie ne sont jamais traduits : ce sont des données.
+
 ### `GET /api/projects/{pid}/generate/{target}/zip` {#get-api-projects-pid-generate-target-zip}
 
-Les mêmes fichiers en archive. En-têtes réels : `content-type: application/zip`, `content-disposition: attachment; filename="<pid>-neo4j.zip"`.
+Les mêmes fichiers en archive (même paramètre `?lang=fr|en`). En-têtes réels : `content-type: application/zip`, `content-disposition: attachment; filename="<pid>-neo4j.zip"`.
 
 ## Requêtes {#requetes}
 
@@ -1014,7 +1016,7 @@ curl -s -X POST $B/api/projects/$P/ops -H 'content-type: application/json' -d '{
 # → {"ok":true,"project":{…},"applied":1,"errors":[],"warnings":[],"can_undo":true,"can_redo":false}
 ```
 
-`POST /ops` est tout ou rien : en cas d'erreur, HTTP **200** avec `ok=false`, `errors: [{index, message}]` et projet inchangé (500 opérations max par appel). Liste des opérations et règles de validation (IRI absolue, pas de cycle, propriétés simples, datatypes de la carte OWL 2…) : CONTRACTS §5. `POST /ops/undo` et `/ops/redo` répondent comme `/ops` plus `label` (409 si la pile est vide) ; `GET /ops/history` donne `{undo, redo, limit: 200, can_undo, can_redo}`.
+`POST /ops` est tout ou rien : en cas d'erreur, HTTP **200** avec `ok=false`, `errors: [{index, message}]` et projet inchangé (500 opérations max par appel). Les messages suivent la langue de l'interface. Une sous-classe qui fermerait un cycle est refusée (« Cycle de sous-classes : … fermerait la boucle », avec le chemin) ; `POST /dsl` fait de même et renvoie la ligne en erreur. Liste des opérations et règles de validation (IRI absolue, pas de cycle, propriétés simples, datatypes de la carte OWL 2…) : CONTRACTS §5. `POST /ops/undo` et `/ops/redo` répondent comme `/ops` plus `label` (409 si la pile est vide) ; `GET /ops/history` donne `{undo, redo, limit: 200, can_undo, can_redo}`.
 
 `GET /api/projects/{pid}/graph?perimeter=&lang=fr&include=datatypes,individuals` → `{nodes, edges, skipped}` (nœuds `{id, label, kind, icon, position, abstract, deprecated, collapsed}` ; arêtes `{id, source, target, kind, label, iri}`, `id = kind|iri|source|target`, tri stable). `GET /api/icons?q=` → `{icons:[{id:"fa-car", style, label:{fr,en}, keywords}], total}` (recherche insensible aux accents).
 

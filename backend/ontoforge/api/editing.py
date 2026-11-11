@@ -6,6 +6,7 @@ from typing import Any, Optional
 from fastapi import APIRouter, Body, HTTPException, Query
 from pydantic import BaseModel, Field
 
+from .. import localize
 from ..core.project import Perimeter, Project
 from ..editing import graph as graph_mod
 from ..editing import history, icons as icon_catalog
@@ -29,7 +30,8 @@ def icons(q: Optional[str] = Query(None)) -> dict:
 
 def _result(p: Project, *, ok: bool, applied: int, errors: list, warnings: list, label: Optional[str] = None) -> dict:
     st = history.status(p.id)
-    return {"ok": ok, "project": dump(p), "applied": applied, "errors": errors, "warnings": warnings,
+    lang = localize.ui_lang()  # erreurs et avertissements d'opérations dans la langue de l'interface
+    return {"ok": ok, "project": dump(p), "applied": applied, "errors": localize.tr_deep(errors, lang), "warnings": localize.tr_deep(warnings, lang),
             "can_undo": st["can_undo"], "can_redo": st["can_redo"], **({"label": label} if label else {})}
 
 

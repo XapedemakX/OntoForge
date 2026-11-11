@@ -89,8 +89,28 @@ def analyze(onto: OntoModel, shapes: Optional[ShapesModel], target: Target,
     individuals.finalize_reference_nodes(ctx)
     for f in naming.finalize(ctx):
         ctx.findings.setdefault(f.id, f)
+    for f in _cycle_notes(ctx):
+        ctx.findings.setdefault(f.id, f)
     _finalize(ctx)
     return ctx.pg
+
+
+def _cycle_notes(ctx: Ctx) -> list:
+    """Constats d'information BP03 : cycles de sous-classes déjà présents (import, ancien projet). Jamais une erreur."""
+    from ..core.pg_model import Finding
+    from ..editing.cycles import find_cycles
+    out = []
+    for cyc in find_cycles(ctx.onto):
+        names = ", ".join(ctx.short(x) for x in cyc)
+        detail = (f"La classe {names} est déclarée sous-classe d'elle-même : en OWL 2 cet axiome est sans effet. Retirez-le." if len(cyc) == 1 else
+                  f"Les classes {names} forment un cycle de sous-classes : en OWL 2 elles sont équivalentes entre elles. "
+                  "Le moteur les transpose chacune comme un type de nœud propre, sans héritage aplati entre elles. "
+                  "Corrigez le cycle (retirez une des sous-classes) ou déclarez une équivalence explicite.")
+        out.append(Finding(
+            id=f"BP03:{cyc[0]}", rule="BP03", severity="info", title="Cycle de sous-classes",
+            detail=detail,
+            subject=cyc[0], related=cyc[1:]))
+    return out
 
 
 def _finalize(ctx: Ctx) -> None:

@@ -22,7 +22,7 @@ STOP_CAP = {"le", "la", "les", "un", "une", "des", "ce", "cette", "ces", "il", "
             "lorsque", "quand", "si", "dans", "pour", "par", "sur", "avec", "sans", "selon", "afin", "ainsi", "cela", "ceci", "mais", "donc", "or", "ni", "car", "et", "ou",
             "the", "a", "an", "this", "that", "these", "those", "each", "every", "when", "if", "in", "for", "by", "on", "with", "without", "according", "and", "or", "but",
             "chapitre", "article", "section", "annexe", "page", "objet", "contexte", "objectifs", "objectif", "questions", "question", "glossaire", "definitions", "définitions",
-            "exigences", "exigence", "perimetre", "périmètre", "introduction", "conclusion", "cahier", "charges", "version", "date", "auteur", "client", "titre"}
+            "exigences", "exigence", "requirements", "requirement", "specification", "scope", "perimetre", "périmètre", "introduction", "conclusion", "cahier", "charges", "version", "date", "auteur", "client", "titre"}
 LOWER_JOIN = {"de", "du", "des", "d", "la", "le", "les", "et", "ou", "of", "the", "and"}
 
 DET = r"(?:un|une|le|la|l'|l’|les|des|chaque|tout|toute|son|sa|ses|plusieurs|a|an|the|each|every|its|his|her|their|one|any|some)"
@@ -338,7 +338,10 @@ def template_questions(draft: dict[str, Any], lang: str) -> list[str]:
 
 def questions(segs: Segments, lang: str) -> list[str]:
     """5 à 10 questions : celles du document d'abord, complétées par des modèles de questions tirés des termes extraits."""
-    qs = doc_questions(segs)
+    # Les questions que le document pose lui-même sont gardées s'il est dans la langue de l'interface ; sinon des questions
+    # modèles dans cette langue (les libellés extraits restent ceux du document : ce sont des données).
+    same = detect_lang("\n".join(t for _, t in segs)) == lang
+    qs = doc_questions(segs) if same else []
     if len(qs) < 5:
         extra = template_questions(extract(segs), lang)
         # on alterne les formes (hiérarchie, attributs, relations) plutôt que d'enchaîner dix attributs

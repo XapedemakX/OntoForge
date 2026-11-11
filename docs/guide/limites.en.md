@@ -1,11 +1,13 @@
-# FAQ: known limits (iteration 2) {#faq-des-limites-connues-iteration-2}
+# FAQ: known limits {#faq-des-limites-connues-iteration-2}
 
-Each answer cites its source (work package report, review, decision or code). Anything the code does not settle is an open question in `journal/doc/questions.md` (identifiers `Q-DOC-nn`). State as of 4 November 2026, iteration 2 update (work package L14). The documentation writer did not rerun the tests (httpx missing): 528 green according to `journal/L15/review-curiosity-it1.md`.
+Each answer cites its source (work package report, review, decision or code). Anything the code does not settle is an open question in `journal/doc/questions.md` (identifiers `Q-DOC-nn`). State as of work package L34 (11 November 2026). Backend tests rerun on that date: 990 green.
 
 ## Generated code: what is verified? {#code-genere-qu-est-ce-qui-est-verifie}
 
 **Does the Curiosity C# code compile?**
 Not verified. There is no .NET SDK in the build environment. The C# syntax is checked by tree-sitter (D-038), not by a compiler. Calls to `Curiosity.Library` that are not confirmed carry the `À VÉRIFIER` mark in the code: the return value of `AddOrUpdate`, `Link(a, b, X, X)` for a symmetric edge, `SetAutoCommitCost`, the `Node` type, `T[]` arrays and indexing. The script `tools/dotnet/check-curiosity.ps1` (a temporary net8.0 project plus `dotnet build`) lets you check this yourself. It has not been run (no SDK, no Windows), and the exact name of the NuGet package is still to be confirmed (`journal/L13/rapport.md`). See Q-DOC-01.
+
+![Generated Connector.cs file: unconfirmed calls are marked TO VERIFY in the comments](img/en/limites-a-verifier.png "Unconfirmed Curiosity.Library calls carry the “TO VERIFY” mark.")
 
 **Has the Neo4j Cypher been executed?**
 No, not on any real database (question Q-02 in `journal/questions-jerem.md`). The forms are those of Neo4j 5. Points to check: relationship uniqueness in Community (assumed 5.7+), `CALL (row) { … } IN TRANSACTIONS` (variable scope, 5.23+), and the names of n10s and APOC procedures and options (`apoc.refactor.mergeNodes`) (`journal/L4/rapport-neo4j.md`). See Q-DOC-02.
@@ -37,7 +39,7 @@ Resolved in L13: I01 is no longer emitted for a member of `owl:oneOf` (carried b
 D-L15-01: under a merged abstract class (C04 `merge_into_leaves`), the ancestor's properties and relations are copied into each concrete leaf. Technician, Garage, Customer and Brand remain distinct types with `DisplayName`. The fallback with a discriminator (`PartyKind`, `VehicleKind`) applies only under a concrete root. `Party` stays a concrete type on automaint. Projects analysed before this fix keep the old model, so rerun the analysis. The query translator keeps the discriminator filter.
 
 **Are defined classes, general axioms and property chains transposed?**
-No, they cannot be. They are inference rules with no equivalent in a property graph (rules C06, C09, C11, C13, O08...). Depending on your decision, each becomes a boolean computed at ingestion, a classification or path query, a materialisation, or a simple line in the report (`doc_only`). See [`regles.md`](regles.md).
+No, they cannot be. They are inference rules with no equivalent in a property graph (rules C06, C09, C11, C13, O08...). Depending on your decision, each becomes a boolean computed at ingestion, a classification or path query, a materialisation, or a simple line in the report (`doc_only`). See [`regles.en.md`](regles.en.md).
 
 **Can the tool make a `lost` finding lossless?**
 No. `lost` means no option is lossless for the data. Only compensation (validation, materialisation, query) limits the damage, and the transposition report says which one applies.
@@ -79,6 +81,8 @@ It is embedded in the front end: the API does not expose it (no help `GET`). It 
 
 **What are the limits of the graphical editor?**
 (`journal/L9/rapport-front.md`, `rapport-backend.md`.) Moving a node creates an undo entry. Quick input cannot be undone. A class created while a perimeter is active is not added to it. Data properties and equivalences are not drawn as edges. An object property with several domains/ranges gives one edge per pair (deleting it deletes the whole property). Undo restores the entry's fields even if a `PUT` outside the editor happened in the meantime. Deleting an entity does not clean up the shapes (warning). There is no inter-process lock (single worker). The icon catalogue holds 80 Font Awesome icons (names to confirm against the bundled version, `À VÉRIFIER`). On mobile, read-only. The Shapes screen in the path is a "coming soon" placeholder; shapes are managed in the SHACL screen.
+
+![Graphical editor on a phone screen: view only, collapsed menu](img/en/limites-mobile.png "The editor on mobile: view only, no editing.")
 
 **Are perimeters safe?**
 They filter classes, properties (domain and range entirely inside the perimeter), restrictions, keys, individuals and shapes. Each cut produces an information finding P01 to P03. These findings are emitted with the `auto` severity (the `info` level accepted by D-L9-02 is not yet in `core/pg_model.py`) and so inflate the "auto" counter. `OntClass.abstract` does not exist yet: the editor infers "abstract" from a disjoint union or from the `urn:ontoforge:abstract` annotation. A class's icon is not passed to the target model (`NodeType.icon` is planned).

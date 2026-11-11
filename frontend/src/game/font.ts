@@ -11,8 +11,8 @@ const G: Record<string, number[]> = {
   '/': [1, 1, 2, 4, 4], '+': [0, 2, 7, 2, 0], '>': [4, 2, 1, 2, 4], '<': [1, 2, 4, 2, 1], ' ': [0, 0, 0, 0, 0],
 }
 
-/** Majuscules ASCII sans accents (la police n'a pas de diacritiques). */
-export const norm = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase()
+/** Majuscules ASCII sans accents (la police n'a pas de diacritiques). Un nom camelCase est coupé en mots : doneBy → « DONE BY ». */
+export const norm = (s: string) => s.replace(/([a-z0-9])([A-Z])/g, '$1 $2').normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase()
 export const textWidth = (s: string) => Math.max(0, s.length * 4 - 1)
 
 const cache = new Map<string, HTMLCanvasElement>()

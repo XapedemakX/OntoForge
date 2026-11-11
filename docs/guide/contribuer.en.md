@@ -78,19 +78,23 @@ A skill (`skills/<name>/SKILL.md`, frontmatter `name` / `description`) is a reus
 
 ```bash
 cd backend && python -m venv .venv && . .venv/bin/activate && pip install -e ".[dev]"
-ONTOFORGE_LLM_PROVIDER=mock uvicorn ontoforge.main:app --port 8000   # API sur :8000, /docs
-pytest -q                                                             # 462 tests (3 nov. 2026)
+ONTOFORGE_LLM_PROVIDER=mock uvicorn ontoforge.main:app --port 8000   # API on :8000, /docs
+pytest -q                                                             # 462 tests (3 Nov 2026)
 cd ../frontend && npm install && npm run dev                          # http://localhost:5173, proxy /api → :8000
-npm run build                                                         # doit rester vert
+npm run build                                                         # must stay green
 ```
 
-Test conventions: `backend/tests/test_<module>.py`, fixtures in `samples/`, no network access (`mock` provider). Generators are tested for determinism, invariants and allowed forms, not with golden files (D-038). To add or change a transposition rule, edit `mapping/rules/catalog.py` (single source), then the detection in the matching family module, then the oracle if the expected behaviour changes, then regenerate `docs/RULES.md`. The documentation writer updates [`regles.md`](regles.md).
+Test conventions: `backend/tests/test_<module>.py`, fixtures in `samples/`, no network access (`mock` provider). Generators are tested for determinism, invariants and allowed forms, not with golden files (D-038). To add or change a transposition rule, edit `mapping/rules/catalog.py` (single source), then the detection in the matching family module, then the oracle if the expected behaviour changes, then regenerate `docs/RULES.md`. The documentation writer updates [`regles.en.md`](regles.en.md).
 
 ## 8. Documentation: the definition of "done" {#documentation-definition-de-termine}
 
-Since iteration 2, a work package is closed only if the documentation reflects it: `journal/<lot>/doc-ok.md`, written by the documentation writer after checking against the code or a test (each statement cites its source). The guide lives in `docs/guide/`: [`utilisateur.md`](utilisateur.md), [`architecture.md`](architecture.md), [`api.md`](api.md), [`regles.md`](regles.md), [`glossaire.md`](glossaire.md), [`limites.md`](limites.md), [`CHANGELOG.md`](CHANGELOG.md) and this file. `api.md` is generated from the FastAPI application (`app.openapi()`) and completed with real examples.
+Since iteration 2, a work package is closed only if the documentation reflects it: `journal/<lot>/doc-ok.md`, written by the documentation writer after checking against the code or a test (each statement cites its source). The guide lives in `docs/guide/`: [`utilisateur.en.md`](utilisateur.en.md), [`architecture.en.md`](architecture.en.md), [`api.en.md`](api.en.md), [`regles.en.md`](regles.en.md), [`glossaire.en.md`](glossaire.en.md), [`limites.en.md`](limites.en.md), [`CHANGELOG.en.md`](CHANGELOG.en.md) and this file. `api.en.md` is generated from the FastAPI application (`app.openapi()`) and completed with real examples.
 
 Each heading of a translated file ends with an explicit `{#id}`. A page's `<name>.md` and `<name>.en.md` files use the same ids, because the "?" button, Krakie and `help_map.json` point to `page#id`. Translate the heading text, never the id. `backend/tests/test_help_map.py` fails if the French and English anchors differ. `tools/doc_ids.py` adds the ids to a French file that has none.
+
+**Screenshots.** The guide's images live in `docs/guide/img/fr/` and `docs/guide/img/en/` (one per screen and per language, same names). They are never touched up by hand: `node tools/docs/captures.mjs` regenerates all of them, after `cd frontend && npm run build` (see `journal/L34/rapport-captures.md`). A work package that changes a screen described in the guide reruns the command, looks at a few screenshots in both languages and commits the images with the text. They are embedded in the application: separate files loaded on demand, one click enlarges them.
+
+![Documentation screen: guide pages, search field and contents on the left, text on the right](img/en/documentation.png "The built-in documentation: 1 the guide pages, 2 the search, 3 the contents.")
 
 ## 9. Versioning, publishing and CI (`git` agent) {#versionnage-publication-et-ci-agent-git}
 
@@ -104,8 +108,8 @@ Two repositories coexist: the working repository (`/home/claude/OntoForge`, heav
 ### Publishing with `tools/git/publish.sh` {#publication-avec-tools-git-publish-sh}
 
 ```bash
-tools/git/publish.sh "Lot L22 : éditeur de fichiers"          # commit local dans le clone, pas de push
-tools/git/publish.sh "Lot L22 : éditeur de fichiers" --push   # idem puis git push origin main
+tools/git/publish.sh "Work package L22: file editor"          # local commit in the clone, no push
+tools/git/publish.sh "Work package L22: file editor" --push   # same, then git push origin main
 ```
 
 The script:
@@ -120,7 +124,7 @@ To undo a trial commit: `git -C /home/claude/ontoforge-pub reset --hard HEAD~1` 
 
 ### Version tags {#tags-de-version}
 
-One `vX.Y.Z` tag per delivery, set on the publication clone after the push (`git tag -a v0.2.0 -m "Itération 2"` then `git push origin v0.2.0`). Release notes come from [`CHANGELOG.md`](CHANGELOG.md): add the version's entry before tagging, and keep the version in `backend/pyproject.toml` aligned.
+One `vX.Y.Z` tag per delivery, set on the publication clone after the push (`git tag -a v0.2.0 -m "Itération 2"` then `git push origin v0.2.0`). Release notes come from [`CHANGELOG.en.md`](CHANGELOG.en.md): add the version's entry before tagging, and keep the version in `backend/pyproject.toml` aligned.
 
 ### Continuous integration {#integration-continue}
 

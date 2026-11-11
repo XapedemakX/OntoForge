@@ -72,3 +72,18 @@ mark.doc-hit.cur { background: var(--lanterne); outline: 2px solid var(--review)
 }
 
 .doc-fig { display: block; margin: 12px 0; padding: 8px 12px; border: 1px dashed var(--border, #9993); border-radius: 6px; font-size: 13px; opacity: .75; }
+
+/* captures du guide (L34c) : fichiers séparés, chargés à la demande ; clic = visionneuse */
+.doc-figure { display: block; margin: 14px 0 20px; }
+.doc-img { display: block; max-width: 100%; height: auto; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--panel2); cursor: zoom-in; box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,.08)); }
+.doc-img:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.doc-figcap { display: block; margin-top: 6px; font-size: 13px; line-height: 1.4; color: var(--muted); }
+.doc-zoom { position: fixed; inset: 0; z-index: 200; display: flex; flex-direction: column; background: rgba(10, 16, 24, .86); overscroll-behavior: contain; }
+.doc-zoom-x { position: absolute; top: 10px; right: 12px; z-index: 2; background: var(--panel); }
+.doc-zoom-scroll { flex: 1; min-height: 0; overflow: auto; display: flex; align-items: center; justify-content: center; padding: 48px 16px 8px; }
+.doc-zoom-scroll img { max-width: 100%; max-height: 100%; width: auto; height: auto; background: #fff; border-radius: var(--r-md); box-shadow: 0 6px 30px rgba(0,0,0,.5); cursor: zoom-in; object-fit: contain; }
+.doc-zoom-scroll.actual { align-items: flex-start; justify-content: flex-start; }
+.doc-zoom-scroll.actual img { max-width: none; max-height: none; cursor: zoom-out; margin: auto; }
+.doc-zoom-cap { margin: 0; padding: 8px 56px 14px; text-align: center; color: #fff; font-size: 13px; }
+.doc-zoom-cap .muted { color: #c5cdd8; }
+@media (max-width: 899px) { .doc-zoom-scroll { padding: 52px 6px 4px; } .doc-zoom-cap { padding: 6px 12px 12px; } }

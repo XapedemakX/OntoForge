@@ -1,0 +1,77 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [4 0 R 6 0 R] /Count 2 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+4 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 8 0 R >> >> /Contents 5 0 R >>
+endobj
+5 0 obj
+<< /Length 1280 >>
+stream
+BT
+/F2 15 Tf 1 0 0 1 56 790 Tm (Requirements specification: car maintenance tracking) Tj
+/F1 11 Tf 1 0 0 1 56 764 Tm (Version 1.0 - Application for Martin Garage) Tj
+/F2 12 Tf 1 0 0 1 56 736 Tm (1. Context) Tj
+/F1 11 Tf 1 0 0 1 56 714 Tm (Martin Garage wants to track the servicing of its customers' vehicles. A Garage receives) Tj
+/F1 11 Tf 1 0 0 1 56 699 Tm (several Vehicles every day and carries out maintenance jobs. The application must) Tj
+/F1 11 Tf 1 0 0 1 56 684 Tm (replace the paper binder.) Tj
+/F2 12 Tf 1 0 0 1 56 656 Tm (2. Definitions) Tj
+/F1 11 Tf 1 0 0 1 56 634 Tm (Vehicle: road machine entrusted to the garage for servicing or repair.) Tj
+/F1 11 Tf 1 0 0 1 56 614 Tm (Garage: workshop that receives vehicles and employs mechanics.) Tj
+/F1 11 Tf 1 0 0 1 56 594 Tm (Tyre: rubber part fitted on a wheel of the vehicle.) Tj
+/F1 11 Tf 1 0 0 1 56 574 Tm (Technical inspection: statutory inspection of a vehicle.) Tj
+/F2 12 Tf 1 0 0 1 56 546 Tm (3. Requirements on vehicles) Tj
+/F1 11 Tf 1 0 0 1 56 524 Tm (A Vehicle has a VIN number, a plate, a mileage and a purchase date. A Vehicle is fitted) Tj
+/F1 11 Tf 1 0 0 1 56 509 Tm (with Tyres.) Tj
+/F1 11 Tf 1 0 0 1 56 489 Tm (A Sedan is a light Vehicle. A Sedan has a fiscal horsepower. A Truck is a heavy Vehicle.) Tj
+ET
+endstream
+endobj
+6 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 8 0 R >> >> /Contents 7 0 R >>
+endobj
+7 0 obj
+<< /Length 1059 >>
+stream
+BT
+/F2 12 Tf 1 0 0 1 56 782 Tm (4. Tyres) Tj
+/F1 11 Tf 1 0 0 1 56 760 Tm (A Tyre is a Part. A Tyre has a reference, a size, a pressure and a manufacturing date.) Tj
+/F1 11 Tf 1 0 0 1 56 745 Tm (The Garage replaces the Tyre when the tread depth is insufficient.) Tj
+/F2 12 Tf 1 0 0 1 56 717 Tm (5. Technical inspection) Tj
+/F1 11 Tf 1 0 0 1 56 695 Tm (The Technical inspection is mandatory every two years. A Technical inspection concerns a) Tj
+/F1 11 Tf 1 0 0 1 56 680 Tm (Vehicle.) Tj
+/F1 11 Tf 1 0 0 1 56 660 Tm (A Technical inspection has a date, a result and an approved centre.) Tj
+/F2 12 Tf 1 0 0 1 56 632 Tm (6. Competency questions) Tj
+/F1 11 Tf 1 0 0 1 56 610 Tm (Which vehicles have a technical inspection to renew this month?) Tj
+/F1 11 Tf 1 0 0 1 56 590 Tm (Which tyres are fitted on a given vehicle?) Tj
+/F1 11 Tf 1 0 0 1 56 570 Tm (What is the date of the last technical inspection of a vehicle?) Tj
+/F1 11 Tf 1 0 0 1 56 550 Tm (Which mechanic carried out each job?) Tj
+/F1 11 Tf 1 0 0 1 56 530 Tm (Which sedans exceed 100,000 kilometres?) Tj
+ET
+endstream
+endobj
+8 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>
+endobj
+xref
+0 9
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000121 00000 n 
+0000000218 00000 n 
+0000000354 00000 n 
+0000001686 00000 n 
+0000001822 00000 n 
+0000002933 00000 n 
+trailer
+<< /Size 9 /Root 1 0 R >>
+startxref
+3035
+%%EOF

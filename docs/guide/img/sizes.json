@@ -1,0 +1,506 @@
+{
+"en/analyse-constat.png": [
+1188,
+341
+],
+"en/analyse-neo4j.png": [
+1280,
+800
+],
+"en/analyse-regle-appliquee.png": [
+1280,
+800
+],
+"en/analyse-synthese.png": [
+1280,
+800
+],
+"en/assistant-document-extrait.png": [
+1280,
+800
+],
+"en/assistant-document-import.png": [
+1280,
+800
+],
+"en/assistant-ecran.png": [
+1280,
+800
+],
+"en/assistant-fichier.png": [
+1280,
+800
+],
+"en/assistant-proposition.png": [
+1280,
+800
+],
+"en/conformite-profils.png": [
+1280,
+800
+],
+"en/documentation.png": [
+1280,
+800
+],
+"en/editeur-creation.png": [
+972,
+731
+],
+"en/editeur-erreur-validation.png": [
+1280,
+800
+],
+"en/editeur-export.png": [
+972,
+731
+],
+"en/editeur-filtres.png": [
+1280,
+800
+],
+"en/editeur-geste-menu.png": [
+1280,
+800
+],
+"en/editeur-graphe.png": [
+1280,
+800
+],
+"en/editeur-inspecteur.png": [
+1280,
+800
+],
+"en/editeur-legende.png": [
+972,
+731
+],
+"en/editeur-perimetre.png": [
+1280,
+800
+],
+"en/editeur-proposition.png": [
+1280,
+800
+],
+"en/editeur-saisie-rapide.png": [
+1280,
+800
+],
+"en/editeur-vowl-proprietes.png": [
+1280,
+800
+],
+"en/editeur-vowl.png": [
+1280,
+800
+],
+"en/exports-curiosity.png": [
+1280,
+800
+],
+"en/exports-neo4j.png": [
+1280,
+800
+],
+"en/exports-rapport.png": [
+1280,
+800
+],
+"en/fichiers-diagnostic.png": [
+1280,
+800
+],
+"en/fichiers-diff.png": [
+1280,
+800
+],
+"en/fichiers-editeur.png": [
+1280,
+800
+],
+"en/fichiers-genere.png": [
+1280,
+800
+],
+"en/hermit-classe-rouge.png": [
+1280,
+800
+],
+"en/hermit-resultats.png": [
+1280,
+800
+],
+"en/krakie-aide.png": [
+1280,
+800
+],
+"en/krakie-carte-action.png": [
+1280,
+800
+],
+"en/krakie-contexte.png": [
+1280,
+800
+],
+"en/krakie-forgeronne.png": [
+1188,
+159
+],
+"en/limites-a-verifier.png": [
+1204,
+900
+],
+"en/limites-mobile.png": [
+780,
+1688
+],
+"en/liste-classe.png": [
+1280,
+800
+],
+"en/liste-propriete.png": [
+1280,
+800
+],
+"en/modele-curiosity.png": [
+1280,
+800
+],
+"en/modele-detail.png": [
+1280,
+800
+],
+"en/modele-neo4j.png": [
+1280,
+800
+],
+"en/parametres-defauts.png": [
+1280,
+419
+],
+"en/parametres-endpoints.png": [
+1280,
+332
+],
+"en/parametres-langues.png": [
+1280,
+340
+],
+"en/parametres-llm.png": [
+1280,
+332
+],
+"en/projets-liste.png": [
+1280,
+800
+],
+"en/projets-nouveau.png": [
+1184,
+129
+],
+"en/requetes-code.png": [
+400,
+679
+],
+"en/requetes-endpoint-temporaire.png": [
+1280,
+800
+],
+"en/requetes-question.png": [
+1280,
+800
+],
+"en/requetes-resultats-graphe.png": [
+788,
+461
+],
+"en/requetes-resultats-tableau.png": [
+788,
+412
+],
+"en/requetes-triplestore-local.png": [
+1280,
+800
+],
+"en/requetes-valeurs-possibles.png": [
+1280,
+800
+],
+"en/shacl-validation.png": [
+1280,
+800
+],
+"en/shapes-generation.png": [
+1280,
+800
+],
+"en/shapes-liste.png": [
+1280,
+800
+],
+"en/tableau-de-bord.png": [
+1280,
+800
+],
+"en/versions-ecran.png": [
+1280,
+800
+],
+"en/visite-guidee.png": [
+1280,
+800
+],
+"fr/analyse-constat.png": [
+1188,
+341
+],
+"fr/analyse-neo4j.png": [
+1280,
+800
+],
+"fr/analyse-regle-appliquee.png": [
+1280,
+800
+],
+"fr/analyse-synthese.png": [
+1280,
+800
+],
+"fr/assistant-document-extrait.png": [
+1280,
+800
+],
+"fr/assistant-document-import.png": [
+1280,
+800
+],
+"fr/assistant-ecran.png": [
+1280,
+800
+],
+"fr/assistant-fichier.png": [
+1280,
+800
+],
+"fr/assistant-proposition.png": [
+1280,
+800
+],
+"fr/conformite-profils.png": [
+1280,
+800
+],
+"fr/documentation.png": [
+1280,
+800
+],
+"fr/editeur-creation.png": [
+972,
+731
+],
+"fr/editeur-erreur-validation.png": [
+1280,
+800
+],
+"fr/editeur-export.png": [
+972,
+731
+],
+"fr/editeur-filtres.png": [
+1280,
+800
+],
+"fr/editeur-geste-menu.png": [
+1280,
+800
+],
+"fr/editeur-graphe.png": [
+1280,
+800
+],
+"fr/editeur-inspecteur.png": [
+1280,
+800
+],
+"fr/editeur-legende.png": [
+972,
+731
+],
+"fr/editeur-perimetre.png": [
+1280,
+800
+],
+"fr/editeur-proposition.png": [
+1280,
+800
+],
+"fr/editeur-saisie-rapide.png": [
+1280,
+800
+],
+"fr/editeur-vowl-proprietes.png": [
+1280,
+800
+],
+"fr/editeur-vowl.png": [
+1280,
+800
+],
+"fr/exports-curiosity.png": [
+1280,
+800
+],
+"fr/exports-neo4j.png": [
+1280,
+800
+],
+"fr/exports-rapport.png": [
+1280,
+800
+],
+"fr/fichiers-diagnostic.png": [
+1280,
+800
+],
+"fr/fichiers-diff.png": [
+1280,
+800
+],
+"fr/fichiers-editeur.png": [
+1280,
+800
+],
+"fr/fichiers-genere.png": [
+1280,
+800
+],
+"fr/hermit-classe-rouge.png": [
+1280,
+800
+],
+"fr/hermit-resultats.png": [
+1280,
+800
+],
+"fr/krakie-aide.png": [
+1280,
+800
+],
+"fr/krakie-carte-action.png": [
+1280,
+800
+],
+"fr/krakie-contexte.png": [
+1280,
+800
+],
+"fr/krakie-forgeronne.png": [
+1188,
+159
+],
+"fr/limites-a-verifier.png": [
+1204,
+900
+],
+"fr/limites-mobile.png": [
+780,
+1688
+],
+"fr/liste-classe.png": [
+1280,
+800
+],
+"fr/liste-propriete.png": [
+1280,
+800
+],
+"fr/modele-curiosity.png": [
+1280,
+800
+],
+"fr/modele-detail.png": [
+1280,
+800
+],
+"fr/modele-neo4j.png": [
+1280,
+800
+],
+"fr/parametres-defauts.png": [
+1280,
+419
+],
+"fr/parametres-endpoints.png": [
+1280,
+332
+],
+"fr/parametres-langues.png": [
+1280,
+340
+],
+"fr/parametres-llm.png": [
+1280,
+380
+],
+"fr/projets-liste.png": [
+1280,
+800
+],
+"fr/projets-nouveau.png": [
+1184,
+129
+],
+"fr/requetes-code.png": [
+400,
+669
+],
+"fr/requetes-endpoint-temporaire.png": [
+1280,
+800
+],
+"fr/requetes-question.png": [
+1280,
+800
+],
+"fr/requetes-resultats-graphe.png": [
+788,
+461
+],
+"fr/requetes-resultats-tableau.png": [
+788,
+413
+],
+"fr/requetes-triplestore-local.png": [
+1280,
+800
+],
+"fr/requetes-valeurs-possibles.png": [
+1280,
+800
+],
+"fr/shacl-validation.png": [
+1280,
+800
+],
+"fr/shapes-generation.png": [
+1280,
+800
+],
+"fr/shapes-liste.png": [
+1280,
+800
+],
+"fr/tableau-de-bord.png": [
+1280,
+800
+],
+"fr/versions-ecran.png": [
+1280,
+800
+],
+"fr/visite-guidee.png": [
+1280,
+800
+]
+}

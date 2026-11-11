@@ -23,9 +23,9 @@ process.on('exit', stop)
 const EXCEPTIONS = [
   // aucune pour l'instant
 ]
-// Exception déclarée (L28, mise à jour L33) : un fichier de docs/guide/ sans version .en.md (architecture, regles, glossaire) s'affiche en français
+// Exception déclarée (L28, mise à jour L34a) : un fichier de docs/guide/ sans version .en.md (aucun aujourd'hui, le mécanisme reste pour un futur guide) s'affiche en français
 // en mode anglais ; l'écran Documentation le marque data-doc-fallback et affiche le bandeau « Documentation available in French only » (ce bandeau,
-// lui, reste scanné). Les fichiers traduits (utilisateur, limites, contribuer, api, CHANGELOG en .en.md) ne portent pas ce marquage : ils sont scannés.
+// lui, reste scanné). Les fichiers traduits (utilisateur, limites, contribuer, api, architecture, glossaire, CHANGELOG en .en.md) ne portent pas ce marquage : ils sont scannés.
 const EXCEPTION_SELECTORS = ['[data-doc-fallback]']
 const i18nPrefixes = [...new Set(Object.keys(JSON.parse(readFileSync(path.join(ROOT, 'frontend/src/i18n/fr.json'), 'utf8'))).map(k => k.split('.')[0]))]
 
@@ -129,7 +129,7 @@ async function scanTabs(screen) {
     }
   }
 }
-const screens = ['tableau', 'ontologie', 'ontologie-liste', 'shapes', 'conformite', 'shacl', 'analyse', 'modele', 'exports', 'requetes', 'assistant', 'documentation', 'documentation/limites', 'documentation/contribuer', 'documentation/api', 'documentation/changelog', 'documentation/architecture']
+const screens = ['tableau', 'ontologie', 'ontologie-liste', 'shapes', 'conformite', 'shacl', 'analyse', 'modele', 'exports', 'requetes', 'assistant', 'documentation', 'documentation/limites', 'documentation/contribuer', 'documentation/api', 'documentation/changelog', 'documentation/architecture', 'documentation/glossaire']
 await go('#/'); await scanTabs('projets')
 await go('#/parametres'); await scanTabs('parametres')
 for (const sc of screens) { await go(`#/projet/${pid}/${sc}`); await scanTabs(sc) }

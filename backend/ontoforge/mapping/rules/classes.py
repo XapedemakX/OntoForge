@@ -326,9 +326,12 @@ def resolve_modes(ctx: Ctx) -> None:
         if parent and choice in ("flatten_into_leaves", "primary_parent_discriminator") or \
                 (parent and choice == "multi_label" and not ctx.profile.multi_label):
             pm = mode(parent, stack + (c,))
-            if pm in ("own", "fold"):
+            root = p["root"].get(parent, parent) if pm == "fold" else parent
+            # Cycle de sous-classes (import, ancien projet) : si la racine remonte jusqu'à `c`, `c` est elle-même la racine du
+            # cycle. Elle reste un type propre ; replier `c` sur lui-même ne laisserait aucun type de nœud (KeyError, 500).
+            if pm in ("own", "fold") and root != c:
                 modes[c] = "fold"
-                p["root"][c] = p["root"].get(parent, parent) if pm == "fold" else parent
+                p["root"][c] = root
                 if choice == "multi_label":
                     p.setdefault("list_disc", set()).add(p["root"][c])
                 return "fold"

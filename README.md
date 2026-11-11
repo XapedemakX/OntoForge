@@ -1,5 +1,7 @@
 # OntoForge
 
+[English version](README.en.md)
+
 OntoForge sert à concevoir une ontologie OWL 2 / SHACL, vérifier sa conformité W3C, puis la transposer en modèle property graph prêt à l'emploi pour Curiosity (cible prioritaire) ou Neo4j. Ce qui passe tout seul est transposé automatiquement. Ce qui se perd ou risque de se perdre est mis en avant, avec une recommandation par cible, et c'est vous qui arbitrez.
 
 ## Démarrer (Docker)
@@ -24,7 +26,7 @@ Assistant IA (optionnel) : copier `.env.example` en `.env`, mettre `ONTOFORGE_LL
 
 L'exemple trap est l'ontologie « piège » de test. Elle exerce les 66 règles de transposition.
 
-## Ce qu'il faut savoir (itération 2)
+## Ce qu'il faut savoir
 - Le code Curiosity généré n'a pas été compilé (pas de SDK .NET dans l'environnement de construction). Les appels marqués `À VÉRIFIER` sont à confirmer sur votre version de Curiosity.Library
 - Le Cypher Neo4j n'a pas été exécuté sur une base réelle. Les contraintes Enterprise-only sont séparées et commentées
 - `xsd:decimal` : décimal exact côté Curiosity (`decimal` C#). Neo4j n'a pas de décimal natif, d'où un nombre flottant (perte signalée) ou une chaîne

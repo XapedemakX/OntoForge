@@ -427,6 +427,12 @@ PHRASES.update({
     "Cycle de sous-classes : une classe ne peut pas être sa propre sous-classe": "Subclass cycle: a class cannot be its own subclass",
     "Cycle de sous-classes : ": "Subclass cycle: ",
     " descend déjà de ": " already descends from ",
+    " fermerait la boucle.": " would close the loop.",
+    "une classe ne peut pas être sa propre sous-classe directe": "a class cannot be its own direct subclass",
+    "nom invalide « ": "invalid name « ",
+    " (séparez les parents par des virgules)": " (separate the parents with commas)",
+    "opérande manquant": "missing operand",
+    "ligne non reconnue (voir l'aide du DSL)": "line not recognized (see the DSL help)",
     "Toute classe est déjà une sous-classe de owl:Thing": "Every class is already a subclass of owl:Thing",
     " est déjà sous-classe de ": " is already a subclass of ",
     " (aucun changement)": " (no change)",
@@ -738,4 +744,18 @@ PHRASES.update({
     "n'a pas de fichier de données.": "has no data file.",
     "Le triplestore local ne contient encore aucune donnée à valider (chargez un fichier ou les données de démonstration).":
         "The local triplestore holds no data to validate yet (load a file or the demo data).",
+})
+
+# ---- cycles de sous-classes (L34d) : constat BP03 de l'analyse
+PHRASES.update({
+    "Cycle de sous-classes": "Subclass cycle",
+    "Les classes ": "The classes ",
+    " est déclarée sous-classe d'elle-même : en OWL 2 cet axiome est sans effet. Retirez-le.":
+        " is declared a subclass of itself: in OWL 2 this axiom has no effect. Remove it.",
+    " forment un cycle de sous-classes : en OWL 2 elles sont équivalentes entre elles. ":
+        " form a subclass cycle: in OWL 2 they are equivalent to each other. ",
+    "Le moteur les transpose chacune comme un type de nœud propre, sans héritage aplati entre elles. ":
+        "The engine transposes each of them as a node type of its own, with no flattened inheritance between them. ",
+    "Corrigez le cycle (retirez une des sous-classes) ou déclarez une équivalence explicite.":
+        "Fix the cycle (remove one of the subclass links) or declare an explicit equivalence.",
 })

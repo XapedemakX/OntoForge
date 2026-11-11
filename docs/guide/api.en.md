@@ -391,7 +391,7 @@ curl -X POST $B/api/projects/$P/import -F file=@samples/automaint/automaint.ttl 
 
 ### `PUT /api/projects/{pid}/onto` and `PUT /api/projects/{pid}/shapes` {#put-api-projects-pid-onto-et-put-api-projects-pid-shapes}
 
-Replace the `OntoModel` and the `ShapesModel` respectively (body = the model, see [`architecture.md`](architecture.md) §5). Response: `Project`. Used by the editing screens.
+Replace the `OntoModel` and the `ShapesModel` respectively (body = the model, see [`architecture.en.md`](architecture.en.md) §5). Response: `Project`. Used by the editing screens.
 
 ### `POST /api/projects/{pid}/dsl` {#post-api-projects-pid-dsl}
 
@@ -612,7 +612,7 @@ curl -X POST $B/api/projects/$P/shacl/validate -F file=@samples/automaint/automa
 
 ### `POST /api/projects/{pid}/analyze?target=curiosity` {#post-api-projects-pid-analyze-target-curiosity}
 
-Runs the engine on the project's ontology and shapes. The decisions saved for the target are applied. Response: `PGModel` (see [`architecture.md`](architecture.md) §5). On the automaint example: 18 node types, 24 relations, 83 validations, 159 findings ({'auto': 117, 'review': 41, 'lost': 1}).
+Runs the engine on the project's ontology and shapes. The decisions saved for the target are applied. Response: `PGModel` (see [`architecture.en.md`](architecture.en.md) §5). On the automaint example: 18 node types, 24 relations, 83 validations, 159 findings ({'auto': 117, 'review': 41, 'lost': 1}).
 
 **Response 200**
 
@@ -744,9 +744,11 @@ The target's files + `schema.graphql` + `README-graphql.md` + `rapport-transposi
 
 For Neo4j: `README-neo4j.md`, `ingest.cypher`, `model.mmd`, `schema.cypher`, `validation.cypher`, `schema.graphql`, `README-graphql.md`, `rapport-transposition.md`.
 
+**File language**: optional `?lang=fr|en` parameter (422 for any other value). Without it, the interface language (`settings.language.ui`). It sets the comments, headers, READMEs, the connector's run-time messages and the transposition report. Code (identifiers, node, edge and property names) and the ontology's labels or comments are never translated: they are data.
+
 ### `GET /api/projects/{pid}/generate/{target}/zip` {#get-api-projects-pid-generate-target-zip}
 
-The same files as an archive. Actual headers: `content-type: application/zip`, `content-disposition: attachment; filename="<pid>-neo4j.zip"`.
+The same files as an archive (same `?lang=fr|en` parameter). Actual headers: `content-type: application/zip`, `content-disposition: attachment; filename="<pid>-neo4j.zip"`.
 
 ## Queries {#requetes}
 
@@ -1014,7 +1016,7 @@ curl -s -X POST $B/api/projects/$P/ops -H 'content-type: application/json' -d '{
 # → {"ok":true,"project":{…},"applied":1,"errors":[],"warnings":[],"can_undo":true,"can_redo":false}
 ```
 
-`POST /ops` is all or nothing: on error, HTTP 200 with `ok=false`, `errors: [{index, message}]` and the project unchanged (500 operations max per call). The list of operations and validation rules (absolute IRI, no cycle, simple properties, datatypes of the OWL 2 map…) is in CONTRACTS §5. `POST /ops/undo` and `/ops/redo` answer like `/ops` plus `label` (409 if the stack is empty). `GET /ops/history` gives `{undo, redo, limit: 200, can_undo, can_redo}`.
+`POST /ops` is all or nothing: on error, HTTP 200 with `ok=false`, `errors: [{index, message}]` and the project unchanged (500 operations max per call). Messages follow the interface language. A subclass that would close a cycle is refused ("Subclass cycle: … would close the loop", with the path); `POST /dsl` does the same and returns the offending line. The list of operations and validation rules (absolute IRI, no cycle, simple properties, datatypes of the OWL 2 map…) is in CONTRACTS §5. `POST /ops/undo` and `/ops/redo` answer like `/ops` plus `label` (409 if the stack is empty). `GET /ops/history` gives `{undo, redo, limit: 200, can_undo, can_redo}`.
 
 `GET /api/projects/{pid}/graph?perimeter=&lang=fr&include=datatypes,individuals` → `{nodes, edges, skipped}` (nodes `{id, label, kind, icon, position, abstract, deprecated, collapsed}`; edges `{id, source, target, kind, label, iri}`, `id = kind|iri|source|target`, stable sort). `GET /api/icons?q=` → `{icons:[{id:"fa-car", style, label:{fr,en}, keywords}], total}` (accent-insensitive search).
 

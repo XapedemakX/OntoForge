@@ -4,9 +4,11 @@ Format: by version, what changes for the user, then the detail per work package.
 
 ## L30: Krakie comes alive in the hidden game (8 Nov 2026) {#l30-krakie-vivante-dans-le-jeu-cache-8-nov-2026}
 
+- Fix: Krakie no longer gets distorted when she moves (no more sprite shear: the body stays intact and only the tentacles trail by one pixel).
 - In "Krakie's Triple Catch", Krakie swims (6 frames, waving tentacles, a slight bounce) and leans in the direction she moves.
 - Short expressions: a wink for each item caught, a big smile and sparkles for a complete triple, surprise for a bonus, a grimace with a slight shake for a lost finding or a broken IRI, and constant worry on a single life. A glass halo during the SHACL shield, a purple effect during inference. At the end of a game: a trophy for a record or 400 points, worry otherwise.
 - A word is no longer both a target and a distractor of another category, and the background graph stays under the score banner. With `prefers-reduced-motion`: fixed expressions, no shake, bounce or lean.
+- Fix: in the hidden game, Krakie no longer shows up as a flat teal square when a pose image fails to load (stale cached manifest, missing file): all poses are preloaded before play, otherwise a pixel-art silhouette replaces them; the play area stays centered from 390 to 2560 px; "doneBy" now reads "DONE BY".
 
 ## L29: Krakie the blacksmith (8 Nov 2026) {#l29-krakie-forgeronne-8-nov-2026}
 
@@ -70,7 +72,7 @@ D-002 (FastAPI + React), D-003 (Docker only), D-004 (SHACL from v0.1), D-005 (Cu
 
 ### Known limits at delivery {#limites-connues-a-la-livraison}
 
-Curiosity C# not compiled, Cypher not executed, external APIs `À VÉRIFIER`, no authentication. Details in [`limites.md`](limites.md).
+Curiosity C# not compiled, Cypher not executed, external APIs `À VÉRIFIER`, no authentication. Details in [`limites.en.md`](limites.en.md).
 
 ## 0.2.0: Iteration 2 (delivery planned for Friday 6 November 2026) {#iteration-2-livraison-prevue-le-vendredi-6-novembre-2026}
 
@@ -114,7 +116,7 @@ D-L2-01, D-L4-02, D-L8-01 (encrypted settings), D-L9-01 (editor: all-or-nothing 
 
 ### Known limits {#limites-connues}
 
-Curiosity C# and Query API not verified, Cypher not executed, external APIs `À VÉRIFIER`, no authentication, no SSRF filtering, real LLM providers not tried, no automated front-end test. Details: [`limites.md`](limites.md).
+Curiosity C# and Query API not verified, Cypher not executed, external APIs `À VÉRIFIER`, no authentication, no SSRF filtering, real LLM providers not tried, no automated front-end test. Details: [`limites.en.md`](limites.en.md).
 
 ## 0.3.0 (in progress) {#en-cours}
 
@@ -129,5 +131,7 @@ Work packages L19 to L26, one per line. Details are in `journal/L<n>/rapport.md`
 - L25: start an ontology from a document (.txt, .md, .pdf) with a source excerpt, a "To confirm" badge and W3C checks; w3c and scout reviews it1.
 - L32: reasoning with HermiT. A "Reason with HermiT" button in Conformance (consistency, unsatisfiable classes that you can click and that turn red in the editor, inferences you can add to the model through `/ops`, reclassified individuals; during the computation, Krakie the blacksmith and "HermiT is reasoning… (up to 30 s)", then a trophy if consistent or a worried Krakie otherwise), `POST /api/projects/{id}/reason`, Krakie intent `raisonne / vérifie la cohérence / run the reasoner`, Cloud Run image with Java by default (`WITH_REASONER=1`). Reviews: see `journal/L32/rapport.md`.
 - L26: reading the ontology graph. A floating legend that shows only the encodings present, a "VOWL notation" mode (VOWL 2: classes as circles, external, equivalent and anonymous classes, datatypes, property characteristics), a "Show" menu with a density slider and a counter, SVG and PNG export of the graph as displayed, a "legend" step in the guided tour (19 steps). `GET /graph` stays backward compatible and gains (`external`, `equivalent`, `include=external,anonymous,thing`). w3c, scout, doc and humanizer reviews: see `journal/L26/rapport.md`.
-- L28: built-in documentation (Documentation entry in the side menu, contents, search, links between files, offline), a "?" button per screen, Krakie `help` action, a tour step (20 steps). See "Built-in documentation and help" in `utilisateur.md`.
+- L28: built-in documentation (Documentation entry in the side menu, contents, search, links between files, offline), a "?" button per screen, Krakie `help` action, a tour step (20 steps). See "Built-in documentation and help" in `utilisateur.en.md`.
 - L33: documentation in English. The user guide, limits, contributing, API and changelog pages exist as `.en.md` and are shown when the interface is in English. The "French only" banner now appears only on untranslated files (architecture, rules, glossary). Each heading of these files carries an explicit `{#id}`, identical in French and English, so the "?" button and Krakie open the right section in both languages. The `test_help_map.py` test checks the anchors in both versions.
+- L34: screenshots in the documentation. About sixty images per language (fr and en, same automaint data) illustrate the guide, the limits and the contributing pages; clicking an image opens a viewer (Esc to close). They are generated by `node tools/docs/captures.mjs` and loaded on demand, outside the application code.
+- L34d: bilingual exports and subclass cycle. The generated files (comments and headers of `Connector.cs`, `Schema.cs`, `Edges.cs`, `RegisterSchema.cs`, `schema.cypher`, `ingest.cypher`, `validation.cypher`, `schema.graphql`, the READMEs and the transposition report) follow the interface language, or the export's `?lang=fr|en` parameter; code and ontology labels are never translated. The import demo document and the questions of the no-LLM fallback also follow the interface language (new `automaint-requirements.pdf`, generated by `make_cahier_des_charges.py --lang en`). Fix: quick entry and `/ops` refuse a subclass that would close a cycle (message in fr and en, with the path and the offending line), and `/analyze` no longer answers 500 on a cycle that is already there: it reports it as a BP03 information finding.

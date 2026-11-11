@@ -38,7 +38,9 @@ export default function GameOverlay({ onClose }: { onClose: () => void }) {
   const phaseRef = useRef<Phase>('ready'); phaseRef.current = phase
 
   const sync = useCallback(() => { const k = keys.current; engine.current?.setKeys(k.l || k.bl, k.r || k.br) }, [])
-  const start = useCallback(() => { setEnd(null); engine.current?.newGame() }, [])
+  const [loaded, setLoaded] = useState(false)
+  const loadedRef = useRef(false); loadedRef.current = loaded
+  const start = useCallback(() => { if (!loadedRef.current) return; setEnd(null); engine.current?.newGame() }, [])
   const togglePause = useCallback(() => { const e = engine.current; if (!e) return; if (e.phase === 'playing') e.pause(); else if (e.phase === 'paused') e.resume() }, [])
   const toggleSound = useCallback(() => {
     setSound(s => { const n = !s; sfx.current.setEnabled(n); store.set(SND_KEY, n ? '1' : '0'); return n })
@@ -70,10 +72,11 @@ export default function GameOverlay({ onClose }: { onClose: () => void }) {
     const onMq = () => { opts.reduced = !!mq?.matches }
     mq?.addEventListener?.('change', onMq)
     let alive = true
-    void loadKrakieSprites(GAME_POSES).then(sp => { if (alive) sprites.current = sp })
+    void loadKrakieSprites(GAME_POSES).then(sp => { if (alive) { sprites.current = sp.sprites; setLoaded(true) } })
     const fit = () => { const st = stageRef.current; if (st) eng.resize(st.clientWidth - 8, st.clientHeight - 8) }
     fit()
     const ro = new ResizeObserver(fit); if (stageRef.current) ro.observe(stageRef.current)
+    addEventListener('resize', fit)
     eng.start()
     if (store.get('ontoforge.game.debug') === '1') {
       const w = window as unknown as { __ontoforgeGame?: unknown; __krakieGame?: unknown }
@@ -83,7 +86,7 @@ export default function GameOverlay({ onClose }: { onClose: () => void }) {
     document.addEventListener('visibilitychange', onVis)
     dialogRef.current?.focus()
     return () => {
-      alive = false; eng.destroy(); ro.disconnect(); mq?.removeEventListener?.('change', onMq)
+      alive = false; eng.destroy(); ro.disconnect(); removeEventListener('resize', fit); mq?.removeEventListener?.('change', onMq)
       document.removeEventListener('visibilitychange', onVis); s.close(); engine.current = null
       delete (window as unknown as { __ontoforgeGame?: unknown }).__ontoforgeGame; delete (window as unknown as { __krakieGame?: unknown }).__krakieGame
       if (root) root.inert = false
@@ -150,7 +153,7 @@ export default function GameOverlay({ onClose }: { onClose: () => void }) {
               {legend('bad', '!', t('game.legend.bad'))}{legend('iri', '<IRI>', t('game.legend.iri'))}
               {legend('inf', 'INF', t('game.legend.inf'))}{legend('shacl', 'SHACL', t('game.legend.shacl'))}
             </ul>
-            <button type="button" className="g-btn primary" onClick={start} autoFocus>{t('game.play')}</button>
+            <button type="button" className="g-btn primary" onClick={start} disabled={!loaded} autoFocus>{t('game.play')}</button>
           </div>)}
         {phase === 'paused' && (
           <div className="g-card small"><h3>{t('game.paused')}</h3>

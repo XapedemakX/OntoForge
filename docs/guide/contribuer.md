@@ -92,6 +92,10 @@ Depuis l'itération 2, un lot n'est clos que si la documentation reflète le lot
 
 Chaque titre d'un fichier traduit se termine par un `{#id}` explicite. Les fichiers `<nom>.md` et `<nom>.en.md` d'une page portent les mêmes identifiants, car le bouton « ? », Krakie et `help_map.json` pointent vers `page#id`. On traduit le texte du titre, jamais l'identifiant. `backend/tests/test_help_map.py` échoue si les ancres françaises et anglaises diffèrent. `tools/doc_ids.py` pose les identifiants sur un fichier français qui n'en a pas.
 
+**Captures.** Les images du guide vivent dans `docs/guide/img/fr/` et `docs/guide/img/en/` (une par écran et par langue, mêmes noms). On ne les retouche pas à la main : `node tools/docs/captures.mjs` les régénère toutes, après `cd frontend && npm run build` (voir `journal/L34/rapport-captures.md`). Un lot qui change un écran décrit dans le guide relance la commande, regarde quelques captures dans les deux langues et commite les images avec le texte. Elles sont embarquées dans l'application : fichiers séparés chargés à la demande, un clic les agrandit.
+
+![Écran Documentation : liste des pages du guide, champ de recherche et sommaire à gauche, texte à droite](img/fr/documentation.png "La documentation intégrée : 1 les pages du guide, 2 la recherche, 3 le sommaire.")
+
 ## 9. Versionnage, publication et CI (agent `git`) {#versionnage-publication-et-ci-agent-git}
 
 Deux dépôts coexistent : le dépôt de travail (`/home/claude/OntoForge`, historique local lourd, jamais poussé tel quel) et le clone de publication (`/home/claude/ontoforge-pub`, branche `main` de `https://github.com/XapedemakX/ontoforge`). Seul le second reçoit un `push`, et seulement sur demande du lead (tests verts, revues OK, `doc-ok.md`, passe de l'humaniseur ; voir `docs/TEAM.md`).

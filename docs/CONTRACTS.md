@@ -45,8 +45,8 @@ Modèles pydantic : `backend/ontoforge/core/` (onto_model.py, shapes_model.py, p
 | POST | `/projects/{id}/analyze?target=curiosity\|neo4j` | — | `PGModel` (décisions du projet appliquées) |
 | PUT | `/projects/{id}/decisions/{target}` | `{finding_id: option_id \| null}` | `PGModel` |
 | POST | `/projects/{id}/decisions/{target}/accept-recommended?include_lost=false` | — | `PGModel` — par défaut n'accepte que les constats `review` ; les `lost` restent à arbitrer par l'humain, sauf `include_lost=true` (D-L14-02) |
-| GET | `/projects/{id}/generate/{target}` | — | `{files: {name: content}}` (cible + graphql + rapport) |
-| GET | `/projects/{id}/generate/{target}/zip` | — | `application/zip` |
+| GET | `/projects/{id}/generate/{target}` | `?lang=fr\|en` (défaut : langue de l'interface) | `{files: {name: content}}` (cible + graphql + rapport) ; commentaires, README et rapport dans la langue demandée, code et libellés d'ontologie inchangés |
+| GET | `/projects/{id}/generate/{target}/zip` | `?lang=fr\|en` | `application/zip` |
 | GET | `/projects/{id}/generations` | — | `[{target, perimeter, at, files: [noms], findings_summary: {auto, review, lost, pending}, project_updated_at}]`, plus récente d'abord (L14) |
 | POST | `/projects/{id}/queries/translate?target=` | `{sparql}` | `TranslationResult` |
 | GET | `/projects/{id}/queries/competency?target=` | — | liste |
@@ -212,7 +212,7 @@ Code : `backend/ontoforge/assistant/{document,docheur,docdraft}.py`, routes dans
 
 | Méthode | Chemin | Entrée | Sortie |
 |---|---|---|---|
-| GET | `/api/assistant/document/demo` | aucune | le PDF `samples/automaint/automaint-cahier-des-charges.pdf` (`application/pdf`), en lecture seule ; 404 s'il est absent de l'installation. Sert le lien « Essayer avec le cahier des charges de démo » |
+| GET | `/api/assistant/document/demo` | `?lang=fr\|en` (défaut : langue de l'interface) | le PDF `samples/automaint/automaint-cahier-des-charges.pdf` (fr) ou `automaint-requirements.pdf` (en) (`application/pdf`), en lecture seule ; 404 s'il est absent de l'installation. Sert le lien « Essayer avec le cahier des charges de démo » |
 | POST | `/api/assistant/document/upload` | multipart `file` (.txt, .md, .pdf à texte natif) | `{name, size, pages: [{page, text}], page_count, chars, limits}` ; 415 format, 413 trop gros / trop de pages / trop de texte, 422 vide, scanné ou protégé, 501 si pypdf n'est pas installé |
 | POST | `/api/assistant/document/estimate` | `{document: {name, pages}, provider_id?}` | `{chunks, calls, chars_sent, chars_total, hosted, engine: llm\|heuristic, provider, model, pages, chars}` ; n'envoie rien |
 | POST | `/api/assistant/document/draft` | `{project_id, document, provider_id?, confirm_hosted?=false}` | `{document: {name, pages, chars, lang}, engine, approximate, provider, stats, questions, proposal: OntoModel, provenance, lint, skipped, warnings, explanation}` ; 409 si le fournisseur est hébergé et `confirm_hosted` est faux |

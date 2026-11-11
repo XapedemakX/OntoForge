@@ -387,7 +387,7 @@ export class Engine {
     const kx = Math.round(this.kx), ky = this.ky, cy = ky + 17, red = this.o.reduced
     this.drawAuras(kx, cy)
     if (this.invuln > 0 && Math.floor(this.clock * 14) % 2 === 0 && this.phase === 'playing') return
-    if (!fr) { x.fillStyle = C.lagL; x.fillRect(kx - 10, ky + 6, 20, 20); return }
+    if (!fr) return // jamais atteint : le chargeur remplace toute pose manquante par la silhouette de repli
     // image : cycle de nage (fixe sous mouvement réduit)
     let f = 0
     if (!red && fr.frames.length > 1) {
@@ -453,7 +453,7 @@ export class Engine {
       x.fillStyle = C.ink; x.fillRect(px, sy, sw, 11)
       if (filled) {
         x.fillStyle = col; x.fillRect(px + 1, sy + 1, sw - 2, 9); x.fillStyle = hi; x.fillRect(px + 1, sy + 1, sw - 2, 1)
-        let lab = this.chain[i]; while (lab.length > 1 && textWidth(lab) > sw - 4) lab = lab.slice(0, -1)
+        let lab = norm(this.chain[i]); while (lab.length > 1 && textWidth(lab) > sw - 4) lab = lab.slice(0, -1)
         drawText(x, lab, px + Math.floor((sw - textWidth(lab)) / 2), sy + 3, C.ink)
       } else {
         const blink = i === want && this.phase === 'playing' && Math.floor(this.clock * 3) % 2 === 0

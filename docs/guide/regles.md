@@ -1,8 +1,8 @@
-# Les 66 règles de transposition, expliquées
+# Les 66 règles de transposition, expliquées {#les-66-regles-de-transposition-expliquees}
 
 Ce guide est le rendu pédagogique du catalogue normatif `backend/ontoforge/mapping/rules/catalog.py` (rendu de référence : [`docs/RULES.md`](../RULES.md)). Pour chaque règle : un exemple OWL en Turtle, la transposition recommandée vers **Curiosity** et vers **Neo4j**, ce qui se perd, et la compensation prévue.
 
-## Lire une fiche
+## Lire une fiche {#lire-une-fiche}
 
 - **Sévérité** : `auto` (trivial, appliqué sans question), `review` (perte possible, vous arbitrez), `lost` (aucun équivalent natif, perte certaine tant que vous ne choisissez pas une compensation).
 - **Recommandation** : l'option appliquée tant que vous n'avez pas arbitré (`Finding.recommended`). Les identifiants d'options (`validation`, `multi_label`…) sont ceux du vocabulaire normatif de `samples/trap/expected-findings.yaml`.
@@ -21,7 +21,7 @@ Tous les exemples ci-dessous partagent l'en-tête suivant (omis ensuite) et ont 
 
 Les règles S01, S02 (conflits OWL/SHACL) et G02 (décision invalide) sont de l'outillage du moteur, hors des 66.
 
-## Index
+## Index {#index}
 
 | ID | Règle | Sév. | Curiosity | Neo4j | Compensation |
 |---|---|---|---|---|---|
@@ -96,9 +96,9 @@ Les règles S01, S02 (conflits OWL/SHACL) et G02 (décision invalide) sont de l'
 | **G02** | Décision ignorée | review | `report` | `report` | Arbitrage humain |
 
 
-## Classes (C)
+## Classes (C) {#classes-c}
 
-### C01 — Classe → type de nœud *(Must it. 1)*
+### C01 — Classe → type de nœud *(Must it. 1)* {#c01-classe-type-de-noeud-must-it-1}
 
 - **Construct** : owl:Class nommée
 - **Détection** : Toute classe nommée déclarée.
@@ -121,7 +121,7 @@ ex:Vehicle a owl:Class .
 
 **Compensation** : aucune
 
-### C02 — Héritage simple *(Must it. 1)*
+### C02 — Héritage simple *(Must it. 1)* {#c02-heritage-simple-must-it-1}
 
 - **Construct** : rdfs:subClassOf (parent nommé unique)
 - **Détection** : Classe ayant exactement un parent nommé effectif.
@@ -149,7 +149,7 @@ ex:veh_001 a ex:Vehicle .   # instance directe : la classe n'est pas abstraite
 
 **Compensation** : aucune
 
-### C03 — Héritage multiple *(Must it. 1)*
+### C03 — Héritage multiple *(Must it. 1)* {#c03-heritage-multiple-must-it-1}
 
 - **Construct** : Héritage multiple
 - **Détection** : Classe ayant au moins deux parents nommés effectifs.
@@ -176,7 +176,7 @@ ex:Hybrid   a owl:Class ; rdfs:subClassOf ex:Petrol, ex:Electric .
 
 **Compensation** : Arbitrage humain (aucune compensation automatique)
 
-### C04 — Classe probablement abstraite *(Must it. 1)*
+### C04 — Classe probablement abstraite *(Must it. 1)* {#c04-classe-probablement-abstraite-must-it-1}
 
 - **Construct** : Classe probablement abstraite
 - **Détection** : Heuristique OWA : classe avec sous-classes, sans instance directe, sans clé, impliquée dans au plus une propriété objet, hors disjointUnion (C10).
@@ -204,7 +204,7 @@ ex:Truck a owl:Class ; rdfs:subClassOf ex:Vehicle .
 
 **Compensation** : Requête de détection / de classification
 
-### C05 — Classes nommées équivalentes *(Must it. 1)*
+### C05 — Classes nommées équivalentes *(Must it. 1)* {#c05-classes-nommees-equivalentes-must-it-1}
 
 - **Construct** : owl:equivalentClass entre classes nommées
 - **Détection** : equivalentClass dont l'argument est nommé.
@@ -230,7 +230,7 @@ ex:Car owl:equivalentClass ex:Automobile .
 
 **Compensation** : Documentation (rapport de transposition)
 
-### C06 — Classe définie (classification)
+### C06 — Classe définie (classification) {#c06-classe-definie-classification}
 
 - **Construct** : Classe définie (equivalentClass anonyme : restriction / intersection)
 - **Détection** : Classe nommée avec une définition nécessaire et suffisante.
@@ -257,7 +257,7 @@ ex:OverdueVehicle owl:equivalentClass [ owl:intersectionOf ( ex:Vehicle
 
 **Compensation** : Matérialisation (propriété ou arête dérivée recalculée après ingestion)
 
-### C07 — Disjonction de classes *(Must it. 1)*
+### C07 — Disjonction de classes *(Must it. 1)* {#c07-disjonction-de-classes-must-it-1}
 
 - **Construct** : owl:disjointWith / owl:AllDisjointClasses
 - **Détection** : Classe déclarant des disjonctions.
@@ -283,7 +283,7 @@ ex:Customer owl:disjointWith ex:Garage .
 
 **Compensation** : Validation (contrôle à l'ingestion ou requête de détection)
 
-### C08 — Classe énumérée
+### C08 — Classe énumérée {#c08-classe-enumeree}
 
 - **Construct** : owl:oneOf (classe énumérée)
 - **Détection** : Classe dont la définition est une énumération d'individus.
@@ -310,7 +310,7 @@ ex:Petrol a ex:FuelType . ex:Diesel a ex:FuelType .
 
 **Compensation** : Validation (contrôle à l'ingestion ou requête de détection)
 
-### C09 — Expression booléenne anonyme
+### C09 — Expression booléenne anonyme {#c09-expression-booleenne-anonyme}
 
 - **Construct** : owl:unionOf / owl:intersectionOf anonymes
 - **Détection** : Union/intersection anonyme en équivalence ou en super-classe (hors définitions C06).
@@ -335,7 +335,7 @@ ex:Owner owl:equivalentClass [ owl:unionOf ( ex:Person ex:Company ) ] .
 
 **Compensation** : Documentation (rapport de transposition)
 
-### C10 — Union disjointe (partition)
+### C10 — Union disjointe (partition) {#c10-union-disjointe-partition}
 
 - **Construct** : owl:disjointUnionOf
 - **Détection** : Classe partitionnée en sous-classes disjointes.
@@ -361,7 +361,7 @@ ex:Operation owl:disjointUnionOf ( ex:Inspection ex:Repair ) .
 
 **Compensation** : Validation (contrôle à l'ingestion ou requête de détection)
 
-### C11 — Complément de classe
+### C11 — Complément de classe {#c11-complement-de-classe}
 
 - **Construct** : owl:complementOf
 - **Détection** : Complément dans une définition ou une super-classe.
@@ -387,7 +387,7 @@ ex:NonElectric owl:equivalentClass [ a owl:Class ; owl:complementOf ex:Electric 
 
 **Compensation** : Matérialisation (propriété ou arête dérivée recalculée après ingestion)
 
-### C12 — Punning classe / individu
+### C12 — Punning classe / individu {#c12-punning-classe-individu}
 
 - **Construct** : Punning classe / individu (SS §5.9)
 - **Détection** : Même IRI déclarée classe et individu.
@@ -413,7 +413,7 @@ ex:TimingBelt a owl:Class, ex:PartKind .   # même IRI : classe ET individu
 
 **Compensation** : Documentation (rapport de transposition)
 
-### C13 — Axiome général d'inclusion
+### C13 — Axiome général d'inclusion {#c13-axiome-general-d-inclusion}
 
 - **Construct** : Axiome général d'inclusion (GCI)
 - **Détection** : rdfs:subClassOf dont le sujet est anonyme.
@@ -441,9 +441,9 @@ ex:Dpf a owl:Class . ex:RequiresDPFCheck a owl:Class .
 **Compensation** : Matérialisation (propriété ou arête dérivée recalculée après ingestion)
 
 
-## Identité et clés (K)
+## Identité et clés (K) {#identite-et-cles-k}
 
-### K01 — Identité IRI *(Must it. 1)*
+### K01 — Identité IRI *(Must it. 1)* {#k01-identite-iri-must-it-1}
 
 - **Construct** : Identité IRI d'un individu nommé
 - **Détection** : Individu nommé (IRI).
@@ -467,7 +467,7 @@ ex:veh_001 a ex:Vehicle .
 
 **Compensation** : aucune
 
-### K02 — Clé OWL (hasKey) *(Must it. 1)*
+### K02 — Clé OWL (hasKey) *(Must it. 1)* {#k02-cle-owl-haskey-must-it-1}
 
 - **Construct** : owl:hasKey sur propriétés de données
 - **Détection** : Axiome HasKey ne portant que des propriétés de données.
@@ -494,7 +494,7 @@ ex:Vehicle owl:hasKey ( ex:vin ) .
 
 **Compensation** : Validation (contrôle à l'ingestion ou requête de détection)
 
-### K03 — Pas de clé métier *(Must it. 1)*
+### K03 — Pas de clé métier *(Must it. 1)* {#k03-pas-de-cle-metier-must-it-1}
 
 - **Construct** : Classe sans clé métier
 - **Détection** : Classe concrète sans hasKey (ni ancêtre à clé).
@@ -519,7 +519,7 @@ ex:MileageReading a owl:Class .   # aucune clé métier
 
 **Compensation** : Arbitrage humain (aucune compensation automatique)
 
-### K04 — Individu anonyme
+### K04 — Individu anonyme {#k04-individu-anonyme}
 
 - **Construct** : Individu anonyme (nœud blanc, SS §5.6.2)
 - **Détection** : Valeur objet nœud blanc typé.
@@ -547,7 +547,7 @@ ex:hasReading a owl:ObjectProperty . ex:km a owl:DatatypeProperty .
 
 **Compensation** : Matérialisation (propriété ou arête dérivée recalculée après ingestion)
 
-### K05 — Clé composite avec propriété objet
+### K05 — Clé composite avec propriété objet {#k05-cle-composite-avec-propriete-objet}
 
 - **Construct** : owl:hasKey incluant une propriété objet
 - **Détection** : Axiome HasKey portant au moins une propriété objet.
@@ -576,9 +576,9 @@ ex:PartReference owl:hasKey ( ex:partOf ex:refCode ) .
 **Compensation** : Matérialisation (propriété ou arête dérivée recalculée après ingestion)
 
 
-## Propriétés de données (D)
+## Propriétés de données (D) {#proprietes-de-donnees-d}
 
-### D01 — Propriété de données *(Must it. 1)*
+### D01 — Propriété de données *(Must it. 1)* {#d01-propriete-de-donnees-must-it-1}
 
 - **Construct** : Propriété de données à domaine nommé unique
 - **Détection** : Un seul rdfs:domain nommé.
@@ -603,7 +603,7 @@ ex:vin a owl:DatatypeProperty, owl:FunctionalProperty ;
 
 **Compensation** : aucune
 
-### D02 — Propriété sans domaine *(Must it. 1)*
+### D02 — Propriété sans domaine *(Must it. 1)* {#d02-propriete-sans-domaine-must-it-1}
 
 - **Construct** : Propriété de données sans domaine
 - **Détection** : Aucun rdfs:domain.
@@ -628,7 +628,7 @@ ex:mileageKm a owl:DatatypeProperty, owl:FunctionalProperty ; rdfs:range xsd:int
 
 **Compensation** : Arbitrage humain (aucune compensation automatique)
 
-### D03 — Domaine en union
+### D03 — Domaine en union {#d03-domaine-en-union}
 
 - **Construct** : Domaine = owl:unionOf (union explicite)
 - **Détection** : rdfs:domain [owl:unionOf (…)].
@@ -653,7 +653,7 @@ ex:phoneNumber a owl:DatatypeProperty ; rdfs:range xsd:string ;
 
 **Compensation** : aucune
 
-### D04 — Propriété non fonctionnelle *(Must it. 1)*
+### D04 — Propriété non fonctionnelle *(Must it. 1)* {#d04-propriete-non-fonctionnelle-must-it-1}
 
 - **Construct** : Propriété de données non fonctionnelle
 - **Détection** : Ni FunctionalProperty, ni max/exactly 1, ni sh:maxCount 1.
@@ -679,7 +679,7 @@ ex:tag a owl:DatatypeProperty ; rdfs:domain ex:Vehicle ; rdfs:range xsd:string .
 
 **Compensation** : aucune
 
-### D05 — Type de données avec perte *(Must it. 1)*
+### D05 — Type de données avec perte *(Must it. 1)* {#d05-type-de-donnees-avec-perte-must-it-1}
 
 - **Construct** : Typage xsd avec perte
 - **Détection** : decimal, hexBinary/base64Binary, dateTimeStamp, owl:real/rational, types hors carte OWL 2 (gYear, date, duration… : aussi W01).
@@ -705,7 +705,7 @@ ex:price a owl:DatatypeProperty, owl:FunctionalProperty ; rdfs:domain ex:Part ; 
 
 **Compensation** : Validation (contrôle à l'ingestion ou requête de détection)
 
-### D06 — Valeurs multilingues *(Must it. 1)*
+### D06 — Valeurs multilingues *(Must it. 1)* {#d06-valeurs-multilingues-must-it-1}
 
 - **Construct** : Valeurs multilingues (rdf:PlainLiteral, @lang)
 - **Détection** : Portée rdf:PlainLiteral / rdf:langString (non conforme, W01) ou littéraux à langue observés.
@@ -731,7 +731,7 @@ ex:description a owl:DatatypeProperty ; rdfs:domain ex:Operation ; rdfs:range rd
 
 **Compensation** : aucune
 
-### D07 — Propriété fonctionnelle *(Must it. 1)*
+### D07 — Propriété fonctionnelle *(Must it. 1)* {#d07-propriete-fonctionnelle-must-it-1}
 
 - **Construct** : owl:FunctionalProperty (données)
 - **Détection** : Propriété de données fonctionnelle.
@@ -755,7 +755,7 @@ ex:vin a owl:DatatypeProperty, owl:FunctionalProperty ; rdfs:domain ex:Vehicle ;
 
 **Compensation** : aucune
 
-### D08 — Énumération de littéraux
+### D08 — Énumération de littéraux {#d08-enumeration-de-litteraux}
 
 - **Construct** : DataOneOf (énumération de littéraux)
 - **Détection** : Portée owl:oneOf de littéraux.
@@ -782,7 +782,7 @@ ex:emissionStandard a owl:DatatypeProperty ; rdfs:domain ex:Vehicle ;
 
 **Compensation** : Validation (contrôle à l'ingestion ou requête de détection)
 
-### D09 — Datatype à facettes
+### D09 — Datatype à facettes {#d09-datatype-a-facettes}
 
 - **Construct** : Datatype défini / facettes
 - **Détection** : rdfs:Datatype défini par owl:withRestrictions (min/max, pattern, length).
@@ -811,7 +811,7 @@ ex:modelYear a owl:DatatypeProperty, owl:FunctionalProperty ; rdfs:domain ex:Veh
 
 **Compensation** : Validation (contrôle à l'ingestion ou requête de détection)
 
-### D10 — Littéral non typé
+### D10 — Littéral non typé {#d10-litteral-non-type}
 
 - **Construct** : Portée rdfs:Literal ou absente
 - **Détection** : Portée non contrainte.
@@ -835,7 +835,7 @@ ex:legacyCode a owl:DatatypeProperty ; rdfs:domain ex:Part ; rdfs:range rdfs:Lit
 
 **Compensation** : aucune
 
-### D11 — Sous-propriété de données
+### D11 — Sous-propriété de données {#d11-sous-propriete-de-donnees}
 
 - **Construct** : rdfs:subPropertyOf entre propriétés de données
 - **Détection** : Sous-propriété de données.
@@ -863,7 +863,7 @@ ex:readingMileageKm a owl:DatatypeProperty ; rdfs:subPropertyOf ex:mileageKm ;
 
 **Compensation** : Matérialisation (propriété ou arête dérivée recalculée après ingestion)
 
-### D12 — Intersection de domaines / portées
+### D12 — Intersection de domaines / portées {#d12-intersection-de-domaines-portees}
 
 - **Construct** : Plusieurs rdfs:domain / rdfs:range (données) = intersection
 - **Détection** : Au moins deux domaines nommés ou deux portées.
@@ -890,7 +890,7 @@ ex:warrantyMonths a owl:DatatypeProperty, owl:FunctionalProperty ; rdfs:range xs
 
 **Compensation** : Validation (contrôle à l'ingestion ou requête de détection)
 
-### D13 — Restriction sur propriété de données
+### D13 — Restriction sur propriété de données {#d13-restriction-sur-propriete-de-donnees}
 
 - **Construct** : Restriction sur propriété de données
 - **Détection** : some / only / cardinalité / onDataRange.
@@ -918,9 +918,9 @@ ex:openedAt a owl:DatatypeProperty, owl:FunctionalProperty ; rdfs:domain ex:Repa
 **Compensation** : Validation (contrôle à l'ingestion ou requête de détection)
 
 
-## Propriétés objet (O)
+## Propriétés objet (O) {#proprietes-objet-o}
 
-### O01 — Propriété objet → relation *(Must it. 1)*
+### O01 — Propriété objet → relation *(Must it. 1)* {#o01-propriete-objet-relation-must-it-1}
 
 - **Construct** : Propriété objet à domaine et portée nommés uniques
 - **Détection** : Un domaine et une portée nommés.
@@ -944,7 +944,7 @@ ex:worksAt a owl:ObjectProperty ; rdfs:domain ex:Technician ; rdfs:range ex:Gara
 
 **Compensation** : aucune
 
-### O02 — Domaine / portée manquants *(Must it. 1)*
+### O02 — Domaine / portée manquants *(Must it. 1)* {#o02-domaine-portee-manquants-must-it-1}
 
 - **Construct** : Propriété objet sans domaine ou sans portée
 - **Détection** : Domaine ou portée absents.
@@ -969,7 +969,7 @@ ex:interchangeableWith a owl:ObjectProperty .   # ni domaine ni portée
 
 **Compensation** : Arbitrage humain (aucune compensation automatique)
 
-### O03 — Domaine / portée en union *(Must it. 1)*
+### O03 — Domaine / portée en union *(Must it. 1)* {#o03-domaine-portee-en-union-must-it-1}
 
 - **Construct** : Domaine / portée = owl:unionOf
 - **Détection** : rdfs:domain ou rdfs:range [owl:unionOf (…)].
@@ -994,7 +994,7 @@ ex:hasOwner a owl:ObjectProperty ; rdfs:domain ex:Vehicle ;
 
 **Compensation** : Validation (contrôle à l'ingestion ou requête de détection)
 
-### O04 — Propriétés inverses *(Must it. 1)*
+### O04 — Propriétés inverses *(Must it. 1)* {#o04-proprietes-inverses-must-it-1}
 
 - **Construct** : owl:inverseOf
 - **Détection** : Paire de propriétés inverses.
@@ -1019,7 +1019,7 @@ ex:isPartOf a owl:ObjectProperty .
 
 **Compensation** : aucune
 
-### O05 — Propriété symétrique *(Must it. 1)*
+### O05 — Propriété symétrique *(Must it. 1)* {#o05-propriete-symetrique-must-it-1}
 
 - **Construct** : owl:SymmetricProperty
 - **Détection** : Propriété symétrique.
@@ -1045,7 +1045,7 @@ ex:interchangeableWith a owl:ObjectProperty, owl:SymmetricProperty ; rdfs:domain
 
 **Compensation** : aucune
 
-### O06 — Propriété transitive *(Must it. 1)*
+### O06 — Propriété transitive *(Must it. 1)* {#o06-propriete-transitive-must-it-1}
 
 - **Construct** : owl:TransitiveProperty
 - **Détection** : Propriété transitive.
@@ -1071,7 +1071,7 @@ ex:isComponentOf a owl:ObjectProperty, owl:TransitiveProperty ; rdfs:domain ex:P
 
 **Compensation** : Matérialisation (propriété ou arête dérivée recalculée après ingestion)
 
-### O07 — Sous-propriété objet *(Must it. 1)*
+### O07 — Sous-propriété objet *(Must it. 1)* {#o07-sous-propriete-objet-must-it-1}
 
 - **Construct** : rdfs:subPropertyOf (objet)
 - **Détection** : Sous-propriété objet (hors topObjectProperty).
@@ -1098,7 +1098,7 @@ ex:hasEngine a owl:ObjectProperty ; rdfs:subPropertyOf ex:hasComponent ; rdfs:do
 
 **Compensation** : Matérialisation (propriété ou arête dérivée recalculée après ingestion)
 
-### O08 — Chaîne de propriétés
+### O08 — Chaîne de propriétés {#o08-chaine-de-proprietes}
 
 - **Construct** : owl:propertyChainAxiom
 - **Détection** : Propriété définie par une chaîne.
@@ -1125,7 +1125,7 @@ ex:vehicleBrand a owl:ObjectProperty ; owl:propertyChainAxiom ( ex:ofModel ex:ma
 
 **Compensation** : Matérialisation (propriété ou arête dérivée recalculée après ingestion)
 
-### O09 — Cardinalité ≤ 1 d'une relation (max / exactly / fonctionnelle) *(Must it. 1)*
+### O09 — Cardinalité ≤ 1 d'une relation (max / exactly / fonctionnelle) *(Must it. 1)* {#o09-cardinalite-1-d-une-relation-max-exactly-fonctionnelle-must-it-1}
 
 - **Construct** : Fonctionnelle / max 1 / exactly 1 (objet)
 - **Détection** : FunctionalProperty ou restriction max/exactly ≤ 1.
@@ -1151,7 +1151,7 @@ ex:ofModel a owl:ObjectProperty, owl:FunctionalProperty ; rdfs:domain ex:Vehicle
 
 **Compensation** : Validation (contrôle à l'ingestion ou requête de détection)
 
-### O10 — Existence d'une relation *(Must it. 1)*
+### O10 — Existence d'une relation *(Must it. 1)* {#o10-existence-d-une-relation-must-it-1}
 
 - **Construct** : some / min n (objet, non qualifiée)
 - **Détection** : Restriction d'existence.
@@ -1178,7 +1178,7 @@ ex:performedBy a owl:ObjectProperty .
 
 **Compensation** : Validation (contrôle à l'ingestion ou requête de détection)
 
-### O11 — Restriction universelle
+### O11 — Restriction universelle {#o11-restriction-universelle}
 
 - **Construct** : only (allValuesFrom)
 - **Détection** : Restriction universelle.
@@ -1205,7 +1205,7 @@ ex:uses a owl:ObjectProperty .
 
 **Compensation** : Validation (contrôle à l'ingestion ou requête de détection)
 
-### O12 — Valeur imposée
+### O12 — Valeur imposée {#o12-valeur-imposee}
 
 - **Construct** : hasValue
 - **Détection** : Restriction de valeur.
@@ -1232,7 +1232,7 @@ ex:fuelType a owl:ObjectProperty . ex:Electricity a owl:NamedIndividual .
 
 **Compensation** : Validation (contrôle à l'ingestion ou requête de détection)
 
-### O13 — Caractéristiques de propriété
+### O13 — Caractéristiques de propriété {#o13-caracteristiques-de-propriete}
 
 - **Construct** : Réflexive / irréflexive / asymétrique
 - **Détection** : Caractéristiques de propriété.
@@ -1257,7 +1257,7 @@ ex:interchangeableWith a owl:ObjectProperty, owl:IrreflexiveProperty, owl:Asymme
 
 **Compensation** : Validation (contrôle à l'ingestion ou requête de détection)
 
-### O14 — Propriété inverse anonyme
+### O14 — Propriété inverse anonyme {#o14-propriete-inverse-anonyme}
 
 - **Construct** : ObjectInverseOf anonyme
 - **Détection** : [owl:inverseOf :p] dans une restriction ou une chaîne.
@@ -1285,7 +1285,7 @@ ex:worksAt a owl:ObjectProperty .
 
 **Compensation** : Validation (contrôle à l'ingestion ou requête de détection)
 
-### O15 — Propriété inverse-fonctionnelle
+### O15 — Propriété inverse-fonctionnelle {#o15-propriete-inverse-fonctionnelle}
 
 - **Construct** : owl:InverseFunctionalProperty
 - **Détection** : Propriété inverse-fonctionnelle.
@@ -1311,7 +1311,7 @@ ex:hasRepairOrder a owl:ObjectProperty, owl:InverseFunctionalProperty ; rdfs:dom
 
 **Compensation** : Validation (contrôle à l'ingestion ou requête de détection)
 
-### O16 — Cardinalité qualifiée
+### O16 — Cardinalité qualifiée {#o16-cardinalite-qualifiee}
 
 - **Construct** : Cardinalité qualifiée (onClass)
 - **Détection** : min/max/exactly avec owl:onClass, propriété simple.
@@ -1339,7 +1339,7 @@ ex:hasWheel a owl:ObjectProperty .
 
 **Compensation** : Validation (contrôle à l'ingestion ou requête de détection)
 
-### O17 — Restriction hasSelf
+### O17 — Restriction hasSelf {#o17-restriction-hasself}
 
 - **Construct** : owl:hasSelf
 - **Détection** : Restriction ObjectHasSelf.
@@ -1366,7 +1366,7 @@ ex:employs a owl:ObjectProperty .
 
 **Compensation** : Matérialisation (propriété ou arête dérivée recalculée après ingestion)
 
-### O18 — Super-propriété universelle
+### O18 — Super-propriété universelle {#o18-super-propriete-universelle}
 
 - **Construct** : owl:topObjectProperty / topDataProperty en super-propriété
 - **Détection** : subPropertyOf top.
@@ -1389,7 +1389,7 @@ ex:relatedTo a owl:ObjectProperty ; rdfs:subPropertyOf owl:topObjectProperty .
 
 **Compensation** : Documentation (rapport de transposition)
 
-### O19 — Propriétés équivalentes
+### O19 — Propriétés équivalentes {#o19-proprietes-equivalentes}
 
 - **Construct** : owl:equivalentProperty
 - **Détection** : Propriétés objet équivalentes.
@@ -1414,7 +1414,7 @@ ex:ownedBy a owl:ObjectProperty ; owl:equivalentProperty ex:hasOwner .
 
 **Compensation** : Documentation (rapport de transposition)
 
-### O20 — Propriétés disjointes
+### O20 — Propriétés disjointes {#o20-proprietes-disjointes}
 
 - **Construct** : owl:propertyDisjointWith / AllDisjointProperties
 - **Détection** : Propriétés disjointes.
@@ -1439,7 +1439,7 @@ ex:performedBy a owl:ObjectProperty ; owl:propertyDisjointWith ex:validatedBy .
 
 **Compensation** : Validation (contrôle à l'ingestion ou requête de détection)
 
-### O21 — Intersection de domaines / portées
+### O21 — Intersection de domaines / portées {#o21-intersection-de-domaines-portees}
 
 - **Construct** : Plusieurs rdfs:domain / rdfs:range (objet) = intersection
 - **Détection** : Au moins deux domaines ou portées nommés.
@@ -1467,9 +1467,9 @@ ex:reportsFaultCode a owl:ObjectProperty ; rdfs:range ex:FaultCode ;
 **Compensation** : Arbitrage humain (aucune compensation automatique)
 
 
-## Réification (R)
+## Réification (R) {#reification-r}
 
-### R01 — Réification binaire *(Must it. 1)*
+### R01 — Réification binaire *(Must it. 1)* {#r01-reification-binaire-must-it-1}
 
 - **Construct** : Classe de réification binaire
 - **Détection** : Exactement 2 rôles objet fonctionnels (ou max/exactly 1) + des propriétés de données, classe non cible d'autres relations.
@@ -1497,7 +1497,7 @@ ex:installedAt   a owl:DatatypeProperty, owl:FunctionalProperty ; rdfs:domain ex
 
 **Compensation** : aucune
 
-### R02 — Relation n-aire *(Must it. 1)*
+### R02 — Relation n-aire *(Must it. 1)* {#r02-relation-n-aire-must-it-1}
 
 - **Construct** : Relation n-aire (≥ 3 rôles)
 - **Détection** : Au moins 3 rôles objet fonctionnels.
@@ -1525,9 +1525,9 @@ ex:claimGarage  a owl:ObjectProperty, owl:FunctionalProperty ; rdfs:domain ex:Wa
 **Compensation** : aucune
 
 
-## Annotations (A)
+## Annotations (A) {#annotations-a}
 
-### A01 — Annotations *(Must it. 1)*
+### A01 — Annotations *(Must it. 1)* {#a01-annotations-must-it-1}
 
 - **Construct** : Annotations (rdfs:comment, skos:*, dcterms:*)
 - **Détection** : Entité portant des annotations au-delà de rdfs:label.
@@ -1550,7 +1550,7 @@ ex:Vehicle a owl:Class ; rdfs:comment "Véhicule motorisé"@fr ; skos:definition
 
 **Compensation** : Documentation (rapport de transposition)
 
-### A02 — Annotation d'axiome
+### A02 — Annotation d'axiome {#a02-annotation-d-axiome}
 
 - **Construct** : Annotations d'axiome (owl:Axiom)
 - **Détection** : Réification d'axiome annotée.
@@ -1576,7 +1576,7 @@ ex:Car a owl:Class . ex:Vehicle a owl:Class .
 
 **Compensation** : Documentation (rapport de transposition)
 
-### A03 — Entité dépréciée
+### A03 — Entité dépréciée {#a03-entite-depreciee}
 
 - **Construct** : owl:deprecated true
 - **Détection** : Entité dépréciée.
@@ -1602,9 +1602,9 @@ ex:ServiceBooklet a owl:Class ; owl:deprecated true .
 **Compensation** : aucune
 
 
-## meta
+## meta {#meta}
 
-### M01 — Métadonnées d'ontologie
+### M01 — Métadonnées d'ontologie {#m01-metadonnees-d-ontologie}
 
 - **Construct** : En-tête d'ontologie
 - **Détection** : owl:Ontology (IRI, versionIRI, versionInfo, dcterms).
@@ -1627,7 +1627,7 @@ ex:ServiceBooklet a owl:Class ; owl:deprecated true .
 
 **Compensation** : Documentation (rapport de transposition)
 
-### M02 — Import d'ontologie
+### M02 — Import d'ontologie {#m02-import-d-ontologie}
 
 - **Construct** : owl:imports
 - **Détection** : Import déclaré.
@@ -1653,9 +1653,9 @@ ex:ServiceBooklet a owl:Class ; owl:deprecated true .
 **Compensation** : Arbitrage humain (aucune compensation automatique)
 
 
-## Général (G)
+## Général (G) {#general-g}
 
-### G01 — Construct non transposé
+### G01 — Construct non transposé {#g01-construct-non-transpose}
 
 - **Construct** : Construct non représentable (OntoModel.unmapped)
 - **Détection** : Triplets non consommés par une règle.
@@ -1681,9 +1681,9 @@ ex:tech_leroy a ex:Technician ;
 **Compensation** : Documentation (rapport de transposition)
 
 
-## Individus (I)
+## Individus (I) {#individus-i}
 
-### I01 — Individu
+### I01 — Individu {#i01-individu}
 
 - **Construct** : Individu nommé
 - **Détection** : Individu déclaré dans l'ontologie.
@@ -1709,7 +1709,7 @@ ex:Petrol a ex:FuelType .   # individu nommé
 
 **Compensation** : Arbitrage humain (aucune compensation automatique)
 
-### I02 — Identité (sameAs)
+### I02 — Identité (sameAs) {#i02-identite-sameas}
 
 - **Construct** : owl:sameAs
 - **Détection** : Individus identiques.
@@ -1734,7 +1734,7 @@ ex:garage_TLN01 owl:sameAs ex:garage_toulon_01 .
 
 **Compensation** : Matérialisation (propriété ou arête dérivée recalculée après ingestion)
 
-### I03 — Différence d'individus
+### I03 — Différence d'individus {#i03-difference-d-individus}
 
 - **Construct** : owl:differentFrom / owl:AllDifferent
 - **Détection** : Assertions de différence.
@@ -1757,7 +1757,7 @@ ex:Petrol owl:differentFrom ex:Diesel .
 
 **Compensation** : aucune
 
-### I04 — Assertion négative
+### I04 — Assertion négative {#i04-assertion-negative}
 
 - **Construct** : owl:NegativePropertyAssertion
 - **Détection** : Assertion négative.
@@ -1783,7 +1783,7 @@ ex:Petrol owl:differentFrom ex:Diesel .
 
 **Compensation** : Validation (contrôle à l'ingestion ou requête de détection)
 
-### I05 — Individu multi-typé
+### I05 — Individu multi-typé {#i05-individu-multi-type}
 
 - **Construct** : Individu à plusieurs types
 - **Détection** : Types non reliés par subsomption.
@@ -1810,9 +1810,9 @@ ex:veh_001 a ex:Car, ex:Taxi .   # types non reliés par subsomption
 **Compensation** : Arbitrage humain (aucune compensation automatique)
 
 
-## Nommage (N)
+## Nommage (N) {#nommage-n}
 
-### N01 — Nommage *(Must it. 1)*
+### N01 — Nommage *(Must it. 1)* {#n01-nommage-must-it-1}
 
 - **Construct** : Conventions de nommage / collisions
 - **Détection** : Nom hors convention (snake_case, tiret…) ou collision après normalisation (insensible à la casse).
@@ -1839,9 +1839,9 @@ ex:dtc_code a owl:DatatypeProperty ; rdfs:domain ex:Diagnostic ; rdfs:range xsd:
 **Compensation** : Renommage
 
 
-## SHACL (S, outillage)
+## SHACL (S, outillage) {#shacl-s-outillage}
 
-### S01 — Conflit OWL / SHACL
+### S01 — Conflit OWL / SHACL {#s01-conflit-owl-shacl}
 
 - **Construct** : Conflit OWL / SHACL
 - **Détection** : Contrainte SHACL incompatible avec l'axiome OWL (cardinalité, type).
@@ -1869,7 +1869,7 @@ ex:OrderShape a sh:NodeShape ; sh:targetClass ex:RepairOrder ;
 
 **Compensation** : Arbitrage humain (aucune compensation automatique)
 
-### S02 — Propriété issue des shapes
+### S02 — Propriété issue des shapes {#s02-propriete-issue-des-shapes}
 
 - **Construct** : Propriété SHACL non déclarée en OWL
 - **Détection** : Chemin de shape absent de l'ontologie.
@@ -1898,9 +1898,9 @@ ex:OrderShape a sh:NodeShape ; sh:targetClass ex:RepairOrder ;
 **Compensation** : aucune
 
 
-## Général (G)
+## Général (G) {#general-g-2}
 
-### G02 — Décision ignorée
+### G02 — Décision ignorée {#g02-decision-ignoree}
 
 - **Construct** : Décision invalide
 - **Détection** : Option inconnue pour le constat visé.
@@ -1924,7 +1924,7 @@ ex:OrderShape a sh:NodeShape ; sh:targetClass ex:RepairOrder ;
 **Compensation** : Arbitrage humain (aucune compensation automatique)
 
 
-## Recommandations surchargées par constat
+## Recommandations surchargées par constat {#recommandations-surchargees-par-constat}
 
 | Règle | Condition | Recommandation |
 |---|---|---|
@@ -1937,7 +1937,7 @@ ex:OrderShape a sh:NodeShape ; sh:targetClass ex:RepairOrder ;
 | O21 | l'un des domaines subsume l'autre | `most_specific_type` |
 | I01 | individu hors énumération / référentiel (donnée d'exemple) | `ignore` |
 
-## Pièges sémantiques couverts (oracle `must_not`)
+## Pièges sémantiques couverts (oracle `must_not`) {#pieges-semantiques-couverts-oracle-mustnot}
 
 1. `owl:hasKey` n'impose ni existence ni unicité (Structural Specification §9.5) : K02 n'est jamais `auto`, NODE KEY / `[Key]` sont des renforcements.
 2. Deux `rdfs:domain` (ou `rdfs:range`) = **intersection** (rdfs2/rdfs3) : D12 / O21, jamais D03 / O03 (qui exigent une `owl:unionOf` explicite).

@@ -9,6 +9,7 @@ import re
 from typing import Any, Iterable, Optional
 
 from ontoforge import standards
+from ontoforge.localize.gen import GL, T, using_lang
 from ontoforge.core.pg_model import EdgeType, Materialization, NodeType, PGModel, PGProperty, Validation
 from ontoforge.mapping.profiles.neo4j import PG_TO_CYPHER_CAST, PG_TO_CYPHER_TYPE
 
@@ -89,14 +90,22 @@ def _versions(pg: PGModel) -> dict[str, str]:
 def _version_notes(pg: PGModel) -> str:
     """Lignes d'en-tête : versions ciblées, et avertissement quand la combinaison est douteuse."""
     v = _versions(pg)
-    lines = [f"Cible : {standards.line(v, ('neo4j', 'cypher'))} (référence des versions du {standards.updated()}, statut Neo4j : {standards.status_label('neo4j', v['neo4j'], 'fr')})."]
+    lg = GL()
+    sl = standards.status_label('neo4j', v['neo4j'], lg)
+    lines = [T(f"Cible : {standards.line(v, ('neo4j', 'cypher'))} (référence des versions du {standards.updated()}, statut Neo4j : {sl}).",
+               f"Target: {standards.line(v, ('neo4j', 'cypher'))} (versions reference dated {standards.updated()}, Neo4j status: {sl}).")]
     if not standards.cypher_compatible(v["neo4j"], v["cypher"]):
-        lines.append(f"ATTENTION : Cypher {v['cypher']} n'existe pas sur Neo4j {v['neo4j']} — préfixe CYPHER omis. À VÉRIFIER.")
+        lines.append(T(f"ATTENTION : Cypher {v['cypher']} n'existe pas sur Neo4j {v['neo4j']} — préfixe CYPHER omis. À VÉRIFIER.",
+                       f"WARNING: Cypher {v['cypher']} does not exist on Neo4j {v['neo4j']} — CYPHER prefix omitted. TO VERIFY."))
     elif standards.cypher_prefix(v["neo4j"], v["cypher"]):
-        lines.append(f"Chaque requête porte le préfixe « {standards.cypher_prefix(v['neo4j'], v['cypher']).strip()} » (il ne vaut que pour la requête qui le suit).")
+        pf = standards.cypher_prefix(v["neo4j"], v["cypher"]).strip()
+        lines.append(T(f"Chaque requête porte le préfixe « {pf} » (il ne vaut que pour la requête qui le suit).",
+                       f"Each query carries the prefix \"{pf}\" (it only applies to the query that follows it)."))
     if standards.neo4j_caps(v["neo4j"])["legacy_assert"]:
-        lines.append("Neo4j 4.4 est hors support : schema.cypher utilise la syntaxe ASSERT (À VÉRIFIER, non testée) ; "
-                     "ingest.cypher et validation.cypher emploient des fonctions de Neo4j 5 (elementId, COUNT { }) non adaptées.")
+        lines.append(T("Neo4j 4.4 est hors support : schema.cypher utilise la syntaxe ASSERT (À VÉRIFIER, non testée) ; "
+                       "ingest.cypher et validation.cypher emploient des fonctions de Neo4j 5 (elementId, COUNT { }) non adaptées.",
+                       "Neo4j 4.4 is out of support: schema.cypher uses the ASSERT syntax (TO VERIFY, untested); "
+                       "ingest.cypher and validation.cypher use Neo4j 5 functions (elementId, COUNT { }) that are not adapted."))
     return "\n".join(lines)
 
 
@@ -266,7 +275,8 @@ def _schema(m: _Model) -> str:
             req = ", ".join(f"n.{quote(k)}" for k in key)
             req = req if len(key) == 1 else f"({req})"
             uname = names.get(f"{s}_key_unique")
-            community.append(f"// clé {lab}({', '.join(key)}) — Community : UNIQUE (Enterprise : NODE KEY ci-dessous)\n"
+            community.append(T(f"// clé {lab}({', '.join(key)}) — Community : UNIQUE (Enterprise : NODE KEY ci-dessous)",
+                               f"// key {lab}({', '.join(key)}) — Community: UNIQUE (Enterprise: NODE KEY below)") + "\n"
                              f"CREATE CONSTRAINT {uname} IF NOT EXISTS {pat} {rq} {req} IS UNIQUE;")
             kname = names.get(f"{s}_node_key")
             enterprise.append(f"DROP CONSTRAINT {uname} IF EXISTS;\n"
@@ -293,14 +303,16 @@ def _schema(m: _Model) -> str:
             if p.indexed and not p.unique and key != [p.name]:
                 kind = "TEXT INDEX" if (p.type == "String" and not p.is_list and p.lang) else "INDEX"
                 suffix = "text" if kind == "TEXT INDEX" else "range"
-                indexes.append(f"// index {lab}.{p.name} : propriété marquée « indexed »"
-                               + (f" (source : {p.source})" if p.source else "") + "\n"
+                indexes.append(T(f"// index {lab}.{p.name} : propriété marquée « indexed »", f"// index {lab}.{p.name}: property marked \"indexed\"")
+                               + (T(f" (source : {p.source})", f" (source: {p.source})") if p.source else "") + "\n"
                                f"CREATE {kind} {names.get(f'{s}_{_snake(p.name)}_{suffix}')} IF NOT EXISTS "
                                f"{ipat} ON (n.{qp});")
             if p.enum:
-                notes.append(f"// ENUM {lab}.{p.name} ∈ {{{', '.join(p.enum)}}} — pas de contrainte native → validation.cypher")
+                notes.append(T(f"// ENUM {lab}.{p.name} ∈ {{{', '.join(p.enum)}}} — pas de contrainte native → validation.cypher",
+                               f"// ENUM {lab}.{p.name} ∈ {{{', '.join(p.enum)}}} — no native constraint → validation.cypher"))
             if p.pattern:
-                notes.append(f"// PATTERN {lab}.{p.name} =~ {p.pattern} — pas de contrainte native → validation.cypher")
+                notes.append(T(f"// PATTERN {lab}.{p.name} =~ {p.pattern} — pas de contrainte native → validation.cypher",
+                               f"// PATTERN {lab}.{p.name} =~ {p.pattern} — no native constraint → validation.cypher"))
 
     for e in m.edges:
         s, qt = "rel_" + _snake(e.name), quote(e.name)
@@ -331,17 +343,21 @@ def _schema(m: _Model) -> str:
                     enterprise.append(f"CREATE CONSTRAINT {names.get(f'{s}_{_snake(p.name)}_type')} IF NOT EXISTS "
                                       f"{pat} REQUIRE r.{qp} IS :: {_cypher_type(p)};")
             if p.indexed and not p.unique:
-                indexes.append(f"// index [:{e.name}].{p.name} : propriété marquée « indexed »\n"
+                indexes.append(T(f"// index [:{e.name}].{p.name} : propriété marquée « indexed »", f"// index [:{e.name}].{p.name}: property marked \"indexed\"") + "\n"
                                f"CREATE INDEX {names.get(f'{s}_{_snake(p.name)}_range')} IF NOT EXISTS "
                                f"{pat} ON (r.{qp});")
         c = e.cardinality
         if c.out != "0..*" or c.in_ != "0..*":
-            notes.append(f"// CARDINALITY ({e.from_})-[:{e.name}]->({e.to}) out={c.out} in={c.in_} — "
-                         f"pas de contrainte de cardinalité de relation → validation.cypher")
+            notes.append(T(f"// CARDINALITY ({e.from_})-[:{e.name}]->({e.to}) out={c.out} in={c.in_} — "
+                           f"pas de contrainte de cardinalité de relation → validation.cypher",
+                           f"// CARDINALITY ({e.from_})-[:{e.name}]->({e.to}) out={c.out} in={c.in_} — "
+                           f"no relationship cardinality constraint → validation.cypher"))
         if e.symmetric or not e.directed:
-            notes.append(f"// SYMMETRIC {e.name} — un seul sens stocké, interroger avec -[:{e.name}]- (non orienté)")
+            notes.append(T(f"// SYMMETRIC {e.name} — un seul sens stocké, interroger avec -[:{e.name}]- (non orienté)",
+                           f"// SYMMETRIC {e.name} — only one direction stored, query with -[:{e.name}]- (undirected)"))
         if e.derived:
-            notes.append(f"// DERIVED {e.name} — relation matérialisée, recalculée par validation.cypher")
+            notes.append(T(f"// DERIVED {e.name} — relation matérialisée, recalculée par validation.cypher",
+                           f"// DERIVED {e.name} — materialized relationship, recomputed by validation.cypher"))
 
     # Plein texte (optionnel) : propriétés textuelles multilingues / de nommage
     ft_labels: list[str] = []
@@ -362,45 +378,58 @@ def _schema(m: _Model) -> str:
     lost_lines = []
     for f in lost:
         opt = f.chosen or f.recommended
-        label = next((o.label for o in f.options if o.id == opt), opt) if opt else "non arbitré"
+        label = next((o.label for o in f.options if o.id == opt), opt) if opt else T("non arbitré", "not arbitrated")
         short = re.split(r"[#/]", f.subject.rstrip("/#"))[-1] or f.subject
-        lost_lines.append(f"// LOST {f.id} — {f.title} — sujet : {short} <{f.subject}> — compensation : {label}")
+        lost_lines.append(T(f"// LOST {f.id} — {f.title} — sujet : {short} <{f.subject}> — compensation : {label}",
+                            f"// LOST {f.id} — {f.title} — subject: {short} <{f.subject}> — compensation: {label}"))
 
     if skipped["rel"]:
-        notes.append(f"// Neo4j {m.v['neo4j']} : {skipped['rel']} contrainte(s) de relation non générée(s) "
-                     f"({'syntaxe 4.4 sans contrainte de relation Community' if legacy else 'IS UNIQUE sur relation : Neo4j 5.7+'}) — à contrôler dans l'application.")
+        why = (T('syntaxe 4.4 sans contrainte de relation Community', '4.4 syntax has no Community relationship constraint') if legacy
+               else T('IS UNIQUE sur relation : Neo4j 5.7+', 'IS UNIQUE on a relationship: Neo4j 5.7+'))
+        notes.append(T(f"// Neo4j {m.v['neo4j']} : {skipped['rel']} contrainte(s) de relation non générée(s) ({why}) — à contrôler dans l'application.",
+                       f"// Neo4j {m.v['neo4j']}: {skipped['rel']} relationship constraint(s) not generated ({why}) — check them in the application."))
     if skipped["type"]:
-        notes.append(f"// Neo4j {m.v['neo4j']} : {skipped['type']} contrainte(s) de type (IS :: <TYPE>) non générée(s) — "
-                     f"exigent Neo4j 5.9+ ; types à contrôler dans l'application.")
+        notes.append(T(f"// Neo4j {m.v['neo4j']} : {skipped['type']} contrainte(s) de type (IS :: <TYPE>) non générée(s) — "
+                       f"exigent Neo4j 5.9+ ; types à contrôler dans l'application.",
+                       f"// Neo4j {m.v['neo4j']}: {skipped['type']} type constraint(s) (IS :: <TYPE>) not generated — "
+                       f"they require Neo4j 5.9+; check types in the application."))
     if skipped["list"]:
-        notes.append(f"// Neo4j {m.v['neo4j']} : {skipped['list']} contrainte(s) de type liste non générée(s) — exigent Neo4j 5.10+.")
+        notes.append(T(f"// Neo4j {m.v['neo4j']} : {skipped['list']} contrainte(s) de type liste non générée(s) — exigent Neo4j 5.10+.",
+                       f"// Neo4j {m.v['neo4j']}: {skipped['list']} list type constraint(s) not generated — they require Neo4j 5.10+."))
     if m.caps["calendar"]:
-        notes.append("// Graph types (ALTER CURRENT GRAPH TYPE, disponibles depuis 2026.06) : non générés par OntoForge — À VÉRIFIER avant d'en dépendre.")
+        notes.append(T("// Graph types (ALTER CURRENT GRAPH TYPE, disponibles depuis 2026.06) : non générés par OntoForge — À VÉRIFIER avant d'en dépendre.",
+                       "// Graph types (ALTER CURRENT GRAPH TYPE, available since 2026.06): not generated by OntoForge — TO VERIFY before relying on them."))
     pre = m.pre
-    req = ("Requiert Neo4j 5.7+ (Community) ; section Enterprise : 5.11+." if not legacy else
-           "Syntaxe Neo4j 4.4 (ON … ASSERT) : À VÉRIFIER, non testée.")
-    out = [_header(m.pg, "schema.cypher", "Contraintes et index Neo4j (idempotents, IF NOT EXISTS).\n"
-                   "Exécuter avant ingest.cypher. " + req)]
-    out.append("// ===== 1. Contraintes Community + Enterprise =====")
+    req = (T("Requiert Neo4j 5.7+ (Community) ; section Enterprise : 5.11+.", "Requires Neo4j 5.7+ (Community); Enterprise section: 5.11+.") if not legacy else
+           T("Syntaxe Neo4j 4.4 (ON … ASSERT) : À VÉRIFIER, non testée.", "Neo4j 4.4 syntax (ON … ASSERT): TO VERIFY, untested."))
+    out = [_header(m.pg, "schema.cypher", T("Contraintes et index Neo4j (idempotents, IF NOT EXISTS).\n"
+                   "Exécuter avant ingest.cypher. ", "Neo4j constraints and indexes (idempotent, IF NOT EXISTS).\n"
+                   "Run before ingest.cypher. ") + req)]
+    out.append(T("// ===== 1. Contraintes Community + Enterprise =====", "// ===== 1. Community + Enterprise constraints ====="))
     out.extend(_pfx(x, pre) for x in community)
-    out.append("// ===== 2. Index =====")
-    out.extend([_pfx(x, pre) for x in indexes] or ["// (aucun index supplémentaire : les contraintes UNIQUE créent leur index)"])
-    out.append("// ===== 3. Plein texte (optionnel, interrogé par db.index.fulltext.queryNodes) =====")
-    out.append(_pfx(fulltext, pre) if fulltext else "// (aucune propriété textuelle)")
-    out.append("// ===== 4. Enterprise Edition uniquement (décommenter) =====\n"
-               "// NODE KEY remplace la contrainte UNIQUE de même schéma (une seule autorisée par schéma) ;\n"
-               "// IS NOT NULL et IS :: <TYPE> (5.9+, LIST 5.10+) sont refusés par Community Edition.")
+    out.append(T("// ===== 2. Index =====", "// ===== 2. Indexes ====="))
+    out.extend([_pfx(x, pre) for x in indexes] or [T("// (aucun index supplémentaire : les contraintes UNIQUE créent leur index)",
+                                                     "// (no additional index: UNIQUE constraints create their own index)")])
+    out.append(T("// ===== 3. Plein texte (optionnel, interrogé par db.index.fulltext.queryNodes) =====",
+                 "// ===== 3. Full text (optional, queried with db.index.fulltext.queryNodes) ====="))
+    out.append(_pfx(fulltext, pre) if fulltext else T("// (aucune propriété textuelle)", "// (no text property)"))
+    out.append(T("// ===== 4. Enterprise Edition uniquement (décommenter) =====\n"
+                 "// NODE KEY remplace la contrainte UNIQUE de même schéma (une seule autorisée par schéma) ;\n"
+                 "// IS NOT NULL et IS :: <TYPE> (5.9+, LIST 5.10+) sont refusés par Community Edition.",
+                 "// ===== 4. Enterprise Edition only (uncomment) =====\n"
+                 "// NODE KEY replaces the UNIQUE constraint on the same schema (only one allowed per schema);\n"
+                 "// IS NOT NULL and IS :: <TYPE> (5.9+, LIST 5.10+) are refused by Community Edition."))
     out.extend(_commented(_pfx(x, pre)) for x in enterprise)
-    out.append("// ===== 5. Non contraignable nativement =====")
-    out.extend(notes or ["// (rien)"])
-    out.append("// ===== 6. Pertes (constats lost) =====")
-    out.extend(lost_lines or ["// (aucune)"])
+    out.append(T("// ===== 5. Non contraignable nativement =====", "// ===== 5. Cannot be constrained natively ====="))
+    out.extend(notes or [T("// (rien)", "// (nothing)")])
+    out.append(T("// ===== 6. Pertes (constats lost) =====", "// ===== 6. Losses (lost findings) ====="))
+    out.extend(lost_lines or [T("// (aucune)", "// (none)")])
     return "\n\n".join(out) + "\n"
 
 
 def _header(pg: PGModel, fname: str, text: str) -> str:
     meta = f"{pg.meta.name or 'model'}" + (f" <{pg.meta.iri}>" if pg.meta.iri else "")
-    return _comment(f"{fname} — généré par OntoForge {pg.meta.ontoforge_version} — {meta}\n{_version_notes(pg)}\n{text}")
+    return _comment(f"{fname} — " + T("généré par", "generated by") + f" OntoForge {pg.meta.ontoforge_version} — {meta}\n{_version_notes(pg)}\n{text}")
 
 
 # ---------------------------------------------------------------------------
@@ -408,24 +437,30 @@ def _header(pg: PGModel, fname: str, text: str) -> str:
 # ---------------------------------------------------------------------------
 def _ingest(m: _Model) -> str:
     out = [_header(m.pg, "ingest.cypher",
-                   "Ingestion idempotente : un paramètre $rows (liste de maps) par instruction, nœuds puis relations.\n"
-                   "Lots conseillés : 1 000 à 10 000 lignes par transaction côté driver ; en une seule requête :\n"
+                   T("Ingestion idempotente : un paramètre $rows (liste de maps) par instruction, nœuds puis relations.\n"
+                     "Lots conseillés : 1 000 à 10 000 lignes par transaction côté driver ; en une seule requête :\n",
+                     "Idempotent ingestion: one $rows parameter (list of maps) per statement, nodes then relationships.\n"
+                     "Suggested batches: 1,000 to 10,000 rows per transaction on the driver side; in a single query:\n")
                    + ("  UNWIND $rows AS row CALL (row) { … } IN TRANSACTIONS OF 1000 ROWS  (Neo4j 5.23+)\n" if m.caps["call_scoped"] else
-                      "  UNWIND $rows AS row CALL { WITH row … } IN TRANSACTIONS OF 1000 ROWS  (avant Neo4j 5.23)\n") +
-                   "Les dates sont attendues en ISO 8601 (chaînes), les durées en ISO 8601 (P1DT2H).\n"
-                   "Une valeur absente (null) supprime la propriété : rechargement complet par type.")]
-    out.append("// ===== Nœuds =====")
+                      T("  UNWIND $rows AS row CALL { WITH row … } IN TRANSACTIONS OF 1000 ROWS  (avant Neo4j 5.23)\n",
+                        "  UNWIND $rows AS row CALL { WITH row … } IN TRANSACTIONS OF 1000 ROWS  (before Neo4j 5.23)\n")) +
+                   T("Les dates sont attendues en ISO 8601 (chaînes), les durées en ISO 8601 (P1DT2H).\n"
+                     "Une valeur absente (null) supprime la propriété : rechargement complet par type.",
+                     "Dates are expected as ISO 8601 strings, durations as ISO 8601 (P1DT2H).\n"
+                     "A missing value (null) removes the property: reload each type in full."))]
+    out.append(T("// ===== Nœuds =====", "// ===== Nodes ====="))
     for nt in m.nodes:
         lab = nt.labels[0] if nt.labels else nt.name
         if nt.abstract:
-            out.append(f"// :{lab} est abstrait (label secondaire porté par ses sous-types) : pas d'ingestion directe.")
+            out.append(T(f"// :{lab} est abstrait (label secondaire porté par ses sous-types) : pas d'ingestion directe.",
+                         f"// :{lab} is abstract (secondary label carried by its subtypes): no direct ingestion."))
             continue
         key = m.key(nt)
         props = m.all_props(nt)
         shape = ", ".join(p.name + ("[]" if p.is_list else "") for p in props)
         lines = [f"// :{':'.join(nt.labels or [nt.name])} — $rows : [{{{shape}}}]"]
         if not key:
-            lines.append("// ATTENTION : aucune clé → CREATE (non idempotent)")
+            lines.append(T("// ATTENTION : aucune clé → CREATE (non idempotent)", "// WARNING: no key → CREATE (not idempotent)"))
             lines.append("UNWIND $rows AS row")
             lines.append(f"CREATE (n:{quote(lab)})")
         else:
@@ -441,21 +476,24 @@ def _ingest(m: _Model) -> str:
             lines.append("SET " + ",\n    ".join(sets))
         out.append(_pfx("\n".join(lines) + ";", m.pre))
 
-    out.append("// ===== Relations =====")
+    out.append(T("// ===== Relations =====", "// ===== Relationships ====="))
     for e in m.edges:
         if e.derived:
-            out.append(f"// [:{e.name}] est dérivée (matérialisée par validation.cypher) : pas d'ingestion.")
+            out.append(T(f"// [:{e.name}] est dérivée (matérialisée par validation.cypher) : pas d'ingestion.",
+                         f"// [:{e.name}] is derived (materialized by validation.cypher): no ingestion."))
             continue
         props = e.properties
-        shape = ", ".join(["from{…clé " + e.from_ + "}", "to{…clé " + e.to + "}"] + [p.name for p in props])
+        shape = ", ".join([T("from{…clé ", "from{…key ") + e.from_ + "}", T("to{…clé ", "to{…key ") + e.to + "}"] + [p.name for p in props])
         lines = [f"// ({e.from_})-[:{e.name}]->({e.to}) — $rows : [{{{shape}}}]"]
         lines.append("UNWIND $rows AS row")
         pa, pb = m.node_pattern("a", e.from_, "row.from"), m.node_pattern("b", e.to, "row.to")
         if pa is None or pb is None:
             missing = [n for n, pt in ((e.from_, pa), (e.to, pb)) if pt is None]
-            out.append("// À COMPLÉTER : relation non ingérée, le type " + ", ".join(missing) +
-                       " n'a ni clé ni propriété IRI/unique : un motif vide apparierait tous les nœuds du label.\n"
-                       + _commented(_pfx("\n".join(lines) + "\nMATCH (a), (b) // clé à définir\nMERGE (a)-[r:" + quote(e.name) + "]->(b);", m.pre)))
+            out.append(T("// À COMPLÉTER : relation non ingérée, le type ", "// TO COMPLETE: relationship not ingested, the type ") + ", ".join(missing) +
+                       T(" n'a ni clé ni propriété IRI/unique : un motif vide apparierait tous les nœuds du label.\n",
+                         " has neither a key nor an IRI/unique property: an empty pattern would match every node of the label.\n")
+                       + _commented(_pfx("\n".join(lines) + T("\nMATCH (a), (b) // clé à définir\n", "\nMATCH (a), (b) // key to define\n")
+                                         + "MERGE (a)-[r:" + quote(e.name) + "]->(b);", m.pre)))
             continue
         lines.append("MATCH " + pa)
         lines.append("MATCH " + pb)
@@ -467,7 +505,7 @@ def _ingest(m: _Model) -> str:
         if sets:
             lines.append("SET " + ",\n    ".join(sets))
         if e.symmetric or not e.directed:
-            lines.insert(1, "// symétrique : MERGE non orienté (crée a→b si aucun sens n'existe)")
+            lines.insert(1, T("// symétrique : MERGE non orienté (crée a→b si aucun sens n'existe)", "// symmetric: undirected MERGE (creates a→b if neither direction exists)"))
         out.append(_pfx("\n".join(lines) + ";", m.pre))
     return "\n\n".join(out) + "\n"
 
@@ -505,7 +543,7 @@ def _xsd_regex(pattern: str) -> str:
 
 
 def _validation(m: _Model, v: Validation) -> str:
-    head = f"// {v.id} [{v.kind}] {v.description}" + (f" (source : {v.source})" if v.source else "")
+    head = f"// {v.id} [{v.kind}] {v.description}" + (T(f" (source : {v.source})", f" (source: {v.source})") if v.source else "")
     e = m.edge_by_name.get(v.edge_type) if v.edge_type else None
     nt_name = v.node_type or (e.from_ if e else None)
     lab = m.label(nt_name)
@@ -537,10 +575,10 @@ def _validation(m: _Model, v: Validation) -> str:
         body = f"{match}\nWHERE {acc} IS :: LIST<ANY> AND size({acc}) > 1\n" + ret(var, f"size({acc})")
     elif k == "existence":
         if acc:
-            body = f"{match}\nWHERE {acc} IS NULL\n" + ret(var, literal(f"{v.property} absent"))
+            body = f"{match}\nWHERE {acc} IS NULL\n" + ret(var, literal(T(f"{v.property} absent", f"{v.property} missing")))
         elif v.edge_type:
             pat = _rel_pat("n", v.edge_type, v.params.get("direction", "out"), v.params.get("target"))
-            body = f"{match}\nWHERE NOT EXISTS {{ {pat} }}\n" + ret("n", literal(f"aucune relation {v.edge_type}"))
+            body = f"{match}\nWHERE NOT EXISTS {{ {pat} }}\n" + ret("n", literal(T(f"aucune relation {v.edge_type}", f"no {v.edge_type} relationship")))
     elif k == "disjoint":
         others = list(v.params.get("with") or v.params.get("targets") or [])
         others = [o for o in others if o != nt_name]
@@ -563,7 +601,7 @@ def _validation(m: _Model, v: Validation) -> str:
             body = f"{match}\nWHERE {acc} IS NOT NULL AND NOT {acc} IN {literal(values)}\n" + ret(var, acc)
     elif k == "irreflexive" and v.edge_type:
         body = (f"MATCH (n{':' + quote(lab) if lab else ''})-[r:{quote(v.edge_type)}]->(n)\n"
-                + ret("n", literal("boucle " + v.edge_type)))
+                + ret("n", literal(T("boucle ", "loop ") + v.edge_type)))
     elif k == "asymmetric" and v.edge_type:
         t = quote(v.edge_type)
         body = (f"MATCH (n{':' + quote(lab) if lab else ''})-[:{t}]->(m)-[:{t}]->(n)\n"
@@ -580,7 +618,8 @@ def _validation(m: _Model, v: Validation) -> str:
     elif k == "pattern" and acc:
         pattern = v.params.get("pattern") or (prop.pattern if prop else None)
         if pattern:
-            body = (f"// regex SHACL/XSD convertie en correspondance complète Java : {pattern}\n"
+            body = (T(f"// regex SHACL/XSD convertie en correspondance complète Java : {pattern}\n",
+                      f"// SHACL/XSD regex converted to a full-match Java regex: {pattern}\n") +
                     f"{match}\nWHERE {acc} IS NOT NULL AND NOT toString({acc}) =~ {literal(_xsd_regex(pattern))}\n"
                     + ret(var, acc))
     elif k == "range" and acc:
@@ -599,13 +638,13 @@ def _validation(m: _Model, v: Validation) -> str:
                 f"WHERE size(extra) > 0\n" + ret("n", "extra"))
 
     if body is None:
-        tpl = f"{match}\nWHERE /* À COMPLÉTER : {v.description} */ false\n" + ret(var, "null")
-        return head + "\n// Pas de traduction automatique pour ce cas : patron à compléter.\n" + _commented(_pfx(tpl, m.pre))
+        tpl = f"{match}\nWHERE /* {T('À COMPLÉTER', 'TO COMPLETE')} : {v.description} */ false\n" + ret(var, "null")
+        return head + T("\n// Pas de traduction automatique pour ce cas : patron à compléter.\n", "\n// No automatic translation for this case: pattern to complete.\n") + _commented(_pfx(tpl, m.pre))
     return _pfx(head + "\n" + body + ";", m.pre)
 
 
 def _materialization(m: _Model, x: Materialization) -> str:
-    head = f"// {x.id} [{x.kind}] {x.description}" + (f" (source : {x.source})" if x.source else "")
+    head = f"// {x.id} [{x.kind}] {x.description}" + (T(f" (source : {x.source})", f" (source: {x.source})") if x.source else "")
     tgt = m.edge_by_name.get(x.edge_type) if x.edge_type else None
     k = x.kind
     stmts: list[str] = []
@@ -651,43 +690,49 @@ def _materialization(m: _Model, x: Materialization) -> str:
         parent = m.label(x.parent) if x.parent else None
         pl = ":" + quote(parent) if parent else ""
         tpl = (f"MATCH (n:{quote(x.node_type)}) REMOVE n:{quote(x.node_type)};\n"
-               f"MATCH (n{pl})\nWHERE /* À COMPLÉTER : {x.definition or x.description} */ false\n"
+               f"MATCH (n{pl})\nWHERE /* {T('À COMPLÉTER', 'TO COMPLETE')} : {x.definition or x.description} */ false\n"
                f"SET n:{quote(x.node_type)};")
-        return head + "\n// Classification (pas de raisonneur) : condition à écrire puis rejouer après ingestion.\n" + _commented(_pfx(tpl, m.pre))
+        return head + T("\n// Classification (pas de raisonneur) : condition à écrire puis rejouer après ingestion.\n",
+                        "\n// Classification (no reasoner): write the condition, then replay after ingestion.\n") + _commented(_pfx(tpl, m.pre))
     elif k == "inverse" and x.edge_type:
-        pattern = f"MATCH (b)<-[:{quote(x.edge_type)}]-(a) RETURN b, a  // lecture de {x.parent or 'l’inverse'} sans le stocker"
+        pattern = f"MATCH (b)<-[:{quote(x.edge_type)}]-(a) RETURN b, a  // " + T(f"lecture de {x.parent or 'l’inverse'} sans le stocker", f"read {x.parent or 'the inverse'} without storing it")
     elif k == "symmetric" and x.edge_type:
         t = quote(x.edge_type)
         pattern = f"MATCH (a)-[:{t}]-(b) RETURN a, b"
-        stmts = [f"// contrôle : la relation ne doit être stockée que dans un sens\n"
+        stmts = [T("// contrôle : la relation ne doit être stockée que dans un sens", "// check: the relationship must be stored in one direction only") + "\n"
                  f"MATCH (a)-[r1:{t}]->(b)-[r2:{t}]->(a)\nWHERE elementId(r1) < elementId(r2)\n"
                  f"RETURN {literal(x.id)} AS validation, 'Warning' AS severity, elementId(r2) AS focus, "
-                 f"{m.iri_expr('a', tgt.from_ if tgt else None)} AS uri, 'doublon symétrique' AS detail;"]
+                 f"{m.iri_expr('a', tgt.from_ if tgt else None)} AS uri, {literal(T('doublon symétrique', 'symmetric duplicate'))} AS detail;"]
     elif k == "sameAs":
-        pattern = ("MATCH (a), (b) WHERE a.`uri` IN b.sameAs  // adapter au nom de la propriété IRI\n"
-                   "CALL apoc.refactor.mergeNodes([a, b]) YIELD node RETURN node  // APOC — À VÉRIFIER")
+        pattern = ("MATCH (a), (b) WHERE a.`uri` IN b.sameAs  // " + T("adapter au nom de la propriété IRI", "adapt to the name of the IRI property") + "\n"
+                   "CALL apoc.refactor.mergeNodes([a, b]) YIELD node RETURN node  // APOC — " + T("À VÉRIFIER", "TO VERIFY"))
 
     parts = [head]
     if pattern:
-        parts.append(_comment("patron : " + pattern))
+        parts.append(_comment(T("patron : ", "pattern: ") + pattern))
     if stmts:
         parts.append(_pfx("\n".join(stmts), m.pre))
     elif not pattern:
-        parts.append("// (pas de patron généré)")
+        parts.append(T("// (pas de patron généré)", "// (no pattern generated)"))
     return "\n".join(parts)
 
 
 def _validations(m: _Model) -> str:
     out = [_header(m.pg, "validation.cypher",
-                   "Partie A : requêtes de détection (une par validation) — chacune retourne\n"
-                   "  validation, severity, focus (elementId), uri, detail ; 0 ligne = conforme.\n"
-                   "Partie B : matérialisations / patrons de requête (à rejouer après chaque ingestion).\n"
-                   "COUNT { } : Neo4j 5.0+ ; EXISTS { } : Neo4j 5.0+ ; prédicat IS :: : Neo4j 5.9+"
-                   + ("" if m.caps["type_constraint"] else f" (la cible {m.v['neo4j']} ne l'offre pas : requêtes concernées À VÉRIFIER)") + ".")]
-    out.append("// ===== A. Validations =====")
+                   T("Partie A : requêtes de détection (une par validation) — chacune retourne\n"
+                     "  validation, severity, focus (elementId), uri, detail ; 0 ligne = conforme.\n"
+                     "Partie B : matérialisations / patrons de requête (à rejouer après chaque ingestion).\n"
+                     "COUNT { } : Neo4j 5.0+ ; EXISTS { } : Neo4j 5.0+ ; prédicat IS :: : Neo4j 5.9+",
+                     "Part A: detection queries (one per validation) — each returns\n"
+                     "  validation, severity, focus (elementId), uri, detail; 0 rows = compliant.\n"
+                     "Part B: materializations / query patterns (replay after each ingestion).\n"
+                     "COUNT { }: Neo4j 5.0+; EXISTS { }: Neo4j 5.0+; IS :: predicate: Neo4j 5.9+")
+                   + ("" if m.caps["type_constraint"] else T(f" (la cible {m.v['neo4j']} ne l'offre pas : requêtes concernées À VÉRIFIER)",
+                                                             f" (target {m.v['neo4j']} does not offer it: affected queries TO VERIFY)")) + ".")]
+    out.append(T("// ===== A. Validations =====", "// ===== A. Validations ====="))
     for v in sorted(m.pg.validations, key=lambda v: v.id):
         out.append(_validation(m, v))
-    out.append("// ===== B. Matérialisations et patrons =====")
+    out.append(T("// ===== B. Matérialisations et patrons =====", "// ===== B. Materializations and patterns ====="))
     for x in sorted(m.pg.materializations, key=lambda x: x.id):
         out.append(_materialization(m, x))
     return "\n\n".join(out) + "\n"
@@ -702,7 +747,8 @@ def _mmd_id(name: str) -> str:
 
 def _mermaid(m: _Model) -> str:
     lines = ["classDiagram", "  direction LR",
-             "  %% généré par OntoForge — membres soulignés = clé ; --> relation ; .. > relation dérivée"]
+             T("  %% généré par OntoForge — membres soulignés = clé ; --> relation ; .. > relation dérivée",
+               "  %% generated by OntoForge — underlined members = key; --> relationship; ..> derived relationship")]
     for nt in m.nodes:
         key = set(m.key(nt)) if nt.key else set()
         lines.append(f"  class {_mmd_id(nt.name)} {{")
@@ -713,7 +759,7 @@ def _mermaid(m: _Model) -> str:
             lines.append(f"    +{t} {p.name}" + ("$" if p.name in key else ""))
         lines.append("  }")
         if nt.icon:
-            lines.append(f'  note for {_mmd_id(nt.name)} "icône : {nt.icon}"')
+            lines.append(f'  note for {_mmd_id(nt.name)} "' + T("icône : ", "icon: ") + f'{nt.icon}"')
     for nt in m.nodes:
         for a in m.ancestors(nt):
             lines.append(f"  {_mmd_id(a.name)} <|-- {_mmd_id(nt.name)}")
@@ -734,19 +780,58 @@ def _readme(m: _Model, files: dict[str, str]) -> str:
     n_comm = sum(1 for l in sl if re.match(r"(CYPHER \d+ )?CREATE CONSTRAINT", l))
     n_ent = sum(1 for l in sl if re.match(r"// (CYPHER \d+ )?CREATE CONSTRAINT", l))
     n_idx = sum(1 for l in sl if re.match(r"(CYPHER \d+ )?CREATE (TEXT |FULLTEXT )?INDEX", l))
-    rows = ["| Label(s) | Clé | Propriétés |", "|---|---|---|"]
+    rows = [T("| Label(s) | Clé | Propriétés |", "| Label(s) | Key | Properties |"), "|---|---|---|"]
     for nt in m.nodes:
-        labels = ":" + ":".join(nt.labels or [nt.name]) + (" *(abstrait)*" if nt.abstract else "")
+        labels = ":" + ":".join(nt.labels or [nt.name]) + (T(" *(abstrait)*", " *(abstract)*") if nt.abstract else "")
         rows.append(f"| `{labels}` | {', '.join(m.key(nt)) or '—'} | {', '.join(p.name for p in nt.properties)} |")
-    rels = ["| Relation | De → Vers | Propriétés | Remarque |", "|---|---|---|---|"]
+    rels = [T("| Relation | De → Vers | Propriétés | Remarque |", "| Relationship | From → To | Properties | Note |"), "|---|---|---|---|"]
     for e in m.edges:
-        rem = ", ".join(x for x in ("dérivée" if e.derived else "", "symétrique" if e.symmetric else "",
+        rem = ", ".join(x for x in (T("dérivée", "derived") if e.derived else "", T("symétrique", "symmetric") if e.symmetric else "",
                                     f"card. {e.cardinality.out}" if e.cardinality.out != "0..*" else "") if x)
         rels.append(f"| `:{e.name}` | {e.from_} → {e.to} | {', '.join(p.name for p in e.properties) or '—'} | {rem or '—'} |")
-    lost = [f"- `{f.id}` — {f.title} (choix : {f.chosen or f.recommended or 'non arbitré'})"
+    lost = [T(f"- `{f.id}` — {f.title} (choix : {f.chosen or f.recommended or 'non arbitré'})",
+              f"- `{f.id}` — {f.title} (choice: {f.chosen or f.recommended or 'not arbitrated'})")
             for f in sorted(pg.findings, key=lambda f: f.id) if f.severity == "lost"]
     pending = [f"- `{f.id}` — {f.title}" for f in sorted(pg.findings, key=lambda f: f.id)
                if f.severity in ("review", "lost") and not f.chosen]
+    if GL() == "en":
+        return f"""# Neo4j schema — {pg.meta.name or 'model'}
+
+Generated by OntoForge {pg.meta.ontoforge_version}{' from `' + pg.meta.iri + '`' if pg.meta.iri else ''}.
+{_version_notes(pg).replace(chr(10), ' ')}
+Findings: {s['auto']} auto, {s['review']} to arbitrate, {s['lost']} lost ({s['decided']} decided, {s['pending']} pending).
+
+## Files
+| File | Role |
+|---|---|
+| `schema.cypher` | {n_comm} active constraints (Community), {n_idx} indexes, {n_ent} commented Enterprise constraints |
+| `ingest.cypher` | one `UNWIND $rows … MERGE … SET` statement per node type, then per relationship |
+| `validation.cypher` | {len(pg.validations)} detection queries + {len(pg.materializations)} materializations / patterns |
+| `model.mmd` | Mermaid diagram (classDiagram) |
+
+## Execution order
+1. `schema.cypher` (cypher-shell: `cypher-shell -f schema.cypher`) — before any data.
+2. `ingest.cypher` — each statement receives `$rows` (driver: batches of 1,000 to 10,000 rows); nodes before relationships.
+3. `validation.cypher` part B (materializations), then part A: each query must return 0 rows.
+
+## Community vs Enterprise
+- Community: `IS UNIQUE` constraints (nodes; relationships since 5.7), RANGE / TEXT / FULLTEXT indexes.
+- Enterprise: `IS NODE KEY`, `IS NOT NULL`, `IS :: <TYPE>` (5.9+, lists 5.10+) — section 4 of `schema.cypher`, to uncomment.
+  On Community, existence and types are checked by `validation.cypher`.
+- Never native: relationship cardinality, label disjointness, enumerations, regex → `validation.cypher`.
+
+## Nodes
+{chr(10).join(rows)}
+
+## Relationships
+{chr(10).join(rels)}
+
+## Losses (`lost` findings)
+{chr(10).join(lost) or '- none'}
+
+## Pending findings
+{chr(10).join(pending) or '- none'}
+"""
     return f"""# Schéma Neo4j — {pg.meta.name or 'modèle'}
 
 Généré par OntoForge {pg.meta.ontoforge_version}{' depuis `' + pg.meta.iri + '`' if pg.meta.iri else ''}.
@@ -787,14 +872,15 @@ Constats : {s['auto']} auto, {s['review']} à arbitrer, {s['lost']} perdus ({s['
 
 
 # ---------------------------------------------------------------------------
-def generate(pg: PGModel, onto: Any = None) -> dict[str, str]:
-    """PGModel → fichiers Neo4j (nom → contenu). `onto` est accepté pour le contrat mais non utilisé."""
-    m = _Model(pg)
-    files = {
-        "schema.cypher": _schema(m),
-        "ingest.cypher": _ingest(m),
-        "validation.cypher": _validations(m),
-        "model.mmd": _mermaid(m),
-    }
-    files["README-neo4j.md"] = _readme(m, files)
-    return dict(sorted(files.items()))
+def generate(pg: PGModel, onto: Any = None, lang: Optional[str] = None) -> dict[str, str]:
+    """PGModel → fichiers Neo4j (nom → contenu). `onto` est accepté pour le contrat mais non utilisé ; ``lang`` : fr/en."""
+    with using_lang(lang):
+        m = _Model(pg)
+        files = {
+            "schema.cypher": _schema(m),
+            "ingest.cypher": _ingest(m),
+            "validation.cypher": _validations(m),
+            "model.mmd": _mermaid(m),
+        }
+        files["README-neo4j.md"] = _readme(m, files)
+        return dict(sorted(files.items()))

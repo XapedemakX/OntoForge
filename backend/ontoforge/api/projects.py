@@ -7,7 +7,7 @@ from fastapi import APIRouter, File, Form, HTTPException, Query, UploadFile
 from fastapi.responses import Response
 from pydantic import BaseModel
 
-from .. import samples as samples_mod, standards
+from .. import localize, samples as samples_mod, standards
 from ..core.onto_model import OntoModel
 from ..core.project import Project
 from ..core.shapes_model import ShapesModel
@@ -188,7 +188,7 @@ def apply_dsl(pid: str, body: DslRequest) -> dict:
     model, errors = parse_dsl(body.text, p.onto if body.merge else None)
     p.onto = model
     store.save(p)
-    return {"project": dump(p), "errors": dump(errors)}
+    return {"project": dump(p), "errors": localize.tr_deep(dump(errors), localize.ui_lang())}  # messages d'erreur dans la langue de l'interface
 
 
 # ---- Export ----------------------------------------------------------------------------------

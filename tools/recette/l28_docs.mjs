@@ -1,10 +1,11 @@
 // Recette L28 : documentation intégrée, bouton « ? » et aide en contexte de Krakie.
 // Usage : node tools/recette/l28_docs.mjs   (BACKEND_PORT, FRONT_PORT optionnels ; front déjà buildé : cd frontend && npm run build)
 // Couvre : ouverture depuis le bandeau, sommaire, recherche, lien interne, « ? » depuis l'éditeur, « aide » à Krakie sur Shapes puis ouverture de la bonne section,
+// captures du guide (L34c : fichiers séparés, chargement paresseux, visionneuse, fr et en, mobile),
 // ancres de la table d'aide, mode anglais (page traduite sans bandeau, bandeau « French only » sur un fichier non traduit, libellés, carte d'aide), mobile 390 px. Captures : journal/L28/screens/.
 import { createRequire } from 'node:module'
 import { spawn } from 'node:child_process'
-import { mkdtempSync, mkdirSync, readFileSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, readFileSync, readdirSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
@@ -49,6 +50,33 @@ const atTop = (page, id) => page.evaluate(id => {
 const noOverflow = page => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 2)
 const openKrakie = async page => { if (!(await page.locator('.ag-panel').count())) { await page.locator('button.ag-fab').click(); await page.waitForSelector('.ag-panel') } }
 const ask = async (page, text, sel) => { await page.fill('.ag-box textarea', text); await page.keyboard.press('Enter'); await page.waitForSelector(sel, { timeout: 15000 }) }
+
+/** L34c : première capture du guide (chargement, légende, texte alternatif) puis visionneuse (ouverture, Échap, bouton, taille réelle). */
+async function checkImages(pg, label, { expectAlt } = {}) {
+  await pg.goto(`${base}/#/projet/${pid}/documentation/utilisateur/tableau-de-bord`); await pg.waitForSelector('.doc-article img.doc-img', { timeout: 10000 })
+  await pg.locator('.doc-article img.doc-img').first().scrollIntoViewIfNeeded()
+  await pg.waitForFunction(() => { const i = document.querySelector('.doc-article img.doc-img'); return !!i && i.complete && i.naturalWidth > 0 }, null, { timeout: 10000 })
+  const first = await pg.evaluate(() => { const i = document.querySelector('.doc-article img.doc-img'); const cap = i.parentElement.querySelector('.doc-figcap')
+    return { src: i.getAttribute('src'), lazy: i.loading, alt: i.alt, cap: cap?.textContent ?? '', nat: i.naturalWidth, w: i.getAttribute('width'), h: i.getAttribute('height') } })
+  log(`${label}a image affichée (fichier séparé, jamais inlinée)`, /\/assets\/.+\.png$/.test(first.src) && !/^data:/.test(first.src) && first.nat > 300, `${first.src} ${first.nat}px`)
+  log(`${label}b chargement paresseux, dimensions réservées, texte alternatif et légende`, first.lazy === 'lazy' && !!first.w && !!first.h && first.alt.length > 15 && first.cap.length > 10 && (!expectAlt || expectAlt.test(first.alt)), `${first.alt.slice(0, 60)} | ${first.cap.slice(0, 50)}`)
+  const broken = await pg.evaluate(() => document.querySelectorAll('.doc-article .doc-fig').length)
+  log(`${label}c toutes les captures du guide sont résolues (aucune légende de repli)`, broken === 0, `${broken} manquante(s)`)
+  await pg.locator('.doc-article img.doc-img').first().click(); await pg.waitForSelector('[data-testid=doc-zoom]'); await sleep(250)
+  const z = await pg.evaluate(() => { const i = document.querySelector('[data-testid=doc-zoom-img]'); const r = i.getBoundingClientRect(); return { nat: i.naturalWidth, inside: r.right <= innerWidth + 1 && r.bottom <= innerHeight + 1 && r.left >= -1, modal: document.querySelector('[data-testid=doc-zoom]').getAttribute('aria-modal') } })
+  log(`${label}d clic : visionneuse ouverte, image entière dans la fenêtre`, z.nat > 300 && z.inside && z.modal === 'true', JSON.stringify(z))
+  await pg.screenshot({ path: path.join(SHOTS, `12-${label}visionneuse.png`) })
+  await pg.keyboard.press('Escape'); await sleep(250)
+  log(`${label}e Échap ferme la visionneuse et rend le focus à l'image`, (await pg.locator('[data-testid=doc-zoom]').count()) === 0 && await pg.evaluate(() => document.activeElement?.classList.contains('doc-img')))
+  await pg.locator('.doc-article img.doc-img').first().click(); await pg.waitForSelector('[data-testid=doc-zoom]')
+  await pg.locator('[data-testid=doc-zoom-img]').click(); await sleep(200)
+  const actual = await pg.locator('.doc-zoom-scroll.actual').count()
+  await pg.locator('[data-testid=doc-zoom-close]').click(); await sleep(200)
+  log(`${label}f clic sur l'image : taille réelle ; bouton Fermer`, actual === 1 && (await pg.locator('[data-testid=doc-zoom]').count()) === 0)
+  await pg.locator('.doc-article img.doc-img').first().focus(); await pg.keyboard.press('Enter'); await pg.waitForSelector('[data-testid=doc-zoom]', { timeout: 3000 }); await pg.keyboard.press('Escape'); await sleep(200)
+  log(`${label}g clavier : Entrée sur l'image ouvre la visionneuse`, (await pg.locator('[data-testid=doc-zoom]').count()) === 0)
+  return first
+}
 
 try {
   // ---------------- 1. ouverture depuis le bandeau latéral
@@ -112,6 +140,14 @@ try {
     log(`4d page ${pg}`, (await page.locator('.doc-article h1').count()) > 0 && (await noOverflow(page)))
   }
 
+  // ---------------- 4bis. captures du guide (L34c), français
+  const pngReqs = []; page.on('request', r => { if (/\.png(\?|$)/.test(r.url())) pngReqs.push(r.url()) })
+  await page.goto(`${base}/#/projet/${pid}/documentation/utilisateur`); await page.waitForSelector('.doc-article h1'); await sleep(900)
+  const totalImgs = await page.locator('.doc-article img.doc-img').count()
+  log('12-fr guide utilisateur : au moins 50 captures référencées', totalImgs >= 50, String(totalImgs))
+  log('12-fr chargement à la demande : seules les captures proches de la fenêtre sont demandées', pngReqs.length < totalImgs / 2, `${pngReqs.length} requêtes PNG sur ${totalImgs} images`)
+  const frFirst = await checkImages(page, '12-fr ', { expectAlt: /projets/i })
+
   // ---------------- 5. bouton « ? » depuis l'éditeur
   await page.goto(`${base}/#/projet/${pid}/ontologie`, { waitUntil: 'load' }); await page.waitForSelector('.react-flow__node', { timeout: 20000 })
   await page.screenshot({ path: path.join(SHOTS, '05a-editeur-bouton-aide.png') })
@@ -174,6 +210,15 @@ try {
   await m.page.goto(`${base}/#/projet/${pid}/documentation/api`); await m.page.waitForSelector('.doc-article table', { timeout: 8000 }).catch(() => {}); await sleep(400)
   log('10f mobile : page API (tableaux) sans débordement de la page', await noOverflow(m.page))
   log('10g mobile : aucune erreur console', m.errs.length === 0, m.errs.slice(0, 3).join(' || '))
+  await m.page.goto(`${base}/#/projet/${pid}/documentation/utilisateur/tableau-de-bord`); await m.page.waitForSelector('.doc-article img.doc-img'); await sleep(600)
+  await m.page.locator('.doc-article img.doc-img').first().scrollIntoViewIfNeeded(); await m.page.waitForFunction(() => { const i = document.querySelector('.doc-article img.doc-img'); return i.complete && i.naturalWidth > 0 }); await sleep(300)
+  const mw = await m.page.evaluate(() => { const r = document.querySelector('.doc-article img.doc-img').getBoundingClientRect(); return { w: Math.round(r.width), ok: r.right <= innerWidth + 1 } })
+  log('10h mobile : capture à la largeur de l\'écran, sans débordement', mw.ok && mw.w <= 390 && await noOverflow(m.page), JSON.stringify(mw))
+  await m.page.locator('.doc-article img.doc-img').first().click(); await m.page.waitForSelector('[data-testid=doc-zoom]'); await sleep(200)
+  await m.page.screenshot({ path: path.join(SHOTS, '10e-mobile-visionneuse.png') })
+  const mz = await m.page.evaluate(() => { const i = document.querySelector('[data-testid=doc-zoom-img]'); const r = i.getBoundingClientRect(); return r.right <= innerWidth + 1 && r.left >= -1 })
+  await m.page.locator('[data-testid=doc-zoom-close]').click(); await sleep(200)
+  log('10i mobile : visionneuse (image dans l\'écran, bouton Fermer)', mz && (await m.page.locator('[data-testid=doc-zoom]').count()) === 0)
 
   // ---------------- 11. mode anglais
   const put = await fetch(B + '/settings', { method: 'PUT', headers: J, body: JSON.stringify({ language: { ui: 'en', labels: 'en', assistant: 'en' } }) })
@@ -190,11 +235,24 @@ try {
   log('11c interface de l\'écran en anglais', labels.toc === 'Contents' && labels.ph === 'Search in page' && /User guide/.test(labels.pg), JSON.stringify(labels))
   log('11d contenu anglais non marqué « fallback »', (await ep.locator('[data-doc-fallback]').count()) === 0)
   await ep.screenshot({ path: path.join(SHOTS, '11a-anglais-utilisateur.png') })
-  await ep.goto(`${base}/#/projet/${pid}/documentation/architecture`, { waitUntil: 'load' }); await ep.waitForSelector('.doc-article h1'); await sleep(500)
-  const ban = await ep.locator('[data-testid=doc-fr-only]').innerText().catch(() => '')
-  log('11b3 fichier non traduit : bandeau « Documentation available in French only »', ban.trim() === 'Documentation available in French only', ban)
-  log('11b4 fichier non traduit : contenu français marqué pour le scan', (await ep.locator('[data-doc-fallback]').count()) >= 2)
-  await ep.screenshot({ path: path.join(SHOTS, '11a-anglais-bandeau.png') })
+  const enFirst = await checkImages(ep, '12-en ', { expectAlt: /projects/i })
+  log('12-en la capture anglaise est un autre fichier que la française', enFirst.src !== frFirst.src && enFirst.alt !== frFirst.alt, `${enFirst.src} / ${frFirst.src}`)
+  // L34a : tous les guides ont une version .en.md ; le bandeau ne se teste que s'il reste un fichier français sans traduction
+  const GUIDE_DIR = path.join(ROOT, 'docs/guide'), MDS = readdirSync(GUIDE_DIR).filter(f => f.endsWith('.md') && !f.endsWith('.en.md'))
+  const untranslated = MDS.map(f => f.slice(0, -3)).filter(n => !MDS.includes(n + '.en.md') && !readdirSync(GUIDE_DIR).includes(n + '.en.md'))
+  if (untranslated.length) {
+    await ep.goto(`${base}/#/projet/${pid}/documentation/${untranslated[0].toLowerCase()}`, { waitUntil: 'load' }); await ep.waitForSelector('.doc-article h1'); await sleep(500)
+    const ban = await ep.locator('[data-testid=doc-fr-only]').innerText().catch(() => '')
+    log('11b3 fichier non traduit : bandeau « Documentation available in French only »', ban.trim() === 'Documentation available in French only', ban)
+    log('11b4 fichier non traduit : contenu français marqué pour le scan', (await ep.locator('[data-doc-fallback]').count()) >= 2)
+    await ep.screenshot({ path: path.join(SHOTS, '11a-anglais-bandeau.png') })
+  } else {
+    log('11b3 plus aucun fichier non traduit : pas de bandeau à tester', true)
+    for (const pg of ['architecture', 'glossaire', 'regles']) {
+      await ep.goto(`${base}/#/projet/${pid}/documentation/${pg}`, { waitUntil: 'load' }); await ep.waitForSelector('.doc-article h1'); await sleep(500)
+      log(`11b4 ${pg} : anglais, sans bandeau`, (await ep.locator('[data-testid=doc-fr-only]').count()) === 0 && (await ep.locator('[data-doc-fallback]').count()) === 0)
+    }
+  }
   await ep.goto(`${base}/#/projet/${pid}/documentation/limites`, { waitUntil: 'load' }); await ep.waitForSelector('.doc-article h1'); await sleep(500)
   log('11b5 limites, contribuer, api et journal : traduits, sans bandeau', (await ep.locator('[data-testid=doc-fr-only]').count()) === 0 && /known limits/i.test(await ep.locator('.doc-article h1').innerText()))
   await ep.goto(`${base}/#/projet/${pid}/shapes`, { waitUntil: 'load' }); await ep.waitForSelector('.ag-fab', { timeout: 15000 }); await sleep(800)

@@ -13,7 +13,7 @@ import os
 import re
 from typing import Any, Literal, Optional
 
-from fastapi import APIRouter, File, HTTPException, UploadFile
+from fastapi import APIRouter, File, HTTPException, Query, UploadFile
 from pydantic import BaseModel
 
 from ._common import check_target, decode, dump, load_project, service
@@ -206,15 +206,22 @@ def _doc_of(payload: DocPayload) -> Any:
     return doc
 
 
+DEMO_FILES = {"fr": "automaint-cahier-des-charges.pdf", "en": "automaint-requirements.pdf"}
+
+
 @router.get("/document/demo")
-def document_demo() -> Any:
-    """Cahier des charges de démonstration (samples/automaint), en lecture seule : nom de fichier fixe, aucun paramètre."""
+def document_demo(lang: Optional[str] = Query(None, description="fr ou en ; défaut : langue de l'interface")) -> Any:
+    """Document de démonstration (samples/automaint), en lecture seule : noms de fichier fixes, dans la langue de l'interface (ou ``lang``)."""
     from fastapi.responses import Response
     from .. import samples as samples_mod
-    f = samples_mod.samples_root() / "automaint" / "automaint-cahier-des-charges.pdf"
+    from ..localize import gen
+    if lang and gen.normalize(lang) is None:
+        raise HTTPException(status_code=422, detail=f"Langue inconnue « {lang} » (fr ou en) / unknown language \"{lang}\" (fr or en)")
+    name = DEMO_FILES[gen.resolve(lang)]
+    f = samples_mod.samples_root() / "automaint" / name
     if not f.is_file():
-        raise HTTPException(status_code=404, detail="Document de démonstration absent de cette installation.")
-    return Response(f.read_bytes(), media_type="application/pdf", headers={"Content-Disposition": 'inline; filename="automaint-cahier-des-charges.pdf"'})
+        raise HTTPException(status_code=404, detail="Document de démonstration absent de cette installation. / Demo document missing from this installation.")
+    return Response(f.read_bytes(), media_type="application/pdf", headers={"Content-Disposition": f'inline; filename="{name}"'})
 
 
 @router.post("/document/upload")

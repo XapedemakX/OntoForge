@@ -137,3 +137,42 @@ def localize_conformance(report: dict, lang: str) -> dict:
     if "issues" in out:
         out["issues"] = [{**i, "message": tr(i.get("message"), lang), **({"spec_ref": tr(i["spec_ref"], lang)} if i.get("spec_ref") else {})} if isinstance(i, dict) else i for i in out["issues"]]
     return out
+
+
+# Fragments ajoutés par le moteur autour d'un texte de l'ontologie (libellé, commentaire) : seuls eux sont traduits.
+_ENGINE_FRAGMENTS = (
+    ("[DÉPRÉCIÉ]", "[DEPRECATED]"),
+    (" Données de référence : ", " Reference data: "),
+    (" Nœuds de référence : ", " Reference nodes: "),
+    ("IRI de la ressource (K01).", "IRI of the resource (K01)."),
+)
+
+
+def _tr_framed(text: Optional[str]) -> Optional[str]:
+    """Traduit les fragments du moteur, jamais le texte de l'ontologie (libellés, commentaires : des données)."""
+    if not text:
+        return text
+    for fr, en in _ENGINE_FRAGMENTS:
+        text = text.replace(fr, en)
+    return text
+
+
+def localize_pg_for_export(pg: Any, lang: str) -> Any:
+    """Comme ``localize_pg`` pour les fichiers exportés, mais sans toucher aux textes issus de l'ontologie.
+
+    Les descriptions de types de nœuds, de propriétés et de relations reprennent les commentaires et libellés de
+    l'ontologie : ce sont des données, ``tr`` (qui remplace des fragments de français) les déformerait.
+    Les constats, validations, matérialisations et notes sont du texte du moteur : traduits."""
+    if lang != "en":
+        return pg
+    keep = {id(nt): nt.description for nt in pg.node_types.values()}
+    keep_p = {(id(nt), i): p.description for nt in pg.node_types.values() for i, p in enumerate(nt.properties)}
+    keep_e = {id(e): e.description for e in pg.edge_types}
+    localize_pg(pg, lang)
+    for nt in pg.node_types.values():
+        nt.description = _tr_framed(keep[id(nt)])
+        for i, p in enumerate(nt.properties):
+            p.description = _tr_framed(keep_p[(id(nt), i)])
+    for e in pg.edge_types:
+        e.description = keep_e[id(e)]
+    return pg

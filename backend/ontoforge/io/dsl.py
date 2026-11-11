@@ -281,13 +281,21 @@ def _line(c: _Ctx, line: str) -> None:
         targets = [x.strip() for x in rest.split(",") if x.strip()]
         if not targets:
             raise _Err("opérande manquant")
+        bs = []
         for t in targets:
             if " " in t:
                 raise _Err(f"nom invalide « {t} » (séparez les parents par des virgules)")
-            b = c.cls(t)
-            if mt.group(2) == "<":
+            bs.append(c.cls(t))
+        if mt.group(2) == "<":  # tout est vérifié avant d'écrire : une ligne refusée n'a aucun effet, même au-delà de 1 500 lignes
+            from ..editing import cycles
+            for b in bs:
                 if b == a:
                     raise _Err("une classe ne peut pas être sa propre sous-classe directe")
+                path = cycles.closing_path(m, a, b)
+                if path:
+                    raise _Err(cycles.cycle_message(a, b, path))
+        for b in bs:
+            if mt.group(2) == "<":
                 _add(m.classes[a].sub_class_of, b)
             elif mt.group(2) == "=":
                 e = ClassExpr(op="named", iri=b)

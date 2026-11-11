@@ -5,7 +5,7 @@
   {
    "screen": "01-projets",
    "ok": true,
-   "detail": "texte=672c erreurs=0"
+   "detail": "texte=674c erreurs=0"
   },
   {
    "screen": "02-tableau",
@@ -50,7 +50,7 @@
   {
    "screen": "10-exports",
    "ok": true,
-   "detail": "texte=4987c erreurs=0"
+   "detail": "texte=5081c erreurs=0"
   },
   {
    "screen": "11-requetes",
@@ -90,12 +90,12 @@
   {
    "screen": "m-01-projets",
    "ok": true,
-   "detail": "texte=650c erreurs=0"
+   "detail": "texte=652c erreurs=0"
   },
   {
    "screen": "m-02-tableau",
    "ok": true,
-   "detail": "texte=1466c erreurs=0"
+   "detail": "texte=1467c erreurs=0"
   },
   {
    "screen": "m-03-ontologie-editeur",

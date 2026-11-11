@@ -17,7 +17,7 @@ from ..core.onto_model import (
 )
 from ..core.project import Perimeter, Position, Project, ProjectView
 from ..core.shapes_model import ShapesModel
-from . import icons as icon_catalog
+from . import cycles, icons as icon_catalog
 
 MAX_OPS = 500
 IRI_RE = re.compile(r"^[A-Za-z][A-Za-z0-9+.\-]*:[^\s<>\"{}|\\^`]+$")
@@ -563,9 +563,10 @@ def _op_add_subclass(w: Work, op: dict) -> None:
     if parent not in w.onto.classes:
         raise OpError(f"Classe parente inconnue : {parent}")
     if child == parent:
-        raise OpError("Cycle de sous-classes : une classe ne peut pas être sa propre sous-classe")
-    if parent in w.onto.descendants(child):
-        raise OpError(f"Cycle de sous-classes : {parent} descend déjà de {child}")
+        raise OpError(cycles.cycle_message(child, parent, [child]))
+    path = cycles.closing_path(w.onto, child, parent)
+    if path:
+        raise OpError(cycles.cycle_message(child, parent, path))
     c = w.onto.classes[child]
     if parent in c.sub_class_of:
         w.warn(f"{child} est déjà sous-classe de {parent} (aucun changement)")

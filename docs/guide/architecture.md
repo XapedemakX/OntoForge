@@ -1,8 +1,8 @@
-# Architecture d'OntoForge (itération 2)
+# Architecture d'OntoForge {#architecture-d-ontoforge-iteration-2}
 
 Sources vérifiées : `backend/ontoforge/` (modules et signatures), `docs/CONTRACTS.md` §4-7, `backend/ontoforge/core/*.py` (contrats pydantic normatifs, D-028), `docs/CONTRACTS.md`, `docs/RULES.md`, `frontend/src/`. En cas d'écart, le code fait foi.
 
-## 1. Vue d'ensemble
+## 1. Vue d'ensemble {#vue-d-ensemble}
 
 OntoForge est une application web en deux conteneurs : un **backend FastAPI** (Python, port 8000, volume `/data`) et un **frontend React + TypeScript** (Vite, servi par nginx qui proxifie `/api` vers le backend ; port publié `ONTOFORGE_PORT`, 8088 par défaut dans `docker-compose.yml`).
 
@@ -35,7 +35,7 @@ flowchart LR
   QB -. endpoint actif .-> SET
 ```
 
-## 2. Flux principal : de l'ontologie au code
+## 2. Flux principal : de l'ontologie au code {#flux-principal-de-l-ontologie-au-code}
 
 ```mermaid
 sequenceDiagram
@@ -68,7 +68,7 @@ sequenceDiagram
 4. **Analyser** : `mapping.engine.analyze` détecte les constats par règle, applique les décisions, construit le `PGModel`.
 5. **Générer** : un générateur par cible, plus GraphQL et le rapport.
 
-## 3. Modules backend
+## 3. Modules backend {#modules-backend}
 
 | Module | Rôle | Fonction(s) principale(s) |
 |---|---|---|
@@ -109,7 +109,7 @@ sequenceDiagram
 | `projects/store.py` | stockage fichier, écritures atomiques | `list_projects`, `get`, `save`, `delete` |
 | `samples.py` | exemples (`samples/automaint`, `samples/trap`) ; ignore `*-nondl.*` (D-037) | — |
 
-### Pipeline du moteur (`mapping/engine.py`)
+### Pipeline du moteur (`mapping/engine.py`) {#pipeline-du-moteur-mapping-engine-py}
 
 1. **Détection** : chaque règle `detect(ctx) -> list[Finding]` (fonction pure). Les constructs de `OntoModel.unmapped` sont relus en graphe ; chaque nœud blanc expliqué est *consommé* ; les restes deviennent G01 (aucune perte silencieuse).
 2. **Décisions** : `decisions[id]` si l'option existe pour la cible ; sinon la recommandation est appliquée (et G02 signale une option invalide).
@@ -119,7 +119,7 @@ sequenceDiagram
 
 Les shapes SHACL enrichissent le modèle (`minCount ≥ 1` → obligatoire + validation, `maxCount 1` → scalaire, `in` → énumération, `pattern`, `datatype`, `class`, `lessThan`, `closed`…) ; un conflit avec OWL devient S01, une propriété de shape non déclarée S02.
 
-## 4. Frontend
+## 4. Frontend {#frontend}
 
 `frontend/src/` (React + TypeScript, Vite) :
 
@@ -143,7 +143,7 @@ Bibliothèques : Cytoscape (diagramme du modèle, graphe de résultats), `@xyflo
 
 **Brancher un écran** : composant recevant `ScreenProps` (`{p, setP, target, setTarget}`) → entrée dans `registry.tsx` → libellés dans `fr.json` et `en.json` (contrat : `journal/L11/rapport.md`).
 
-## 5. Contrats pydantic (`backend/ontoforge/core/`)
+## 5. Contrats pydantic (`backend/ontoforge/core/`) {#contrats-pydantic-backend-ontoforge-core}
 
 Toute modification d'un contrat passe par une décision tracée dans `journal/decisions.md`.
 
@@ -190,15 +190,15 @@ classDiagram
   PGModel --> EdgeType
 ```
 
-### `OntoModel` (`core/onto_model.py`)
+### `OntoModel` (`core/onto_model.py`) {#ontomodel-core-ontomodel-py}
 
 IRIs absolues partout (la compaction en CURIE est faite par l'export et le front). Entités : `OntClass` (`sub_class_of`, `restrictions`, `super_expressions`, `equivalent_to`, `disjoint_with`, `disjoint_union_of`, `has_keys`, `one_of`), `ObjectProperty` (`domain`, `range`, `domain_union`, `range_union`, `inverse_of`, `sub_property_of`, `chains`, `characteristics`…), `DatatypeProperty` (`domain`, `range`, `range_expr: DataRange`, `functional`…), `DatatypeDef`, `Individual` (`types`, `facts`, `same_as`, `different_from`). `ClassExpr` couvre `named`, `and`, `or`, `not`, `oneOf`, `some`, `only`, `min`, `max`, `exactly`, `value`, `self`. Plusieurs `domain` / `range` d'une même propriété sont une **intersection** ; une union est portée par `domain_union` / `range_union`.
 
-### `ShapesModel` (`core/shapes_model.py`)
+### `ShapesModel` (`core/shapes_model.py`) {#shapesmodel-core-shapesmodel-py}
 
 `NodeShape` (cibles `Targets`, contraintes `Constraints`, `PropertyShape` avec `Path`, `QualifiedShape`) ; contraintes SHACL Core usuelles (cardinalités, `datatype`, `class`, `node_kind`, `node`, `in`, `has_value`, `pattern`, longueurs, bornes, `language_in`, `and`/`or`/`xone`/`not`, SHACL-SPARQL brut). `ShapesModel` porte `shapes`, `property_shapes`, `prefixes`, `warnings`.
 
-### `PGModel` (`core/pg_model.py`)
+### `PGModel` (`core/pg_model.py`) {#pgmodel-core-pgmodel-py}
 
 - `PGType` : `String, Integer, Float, Decimal, Boolean, Date, DateTime, LocalDateTime, Time, Duration`. `Decimal` a été ajouté en L13 (test `tests/test_decimal.py`) : Curiosity le conserve (`decimal`), Neo4j le replie en `Float` avec constat D05.
 - `NodeType` : `name`, `labels` (le premier est principal ; un seul en Curiosity), `source` (classes OWL), `key`, `properties: PGProperty[]`, `abstract`, `discriminator`, `discriminator_values`.
@@ -210,7 +210,7 @@ IRIs absolues partout (la compaction en CURIE est faite par l'export et le front
 
 Conventions (D-L4-02) : la propriété qui porte l'IRI d'origine est marquée `source = "urn:ontoforge:iri"` (son nom dépend de la cible : `uri` en Neo4j, `Uri` en Curiosity) ; les générateurs la retrouvent par ce marqueur ; un type sans clé utilise cette propriété comme clé de repli ; ils n'émettent jamais de motif de correspondance vide.
 
-### Fonctions de service (extrait de `docs/CONTRACTS.md`)
+### Fonctions de service (extrait de `docs/CONTRACTS.md`) {#fonctions-de-service-extrait-de-docs-contracts-md}
 
 | Module | Signature |
 |---|---|
@@ -224,11 +224,11 @@ Conventions (D-L4-02) : la propriété qui porte l'IRI d'origine est marquée `s
 | `targets/*` | `generate(pg, onto=None) -> dict[nom de fichier, contenu]` |
 | `queries/translate` | `translate(sparql, pg, onto=None) -> TranslationResult` |
 
-### Extensions de `Project` (itération 2, rétrocompatibles)
+### Extensions de `Project` (itération 2, rétrocompatibles) {#extensions-de-project-iteration-2-retrocompatibles}
 
 `view {icons, positions, collapsed}`, `perimeters`, `active_perimeter` (état d'interface : jamais appliqué implicitement par le backend), `generations` (50 entrées max, historique des `GET /generate/{cible}` ; n'avance pas `updated_at`). Les générateurs ne dépendent pas de `view`. D-L9-02 a accepté `NodeType.icon` et une sévérité `info` pour P00–P03, **non implémentés dans `core/pg_model.py`** à ce jour : P00–P03 sont émis en `auto` (ils gonflent donc le compteur « auto »).
 
-## 6. Stockage
+## 6. Stockage {#stockage}
 
 `$ONTOFORGE_DATA/projects/<id>/` (défaut `./data` ; `/data` dans Docker, volume `ontoforge-data`) :
 
@@ -244,7 +244,7 @@ Hors projets, à la racine de `$ONTOFORGE_DATA` : `settings.json` (écriture ato
 
 Écritures atomiques (fichier temporaire + `os.replace`). Identifiants : `^[a-z0-9][a-z0-9-]{0,80}$`, construits depuis le nom + suffixe aléatoire (ex. `demo-05fbe6`).
 
-## 7. Assistant, paramètres, proposition
+## 7. Assistant, paramètres, proposition {#assistant-parametres-proposition}
 
 **Paramètres et chiffrement** (`settings/`). `Settings` = fournisseurs LLM (`anthropic | openai_compat | ollama | mock`), `default_provider_id`, langues, défauts (IRI de base, préfixes, cible, nommage), endpoints SPARQL. Chiffrement Fernet, clé dérivée par HKDF-SHA256 de `ONTOFORGE_SECRET_KEY`. Les secrets ne sortent jamais : la vue publique expose `has_key`, `key_last4` (si la clé fait au moins 12 caractères), `key_unreadable`. Au premier démarrage, `settings.json` est déduit de l'environnement (`ONTOFORGE_LLM_PROVIDER`, `ANTHROPIC_API_KEY`…) ; tant qu'il n'existe pas, l'assistant garde le pilotage historique par variables. Le premier `GET /api/settings` crée le fichier : le front l'appelle au démarrage. Rotation : arrêter le backend, `ONTOFORGE_SECRET_KEY_OLD=… ONTOFORGE_SECRET_KEY=… python -m ontoforge.settings rotate`. Les tests de connexion appellent l'URL configurée par l'administrateur sans filtrage SSRF (outil mono-utilisateur, D-L8-01).
 
@@ -256,6 +256,6 @@ Hors projets, à la racine de `$ONTOFORGE_DATA` : `settings.json` (écriture ato
 
 **Requêtage** (`queries/`). `GuidedQuery` (racine, étapes, filtres, colonnes, tri, limite) → `to_sparql` → `build_all` (réutilise `translate` pour Cypher / Curiosity / GraphQL). `Suggester` propose relations et cibles depuis l'ontologie (domaine/portée effectifs, héritage, inverses, unions, `sh:class`). `nl.interpret` : (1) pré-analyse déterministe ; (2) si le fournisseur est réel, prompt `[TASK:nl]` avec un schéma compact, sortie JSON `GuidedQuery` ; (3) `sanitize` retire tout élément inconnu (termes écartés dans `unmatched`) ; (4) repli déterministe (plus courts chemins, 4 sauts max). `endpoint.run_select` : lecture seule vérifiée par le parseur SPARQL (UPDATE → 403), LIMIT de niveau supérieur plafonné à `limit`+1, plafond dur 5000, délai de l'endpoint (504), erreurs réseau → 502 sans secret.
 
-## 8. Tests et qualité
+## 8. Tests et qualité {#tests-et-qualite}
 
-`cd backend && pytest -q` : 528 tests verts d'après la revue L15 du 4 novembre 2026 (non rejoués au moment de cette mise à jour : `httpx` absent de l'environnement du documentaliste). Les générateurs sont vérifiés par déterminisme, invariants, formes autorisées et, pour le C#, tree-sitter (D-038 : pas de fichiers « golden »). L'oracle `samples/trap/expected-findings.yaml` (66 règles, 6 `must_not`) est rejoué par `tests/test_mapping_oracle.py`. Aucun test n'exécute Docker, un SDK .NET ni une base Neo4j.
+`cd backend && pytest -q` : 990 tests verts au lot L34 (11 novembre 2026). Les générateurs sont vérifiés par déterminisme, invariants, formes autorisées et, pour le C#, tree-sitter (D-038 : pas de fichiers « golden »). L'oracle `samples/trap/expected-findings.yaml` (66 règles, 6 `must_not`) est rejoué par `tests/test_mapping_oracle.py`. Aucun test n'exécute Docker, un SDK .NET ni une base Neo4j.

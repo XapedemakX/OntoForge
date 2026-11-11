@@ -11,6 +11,7 @@ from pydantic import BaseModel
 
 from .. import localize, standards
 from ..core.lang import LABEL_LANG
+from ..localize import gen
 from ..core.pg_model import PGModel
 from ..core.project import GenerationRecord, Project
 from ..projects import store
@@ -83,14 +84,24 @@ def _as_files(result: Any) -> dict[str, str]:
     return out
 
 
-def generate_files(p: Project, target: str, perimeter: Optional[str] = None) -> tuple[dict[str, str], list[str]]:
-    files, missing, _ = _generate(p, target, perimeter)
+def _gen_lang(lang: Optional[str]) -> str:
+    """Langue de génération : ``lang`` demandée (fr/en), sinon langue de l'interface ; 422 si la valeur est inconnue."""
+    if lang and gen.normalize(lang) is None:
+        raise HTTPException(status_code=422, detail=f"Langue de génération inconnue « {lang} » (fr ou en) / unknown generation language \"{lang}\" (fr or en)")
+    return gen.resolve(lang)
+
+
+def generate_files(p: Project, target: str, perimeter: Optional[str] = None, lang: Optional[str] = None) -> tuple[dict[str, str], list[str]]:
+    files, missing, _ = _generate(p, target, perimeter, lang)
     return files, missing
 
 
-def _generate(p: Project, target: str, perimeter: Optional[str] = None) -> tuple[dict[str, str], list[str], PGModel]:
+def _generate(p: Project, target: str, perimeter: Optional[str] = None, lang: Optional[str] = None) -> tuple[dict[str, str], list[str], PGModel]:
+    gl = _gen_lang(lang)
     pg = run_analysis(p, target, perimeter)
     onto = _scope(p, perimeter)[0]
+    if gl == "en":  # constats, validations et descriptions générés par le moteur : traduits ; identifiants et libellés d'ontologie inchangés
+        localize.localize_pg_for_export(pg, "en")
     files: dict[str, str] = {}
     missing: list[str] = []
     for mod in (f"targets.{target}", "targets.graphql", "targets.report"):
@@ -98,7 +109,8 @@ def _generate(p: Project, target: str, perimeter: Optional[str] = None) -> tuple
         if fn is None:
             missing.append(mod)
             continue
-        files.update(_as_files(fn(pg, onto)))
+        with gen.using_lang(gl):
+            files.update(_as_files(fn(pg, onto)))
     if len(missing) == 3:
         raise not_available(f"targets.{target}")
     return files, missing, pg
@@ -223,10 +235,11 @@ def accept_recommended(pid: str, target: str, include_lost: bool = Query(False))
 # ---- génération ------------------------------------------------------------------------------
 
 @router.get("/generate/{target}")
-def generate(pid: str, target: str, perimeter: Optional[str] = Query(None)) -> dict:
+def generate(pid: str, target: str, perimeter: Optional[str] = Query(None),
+             lang: Optional[str] = Query(None, description="Langue des fichiers générés : fr ou en (défaut : langue de l'interface)")) -> dict:
     check_target(target)
     p = load_project(pid)
-    files, missing, pg = _generate(p, target, perimeter)
+    files, missing, pg = _generate(p, target, perimeter, lang)
     summary = {"auto": 0, "review": 0, "lost": 0, "pending": 0}
     for f in pg.findings:
         if f.severity in summary:
@@ -248,10 +261,11 @@ def generations(pid: str) -> list[dict]:
 
 
 @router.get("/generate/{target}/zip")
-def generate_zip(pid: str, target: str, perimeter: Optional[str] = Query(None)) -> Response:
+def generate_zip(pid: str, target: str, perimeter: Optional[str] = Query(None),
+                 lang: Optional[str] = Query(None, description="Langue des fichiers générés : fr ou en (défaut : langue de l'interface)")) -> Response:
     check_target(target)
     p = load_project(pid)
-    files, _ = generate_files(p, target, perimeter)
+    files, _ = generate_files(p, target, perimeter, lang)
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
         for name, content in sorted(files.items()):

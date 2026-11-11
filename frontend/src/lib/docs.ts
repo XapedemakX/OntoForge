@@ -3,8 +3,22 @@
 import { Marked, type Tokens } from 'marked'
 import helpMapJson from '../../../backend/ontoforge/assistant/help_map.json'
 import { highlight } from './codeHighlight'
+import imgSizes from '../../../docs/guide/img/sizes.json'
 
 const RAW = import.meta.glob('../../../docs/guide/*.md', { query: '?raw', import: 'default' }) as Record<string, () => Promise<string>>
+
+// L34c : captures du guide (docs/guide/img/<fr|en>/<nom>.png). Fichiers séparés, chargés à la demande (loading="lazy"), jamais inlinés :
+// `?no-inline` force Vite à émettre un fichier même sous assetsInlineLimit ; seule l'URL est dans le bundle.
+const IMGS = import.meta.glob('../../../docs/guide/img/**/*.png', { eager: true, query: '?no-inline', import: 'default' }) as Record<string, string>
+const SIZES = imgSizes as unknown as Record<string, [number, number]>
+/** Résout un chemin d'image relatif au guide (`img/fr/x.png`, `./img/fr/x.png`) vers l'URL émise par le build, ou null si l'image n'existe pas. */
+export function resolveGuideImage(href: string): { url: string; w?: number; h?: number } | null {
+  const rel = href.replace(/^\.\//, '').replace(/^img\//, '')
+  const url = IMGS['../../../docs/guide/img/' + rel]
+  if (!url) return null
+  const sz = SIZES[rel]
+  return { url: url.replace(/\?no-inline$/, ''), w: sz?.[0], h: sz?.[1] }
+}
 
 export type Lang = 'fr' | 'en'
 /** Ordre d'affichage ; les autres fichiers du dossier suivent par ordre alphabétique. */
@@ -79,8 +93,14 @@ export function renderMarkdown(md: string, pid: string, page: string, lang: Lang
         return `<h${tk.depth} id="${id}">${this.parser.parseInline(tk.tokens)}<a class="doc-h-link" href="${docHash(pid, page, id)}" data-doc-page="${page}" data-doc-anchor="${id}" aria-hidden="true" tabindex="-1">#</a></h${tk.depth}>\n`
       },
       code(tk: Tokens.Code) { return `<pre class="doc-code" data-lang="${esc(tk.lang ?? '')}"><code>${highlight(tk.text, tk.lang)}</code></pre>\n` },
-      // les captures du guide vivent dans journal/ (hors de l'image et du build) : légende lisible plutôt qu'une icône d'image cassée
-      image(tk: Tokens.Image) { return /^https?:\/\//i.test(tk.href) ? `<img src="${esc(tk.href)}" alt="${esc(tk.text)}" loading="lazy">` : `<span class="doc-fig" role="img" aria-label="${esc(tk.text)}">${lang === 'en' ? 'Screenshot:' : 'Capture :'} ${esc(tk.text)}</span>` },
+      // captures : fichiers du build (lazy, cliquables pour agrandir) ; image absente = légende lisible plutôt qu'une icône cassée
+      image(tk: Tokens.Image) {
+        if (/^https?:\/\//i.test(tk.href)) return `<img src="${esc(tk.href)}" alt="${esc(tk.text)}" loading="lazy" decoding="async">`
+        const im = resolveGuideImage(tk.href)
+        if (!im) return `<span class="doc-fig" role="img" aria-label="${esc(tk.text)}">${lang === 'en' ? 'Screenshot:' : 'Capture :'} ${esc(tk.text)}</span>`
+        const cap = tk.title ? `<span class="doc-figcap">${esc(tk.title)}</span>` : ''
+        return `<span class="doc-figure"><img class="doc-img" src="${esc(im.url)}" alt="${esc(tk.text)}" loading="lazy" decoding="async"${im.w ? ` width="${im.w}" height="${im.h}"` : ''} tabindex="0" role="button" data-doc-zoom="${esc(tk.title || tk.text)}">${cap}</span>`
+      },
       html(tk: Tokens.HTML | Tokens.Tag) { return esc(tk.text) },  // le HTML brut du guide est affiché tel quel, jamais interprété
       link(this: { parser: { parseInline(t: Tokens.Generic[]): string } }, tk: Tokens.Link) {
         const inner = this.parser.parseInline(tk.tokens as Tokens.Generic[]), href = tk.href
