@@ -1,0 +1,25 @@
+# Fichiers envoyés à Cloud Build par « gcloud builds submit » (voir deploy/cloudrun/README.md).
+# Même règle que .dockerignore : jamais de secret (.env), ni l'historique, le journal ou les dépendances installées.
+.gcloudignore
+.git
+.github
+.env
+.env.*
+!.env.example
+env-a-renommer.txt
+**/node_modules
+frontend/dist
+**/__pycache__
+**/.pytest_cache
+**/*.egg-info
+journal/
+lots/
+tools/
+docs/*
+!docs/guide/
+ref/
+design/
+*.whl
+*.tar.gz
+data/
+backend/data/
