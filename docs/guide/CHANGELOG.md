@@ -2,6 +2,10 @@
 
 Format : par version, ce qui change pour l'utilisateur, puis le détail par lot. Sources : rapports `journal/L*/rapport*.md`, revues, `journal/decisions.md`. Les lots sont décrits dans `lots/`.
 
+## L43b : correctif du transfert de propriété (15 nov. 2026) {#l43b-transfert-15-nov-2026}
+
+- La confirmation de transfert affiche le nom du compte choisi au lieu de « {login} ».
+
 ## L43 : changement de mot de passe pour tous les comptes (15 nov. 2026) {#l43-mot-de-passe-tous-comptes-15-nov-2026}
 
 Demande de Jerem du 15/11 (D-L43-01, remplace le point 2 de D-L42-02).

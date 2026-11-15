@@ -68,7 +68,7 @@ export function SharePanel({ pid, onClose }: { pid: string; onClose: () => void 
                   </>}
                 </li>))}
             </ul>
-            {confirm && <div className="notice warn" role="alert" data-testid="share-transfer-ask"><div><b>{t('collab.transfer.ask', { login: confirm })}</b><div>{t('collab.transfer.body')}</div>
+            {confirm && <div className="notice warn" role="alert" data-testid="share-transfer-ask"><div><b>{t('collab.transfer.ask', { login: confirm })}</b><div>{t('collab.transfer.body', { login: confirm })}</div>
               <div className="row" style={{ marginTop: 8 }}>
                 <Button size="sm" variant="primary" data-testid="share-transfer-yes" disabled={busy} onClick={() => void run(() => api.transfer(pid, confirm), t('collab.transferred', { login: confirm })).then(() => setConfirm(null))}>{t('collab.transfer.yes')}</Button>
                 <Button size="sm" variant="ghost" onClick={() => setConfirm(null)}>{t('common.cancel')}</Button></div></div></div>}

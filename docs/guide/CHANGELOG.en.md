@@ -2,6 +2,10 @@
 
 Format: by version, what changes for the user, then the detail per work package. Sources: reports `journal/L*/rapport*.md`, reviews, `journal/decisions.md`. Work packages are described in `lots/`.
 
+## L43b: ownership transfer fix (15 Nov 2026) {#l43b-transfert-15-nov-2026}
+
+- The transfer confirmation shows the chosen account name instead of "{login}".
+
 ## L43: password change for every account (15 Nov 2026) {#l43-mot-de-passe-tous-comptes-15-nov-2026}
 
 Jerem's request of 15/11 (D-L43-01, replaces point 2 of D-L42-02).

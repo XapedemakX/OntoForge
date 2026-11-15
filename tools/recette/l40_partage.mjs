@@ -174,6 +174,10 @@ log('A (administratrice) : réglages accessibles', (await A.page.locator('[data-
 // 9. A transfère nulle part : retrait d'accès, B perd le projet
 await A.page.goto(`${base}/#/projet/${pid}/tableau`); await A.page.waitForSelector('.dash')
 await A.page.click('[data-testid=share-btn]'); await A.page.waitForSelector('[data-testid=share-remove-bob]')
+await A.page.click('[data-testid=share-transfer-bob]'); await A.page.waitForSelector('[data-testid=share-transfer-ask]')
+const ask = await A.page.locator('[data-testid=share-transfer-ask]').innerText()
+log('transfert : la confirmation nomme bob, sans accolade non remplacée', /bob/.test(ask) && !/[{}]/.test(ask), ask.replace(/\s+/g, ' ').slice(0, 120))
+await A.page.locator('[data-testid=share-transfer-ask] button:not([data-testid=share-transfer-yes])').first().click(); await sleep(300)
 await A.page.click('[data-testid=share-remove-bob]'); await sleep(500)
 log('A retire bob : plus de ligne', (await A.page.locator('[data-testid=share-row-bob]').count()) === 0)
 log('B : projet à nouveau introuvable', (await fetchJ(B.page, 'GET', `/api/projects/${pid}`)).status === 404)
