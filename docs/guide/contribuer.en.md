@@ -141,3 +141,9 @@ Actions are pinned by commit SHA (version in a comment), with pip and npm caches
 ### Dependencies {#dependances}
 
 Dependabot (`.github/dependabot.yml`) flags updates, ignores major versions and limits open requests. Nothing is merged without Jerem's agreement, security updates included (D-L21-02).
+
+### Pinning images and dependencies {#epingler-images}
+
+Docker builds are reproducible. The front end installs with `npm ci` alone (the `package-lock.json` lock file rules), and the backend with `pip install -c backend/constraints.txt`, a file that fixes the exact version of every production dependency, direct or transitive. This file changes no version: it freezes the ones that passed acceptance. To regenerate it after a version bump that Jerem has decided, take the `pip freeze` of the test environment, restricted to production dependencies, and check it with `pytest tests/test_sec_network.py`.
+
+Base images (`python:3.12-slim`, `node:22-alpine`, `nginxinc/nginx-unprivileged:1.27-alpine`) are named by tag. To pin them by digest, run this on a connected machine: `docker buildx imagetools inspect <image>:<tag>`, then write `image:tag@sha256:…` in the `FROM` lines. The digest could not be read offline: TO BE VERIFIED before production.

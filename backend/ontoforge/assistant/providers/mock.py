@@ -67,7 +67,7 @@ FR = {"vehicle": "Véhicule", "order": "Ordre", "part": "Pièce", "record": "Enr
 
 
 def _block(text: str, tag: str) -> Optional[dict[str, Any]]:
-    m = re.search(tag + r"\s*```json\s*(.*?)```", text, re.S)
+    m = re.search(tag + r"\s*(?:<donnees[^>]*>\s*)?```json\s*(.*?)```", text, re.S)  # le bloc peut être encadré par <donnees> (SEC-17)
     if not m:
         return None
     try:

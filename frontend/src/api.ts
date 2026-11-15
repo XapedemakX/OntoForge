@@ -129,7 +129,12 @@ export interface StandardsRef {
   w3c: { shacl: { features: ShaclFeature[] } }
   libraries: { note: string; items: { id: string; used: string; latest: string | null; support: Support }[] }
 }
+export type Role = 'reader' | 'editor'
+export interface AccessView { owner: string | null; members: { login: string; role: Role }[]; rev: number; last_actor: string | null; last_at: string | null; role: 'owner' | Role | null; me: string; sharing_available: boolean; admin: boolean }
+export interface PresenceView { present: { user: string; role: 'owner' | Role; me: boolean }[]; rev: number; last_actor: string | null; last_at: string | null; role: 'owner' | Role | null; me: string; auth: boolean }
+export interface ActivityEntry { at: string; user: string; action: string; detail?: { login?: string; role?: string } }
 export interface ProjectSummary {
+  owner?: string | null; role?: 'owner' | Role; shared?: boolean
   id: string; name: string; description: string; created_at: string; updated_at: string; source_files: string[]; target: Target
   stats: { classes: number; object_properties: number; datatype_properties: number; individuals: number; shapes: number }
 }
@@ -162,10 +167,11 @@ export class ApiError extends Error {
 
 const BASE = '/api'
 
-async function req<T>(method: string, path: string, body?: unknown, form?: FormData, text = false): Promise<T> {
+async function req<T>(method: string, path: string, body?: unknown, form?: FormData, text = false, extra?: Record<string, string>): Promise<T> {
   const init: RequestInit = { method }
   if (form) init.body = form
   else if (body !== undefined) { init.body = JSON.stringify(body); init.headers = { 'Content-Type': 'application/json' } }
+  if (extra) init.headers = { ...(init.headers as Record<string, string> | undefined), ...extra }
   let r: Response
   try { r = await fetch(BASE + path, init) } catch { throw new ApiError(0, tr('ui.unreachable')) }
   if (!r.ok) {
@@ -193,7 +199,17 @@ export const api = {
   samples: () => req<Sample[]>('GET', '/samples'),
   listProjects: () => req<ProjectSummary[]>('GET', '/projects'),
   createProject: (b: { name: string; description?: string; sample?: string }) => req<Project>('POST', '/projects', b),
-  getProject: (id: string) => req<Project>('GET', p(id)),
+  /** Charge le projet et fixe la version (ETag) sur laquelle les écritures suivantes s'appuient (L40) : à utiliser quand la réponse remplace l'état affiché. */
+  getProject: (id: string) => req<Project>('GET', p(id), undefined, undefined, false, { 'X-OntoForge-Load': '1' }),
+  loadProject: (id: string) => req<Project>('GET', p(id), undefined, undefined, false, { 'X-OntoForge-Load': '1' }),
+  /** Lecture sans effet sur la version connue (affichage seul, par exemple la date de dernière modification). */
+  peekProject: (id: string) => req<Project>('GET', p(id)),
+  access: (id: string) => req<AccessView>('GET', p(id) + '/access'),
+  share: (id: string, login: string, role: Role) => req<AccessView>('POST', p(id) + '/access/members', { login, role }),
+  unshare: (id: string, login: string) => req<AccessView>('DELETE', p(id) + `/access/members/${encodeURIComponent(login)}`),
+  transfer: (id: string, login: string) => req<AccessView>('POST', p(id) + '/access/transfer', { login }),
+  presence: (id: string) => req<PresenceView>('POST', p(id) + '/presence'),
+  activity: (id: string) => req<ActivityEntry[]>('GET', p(id) + '/activity'),
   putProject: (pr: Project) => req<Project>('PUT', p(pr.id), pr),
   deleteProject: (id: string) => req<Project>('DELETE', p(id)),
   importFile: (id: string, file: File, kind: 'ontology' | 'shapes' | 'auto' = 'auto') => {

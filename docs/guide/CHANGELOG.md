@@ -2,6 +2,34 @@
 
 Format : par version, ce qui change pour l'utilisateur, puis le détail par lot. Sources : rapports `journal/L*/rapport*.md`, revues, `journal/decisions.md`. Les lots sont décrits dans `lots/`.
 
+## L41 : corrections de la relecture de sécurité (15 nov. 2026) {#l41-corrections-relecture-securite-15-nov-2026}
+
+- **Appels sortants contrôlés dès qu'il y a des comptes.** Avec `ONTOFORGE_AUTH=password`, le serveur refuse d'appeler une adresse interne (réseau privé, boucle locale, métadonnées de cloud), comme en mode public. Sans authentification (usage local), rien ne change. Pour un endpoint ou un fournisseur interne (Fuseki, Ollama), nommez-le dans `ONTOFORGE_EGRESS_ALLOW_INTERNAL`. Choix par défaut D-L41-01, que vous pouvez changer.
+- **Adresses cachées aux comptes non administrateurs.** L'assistant des Paramètres et les messages d'erreur de requête ne donnent plus l'hôte ni le port d'un endpoint ou d'un fournisseur enregistré ; ils n'affichent plus le début de la réponse d'un hôte refusé.
+- **Une lecture n'écrit plus dans le projet.** L'historique des générations est dans un fichier annexe ; la carte métier initiale n'est plus enregistrée par une simple lecture. Un éditeur ne perd plus ses modifications pendant qu'une génération tourne.
+- **Partage neutre.** « Compte inconnu » et « déjà propriétaire » donnent la même réponse.
+- **Fichier de partage illisible.** Le projet est verrouillé en lecture seule (administrateur seul), avec un message et une ligne au journal, au lieu d'être réattribué en silence.
+- **Validation SHACL.** Au plus 2 validations simultanées (`ONTOFORGE_SHACL_SLOTS`), sinon `503` avec `Retry-After` ; le processus fils pose lui-même ses plafonds et ne reçoit aucune clé.
+- **Divers.** Plafond « lourd » élargi (conformité, graphe, opérations, exports, fichiers) ; fichier de clé maître resserré à 600 ; identifiants retirés aussi quand le port ou le schéma change à une redirection ; nginx garde le port dans l'en-tête `Host` (l'écriture depuis le navigateur sur le port 8088 fonctionne avec l'authentification).
+
+## L39-secu : corrections de sécurité (15 nov. 2026) {#l39-secu-15-nov-2026}
+
+- **Instance locale fermée par défaut.** `docker compose` ne publie plus l'interface que sur `127.0.0.1` (adresse réglable avec `ONTOFORGE_BIND`, port avec `ONTOFORGE_PORT`) ; le CORS est fermé (liste explicite dans `ONTOFORGE_CORS_ORIGINS`) ; nginx envoie une CSP et les en-têtes de sécurité usuels. Une instance ouverte au réseau sans authentification est signalée dans les journaux au démarrage. Le guide explique comment l'ouvrir volontairement.
+- **Imports durcis.** Un RDF/XML qui déclare un `DOCTYPE` ou des entités est refusé ; un JSON-LD dont le contexte est une adresse distante est refusé ; les très longues listes RDF sont plafonnées (au-delà de 1 500 triplets non reconnus, pas de renumérotation des nœuds anonymes ; au-delà de 10 000, refus) ; la validation SHACL s'exécute dans un processus à part, avec délai et mémoire bornés et un message clair.
+- **Clés liées à leur adresse.** Changer l'adresse d'un fournisseur LLM ou d'un endpoint SPARQL efface la clé ou le jeton enregistré (à ressaisir) ; les tests de connexion n'envoient jamais un secret enregistré vers une autre adresse.
+- **Débit limité.** L'API limite les requêtes par adresse et par session, plus strictement pour l'assistant et les routes coûteuses ; réponse `429` avec `Retry-After`.
+- **Conteneurs sans privilèges, clé maître à part, constructions reproductibles.** Backend et front tournent sans root ; la clé maître vit dans un volume séparé (`ontoforge-keys`) ; `npm ci` strict et dépendances Python aux versions exactes de `backend/constraints.txt` (aucune version changée).
+- **Assistant et explications.** Les contenus importés (documents, libellés, pièces jointes) sont balisés comme données non fiables dans les invites ; l'explication de l'assistant n'affiche plus que des liens `http(s)` et `mailto`, sans image. Brouillon Cloud Run : liste de sorties exigée, confiance aux en-têtes `Forwarded` limitée, conteneur sans root. Code mort du raisonneur supprimé.
+
+## L40 : projets nominatifs et partage collaboratif (15 nov. 2026) {#l40-partage-collaboratif-15-nov-2026}
+
+- Avec l'authentification, chaque projet a un propriétaire. Vous ne voyez que vos projets et ceux qu'on a partagés avec vous ; un projet inaccessible répond « introuvable ».
+- Bouton « Partager » dans l'en-tête : on saisit l'identifiant d'un autre compte et un rôle (éditeur ou lecteur). Le propriétaire change un rôle, retire un accès ou transfère la propriété ; un éditeur ne partage ni ne supprime. Un lecteur consulte et exporte, rien de plus (« lecture seule »).
+- Travail à plusieurs sans temps réel : pastilles des comptes présents, bandeau « bob a modifié le projet », conflit expliqué (jamais d'écrasement silencieux) avec « Recharger et réappliquer », journal d'activité sur le tableau de bord.
+- Les réglages globaux (fournisseurs LLM, clés, endpoints) sont réservés aux administrateurs (premier compte, ou `ONTOFORGE_AUTH_ADMINS`).
+- Sans authentification, rien ne change. Au premier démarrage avec authentification, les projets existants vont au premier administrateur.
+- Détail : `docs/CONTRACTS.md` §16, D-L40-01.
+
 ## L38 : Krakie dans les Paramètres (15 nov. 2026) {#l38-krakie-parametres-15-nov-2026}
 
 - Krakie est maintenant sur l'écran Paramètres, sans projet ouvert : même aquarium, même panneau, un contexte propre (l'onglet affiché) et des suggestions par onglet. Elle explique, diagnostique et recommande ; elle ne modifie aucun réglage, c'est vous qui enregistrez.

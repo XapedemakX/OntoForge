@@ -216,9 +216,16 @@ def test_repo_samples_listed(client, monkeypatch):
     assert trap["ontology"] == ["trap.ttl"] and trap["shapes"] == ["trap-shapes.ttl"] and trap["data"] == ["trap-data.ttl"]
 
 
-def test_cors_open(client):
-    r = client.options("/api/projects", headers={"Origin": "http://localhost:5173", "Access-Control-Request-Method": "GET"})
-    assert r.headers.get("access-control-allow-origin") in ("*", "http://localhost:5173")
+def test_cors_closed_by_default_and_open_for_listed_origin(client, monkeypatch):
+    """L39-secu (SEC-02) : plus de CORS ouvert par défaut ; seules les origines listées sont autorisées."""
+    from ontoforge.main import create_app
+    pre = {"Origin": "http://localhost:5173", "Access-Control-Request-Method": "GET"}
+    monkeypatch.delenv("ONTOFORGE_CORS_ORIGINS", raising=False)
+    closed = TestClient(create_app())
+    assert "access-control-allow-origin" not in closed.options("/api/projects", headers=pre).headers
+    monkeypatch.setenv("ONTOFORGE_CORS_ORIGINS", "http://localhost:5173")
+    opened = TestClient(create_app())
+    assert opened.options("/api/projects", headers=pre).headers.get("access-control-allow-origin") == "http://localhost:5173"
 
 
 def test_shacl_generate_dry_run_does_not_save(tmp_path, monkeypatch):

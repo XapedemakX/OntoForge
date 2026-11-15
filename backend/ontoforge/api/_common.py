@@ -41,7 +41,10 @@ def optional_service(module: str, func: str) -> Callable[..., Any] | None:
         return None
 
 
-def load_project(pid: str) -> Project:
+def load_project(pid: str, level: str = "read") -> Project:
+    """Charge un projet après contrôle d'accès (L40) : 404 si le compte n'y a pas accès, 403 si son rôle ne suffit pas pour ``level``."""
+    from ..collab import access
+    access.enforce(pid, level)
     try:
         return store.get(pid)
     except store.ProjectNotFound:

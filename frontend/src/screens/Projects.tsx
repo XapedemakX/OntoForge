@@ -119,13 +119,14 @@ function ProjectCard({ pr, date, open, reload, fail }: { pr: ProjectSummary; dat
         </div>
       ) : (
         <>
-          <div className="row"><h2 className="grow">{pr.name}</h2><span className="badge">{pr.target === 'curiosity' ? 'Curiosity' : 'Neo4j'}</span>
+          <div className="row"><h2 className="grow">{pr.name}</h2>{pr.shared && <span className="badge info" data-testid="proj-shared">{pr.role && pr.role !== 'owner' ? t('proj.role.' + pr.role) : t('proj.shared')}</span>}<span className="badge">{pr.target === 'curiosity' ? 'Curiosity' : 'Neo4j'}</span>
             <IconButton icon="pen" label={t('proj.rename')} onClick={e => { stop(e); setEdit(true) }} /></div>
           {pr.description ? <div className="muted">{pr.description}</div> : <button className="btn sm ghost" style={{ alignSelf: 'flex-start' }} onClick={e => { stop(e); setEdit(true) }}>{t('proj.desc.add')}</button>}
         </>
       )}
       <div className="stats"><span><b>{pr.stats.classes}</b> {t('proj.classes')}</span><span><b>{pr.stats.object_properties}</b> {t('proj.rels')}</span>
         <span><b>{pr.stats.datatype_properties}</b> {t('proj.props')}</span><span><b>{pr.stats.shapes}</b> {t('proj.shapes')}</span></div>
+      {pr.owner && <div className="muted" data-testid="proj-owner"><Icon name="user" /> {t('proj.owner', { name: pr.owner })}</div>}
       <div className="muted"><Icon name="seedling" /> {origin}</div>
       <div className="muted">{t('proj.created', { date: date(pr.created_at) })} · {t('proj.updated', { date: date(pr.updated_at) })}</div>
       {ask ? (

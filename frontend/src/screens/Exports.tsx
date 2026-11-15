@@ -15,7 +15,7 @@ export function Exports({ p, target }: ScreenProps) {
   useEffect(() => { if (names.length && !names.includes(file)) setFile(names[0]) }, [data])
   const content = data?.files[file] ?? ''
   return (
-    <div className="page">
+    <div className="page" data-safe>
       <div className="page-head"><h1>{t('ex.title')}</h1>
         <span className="badge">{target === 'curiosity' ? 'Curiosity' : 'Neo4j'}</span>
         <span className="grow" /><button className="btn" onClick={reload}>{t('ex.regen')}</button>

@@ -26,6 +26,7 @@ export type CtxMode = 'full' | 'screen' | 'none'
 export function effectiveContext(route: string, projectId: string, target: string, perimeter: string | null, declared: AssistantContext = getAssistantContext()): AssistantContext {
   const r = ROUTE_SCREEN[route] ?? { name: route || 'unknown', aliases: [route] }
   const base: AssistantContext = { screen: r.name, projectId, target: target as AssistantContext['target'], perimeter: perimeter || null }
+  if (declared?.screen === 'sharing' && declared.projectId === projectId) return { ...base, ...declared, screen: 'sharing', projectId }   // le panneau de partage (L40) est ouvert par-dessus l'écran
   if (declared && r.aliases.includes(declared.screen) && (!declared.projectId || declared.projectId === projectId)) return { ...base, ...declared, screen: declared.screen, projectId }
   return base
 }

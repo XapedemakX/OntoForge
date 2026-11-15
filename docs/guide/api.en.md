@@ -53,6 +53,8 @@ The examples below are real responses (backend started with `ONTOFORGE_LLM_PROVI
 | GET / POST / PUT / DELETE | `/api/projects/{pid}/queries/saved[/{qid}]` · GET `/queries/competency/guided` | saved queries |
 | GET / PUT | `/api/projects/{pid}/business-map?source=ontology\|target` | business map: read, save (L36) |
 | POST | `/api/projects/{pid}/business-map/suggest-zones` · `/suggest-frames` · `/layout` | zone and frame suggestions, layout |
+| GET / POST / DELETE | `/api/projects/{pid}/access`, `/access/members`, `/access/transfer` | project sharing: access, roles, transfer (L40) |
+| POST / GET | `/api/projects/{pid}/presence` · `/activity` | account presence, activity log (L40) |
 
 ## System {#systeme}
 
@@ -1061,7 +1063,7 @@ Normative contract: `docs/CONTRACTS.md` §13. Code: `backend/ontoforge/businessm
 
 | Method | Path | Role |
 |---|---|---|
-| GET | `/business-map?source=` | full map: `nodes` (role, zone, count, position), `edges` (`link`: `inverse` or `symmetric`, `union`), `zones` (with rectangle, even when empty), `frames`, `scenarios`, `legend`, `meta` (including `skipped`: properties not drawn, and `n_union`). With no saved map: initial suggestion, saved with `generated: true` |
+| GET | `/business-map?source=` | full map: `nodes` (role, zone, count, position), `edges` (`link`: `inverse` or `symmetric`, `union`), `zones` (with rectangle, even when empty), `frames`, `scenarios`, `legend`, `meta` (including `skipped`: properties not drawn, and `n_union`). With no saved map: initial suggestion (`generated: true`), kept in memory without writing to the project |
 | PUT | `/business-map?source=` | saves all or part of `{zones, roles, role_colors, faded, pinned, positions, frames, scenarios, title}` and returns the recomputed map; 422 on empty or duplicate ids, a type in two zones, an invalid role, an unknown style |
 | POST | `/business-map/suggest-zones` | `{strategy: perimeters\|hierarchy\|namespace\|communities\|llm, apply=false}`: preview, or replace the zones with `apply: true` |
 | POST | `/business-map/suggest-frames` | `{apply=false}`: types that share the same relationship to the same target |
@@ -1071,8 +1073,27 @@ The default roles are `main`, `component`, `hub`, `lookup`, `context`, `referenc
 
 ### Generation history {#historique-des-generations}
 
-`GET /api/projects/{pid}/generations` → list, most recent first: `{target, perimeter, at, files, findings_summary, project_updated_at}` (`findings_summary`: auto / review / lost counts and `pending`). Each `GET /generate/{target}` (not the zip) adds an entry (50 at most) without advancing `updated_at`. A generation is "outdated" if `project_updated_at` is earlier than the project's last change. `GET /api/projects` also exposes `created_at` and `source_files`.
+`GET /api/projects/{pid}/generations` → list, most recent first: `{target, perimeter, at, files, findings_summary, project_updated_at}` (`findings_summary`: auto / review / lost counts and `pending`). Each `GET /generate/{target}` (not the zip) adds an entry (50 at most) to the side file `generations.json`, without touching `project.json`. A generation is "outdated" if `project_updated_at` is earlier than the project's last change. `GET /api/projects` also exposes `created_at` and `source_files`.
 
 ### Semantics of `chosen` and of decisions {#semantique-de-chosen-et-des-decisions}
 
 `Finding.chosen` is the identifier of the option decided by the human (`None` = not decided). `Finding.recommended` is the option applied by default. `PGModel.decisions` also keeps the decisions whose finding has disappeared, so they can be replayed if it reappears (`mapping/decisions.py`, docstring).
+
+### Sharing and collaboration — `/api/projects/{pid}/access` {#partage-api}
+
+Available with authentication on (without it: an implicit "local" user owns everything, `sharing_available=false`, sharing writes answer 409 `auth_required_for_sharing`). An inaccessible project answers **404**, never 403; an insufficient role answers **403** (`read_only`, `owner_only`).
+
+| Method | Path | Level | Purpose |
+|---|---|---|---|
+| GET | `/access` | read | `{owner, members:[{login, role}], role, me, sharing_available, admin, rev, last_actor, last_at}` |
+| POST | `/access/members` | owner | `{login, role: reader\|editor}`: shares or changes the role. Unknown identifier or the project's owner: the same 422 `share_refused` answer; more than 10 attempts per minute: 429 |
+| DELETE | `/access/members/{login}` | owner, or the member themselves | removes an access; a member can leave the project |
+| POST | `/access/transfer` | owner | `{login}`: transfers ownership; the former owner becomes an editor |
+| POST | `/presence` | read | heartbeat (every ~20 s) → `{present:[{user, role, me}], rev, last_actor, last_at, role, me}`; expires after 60 s |
+| GET | `/activity?limit=100` | read | log `[{at, user, action, detail?}]`, most recent first (500 entries kept) |
+
+`GET /api/projects` adds `owner`, `role` (`owner`, `editor`, `reader`) and `shared` to each summary.
+
+**Version and conflicts.** Every successful project-route response carries `ETag: "<rev>"`; `rev` increases when `project.json` changes. A write sends `If-Match: "<rev>"`: if the version changed, **409** `{code: "conflict", current_rev, last_actor, last_at}` and nothing is written. Without `If-Match`, the write goes through on an unshared project; on a shared project it answers **428** `precondition_required`. `If-Match: *` turns the check off.
+
+**Settings.** `PUT`, `POST` and `DELETE` under `/api/settings` (including the `/test` routes) answer 403 `admin_only` to accounts that are not administrators; `GET /api/settings` returns them a reduced view (provider name, type and model; endpoint names, without addresses).

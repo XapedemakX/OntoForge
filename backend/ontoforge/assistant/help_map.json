@@ -253,6 +253,18 @@
     "en": "The Documentation screen gathers the guides, with a table of contents, in-page search and links between files. The ? button opens the section for the current screen."
    }
   },
+  "sharing": {
+   "page": "utilisateur",
+   "anchor": "partager-un-projet",
+   "title": {
+    "fr": "Partager un projet",
+    "en": "Sharing a project"
+   },
+   "summary": {
+    "fr": "Le propriétaire partage le projet en saisissant l'identifiant d'un autre compte, comme éditeur (modifie) ou lecteur (consulte et exporte). Un bandeau et un dialogue vous protègent des modifications croisées.",
+    "en": "The owner shares the project by entering another account's identifier, as editor (changes) or reader (views and exports). A banner and a dialog protect you from crossed changes."
+   }
+  },
   "default": {
    "page": "utilisateur",
    "anchor": "le-parcours-en-un-coup-d-oeil",

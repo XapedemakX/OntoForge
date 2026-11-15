@@ -34,6 +34,7 @@ from rdflib.collection import Collection
 from rdflib.namespace import OWL, RDF, RDFS, XSD
 
 from ..core.onto_model import LiteralValue
+from ..io.safe_parse import UnsafeRdfError, parse_into
 from ..core.shapes_model import NodeShape, Path, PropertyShape, QualifiedShape, ShapesModel, Targets
 
 SH = rdflib.Namespace("http://www.w3.org/ns/shacl#")
@@ -154,7 +155,9 @@ def parse_shapes(data: str | bytes, format: str | None = None,
     fmt = guess_format(data, format, filename)
     g = rdflib.Graph()
     try:
-        g.parse(data=data, format=fmt)
+        parse_into(g, data, fmt)
+    except UnsafeRdfError:
+        raise  # fichier refusé par sécurité : l'API répond 422 avec le message, les shapes du projet restent intactes
     except Exception as exc:  # noqa: BLE001 — remonté à l'utilisateur
         return ShapesModel(warnings=[f"Erreur d'analyse RDF ({fmt}) : {exc}"]), [f"Erreur d'analyse RDF ({fmt}) : {exc}"]
     return graph_to_shapes(g)

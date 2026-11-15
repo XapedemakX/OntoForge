@@ -14,6 +14,10 @@ import { getAssistantContext } from '../lib/assistantContext'
 import { ROUTE_SCREEN } from '../assistant-global/context'
 import { SCREENS, STEPS } from './registry'
 import { useAuth } from '../auth/AuthGate'
+import { CollabBar } from '../collab/Bar'
+import { ConflictDialog, RELOAD, StaleBanner } from '../collab/Banners'
+import { useCollab } from '../collab/useCollab'
+import { useReadOnlyGuard } from '../collab/readonly'
 import { useTheme } from './theme'
 import { Logo } from './Logo'
 import { useMedia, useSidePref } from './sidePref'
@@ -41,6 +45,8 @@ export function Shell() {
   const [menu, setMenu] = useState(false)
   const [themePref, cycleTheme] = useTheme()
   const auth = useAuth()
+  const [reloadKey, setReloadKey] = useState(0)
+  const mainRef = useRef<HTMLDivElement>(null)
   const [peris, setPeris] = useState<Perimeter[] | null>(null)
   const [activePeri, setActivePeri] = useState<string>('')
   const pid = route.kind === 'project' ? route.id : null
@@ -53,7 +59,7 @@ export function Shell() {
     setErr(null)
     if (!pid) { setP(null); return }
     if (p?.id === pid) return
-    api.getProject(pid).then(x => { setP(x); setTargetState(x.target); setActivePeri((x as { active_perimeter?: string | null }).active_perimeter ?? '') }).catch(e => { setErr(e); setP(null) })
+    api.loadProject(pid).then(x => { setP(x); setTargetState(x.target); setActivePeri((x as { active_perimeter?: string | null }).active_perimeter ?? '') }).catch(e => { setErr(e); setP(null) })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pid])
   useEffect(() => { if (!pid) { setPeris(null); return } api.perimeters(pid).then(setPeris).catch(() => setPeris(null)) }, [pid, screen])
@@ -63,8 +69,8 @@ export function Shell() {
   }, [p?.id, p?.updated_at, target, screen])
 
   const setTarget = useCallback((x: Target) => {
-    setTargetState(x)
-    setP(prev => { if (prev) api.putProject({ ...prev, target: x }).then(setP).catch(() => toast(t('common.error'))); return prev })
+    setTargetState(x)   // un conflit (409, 428) a son propre dialogue : pas de toast d'erreur en plus
+    setP(prev => { if (prev) api.putProject({ ...prev, target: x }).then(setP).catch(e => { if (![409, 428].includes((e as { status?: number }).status ?? 0)) toast(t('common.error')) }); return prev })
   }, [toast, t])
   const pickPeri = (v: string) => { setActivePeri(v); if (pid) api.setActivePerimeter(pid, v || null).catch(() => toast(t('common.error'))); dispatchEvent(new CustomEvent('of:perimeter', { detail: v })) }
   // l'éditeur graphique (L9) signale un périmètre créé ou activé
@@ -74,6 +80,17 @@ export function Shell() {
     addEventListener('of:perimeter', onActive); addEventListener('of:perimeters', onList)
     return () => { removeEventListener('of:perimeter', onActive); removeEventListener('of:perimeters', onList) }
   }, [pid])
+
+  // collaboration (L40) : présence, version, lecture seule, rechargement après un conflit ou une modification d'un autre compte
+  const collab = useCollab(pid)
+  useReadOnlyGuard(collab.readOnly, t('collab.ro.hint'), () => mainRef.current, [screen, pid, p?.id])
+  const reload = useCallback(async () => {
+    if (!pid) return
+    const x = await api.loadProject(pid)
+    setP(x); setTargetState(x.target); setReloadKey(k => k + 1); collab.beat()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pid, collab.beat])
+  useEffect(() => { const f = () => { void reload().catch(() => toast(t('common.error'))) }; addEventListener(RELOAD, f); return () => removeEventListener(RELOAD, f) }, [reload, toast, t])
 
   const go = (s: string) => { location.hash = `#/projet/${encodeURIComponent(pid!)}/${s}` }
   const sp: ScreenProps | null = p ? { p, setP, target, setTarget } : null
@@ -151,18 +168,19 @@ export function Shell() {
         {tip && <div className="side-tip" role="tooltip" style={{ top: tip.top, left: tip.left }}>{tip.text}</div>}
       </aside>
       {menu && <button className="scrim" aria-label={t('common.close')} onClick={() => setMenu(false)} />}
-      <div className="main">
+      <div className="main" ref={mainRef}>
         <header className="topbar">
           <IconButton className="menu-btn" icon="bars" label={t('nav.menu')} onClick={() => setMenu(m => !m)} />
           <Logo variant="mark" className="logo-top" />
           <div className="crumb">{p && pid ? <><b title={p.name}>{p.name}</b>{def && <span className="muted"> / {t(def.labelKey)}</span>}</> : <b>{route.kind === 'settings' ? t('nav.parametres') : route.kind === 'help' ? t('nav.documentation') : t('common.projects')}</b>}</div>
           <span className="grow" />
           {p && <>
-            <span className="tour-wrap" data-tour="target"><Segmented label={t('head.target')} value={target} onChange={setTarget} items={[['curiosity', 'Curiosity'], ['neo4j', 'Neo4j']]} /></span>
+            <span className="tour-wrap" data-tour="target" data-ro-write><Segmented label={t('head.target')} value={target} onChange={setTarget} items={[['curiosity', 'Curiosity'], ['neo4j', 'Neo4j']]} /></span>
             <label className="peri" title={t('head.perimeter')}><Icon name="crop-simple" /><span className="sr">{t('head.perimeter')}</span>
               <select value={activePeri} onChange={e => pickPeri(e.target.value)} disabled={!peris}>
                 <option value="">{t('head.perimeterAll')}</option>{(peris ?? []).map(x => <option key={x.id} value={x.id}>{x.name}</option>)}</select></label>
           </>}
+          {p && pid && <CollabBar pid={pid} collab={collab} />}
           <a className={'endpoint' + (endpoint ? ' on' : '')} href="#/parametres" title={endpoint?.url ?? t('head.sparqlNone')}>
             <Icon name="database" /><span>{endpoint ? (endpoint.name || endpoint.url.replace(/^https?:\/\//, '')) : t('head.sparqlNone')}</span></a>
           {p && pid && <IconButton icon="circle-question" label={t('docs.helpBtn')} data-testid="help-btn" onClick={() => { const h = helpFor(ROUTE_SCREEN[screen]?.name ?? screen); openDoc(pid, h.page, h.anchor) }} />}
@@ -173,15 +191,17 @@ export function Shell() {
           <IconButton icon={themeIcon} label={t('head.theme.' + themePref)} onClick={cycleTheme} />
           {auth.enabled && <button type="button" className="btn sm ghost logout" data-testid="logout" title={auth.user ?? ''} onClick={() => void auth.logout()}><Icon name="right-from-bracket" /><span>{t('auth.logout')}</span></button>}
         </header>
+        {p && pid && <StaleBanner collab={collab} />}
         <main className={'content' + (def?.fullBleed || route.kind === 'help' ? ' bleed' : '')}>
           {def?.editing && <div className="notice soon mobile-only">{t('head.mobileReadOnly')}</div>}
           {route.kind === 'projects' && <Projects />}
           {route.kind === 'settings' && <Settings />}
           {route.kind === 'help' && <Suspense fallback={<div className="page muted">…</div>}><Documentation /></Suspense>}
           {route.kind === 'project' && err != null && <div className="page"><ErrorView error={err} what={t('common.projects')} /></div>}
-          {sp && (def ? <Suspense key={def.key} fallback={<div className="page muted">…</div>}>{def.render(sp)}</Suspense> : <div className="page"><ErrorView error={new Error('?')} /></div>)}
+          {sp && (def ? <Suspense key={def.key + ':' + reloadKey} fallback={<div className="page muted">…</div>}>{def.render(sp)}</Suspense> : <div className="page"><ErrorView error={new Error('?')} /></div>)}
         </main>
       </div>
+      <ConflictDialog reload={reload} />
       <TourHost />
       {p && pid && <VersionsNudge p={p} setP={setP} screen={screen} />}
       {p && pid && <AssistantDock p={p} setP={setP} target={target} screen={screen} perimeter={activePeri || null} />}

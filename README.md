@@ -30,7 +30,7 @@ L'exemple trap est l'ontologie « piège » de test. Elle exerce les 66 règles 
 - Le code Curiosity généré n'a pas été compilé (pas de SDK .NET dans l'environnement de construction). Les appels marqués `À VÉRIFIER` sont à confirmer sur votre version de Curiosity.Library
 - Le Cypher Neo4j n'a pas été exécuté sur une base réelle. Les contraintes Enterprise-only sont séparées et commentées
 - `xsd:decimal` : décimal exact côté Curiosity (`decimal` C#). Neo4j n'a pas de décimal natif, d'où un nombre flottant (perte signalée) ou une chaîne
-- Les clés d'API et secrets d'endpoints sont chiffrés côté serveur. Définir `ONTOFORGE_SECRET_KEY` dans `.env`, sinon une clé est générée dans le volume. Pas d'authentification ni de filtrage SSRF : poste local uniquement
+- Les clés d'API et secrets d'endpoints sont chiffrés côté serveur. Définir `ONTOFORGE_SECRET_KEY` dans `.env`, sinon une clé est générée dans le volume. Sans authentification, pas de filtrage des adresses sortantes : poste local uniquement ; avec `ONTOFORGE_AUTH=password`, le filtrage est actif (voir `docs/guide/limites.md`)
 - Requêtes : exécution en lecture seule sur l'endpoint SPARQL actif. La traduction Curiosity (Query API) est entièrement `À VÉRIFIER`. Les fournisseurs LLM réels et la question en langage naturel n'ont pas été éprouvés sur un vrai modèle
 - Projets stockés dans le volume Docker `ontoforge-data` (un dossier par projet : `project.json`, `onto.ttl`, `shapes.ttl`, `decisions.json`)
 

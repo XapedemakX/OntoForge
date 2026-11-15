@@ -7,6 +7,7 @@ import { useAssistantContext } from '../lib/assistantContext'
 import { useLoad, useToast } from '../ui'
 import { useState } from 'react'
 import { TourCard } from '../tour'
+import { ActivityCard } from '../collab/ActivityCard'
 
 const go = (id: string, s: string) => { location.hash = `#/projet/${encodeURIComponent(id)}/${s}` }
 const count = (m: PGModel | null | undefined) => {
@@ -29,7 +30,7 @@ export function Dashboard({ p, target }: ScreenProps) {
   const [trophy, setTrophy] = useState(false)
   const hist = useLoad(() => api.generations(p.id).catch(() => []), [p.id, genTick])
   // l'état du projet côté serveur (le `p` du shell peut être en retard d'une décision)
-  const srv = useLoad(() => api.getProject(p.id).then(x => x.updated_at), [p.id, p.updated_at, genTick])
+  const srv = useLoad(() => api.peekProject(p.id).then(x => x.updated_at), [p.id, p.updated_at, genTick])
   const curUpd = srv.data ?? p.updated_at
   const history = hist.data ?? []
   const gens: Partial<Record<Target, GenerationRecord>> = {}
@@ -79,7 +80,7 @@ export function Dashboard({ p, target }: ScreenProps) {
   const fmt = (iso: string) => new Date(iso).toLocaleString(document.documentElement.lang || 'fr', { dateStyle: 'medium', timeStyle: 'short' })
 
   return (
-    <div className="page dash">
+    <div className="page dash" data-safe>
       <div className="page-head"><div><h1>{t('dash.title')}</h1><div className="sub">{t('dash.subtitle', { name: p.name })}</div></div></div>
 
       <section className={`next ${next.pose}`} aria-label={t('dash.next')} data-tour="dash-next">
@@ -136,6 +137,8 @@ export function Dashboard({ p, target }: ScreenProps) {
         <Card title={t('dash.perimeters')}>
           {peri.data && peri.data.length ? <ul className="gens">{peri.data.map(x => <li key={x.id}><b>{x.name}</b><span className="muted">{t('dash.stat.classes', { n: x.classes.length })}</span></li>)}</ul> : <EmptyState pose="loupe" title={t('dash.perimeters.none')} action={<Button size="sm" icon="plus" onClick={() => go(p.id, 'ontologie')}>{t('dash.perimeters.create')}</Button>}>{t('dash.perimeters.hint')}</EmptyState>}
         </Card>
+
+        <ActivityCard pid={p.id} rev={p.updated_at} />
 
         <TourCard />
 

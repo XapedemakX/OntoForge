@@ -101,10 +101,10 @@ def test_initial_map_ontology(client, pid):
     both = [e for e in m["edges"] if e["direction"] == "both"]
     assert {(e["label"], e["inverse_label"]) for e in both if e["id"].startswith(AM + "concerns")} == {("concerne", "a pour ordre de réparation")}
     assert not [e for e in m["edges"] if e["id"].startswith(AM + "hasRepairOrder")]
-    # lecture suivante : proposition enregistrée à l'identique
+    # lecture suivante : même proposition (gardée en mémoire) ; L41 : la lecture n'écrit rien dans le projet
     assert get_map(client, pid) == {**m, "meta": {**m["meta"]}}
     p = client.get(f"/api/projects/{pid}").json()
-    assert p["business_maps"]["ontology"]["generated"] is True
+    assert "ontology" not in p["business_maps"]
 
 
 def test_bad_source_and_unknown_project(client, pid):
@@ -159,8 +159,8 @@ def test_suggest_zones_all_strategies(client, pid):
     assert [(z["title"], z["subtitle"]) for z in again["zones"]] == [(z["title"], z["subtitle"]) for z in out["llm"]["zones"]]
     assert all(z["subtitle"] for z in out["llm"]["zones"] if z["id"] != "other")
     assert client.post(f"/api/projects/{pid}/business-map/suggest-zones", json={"strategy": "nope"}).status_code == 422
-    # rien n'est enregistré sans apply : la carte reste la proposition initiale
-    assert client.get(f"/api/projects/{pid}").json()["business_maps"]["ontology"]["generated"] is True
+    # rien n'est enregistré sans apply : la carte reste la proposition initiale (L41 : même la lecture ne l'enregistre plus)
+    assert "ontology" not in client.get(f"/api/projects/{pid}").json()["business_maps"]
 
 
 def test_suggest_zones_namespace_and_apply(client):

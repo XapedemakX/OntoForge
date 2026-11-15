@@ -53,6 +53,8 @@ Les exemples ci-dessous sont des réponses réelles (backend lancé avec `ONTOFO
 | GET / POST / PUT / DELETE | `/api/projects/{pid}/queries/saved[/{qid}]` · GET `/queries/competency/guided` | requêtes sauvegardées |
 | GET / PUT | `/api/projects/{pid}/business-map?source=ontology\|target` | carte métier : lecture, enregistrement (L36) |
 | POST | `/api/projects/{pid}/business-map/suggest-zones` · `/suggest-frames` · `/layout` | propositions de zones et de cadres, mise en page |
+| GET / POST / DELETE | `/api/projects/{pid}/access`, `/access/members`, `/access/transfer` | partage d'un projet : accès, rôles, transfert (L40) |
+| POST / GET | `/api/projects/{pid}/presence` · `/activity` | présence des comptes, journal d'activité (L40) |
 
 ## Système {#systeme}
 
@@ -1061,7 +1063,7 @@ Contrat normatif : `docs/CONTRACTS.md` §13. Code : `backend/ontoforge/businessm
 
 | Méthode | Chemin | Rôle |
 |---|---|---|
-| GET | `/business-map?source=` | carte complète : `nodes` (rôle, zone, volume, position), `edges` (`link` : `inverse` ou `symmetric`, `union`), `zones` (avec rectangle, même vides), `frames`, `scenarios`, `legend`, `meta` (dont `skipped` : propriétés non dessinées, et `n_union`). Sans carte enregistrée : proposition initiale, enregistrée avec `generated: true` |
+| GET | `/business-map?source=` | carte complète : `nodes` (rôle, zone, volume, position), `edges` (`link` : `inverse` ou `symmetric`, `union`), `zones` (avec rectangle, même vides), `frames`, `scenarios`, `legend`, `meta` (dont `skipped` : propriétés non dessinées, et `n_union`). Sans carte enregistrée : proposition initiale (`generated: true`), gardée en mémoire sans écrire dans le projet |
 | PUT | `/business-map?source=` | enregistre tout ou partie de `{zones, roles, role_colors, faded, pinned, positions, frames, scenarios, title}` et renvoie la carte recalculée ; 422 si identifiants vides ou en double, type dans deux zones, rôle invalide, style inconnu |
 | POST | `/business-map/suggest-zones` | `{strategy: perimeters\|hierarchy\|namespace\|communities\|llm, apply=false}` : aperçu, ou remplacement des zones avec `apply: true` |
 | POST | `/business-map/suggest-frames` | `{apply=false}` : types qui partagent une même relation vers une même cible |
@@ -1071,8 +1073,27 @@ Les rôles par défaut sont `main`, `component`, `hub`, `lookup`, `context`, `re
 
 ### Historique des générations {#historique-des-generations}
 
-`GET /api/projects/{pid}/generations` → liste, la plus récente d'abord : `{target, perimeter, at, files, findings_summary, project_updated_at}` (`findings_summary` : nombres auto / review / lost et `pending`). Chaque `GET /generate/{target}` (pas le zip) ajoute une entrée (50 maximum) sans avancer `updated_at` ; une génération est « obsolète » si `project_updated_at` est antérieur à la dernière modification du projet. `GET /api/projects` expose aussi `created_at` et `source_files`.
+`GET /api/projects/{pid}/generations` → liste, la plus récente d'abord : `{target, perimeter, at, files, findings_summary, project_updated_at}` (`findings_summary` : nombres auto / review / lost et `pending`). Chaque `GET /generate/{target}` (pas le zip) ajoute une entrée (50 maximum) dans le fichier annexe `generations.json`, sans toucher à `project.json` ; une génération est « obsolète » si `project_updated_at` est antérieur à la dernière modification du projet. `GET /api/projects` expose aussi `created_at` et `source_files`.
 
 ### Sémantique de `chosen` et des décisions {#semantique-de-chosen-et-des-decisions}
 
 `Finding.chosen` vaut l'identifiant d'option décidée par l'humain (`None` = non arbitré) ; `Finding.recommended` est l'option appliquée par défaut. `PGModel.decisions` conserve aussi les décisions dont le constat a disparu, pour les rejouer s'il réapparaît (`mapping/decisions.py`, docstring).
+
+### Partage et collaboration — `/api/projects/{pid}/access` {#partage-api}
+
+Disponibles avec l'authentification activée (sans elle : un utilisateur implicite « local » possède tout, `sharing_available=false`, les écritures de partage répondent 409 `auth_required_for_sharing`). Un projet inaccessible répond **404**, jamais 403 ; un rôle insuffisant répond **403** (`read_only`, `owner_only`).
+
+| Méthode | Chemin | Niveau | Rôle |
+|---|---|---|---|
+| GET | `/access` | lecture | `{owner, members:[{login, role}], role, me, sharing_available, admin, rev, last_actor, last_at}` |
+| POST | `/access/members` | propriétaire | `{login, role: reader\|editor}` : partage ou change le rôle. Identifiant inconnu ou propriétaire du projet : même réponse 422 `share_refused` ; plus de 10 essais par minute : 429 |
+| DELETE | `/access/members/{login}` | propriétaire, ou le membre lui-même | retire un accès ; un membre peut quitter le projet |
+| POST | `/access/transfer` | propriétaire | `{login}` : transfère la propriété ; l'ancien propriétaire devient éditeur |
+| POST | `/presence` | lecture | battement (toutes les ~20 s) → `{present:[{user, role, me}], rev, last_actor, last_at, role, me}` ; expiration à 60 s |
+| GET | `/activity?limit=100` | lecture | journal `[{at, user, action, detail?}]`, le plus récent d'abord (500 entrées conservées) |
+
+`GET /api/projects` ajoute `owner`, `role` (`owner`, `editor`, `reader`) et `shared` à chaque résumé.
+
+**Version et conflits.** Toute réponse d'une route de projet réussie porte `ETag: "<rev>"` ; `rev` augmente quand `project.json` change. Une écriture envoie `If-Match: "<rev>"` : si la version a changé, **409** `{code: "conflict", current_rev, last_actor, last_at}` et rien n'est écrit. Sans `If-Match`, l'écriture passe sur un projet non partagé ; sur un projet partagé elle répond **428** `precondition_required`. `If-Match: *` désactive le contrôle.
+
+**Réglages.** `PUT`, `POST` et `DELETE` sous `/api/settings` (y compris les routes `/test`) répondent 403 `admin_only` aux comptes qui ne sont pas administrateurs ; `GET /api/settings` renvoie à ceux-là une vue réduite (nom, type, modèle des fournisseurs ; nom des endpoints, sans adresse).

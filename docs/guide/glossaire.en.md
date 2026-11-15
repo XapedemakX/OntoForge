@@ -100,6 +100,9 @@ Vocabulary of OntoForge, of the OWL/SHACL world and of the property graph world.
 | **Role** | Label of a type on the business map (main, component, hub, lookup, context, reference, document, settings), inferred from the structure and then correctable. |
 | **Scenario** | Highlighting of some relationships of the business map (style, notes) without touching the model. |
 | **Quick input** | Editor panel: one DSL line = one axiom. |
+| **Owner / editor / reader** | An account's roles on a project (L40): the owner shares, transfers and deletes; the editor changes; the reader views and exports ("read-only"). |
+| **Project version (`rev`, ETag)** | Number that grows with every save; every write sends it (`If-Match`) so that a conflict (409) is never silently overwritten. |
+| **Presence** | Initials of the accounts currently on the project, signalled about every 20 seconds, forgotten after 60 seconds. |
 
 ## The agent team {#equipe-d-agents}
 

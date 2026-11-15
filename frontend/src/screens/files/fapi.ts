@@ -19,10 +19,10 @@ export interface Reply<T> { status: number; ok: boolean; data: T & { detail?: st
 const base = (id: string) => `/api/projects/${encodeURIComponent(id)}`
 const enc = (path: string) => path.split('/').map(encodeURIComponent).join('/')
 
-async function call<T>(method: string, url: string, body?: unknown): Promise<Reply<T>> {
+async function call<T>(method: string, url: string, body?: unknown, extra?: Record<string, string>): Promise<Reply<T>> {
   let r: Response
   try {
-    r = await fetch(url, { method, ...(body !== undefined ? { body: JSON.stringify(body), headers: { 'Content-Type': 'application/json' } } : {}) })
+    r = await fetch(url, { method, ...(body !== undefined ? { body: JSON.stringify(body), headers: { 'Content-Type': 'application/json', ...extra } } : extra ? { headers: extra } : {}) })
   } catch { return { status: 0, ok: false, data: { detail: tr('ui.unreachable') } as Reply<T>['data'] } }
   let data: unknown = {}
   try { data = await r.json() } catch { /* corps vide */ }
@@ -37,5 +37,5 @@ export const fapi = {
   apply: (id: string, path: string, content: string, baseEtag?: string, force = false) =>
     call<ApplyResult>('PUT', `${base(id)}/files/${enc(path)}`, { content, base_etag: baseEtag, force }),
   undo: (id: string) => call<{ project: Project; can_undo: boolean; can_redo: boolean; label?: string }>('POST', `${base(id)}/ops/undo`),
-  getProject: (id: string) => call<Project>('GET', base(id)),
+  getProject: (id: string) => call<Project>('GET', base(id), undefined, { 'X-OntoForge-Load': '1' }),
 }

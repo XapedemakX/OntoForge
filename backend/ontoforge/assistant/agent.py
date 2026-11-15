@@ -893,11 +893,13 @@ def run(project: Any, messages: list[dict[str, Any]], context: dict[str, Any], p
 
     if real:
         lang = _lang_name(rl)
-        user = _ctx_text(project, ctx) + "\n\nSCHÉMA DE L'ONTOLOGIE\n" + schema_compact(project.onto)[:CTX_MAX] + "\n\nDEMANDE\n" + last
+        from .untrusted import fence, guard  # SEC-17 : contenus importés balisés comme données non fiables
+        user = (fence("contexte de l'écran", _ctx_text(project, ctx)) + "\n\nSCHÉMA DE L'ONTOLOGIE\n" + fence("schéma de l'ontologie", schema_compact(project.onto)[:CTX_MAX])
+                + "\n\nDEMANDE\n" + last)
         for a in attachments or []:
-            user += f"\n--- PIÈCE JOINTE {a.get('name')} ---\n{str(a.get('content', ''))[:service.ATT_LIMIT]}"
+            user += "\n--- PIÈCE JOINTE ---\n" + fence(f"pièce jointe {a.get('name')}", str(a.get('content', ''))[:service.ATT_LIMIT])
         try:
-            raw = p.complete(AGENT_SYSTEM.replace("{LANG}", lang), [*msgs[:-1], {"role": "user", "content": user}], 6000)
+            raw = p.complete(guard(AGENT_SYSTEM.replace("{LANG}", lang)), [*msgs[:-1], {"role": "user", "content": user}], 6000)
         except LLMError as exc:
             raise HTTPException(status_code=502, detail=str(exc)) from None
         try:

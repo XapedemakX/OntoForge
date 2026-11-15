@@ -27,9 +27,10 @@ from typing import Iterable, Optional
 import rdflib
 from rdflib import BNode, Literal, URIRef
 from rdflib.collection import Collection
-from rdflib.compare import to_canonical_graph
 from rdflib.namespace import OWL as _OWL, RDF as _RDF, RDFS as _RDFS, XSD as _XSD
 
+from rdflib.compare import to_canonical_graph
+from .safe_parse import UnsafeRdfError, max_canon_triples, max_unmapped_triples, parse_into
 from ..core.onto_model import (
     Annotation, AnnotationProperty, ClassExpr, DataRange, DatatypeDef, DatatypeProperty, Fact, Individual,
     LiteralValue, ObjectProperty, OntClass, OntoModel, OntologyMeta, Restriction, UnmappedAxiom, OWL, RDF,
@@ -162,7 +163,9 @@ def parse_ontology(data: str | bytes, format: Optional[str] = None, filename: Op
     fmt = detect_format(data, format, filename)
     g = rdflib.Graph(bind_namespaces="none")
     try:
-        g.parse(data=data, format=fmt)
+        parse_into(g, data, fmt)
+    except UnsafeRdfError as e:
+        raise RdfImportError(str(e)) from e
     except Exception as e:  # noqa: BLE001 — message utilisateur
         raise RdfImportError(f"Erreur de syntaxe ({fmt}) : {e}") from e
     model, warnings = graph_to_model(g)
@@ -925,26 +928,44 @@ class _Reader:
         self.warnings = out
 
     def collect_unmapped(self) -> None:
-        rest = rdflib.Graph()
-        for t in self.g:
-            if t not in self.consumed:
-                rest.add(t)
-        if not len(rest):
+        triples = [t for t in self.g if t not in self.consumed]
+        if not triples:
             return
-        canon = to_canonical_graph(rest)  # labels de nœuds blancs déterministes (round-trip stable)
-        objs_b = {o for _, _, o in canon if isinstance(o, BNode)}
-        roots = sorted({s for s in canon.subjects() if not (isinstance(s, BNode) and s in objs_b)}, key=str)
+        if len(triples) > max_unmapped_triples():  # SEC-06 : listes ou structures anonymes démesurées
+            raise RdfImportError(f"Fichier refusé : {len(triples)} triplets non reconnus (plafond {max_unmapped_triples()}), typiquement une très longue liste RDF "
+                                 "hors des axiomes OWL. Retirez ces données du fichier ou importez-les comme données (triplestore local).")
+        if len(triples) <= max_canon_triples():
+            rest = rdflib.Graph()
+            for t in triples:
+                rest.add(t)
+            triples = list(to_canonical_graph(rest))  # labels de nœuds blancs déterministes (round-trip stable)
+            order = sorted
+        else:  # SEC-06 : au-delà du plafond, pas de canonisation (coût quadratique) ni de tri coûteux
+            self.warnings.append(f"[unmapped_not_canonical] : {len(triples)} triplets non mappés : au-delà du plafond de canonisation, "
+                                 "les étiquettes de nœuds blancs ne sont pas normalisées (conservés tels quels).")
+            order = lambda xs: sorted(xs, key=lambda t: tuple(map(str, t)))  # noqa: E731
+        by_subj: dict = defaultdict(list)
+        for s_, p_, o_ in triples:
+            by_subj[s_].append((p_, o_))
+        objs_b = {o for _, _, o in triples if isinstance(o, BNode)}
+        roots = sorted({s_ for s_ in by_subj if not (isinstance(s_, BNode) and s_ in objs_b)}, key=str)
         assigned: set = set()
 
-        def closure(node, acc):
-            for p, o in sorted(canon.predicate_objects(node)):
-                t = (node, p, o)
-                if t in assigned:
-                    continue
-                assigned.add(t)
-                acc.append(t)
-                if isinstance(o, BNode):
-                    closure(o, acc)
+        def closure(node, acc):  # parcours en profondeur sans récursion (longues listes RDF : SEC-06)
+            stack = [(node, iter(order(by_subj.get(node, ()))))]
+            while stack:
+                n, it = stack[-1]
+                for p, o in it:
+                    t = (n, p, o)
+                    if t in assigned:
+                        continue
+                    assigned.add(t)
+                    acc.append(t)
+                    if isinstance(o, BNode):
+                        stack.append((o, iter(order(by_subj.get(o, ())))))
+                        break
+                else:
+                    stack.pop()
 
         groups = []
         for r in roots:
@@ -952,7 +973,7 @@ class _Reader:
             closure(r, acc)
             if acc:
                 groups.append((r, acc))
-        left = [t for t in sorted(canon) if t not in assigned]  # cycles de nœuds blancs
+        left = [t for t in order(triples) if t not in assigned]  # cycles de nœuds blancs
         if left:
             groups.append((left[0][0], left))
         nsm = self.g.namespace_manager

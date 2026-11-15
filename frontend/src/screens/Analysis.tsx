@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import { marked } from 'marked'
+import { renderSafeMarkdown } from '../lib/safeMarkdown'
 import { api, curie, type Finding, type FindingSeverity } from '../api'
 import type { ScreenProps } from '../shell/types'
 import { Button, Card, Icon } from '../kit'
 import { useT } from '../i18n'
 import { KrakieStatus, useResultFlash } from '../krakie/Krakie'
-import { Empty, ErrorView, esc, useLoad, useToast } from '../ui'
+import { Empty, ErrorView, useLoad, useToast } from '../ui'
 
 
 export function Analysis({ p, target }: ScreenProps) {
@@ -164,7 +164,7 @@ function FindingCard({ f, pf, projectId, target, decide }: { f: Finding; pf: Rec
         {f.related.length > 0 && <span className="muted">{t('an.related')} {f.related.map(r => curie(r, pf)).join(', ')}</span>}
       </div>
       <ErrorView error={expErr} what={t('an.what.assistant')} />
-      {exp && <div className="explain" dangerouslySetInnerHTML={{ __html: marked.parse(esc(exp), { async: false }) as string }} />}
+      {exp && <div className="explain" dangerouslySetInnerHTML={{ __html: renderSafeMarkdown(exp) }} />}
     </div>
   )
 }

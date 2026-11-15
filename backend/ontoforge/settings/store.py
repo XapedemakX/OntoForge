@@ -12,7 +12,7 @@ from typing import Any
 
 from .. import fsutil
 from . import crypto
-from .models import DEFAULT_MODELS, EndpointConfig, ProviderConfig, Settings, SparqlAuth
+from .models import DEFAULT_MODELS, LOADING as MODELS_LOADING, EndpointConfig, ProviderConfig, Settings, SparqlAuth
 
 log = logging.getLogger("ontoforge.settings")
 _LOCK = threading.RLock()
@@ -99,7 +99,26 @@ def migrate_endpoints(s: Settings) -> Settings:
     return s
 
 
+def registered() -> Settings | None:
+    """Réglages tels qu'enregistrés sur disque (secrets déchiffrés), ou None. Sert à lier chaque secret à son adresse (SEC-03)."""
+    try:
+        p = path()
+        if not p.exists():
+            return None
+        return _from_disk(json.loads(p.read_text(encoding="utf-8")))
+    except Exception:  # noqa: BLE001 - fichier illisible, clé maître changée : pas de comparaison possible
+        return None
+
+
 def _from_disk(d: dict[str, Any], secret: str | None = None) -> Settings:
+    tok = MODELS_LOADING.set(True)
+    try:
+        return _from_disk_unbound(d, secret)
+    finally:
+        MODELS_LOADING.reset(tok)
+
+
+def _from_disk_unbound(d: dict[str, Any], secret: str | None = None) -> Settings:
     unreadable: set[str] = set()
     for raw in d.get("llm_providers", []):
         tok = raw.pop("api_key_enc", None)

@@ -18,6 +18,7 @@ from pydantic import ValidationError
 from ..core.onto_model import RDFS, OntoModel, local_name
 from ..core.shapes_model import ShapesModel
 from .builder import LANGTAG, OWL2_DATATYPES, GuidedQuery, QFilter, Root, SelectItem, Step, Suggester, VAR_RE
+from ..assistant.untrusted import fence
 
 SKOS_ALT = "http://www.w3.org/2004/02/skos/core#altLabel"
 STOP = set("""le la les l un une des du de d et ou a au aux en dans sur par pour avec sans que qui quel quels quelle quelles ont est sont
@@ -485,7 +486,7 @@ def interpret(question: str, onto: OntoModel, shapes: Optional[ShapesModel], pro
     from ..assistant.providers import LLMError
     digest, lookup = schema_digest(onto, lang)
     hints = "; ".join(f"« {h.term} » -> {local_name(h.iri)}" for h in preanalyse(question, onto)[0])
-    user = ("LANGUAGE: write the explanation in English.\n" if (msg_lang or lang) == "en" else "") + f"SCHÉMA\n{digest}\n\nINDICES (pré-analyse, non contraignants) : {hints or 'aucun'}\n\nQUESTION : {question}"
+    user = ("LANGUAGE: write the explanation in English.\n" if (msg_lang or lang) == "en" else "") + f"SCHÉMA\n{fence('schéma de l ontologie', digest)}\n\nINDICES (pré-analyse, non contraignants) : {hints or 'aucun'}\n\nQUESTION : {question}"
     try:
         out = _ask_json(provider, SYSTEM, user, 3000)
     except (LLMError, Exception) as exc:  # noqa: BLE001 — repli, jamais d'échec dur

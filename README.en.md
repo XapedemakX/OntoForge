@@ -30,7 +30,7 @@ The trap sample is the test "trap" ontology. It exercises the 66 transposition r
 - The generated Curiosity code has not been compiled (no .NET SDK in the build environment). Calls marked `À VÉRIFIER` need to be confirmed on your version of Curiosity.Library
 - The Neo4j Cypher has not been run on a real database. Enterprise-only constraints are separated and commented
 - `xsd:decimal`: exact decimal on the Curiosity side (C# `decimal`). Neo4j has no native decimal, hence a float (loss flagged) or a string
-- API keys and endpoint secrets are encrypted on the server. Set `ONTOFORGE_SECRET_KEY` in `.env`, otherwise a key is generated in the volume. No authentication and no SSRF filtering: local workstation only
+- API keys and endpoint secrets are encrypted on the server. Set `ONTOFORGE_SECRET_KEY` in `.env`, otherwise a key is generated in the volume. Without authentication there is no outbound-address filtering: local workstation only; with `ONTOFORGE_AUTH=password` the filtering is on (see `docs/guide/limites.en.md`)
 - Queries: read-only execution on the active SPARQL endpoint. The Curiosity translation (Query API) is entirely `À VÉRIFIER`. Real LLM providers and natural-language questions have not been tried on a real model
 - Projects are stored in the Docker volume `ontoforge-data` (one folder per project: `project.json`, `onto.ttl`, `shapes.ttl`, `decisions.json`)
 

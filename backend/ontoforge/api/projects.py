@@ -11,6 +11,7 @@ from .. import localize, samples as samples_mod, standards
 from ..core.onto_model import OntoModel
 from ..core.project import Project
 from ..core.shapes_model import ShapesModel
+from ..collab import access
 from ..projects import store
 from ._common import decode, dump, load_project, parse_error, service
 
@@ -37,8 +38,9 @@ class DslRequest(BaseModel):
     merge: bool = True
 
 
-def summary(p: Project) -> dict:
+def summary(p: Project, role: str = "owner", owner: Optional[str] = None, shared: bool = False) -> dict:
     return {
+        "owner": owner, "role": role, "shared": shared,
         "id": p.id,
         "name": p.name,
         "description": p.description,
@@ -85,7 +87,15 @@ def _parse_shapes(data: str | bytes, filename: str | None) -> tuple[ShapesModel,
 
 @router.get("/projects")
 def list_projects() -> list[dict]:
-    return [summary(p) for p in store.list_projects()]
+    c = access.current()
+    ident = c.identity if c else access.Identity()
+    vis = access.visible_projects(ident)
+    out = []
+    for p in store.list_projects():
+        if p.id in vis:
+            d = access.read(p.id)
+            out.append(summary(p, vis[p.id], (d["owner"] or ident.first_admin) if ident.auth else None, bool(d["members"]) or (vis[p.id] != "owner")))
+    return out
 
 
 @router.post("/projects", response_model=Project, status_code=201)
@@ -118,6 +128,10 @@ def create_project(body: ProjectCreate) -> Project:
     store.save(p)
     for name, content in data_files:
         store.write_file(p.id, name, content)
+    c = access.current()
+    if c is not None and c.identity.auth:
+        access.init_project(p.id, c.identity.user)
+        access.log(p.id, c.identity.user, "create")
     return p
 
 
@@ -137,7 +151,8 @@ def put_project(pid: str, body: Project) -> Project:
 
 @router.delete("/projects/{pid}", response_model=Project)
 def delete_project(pid: str) -> Project:
-    load_project(pid)
+    load_project(pid, "owner")
+    access.forget(pid)
     from ..localstore import store as local_store
     local_store.drop(pid)  # verrou d'écriture du triplestore local : attend les requêtes en cours, évite le rmtree sous leurs pieds
     return store.delete(pid)

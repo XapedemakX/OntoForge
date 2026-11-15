@@ -3,6 +3,7 @@
 ONTOFORGE_AUTH            ``password`` pour activer (toute autre valeur : désactivée)
 ONTOFORGE_AUTH_USERS      comptes ``utilisateur:hachage`` séparés par ``;`` ou par des retours à la ligne
 ONTOFORGE_AUTH_USERS_FILE même format dans un fichier (secret monté par Cloud Run) ; les deux sources sont fusionnées
+ONTOFORGE_AUTH_ADMINS     comptes administrateurs (réglages globaux), séparés par des virgules ; défaut : le premier compte déclaré (L40)
 ONTOFORGE_SECRET_KEY      clé maître (32 caractères au moins) dont la clé de session est dérivée
 ONTOFORGE_SESSION_HOURS   durée d'une session (8 par défaut, 0,25 à 720)
 ONTOFORGE_COOKIE_SECURE   ``0`` pour tester en http sans TLS (défaut : cookie Secure)
@@ -34,6 +35,14 @@ class AuthConfig:
     cookie_secure: bool = True
     proxy_hops: int = 0
     key: bytes = b""
+    admins: frozenset = frozenset()   # L40 : comptes qui modifient les réglages globaux
+
+    def is_admin(self, user: Optional[str]) -> bool:
+        return bool(user) and str(user).lower() in self.admins
+
+    @property
+    def first_admin(self) -> Optional[str]:
+        return next((u for u in self.users if u in self.admins), None)
 
     @property
     def cookie_name(self) -> str:
@@ -98,6 +107,11 @@ def load_config(env: Optional[Mapping[str, str]] = None) -> AuthConfig:
     if len(secret) < 32:
         raise AuthConfigError("ONTOFORGE_AUTH=password demande ONTOFORGE_SECRET_KEY (32 caractères au moins) pour signer les sessions. "
                               "Générer : python -m ontoforge.auth secret")
+    raw_admins = [a.strip().lower() for a in str(e.get("ONTOFORGE_AUTH_ADMINS", "") or "").split(",") if a.strip()]
+    unknown = [a for a in raw_admins if a not in users]
+    if unknown:
+        raise AuthConfigError("ONTOFORGE_AUTH_ADMINS : compte inconnu dans ONTOFORGE_AUTH_USERS : " + ", ".join(unknown))
+    admins = frozenset(raw_admins or [next(iter(users))])
     secure = str(e.get("ONTOFORGE_COOKIE_SECURE", "1") or "1").strip().lower() not in ("0", "false", "no", "off")
     return AuthConfig(enabled=True, users=users, session_hours=_num(e, "ONTOFORGE_SESSION_HOURS", 8, 0.25, 720),
-                      cookie_secure=secure, proxy_hops=hops, key=derive_key(secret))
+                      cookie_secure=secure, proxy_hops=hops, key=derive_key(secret), admins=admins)

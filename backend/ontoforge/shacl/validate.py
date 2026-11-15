@@ -13,6 +13,12 @@ et `sh:class` / `sh:targetClass` voient les types déduits par rdfs:domain/range
 """
 from __future__ import annotations
 
+import json
+import os
+import subprocess
+import sys
+import threading
+from pathlib import Path
 from typing import Literal as TLiteral, Optional
 
 import rdflib
@@ -20,8 +26,10 @@ from pydantic import BaseModel, Field
 from rdflib import BNode, Literal, URIRef
 from rdflib.namespace import OWL, RDF, RDFS
 
+from .. import childproc
 from ..core.onto_model import OntoModel
 from ..core.shapes_model import ShapesModel
+from ..io.safe_parse import parse_into
 from .export_shapes import path_to_sparql, shapes_to_graph_with_ids
 from .import_shapes import SH, encode_term, guess_format, iter_all_property_shapes
 
@@ -59,8 +67,87 @@ def _load(data, fmt: Optional[str]) -> rdflib.Graph:
     if isinstance(data, rdflib.Graph):
         return data
     g = rdflib.Graph()
-    g.parse(data=data, format=guess_format(data, fmt))
+    parse_into(g, data, guess_format(data, fmt))
     return g
+
+
+# ---- exécution isolée (SEC-05) ----------------------------------------------------------------------------------------
+WORKER = Path(__file__).with_name("_worker.py")
+
+
+class ShaclLimitError(Exception):
+    """Validation interrompue (délai, mémoire ou temps CPU) : message destiné à l'utilisateur."""
+
+
+def _env_num(name: str, default: float) -> float:
+    try:
+        return max(1.0, float(os.environ.get(name, default)))
+    except ValueError:
+        return default
+
+
+class _SameLabels(dict):
+    """Contexte de nœuds blancs du lecteur N-Triples : conserve les étiquettes (identifiants de shapes, nœuds des rapports)."""
+
+    def get(self, key, default=None):
+        return key
+
+
+def _parse_nt(g: rdflib.Graph, text: str) -> None:
+    from rdflib.plugins.parsers.ntriples import NTGraphSink, W3CNTriplesParser
+    W3CNTriplesParser(NTGraphSink(g)).parsestring(text, bnode_context=_SameLabels())
+
+
+def _nt(g: Optional[rdflib.Graph]) -> Optional[str]:
+    return None if g is None else g.serialize(format="nt")
+
+
+class ShaclBusyError(Exception):
+    """Trop de validations simultanées (plafond ``ONTOFORGE_SHACL_SLOTS``) : l'API répond 503 avec ``Retry-After`` (L39-01)."""
+
+    retry_after = 5
+
+
+def _slot_count() -> int:
+    try:
+        return max(1, min(32, int(os.environ.get("ONTOFORGE_SHACL_SLOTS", "2"))))
+    except ValueError:
+        return 2
+
+
+_SLOTS = threading.BoundedSemaphore(_slot_count())  # comme conformance/hermit.py : un fils peut prendre 2 Go, donc peu de fils à la fois
+
+
+def _run_isolated(dg: rdflib.Graph, sg: rdflib.Graph, og: Optional[rdflib.Graph], inf: str):
+    """pySHACL dans un processus fils : délai, mémoire et CPU plafonnés (ONTOFORGE_SHACL_TIMEOUT_S = 30, ONTOFORGE_SHACL_MEMORY_MB = 2048),
+    au plus ONTOFORGE_SHACL_SLOTS (2) validations en même temps ; ``ShaclBusyError`` si tous les créneaux sont pris (L41)."""
+    if not _SLOTS.acquire(blocking=False):
+        raise ShaclBusyError("Trop de validations SHACL en cours : réessayez dans quelques secondes.")
+    try:
+        return _run_isolated_locked(dg, sg, og, inf)
+    finally:
+        _SLOTS.release()
+
+
+def _run_isolated_locked(dg: rdflib.Graph, sg: rdflib.Graph, og: Optional[rdflib.Graph], inf: str):
+    timeout = _env_num("ONTOFORGE_SHACL_TIMEOUT_S", 30)
+    mem = int(_env_num("ONTOFORGE_SHACL_MEMORY_MB", 2048))
+    payload = json.dumps({"data": _nt(dg), "shapes": _nt(sg), "ont": _nt(og), "inference": inf}).encode("utf-8")
+    try:
+        proc = childproc.run_limited(WORKER, payload, timeout=timeout, mem_mb=mem, cpu_s=int(timeout) + 2, fsize=0)
+    except subprocess.TimeoutExpired:
+        raise ShaclLimitError(f"Validation interrompue : délai de {timeout:.0f} s dépassé. Une contrainte (par exemple un sh:pattern trop coûteux) "
+                              "ou le volume de données est trop lourd ; simplifiez l'expression régulière ou réduisez les données.") from None
+    if proc.returncode != 0 or not proc.stdout:
+        if proc.returncode < 0 or b"MemoryError" in proc.stderr:
+            raise ShaclLimitError("Validation interrompue : mémoire ou temps de calcul plafonnés. Une contrainte (par exemple un sh:pattern trop coûteux) "
+                                  "ou le volume de données est trop lourd.")
+        tail = (proc.stderr.decode("utf-8", "replace").strip().splitlines() or ["erreur inconnue"])[-1][:300]
+        raise RuntimeError(tail)
+    out = json.loads(proc.stdout)
+    rg = rdflib.Graph()
+    _parse_nt(rg, out["results"])
+    return out["conforms"], rg, out["text"]
 
 
 def onto_to_graph(onto: OntoModel) -> rdflib.Graph:
@@ -125,8 +212,6 @@ def validate(data: str | bytes | rdflib.Graph, shapes: ShapesModel, onto: OntoMo
              data_format: str | None = None, inference: str = "none") -> ShaclReport:
     """Valide `data` contre `shapes` avec pySHACL. Ne lève pas d'exception sur entrée invalide :
     renvoie `conforms=False` + warning."""
-    import pyshacl  # import local : coût de chargement
-
     inf = (inference or "none").lower()
     if inf not in ("none", "rdfs", "owlrl", "both"):
         return ShaclReport(conforms=False, inference=inf,
@@ -146,10 +231,11 @@ def validate(data: str | bytes | rdflib.Graph, shapes: ShapesModel, onto: OntoMo
         warnings.append("Des contraintes SHACL-SPARQL sont présentes : exécutées par pySHACL (advanced=False suffit "
                         "pour sh:sparql de SHACL-SPARQL).")
     try:
-        conforms, results_graph, text = pyshacl.validate(
-            dg, shacl_graph=sg, ont_graph=og, inference=None if inf == "none" else inf,
-            abort_on_first=False, allow_warnings=False, allow_infos=False, advanced=False, inplace=False,
-        )
+        conforms, results_graph, text = _run_isolated(dg, sg, og, inf)
+    except ShaclBusyError:
+        raise  # remonte jusqu'à l'API (503 + Retry-After) : ce n'est pas un échec de la validation
+    except ShaclLimitError as exc:
+        return ShaclReport(conforms=False, inference=inf, warnings=warnings + [str(exc)])
     except Exception as exc:  # noqa: BLE001
         return ShaclReport(conforms=False, inference=inf, warnings=warnings + [f"Échec pySHACL : {exc}"])
 

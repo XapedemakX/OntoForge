@@ -232,14 +232,29 @@ def compose(c: Ctx, pos: Optional[dict[str, tuple[float, float]]] = None) -> dic
 
 
 # ----------------------------------------------------------------------------- opérations
+_INITIAL: dict[tuple, dict[str, XY]] = {}   # L41 : mises en page initiales de la route de lecture, gardées en mémoire (jamais écrites)
+_INITIAL_MAX = 64
+
+
 def get_map(p: Project, source: str, persist: bool = True) -> dict:
-    """Carte complète prête à dessiner. Sans carte enregistrée : proposition initiale (zones + mise en page), enregistrée avec
-    ``generated: true`` pour que les lectures suivantes la retrouvent à l'identique."""
+    """Carte complète prête à dessiner. Sans carte enregistrée : proposition initiale (zones + mise en page).
+    ``persist=True`` (routes d'écriture) l'enregistre avec ``generated: true``. ``persist=False`` (GET, route de lecture, L41 : une lecture
+    n'écrit jamais dans le projet) la garde en mémoire, par état du projet, pour que les lectures suivantes la retrouvent à l'identique ;
+    elle est enregistrée à la première modification de la carte."""
     check_source(source)
     c = prepare(p, source)
     if c.fresh and c.graph.nodes:
-        res = run_layout(c, iterations=1500, seed=0, time_limit_s=2.0)
-        c.state.positions = {k: XY(x=x, y=y) for k, (x, y) in res.positions.items()}
+        key = (p.id, source, p.updated_at)
+        cached = None if persist else _INITIAL.get(key)
+        if cached is not None:
+            c.state.positions = dict(cached)
+        else:
+            res = run_layout(c, iterations=1500, seed=0, time_limit_s=2.0)
+            c.state.positions = {k: XY(x=x, y=y) for k, (x, y) in res.positions.items()}
+            if not persist:
+                if len(_INITIAL) >= _INITIAL_MAX:
+                    _INITIAL.pop(next(iter(_INITIAL)))
+                _INITIAL[key] = dict(c.state.positions)
         if persist:
             c.state.updated_at = store.now_iso()
             p.business_maps[source] = c.state

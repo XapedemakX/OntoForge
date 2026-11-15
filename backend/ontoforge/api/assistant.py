@@ -127,7 +127,7 @@ def apply_shapes(body: ApplyShapesRequest) -> Any:
     from ..editing import history, ops as ops_mod
     from ..projects import store
     with history.lock():
-        p = load_project(body.project_id)
+        p = load_project(body.project_id, "write")
         patches, _prev, warns = agent.validate_shape_patches(p, body.patches)
         if not patches:
             raise HTTPException(status_code=422, detail="Aucune contrainte valide à appliquer. " + " ".join(warns))

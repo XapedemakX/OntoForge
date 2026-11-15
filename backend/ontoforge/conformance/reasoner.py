@@ -1,4 +1,4 @@
-"""Raisonnement : OWL RL (owlrl) avec contournement du bug prp-key, HermiT optionnel. Jamais bloquant.
+"""Raisonnement : OWL RL (owlrl) avec contournement du bug prp-key ; HermiT est dans conformance/hermit.py. Jamais bloquant.
 
 Bug owlrl 7.1.2 (OWLRL.py, règle prp-key) : la boucle `range(0, len(pis) - 1)` ignore la dernière propriété
 de la clé ; avec `owl:hasKey (p)` tous les individus du type deviennent owl:sameAs. Contournement : retirer
@@ -6,9 +6,6 @@ les axiomes hasKey du graphe avant DeductiveClosure et appliquer prp-key ici (OW
 """
 from __future__ import annotations
 
-import subprocess
-import sys
-import tempfile
 import threading
 from typing import Optional
 
@@ -100,47 +97,6 @@ def _unsat(closure: rdflib.Graph, original: rdflib.Graph) -> list[str]:
     return out
 
 
-def _hermit(g: rdflib.Graph, info: ReasonerInfo, timeout: float) -> None:
-    try:
-        import owlready2  # noqa: F401
-    except Exception:  # noqa: BLE001
-        info.notes.append("HermiT non utilisé : owlready2 absent.")
-        return
-    with tempfile.NamedTemporaryFile("w", suffix=".owl", delete=False) as f:
-        f.write(g.serialize(format="xml"))
-        path = f.name
-    script = (
-        "import sys, json\nfrom owlready2 import *\n"
-        "o = get_ontology('file://%s').load()\n"
-        "try:\n    sync_reasoner_hermit(infer_property_values=False)\nexcept OwlReadyInconsistentOntologyError:\n"
-        "    print(json.dumps({'consistent': False, 'unsat': []})); sys.exit(0)\n"
-        "print(json.dumps({'consistent': True, 'unsat': [c.iri for c in default_world.inconsistent_classes()]}))\n" % path
-    )
-    try:
-        r = subprocess.run([sys.executable, "-I", "-c", script], capture_output=True, text=True, timeout=timeout)
-        import json
-        line = [ln for ln in r.stdout.splitlines() if ln.startswith("{")]
-        if not line:
-            info.notes.append("HermiT : aucune sortie exploitable (" + (r.stderr.strip().splitlines() or ["?"])[-1][:200] + ").")
-            return
-        d = json.loads(line[-1])
-        info.used = "owlrl+hermit"
-        if info.consistent is not False:
-            info.consistent = d["consistent"]
-        info.unsatisfiable = sorted(set(info.unsatisfiable) | set(d["unsat"]))
-        info.notes.append("HermiT (owlready2) exécuté.")
-    except subprocess.TimeoutExpired:
-        info.notes.append(f"HermiT : délai de {timeout:.0f} s dépassé, résultat ignoré.")
-    except Exception as e:  # noqa: BLE001
-        info.notes.append(f"HermiT indisponible : {type(e).__name__}.")
-    finally:
-        import os
-        try:
-            os.unlink(path)
-        except OSError:
-            pass
-
-
 def reason(g: rdflib.Graph, *, hermit: bool = False, timeout: float = 30.0) -> ReasonerInfo:
     """OWL RL (fil daemon, délai `timeout`) puis HermiT optionnel. Retourne toujours un ReasonerInfo."""
     info = ReasonerInfo()
@@ -163,5 +119,6 @@ def reason(g: rdflib.Graph, *, hermit: bool = False, timeout: float = 30.0) -> R
         info.notes.append(f"OWL RL indisponible : {type(box['err']).__name__}: {box['err']}")
         return info
     if hermit:
-        _hermit(g, info, timeout)
+        # SEC-21 : l ancien chargement par fichier local via owlready2 (sans retrait des owl:imports) est supprimé ; HermiT passe par conformance.hermit.
+        info.notes.append("HermiT : utilisez le raisonneur dédié (conformance.hermit), qui retire les owl:imports avant l'exécution.")
     return info

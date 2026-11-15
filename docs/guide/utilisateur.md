@@ -14,9 +14,18 @@ cp .env.example .env        # facultatif : ONTOFORGE_SECRET_KEY, clés de l'assi
 docker compose up --build
 ```
 
-Ouvrir http://localhost:8088 (port modifiable avec `ONTOFORGE_PORT` dans `.env`). Les projets et les paramètres sont conservés dans le volume Docker `ontoforge-data` (un dossier par projet : `project.json`, `onto.ttl`, `shapes.ttl`, `decisions.json`, plus `ops-history.json` et `queries.json` selon l'usage ; à la racine : `settings.json`).
+Ouvrir http://localhost:8088 (port modifiable avec `ONTOFORGE_PORT` dans `.env`). Par défaut, ce port n'est accessible que depuis votre machine (`127.0.0.1`) : voir « Sécurité de l'instance » plus bas. Les projets et les paramètres sont conservés dans le volume Docker `ontoforge-data` (un dossier par projet : `project.json`, `onto.ttl`, `shapes.ttl`, `decisions.json`, plus `ops-history.json` et `queries.json` selon l'usage ; à la racine : `settings.json`).
 
-Clé maître : les clés d'API des fournisseurs LLM et les secrets des endpoints SPARQL sont chiffrés sur le serveur. Renseignez `ONTOFORGE_SECRET_KEY` dans `.env` ; sinon une clé est générée au premier usage dans `$ONTOFORGE_DATA/.secret` (avertissement dans les journaux). Perdre la clé maître oblige à ressaisir les clés d'API.
+Clé maître : les clés d'API des fournisseurs LLM et les secrets des endpoints SPARQL sont chiffrés sur le serveur. Renseignez `ONTOFORGE_SECRET_KEY` dans `.env` ; sinon une clé est générée au premier usage, dans un fichier à part (droits 600) : sous Docker, le volume `ontoforge-keys` (`/keys/master.key`), distinct du volume des données ; hors Docker, `$ONTOFORGE_DATA/.secret`, ou le chemin donné par `ONTOFORGE_SECRET_FILE` (avertissement dans les journaux). Ne sauvegardez pas la clé avec `settings.json`. Perdre la clé maître oblige à ressaisir les clés d'API. Une clé enregistrée est liée à l'adresse pour laquelle vous l'avez saisie : si vous changez l'adresse d'un fournisseur ou d'un endpoint, la clé ou le jeton enregistré est effacé et doit être ressaisi.
+
+### Sécurité de l'instance {#securite-instance}
+
+- **Écoute locale.** `docker compose` publie l'interface sur `127.0.0.1` seulement : une autre machine du réseau ne peut pas l'atteindre. Les conteneurs tournent sans privilèges ; le fichier `.env` (vos clés) doit être en lecture réservée (`chmod 600 .env`, OntoForge vous prévient au démarrage s'il est lisible par tous).
+- **Autres sites web.** Aucun site tiers ne peut appeler l'API depuis votre navigateur (CORS fermé). Pour autoriser un site précis, par exemple le serveur de développement du front, listez son origine dans `ONTOFORGE_CORS_ORIGINS` (séparées par des virgules, jamais `*`).
+- **En-têtes.** L'interface est servie avec une politique de sécurité de contenu (CSP) et les en-têtes usuels (anti-cadrage, `nosniff`, politique de référent).
+- **Débit.** L'API limite le nombre de requêtes par minute, par adresse et par session ; les routes coûteuses (assistant, import, analyse, raisonneur) ont des plafonds plus bas. Au-delà, la réponse est `429` avec un en-tête `Retry-After` ; l'interface affiche le délai d'attente. Les plafonds se règlent par `ONTOFORGE_RATE_GLOBAL_PER_MIN`, `ONTOFORGE_RATE_ASSISTANT_PER_MIN` et `ONTOFORGE_RATE_HEAVY_PER_MIN`.
+- **Fichiers importés.** Un fichier RDF/XML qui déclare un `DOCTYPE` ou des entités est refusé (réexportez-le sans entités ou en Turtle) ; un fichier JSON-LD dont le contexte est une adresse distante est refusé (intégrez le contexte au fichier) ; la validation SHACL a un délai et une mémoire bornés, avec un message clair si elle est interrompue.
+- **Ouvrir l'instance au réseau, volontairement.** Activez d'abord l'authentification dans `.env` : `ONTOFORGE_AUTH=password`, `ONTOFORGE_AUTH_USERS` (comptes `utilisateur:hachage`, hachage produit par `python -m ontoforge.auth hash`) et `ONTOFORGE_SECRET_KEY` (32 caractères au moins, `python -m ontoforge.auth secret`). Servez l'interface en HTTPS (frontal de confiance) ; sans HTTPS, le cookie de session sécurisé ne fonctionne pas. Puis définissez `ONTOFORGE_BIND=0.0.0.0` (ou l'adresse voulue) et redémarrez. Si l'instance est ouverte sans authentification, OntoForge l'écrit dans les journaux au démarrage : toute personne qui atteint le port peut alors lire et modifier vos projets et utiliser les clés enregistrées.
 
 Sans Docker (développement) : voir [`README.md`](../../README.md), section « Développement sans Docker ».
 
@@ -47,6 +56,27 @@ L'en-tête porte, sur chaque écran de projet : le choix de la cible (Curiosity 
 - Importer : déposer un fichier. Ontologies : Turtle, RDF/XML (export Protégé), JSON-LD, N-Triples, N3, TriG ; shapes SHACL reconnues à leur contenu. Un fichier CSV, SQL, texte ou Markdown déposé est proposé à l'assistant (brouillon d'ontologie).
 
 ![Formulaire Nouveau projet : champ Nom et liste Point de départ](img/fr/projets-nouveau.png "Nouveau projet : 1 le nom, 2 le point de départ (projet vide ou exemple).")
+
+### Partager un projet {#partager-un-projet}
+
+Quand l'authentification est activée (`ONTOFORGE_AUTH=password`), les projets sont nominatifs.
+
+- **Propriétaire.** Chaque projet appartient au compte qui le crée. La liste n'affiche que vos projets et ceux qu'on a partagés avec vous, avec le propriétaire et un badge « Partagé » (ou « Lecture seule »). Un projet auquel vous n'avez pas accès répond « introuvable », comme s'il n'existait pas.
+- **Partager.** Dans l'en-tête du projet, le bouton « Partager » ouvre le panneau des accès : la liste des comptes, un champ « Identifiant du compte » et un rôle. L'identifiant est celui de l'autre compte (le même qu'à la connexion). Si aucun compte ne porte cet identifiant, le panneau répond « Aucun compte avec cet identifiant » ; le nombre de recherches est limité à 10 par minute.
+- **Rôles.** Le *lecteur* consulte et exporte, rien de plus : les boutons d'action sont désactivés, l'en-tête porte la mention « Lecture seule » et le serveur refuse toute écriture. L'*éditeur* modifie le projet, mais ne le partage ni ne le supprime. Le *propriétaire* fait tout : il change un rôle, retire un accès, transfère la propriété (l'ancien propriétaire reste éditeur) et supprime le projet. Un compte peut aussi quitter un projet qu'on a partagé avec lui.
+
+![Panneau « Partager ce projet » : propriétaire, un lecteur, champ identifiant et rôle](img/fr/partage-panneau.png "Le panneau de partage : 1 la liste des accès, 2 le champ identifiant et le rôle, 3 les règles par rôle.")
+
+![Vue liste d'un projet ouvert en lecture seule : mention « Lecture seule » dans l'en-tête, boutons d'action grisés](img/fr/partage-lecture-seule.png "Un lecteur : 1 la mention « Lecture seule », 2 les boutons d'action désactivés.")
+
+Travailler à plusieurs, sans temps réel :
+
+- **Présence.** Les initiales des comptes présents sur le projet s'affichent dans l'en-tête. Chaque onglet signale sa présence toutes les 20 secondes environ ; un compte disparaît au bout de 60 secondes sans signal.
+- **Modification par un autre compte.** Quand quelqu'un enregistre, un bandeau « bob a modifié le projet : rechargez pour voir ses changements » apparaît. Le bouton « Recharger » charge la dernière version.
+- **Conflit.** Chaque écriture porte la version du projet que vous avez chargée. Si quelqu'un a enregistré entre-temps, rien n'est écrasé : un dialogue vous l'explique. « Recharger et réappliquer » recharge le projet et rejoue votre dernier changement quand il est sans risque (opérations sur l'ontologie, arbitrages, périmètres, requêtes enregistrées, versions) ; sinon il recharge seulement, et vous refaites le changement sur la nouvelle version.
+- **Activité.** Le tableau de bord affiche le journal du projet : qui l'a créé, partagé, modifié, et quand.
+
+Les réglages globaux (fournisseurs LLM, clés, endpoints SPARQL) ne sont modifiables que par un administrateur : le premier compte déclaré, ou les comptes listés dans `ONTOFORGE_AUTH_ADMINS`. Les autres comptes utilisent les fournisseurs sans les voir. En usage local, sans authentification, rien ne change : un utilisateur implicite possède tous les projets, et le panneau de partage indique que le partage demande l'authentification. Au premier démarrage avec authentification, les projets existants sont attribués au premier administrateur.
 
 ## 4. Tableau de bord {#tableau-de-bord}
 

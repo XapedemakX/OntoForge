@@ -44,7 +44,7 @@ def _guard(fn, *a, **kw) -> Any:
 
 @router.get("")
 def get_map(pid: str, source: Source = Query("ontology")) -> dict:
-    return _guard(svc.get_map, load_project(pid), source)
+    return _guard(svc.get_map, load_project(pid), source, False)   # L41 : une route de lecture n'écrit pas dans le projet
 
 
 @router.put("")

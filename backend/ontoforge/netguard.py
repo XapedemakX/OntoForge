@@ -1,7 +1,14 @@
 """Protection SSRF des appels sortants (L27) : endpoints SPARQL (enregistrés ou temporaires) et fournisseurs LLM.
 
-Active quand ``ONTOFORGE_PUBLIC=1`` (instance exposée sur Internet). Sinon, les appels passent tels quels par httpx (usage local,
-Ollama sur la machine, endpoint sur le réseau de l'entreprise).
+Active (D-L41-01) dès que l'instance est partagée : ``ONTOFORGE_PUBLIC=1`` (exposée sur Internet) OU ``ONTOFORGE_AUTH=password``
+(plusieurs comptes : un compte quelconque ne doit pas faire émettre au serveur une requête vers le réseau interne). Sans authentification
+ni mode public (usage local mono-utilisateur : Ollama sur la machine, endpoint sur le réseau de l'entreprise), les appels passent tels
+quels par httpx.
+
+Endpoints internes nommés : avec l'authentification, ``ONTOFORGE_EGRESS_ALLOW_INTERNAL`` (noms d'hôtes ou adresses séparés par des
+virgules ; ``*.exemple.org`` accepté) exempte ces seules destinations du refus des noms et adresses internes (privées, bouclage). Les
+adresses de métadonnées (link-local 169.254/16, fd00:ec2::254, ``metadata*``), multicast et non spécifiées restent refusées. Le contrôle
+après résolution et l'épinglage de l'adresse s'appliquent toujours.
 
 Règles quand elle est active :
 - schéma http ou https seulement, pas d'identifiants dans l'URL ;
@@ -11,7 +18,7 @@ Règles quand elle est active :
   une IPv6 (::ffff:a.b.c.d, 6to4, Teredo, NAT64) qui sont jugées sur l'IPv4 qu'elles contiennent ;
 - anti-rebinding : le nom est résolu UNE fois, TOUTES les adresses obtenues sont contrôlées, et la connexion TCP se fait sur
   l'adresse contrôlée (jamais une seconde résolution). Le TLS reste vérifié sur le nom d'origine (SNI et certificat) ;
-- redirections : au plus ``MAX_REDIRECTS`` (3), chacune re-contrôlée, l'en-tête Authorization retiré quand l'hôte change ;
+- redirections : au plus ``MAX_REDIRECTS`` (3), chacune re-contrôlée, identifiants retirés quand le schéma, l'hôte OU le port change ;
 - liste blanche optionnelle ``ONTOFORGE_EGRESS_ALLOW`` (noms d'hôtes séparés par des virgules ; ``*.exemple.org`` accepté) :
   si elle est renseignée, seuls ces hôtes sont joignables (le contrôle d'adresse s'applique quand même).
 """
@@ -40,12 +47,36 @@ class NetGuardError(Exception):
     """Appel sortant refusé (message français, sans secret)."""
 
 
+def _truthy(name: str) -> bool:
+    return os.environ.get(name, "").strip().lower() in ("1", "true", "yes", "on")
+
+
 def enabled() -> bool:
-    return os.environ.get("ONTOFORGE_PUBLIC", "").strip().lower() in ("1", "true", "yes", "on")
+    """Actif en mode public OU quand l'authentification est activée (D-L41-01) ; inactif en usage local sans authentification."""
+    return _truthy("ONTOFORGE_PUBLIC") or os.environ.get("ONTOFORGE_AUTH", "").strip().lower() == "password"
 
 
 def allowlist() -> list[str]:
     return [h.strip().lower().rstrip(".") for h in os.environ.get("ONTOFORGE_EGRESS_ALLOW", "").split(",") if h.strip()]
+
+
+def internal_allowlist() -> list[str]:
+    """Destinations internes explicitement autorisées par l'administrateur (ONTOFORGE_EGRESS_ALLOW_INTERNAL)."""
+    return [h.strip().lower().strip("[]").rstrip(".") for h in os.environ.get("ONTOFORGE_EGRESS_ALLOW_INTERNAL", "").split(",") if h.strip()]
+
+
+def _always_refused(ip: ipaddress.IPv4Address | ipaddress.IPv6Address) -> bool:
+    """Refusées même listées : métadonnées de cloud (link-local, fd00:ec2), multicast, non spécifiée."""
+    if isinstance(ip, ipaddress.IPv6Address):
+        v4 = _embedded_v4(ip)
+        if v4 is not None:
+            return _always_refused(v4)
+    return ip.is_link_local or ip.is_multicast or ip.is_unspecified or any(ip in n for n in _EXTRA_BLOCKED[:3] if n.version == ip.version)
+
+
+def _internal_ok(host: str) -> bool:
+    h = host.strip().lower().strip("[]").rstrip(".")
+    return bool(h) and _host_allowed_by_list(h, internal_allowlist()) and h not in _BLOCKED_NAMES - {"localhost"} and not h.startswith("metadata")
 
 
 # --------------------------------------------------------------------------------------- contrôles
@@ -94,9 +125,9 @@ def check_host(host: str) -> None:
     if literal is None:
         if re.fullmatch(r"(0x[0-9a-f]+|\d+)(\.(0x[0-9a-f]+|\d+))*", h):  # 2130706433, 0x7f.1, 0251.0376… : écritures détournées d'une IPv4
             raise NetGuardError("Adresse refusée : écriture numérique non standard d'une adresse IP.")
-        if h in _BLOCKED_NAMES or h.endswith(_BLOCKED_SUFFIXES) or "." not in h:
+        if (h in _BLOCKED_NAMES or h.endswith(_BLOCKED_SUFFIXES) or "." not in h) and not _internal_ok(h):
             raise NetGuardError(f"Adresse refusée : « {h} » désigne une machine interne (serveur de métadonnées, boucle locale ou réseau privé).")
-    elif not ip_allowed(literal):
+    elif not ip_allowed(literal) and not (_internal_ok(str(literal)) and not _always_refused(literal)):
         raise NetGuardError(f"Adresse refusée : {literal} est une adresse privée, locale ou réservée.")
     allow = allowlist()
     if allow and not _host_allowed_by_list(h, allow):
@@ -131,8 +162,8 @@ def resolve_checked(host: str, port: int) -> list[str]:
     for fam, _t, _p, _c, sa in infos:
         raw = sa[0].split("%", 1)[0]
         ip = ipaddress.ip_address(raw)
-        if not ip_allowed(ip):
-            raise NetGuardError(f"Adresse refusée : « {host} » se résout vers une adresse privée, locale ou réservée ({ip}).")
+        if not ip_allowed(ip) and not (_internal_ok(h) and not _always_refused(ip)):
+            raise NetGuardError(f"Adresse refusée : « {host} » se résout vers une adresse privée, locale ou réservée.")
         if raw not in ips:
             ips.append(raw)
     if not ips:
@@ -169,12 +200,15 @@ def request(method: str, url: str, *, timeout: float = 30.0, **kw: Any) -> httpx
     Lève NetGuardError (refus) ou httpx.HTTPError (échec réseau)."""
     headers = dict(kw.pop("headers", None) or {})
     auth = kw.pop("auth", None)
-    cur, first_host = url, urlsplit(url).hostname
+    cur = url
+    first = urlsplit(url)
+    first_origin = (first.scheme, (first.hostname or "").lower(), first.port or (443 if first.scheme == "https" else 80))
     with guarded_client(timeout) as c:
         for hop in range(MAX_REDIRECTS + 1):
             check_url(cur)
-            h = urlsplit(cur).hostname
-            if h != first_host:  # jamais d'identifiants vers un autre hôte
+            u = urlsplit(cur)
+            origin = (u.scheme, (u.hostname or "").lower(), u.port or (443 if u.scheme == "https" else 80))
+            if origin != first_origin:  # L39-06 : jamais d'identifiants vers une autre origine (schéma, hôte OU port)
                 headers = {k: v for k, v in headers.items() if k.lower() not in ("authorization", "x-api-key", "api-key", "x-goog-api-key")}
                 auth = None
             r = c.request(method, cur, headers=headers, auth=auth, **kw)

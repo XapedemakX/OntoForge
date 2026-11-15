@@ -7,16 +7,18 @@ import os
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.gzip import GZipMiddleware
 
-from . import security
+from . import hardening, security
 from .api import ROUTERS
 from .api.system import VERSION
 from .auth.config import load_config, public
 from .auth.middleware import AuthMiddleware
+from .collab import access as collab_access
+from .collab.middleware import CollabMiddleware
+from .shacl.validate import ShaclBusyError
 
 
 def create_app() -> FastAPI:
@@ -32,17 +34,19 @@ def create_app() -> FastAPI:
     static = security.static_dir()
     if static is not None:
         app.mount("/", GZipMiddleware(security.SpaStatic(static), minimum_size=1024))
+    # L40 : cloisonnement des projets, rôles, versions ; derrière l'authentification (qui fournit l'identité)
+    app.add_middleware(CollabMiddleware, cfg=cfg, router=app.router)
+    if cfg.enabled:
+        collab_access.migrate(cfg.first_admin)   # projets sans propriétaire -> premier administrateur (idempotent)
     # Ordre : le dernier ajouté est le plus extérieur (corps limité d'abord, puis en-têtes, CORS, authentification).
     if cfg.enabled:
         app.add_middleware(AuthMiddleware, cfg=cfg)
-    # CORS ouvert en dev (le front Docker passe par le proxy nginx /api, même origine) ; fermé sur une instance publique.
-    origins = os.environ.get("ONTOFORGE_CORS_ORIGINS", "" if pub else "*")
-    if origins:
-        app.add_middleware(CORSMiddleware, allow_origins=[o.strip() for o in origins.split(",")] if origins != "*" else ["*"],
-                           allow_methods=["*"], allow_headers=["*"])
+    # CORS fermé par défaut (SEC-02) : seules les origines listées dans ONTOFORGE_CORS_ORIGINS sont autorisées.
+    hardening.add_cors(app)
     if pub or cfg.enabled or static is not None:
         app.add_middleware(security.SecurityHeaders)
     app.add_middleware(security.BodyLimit, max_bytes=security.max_body_bytes())
+    hardening.install(app, cfg, pub)  # limitation de débit (SEC-10, le plus extérieur) et avertissements de démarrage (SEC-01, SEC-13, SEC-16)
     return app
 
 
@@ -54,8 +58,16 @@ def _handlers(app: FastAPI) -> None:
         detail = exc.detail
         if isinstance(detail, str) and localize.ui_lang() == "en":
             detail = localize.tr(detail, "en")
-        return JSONResponse(status_code=exc.status_code, content={"detail": detail}, headers=getattr(exc, "headers", None))
+        return JSONResponse(status_code=exc.status_code, content={"detail": detail, **getattr(exc, "payload", {})}, headers=getattr(exc, "headers", None))
 
+
+    @app.exception_handler(ShaclBusyError)
+    async def _shacl_busy(_: Request, exc: ShaclBusyError) -> JSONResponse:
+        """L41 (L39-01) : plafond de validations SHACL simultanées atteint : 503 propre, à réessayer."""
+        msg = collab_access.msg("Trop de validations SHACL en cours : réessayez dans quelques secondes.",
+                                "Too many SHACL validations running: try again in a few seconds.")
+        return JSONResponse(status_code=503, content={"detail": msg, "code": "busy", "retry_after": exc.retry_after},
+                            headers={"Retry-After": str(exc.retry_after)})
 
     @app.exception_handler(RequestValidationError)
     async def _validation_error(_: Request, exc: RequestValidationError) -> JSONResponse:

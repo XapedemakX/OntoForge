@@ -5,6 +5,7 @@ import io
 import zipfile
 from typing import Any, Optional
 
+from starlette.concurrency import run_in_threadpool
 from fastapi import APIRouter, Body, File, HTTPException, Query, UploadFile
 from fastapi.responses import Response
 from pydantic import BaseModel
@@ -14,7 +15,8 @@ from ..core.lang import LABEL_LANG
 from ..localize import gen
 from ..core.pg_model import PGModel
 from ..core.project import GenerationRecord, Project
-from ..projects import store
+from ..projects import generations as gen_log, store
+from ..shacl.validate import ShaclBusyError
 from ._common import check_target, dump, load_project, not_available, optional_service, parse_error, service
 
 router = APIRouter(prefix="/api/projects/{pid}", tags=["analysis"])
@@ -23,7 +25,6 @@ DATA_FORMATS = {".ttl": "turtle", ".owl": "xml", ".rdf": "xml", ".xml": "xml", "
                 ".json": "json-ld", ".nt": "nt", ".n3": "n3", ".trig": "trig"}
 
 
-MAX_GENERATIONS = 50
 
 
 class MergeRequest(BaseModel):
@@ -181,8 +182,8 @@ async def shacl_validate(pid: str, file: UploadFile = File(...)) -> Any:
     name = (file.filename or "").lower()
     fmt = next((f for ext, f in DATA_FORMATS.items() if name.endswith(ext)), None)
     try:
-        report = validate(raw, p.shapes, p.onto, fmt)
-    except HTTPException:
+        report = await run_in_threadpool(validate, raw, p.shapes, p.onto, fmt)  # hors boucle d'événements : l'API reste réactive (SEC-05)
+    except (HTTPException, ShaclBusyError):
         raise
     except Exception as exc:
         raise parse_error(f"les données « {file.filename or 'fichier'} »", exc) from None
@@ -246,10 +247,9 @@ def generate(pid: str, target: str, perimeter: Optional[str] = Query(None),
             summary[f.severity] += 1
         if f.severity in ("review", "lost") and not f.chosen:
             summary["pending"] += 1
-    p.generations.append(GenerationRecord(target=target, perimeter=perimeter, at=store.now_iso(), files=sorted(files),
+    # L41 (L40-02) : l'historique va dans un fichier annexe, sous verrou ; project.json n'est jamais réécrit par une route de lecture
+    gen_log.append(p, GenerationRecord(target=target, perimeter=perimeter, at=store.now_iso(), files=sorted(files),
                                           findings_summary=summary, project_updated_at=p.updated_at))
-    del p.generations[:-MAX_GENERATIONS]
-    store.save(p, touch=False)  # l'historique ne change pas updated_at (sinon tout serait « obsolète »)
     return {"files": files, "missing": missing}
 
 
@@ -257,7 +257,7 @@ def generate(pid: str, target: str, perimeter: Optional[str] = Query(None),
 def generations(pid: str) -> list[dict]:
     """Historique des générations du projet, la plus récente d'abord."""
     p = load_project(pid)
-    return [g.model_dump(mode="json") for g in reversed(p.generations)]
+    return list(reversed(gen_log.history(p)))
 
 
 @router.get("/generate/{target}/zip")

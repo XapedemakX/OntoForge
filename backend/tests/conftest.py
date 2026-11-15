@@ -1,5 +1,8 @@
-import pathlib, sys
+import os, pathlib, sys
 import pytest
+# L39-secu (SEC-10) : le limiteur de débit est coupé pour la suite (des centaines d'appels en une minute depuis la même adresse) ;
+# tests/test_sec_ratelimit.py l'active explicitement.
+os.environ.setdefault("ONTOFORGE_RATE_LIMIT", "0")
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "backend"))
 

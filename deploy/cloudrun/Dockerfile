@@ -8,6 +8,10 @@
 # Le front est une SPA de 3 Mo servie à une poignée de visiteurs de démonstration : uvicorn (+ gzip) suffit, et l'authentification,
 # les en-têtes de sécurité et le repli SPA vivent au même endroit que l'API. nginx reste utile en local (docker-compose.yml).
 
+# L39-secu : construction reproductible (SEC-14) — npm ci strict, dépendances Python aux versions exactes de backend/constraints.txt,
+# images de base par étiquette (digest sha256 À VÉRIFIER : voir docs/guide/contribuer.md « Épingler les images ») ; exécution sans
+# privilèges (SEC-11) ; confiance aux en-têtes Forwarded limitée (SEC-16) ; liste d'egress exigée (SEC-16).
+#
 # ---- 1. front compilé -------------------------------------------------------------------------------------------
 FROM node:22-alpine AS front
 WORKDIR /app
@@ -30,11 +34,15 @@ ARG WITH_REASONER=1
 RUN if [ "$WITH_REASONER" = "1" ]; then \
       apt-get update && apt-get install -y --no-install-recommends default-jre-headless && rm -rf /var/lib/apt/lists/*; \
     fi
+# Utilisateur sans privilèges (SEC-11). Montage Cloud Storage de /data : l'option de montage uid=10001,gid=10001 (ou équivalent) est
+# nécessaire pour que cet utilisateur puisse écrire — À VÉRIFIER dans la doc Google avant le premier déploiement.
+RUN useradd --system --create-home --uid 10001 --shell /usr/sbin/nologin ontoforge
 ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1
 WORKDIR /app/backend
 COPY backend/pyproject.toml ./
 COPY backend/ontoforge ./ontoforge
-RUN if [ "$WITH_REASONER" = "1" ]; then pip install ".[reasoner]"; else pip install .; fi
+COPY backend/constraints.txt ./
+RUN if [ "$WITH_REASONER" = "1" ]; then pip install -c constraints.txt ".[reasoner]"; else pip install -c constraints.txt .; fi
 COPY samples /app/samples
 COPY --from=front /app/dist /app/static
 
@@ -47,7 +55,14 @@ ENV ONTOFORGE_DATA=/data \
     ONTOFORGE_PUBLIC=1 \
     ONTOFORGE_AUTH=password \
     ONTOFORGE_LLM_PROVIDER=mock \
+    ONTOFORGE_SECRET_FILE=/tmp/ontoforge-master.key \
     PORT=8080
 EXPOSE 8080
+USER ontoforge
 # Cloud Run fournit $PORT ; --proxy-headers pour le schéma https et l'IP du client derrière le frontal de Google.
-CMD ["sh", "-c", "exec python -m uvicorn ontoforge.main:app --host 0.0.0.0 --port ${PORT:-8080} --proxy-headers --forwarded-allow-ips='*' --no-server-header"]
+# FORWARDED_ALLOW_IPS : adresses des frontaux dont les en-têtes X-Forwarded-* sont crus par uvicorn (127.0.0.1 par défaut : aucun, sûr).
+# OntoForge lit lui-même X-Forwarded-For à la position du dernier saut de confiance (ONTOFORGE_PROXY_HOPS=1), donc il fonctionne sans
+# que uvicorn les réécrive. Ne mettez « * » que si le service n'est joignable QUE par le frontal Google (plage exacte : À VÉRIFIER).
+# ONTOFORGE_EGRESS_ALLOW est EXIGÉE en mode public : liste des hôtes joignables par les appels sortants (fournisseur LLM, endpoints SPARQL),
+# par exemple « api.anthropic.com,sparql.exemple.org ». Sans elle, le conteneur refuse de démarrer.
+CMD ["sh", "-c", ": \"${ONTOFORGE_EGRESS_ALLOW:?ONTOFORGE_EGRESS_ALLOW est requise en mode public (hotes joignables par les appels sortants, separes par des virgules)}\"; exec python -m uvicorn ontoforge.main:app --host 0.0.0.0 --port ${PORT:-8080} --proxy-headers --forwarded-allow-ips=\"${FORWARDED_ALLOW_IPS:-127.0.0.1}\" --no-server-header"]

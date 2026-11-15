@@ -28,6 +28,7 @@ def _now() -> float:
 def reset() -> None:
     with _lock:
         _state.clear()
+        _hits.clear()
 
 
 def retry_after(ip: str) -> float:
@@ -74,3 +75,28 @@ def client_ip(headers: Mapping[str, str], peer: Optional[str], hops: int) -> str
             except ValueError:
                 pass
     return peer or "unknown"
+
+
+# ---- fenêtre glissante générique (L40) : limiter les recherches d'identifiants du partage ------------------------------
+
+_hits: dict[str, list[float]] = {}
+
+
+def allow(key: str, limit: int, window: float = 60.0) -> bool:
+    """Vrai si ``key`` a fait moins de ``limit`` tentatives dans les ``window`` dernières secondes (et enregistre celle-ci)."""
+    t = _now()
+    with _lock:
+        if len(_hits) >= MAX_ENTRIES:
+            for k in [k for k, v in _hits.items() if not v or t - v[-1] > window]:
+                del _hits[k]
+        h = [x for x in _hits.get(key, []) if t - x < window]
+        ok = len(h) < limit
+        if ok:
+            h.append(t)
+        _hits[key] = h
+        return ok
+
+
+def reset_hits() -> None:
+    with _lock:
+        _hits.clear()

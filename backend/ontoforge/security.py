@@ -1,6 +1,8 @@
 """En-têtes de sécurité, limite de taille des requêtes et service du front compilé (L27)."""
 from __future__ import annotations
 
+import re
+
 import os
 from pathlib import Path
 from typing import Any, Optional
@@ -110,7 +112,8 @@ class SpaStatic:
         if scope["type"] != "http":
             return
         path = scope["path"]
-        if path.startswith("/api/") or path == "/api":
+        norm = re.sub(r"/+", "/", path).lower()  # « //api/… », « /API/… » : jamais servis comme page du front (404 JSON)
+        if norm.startswith("/api/") or norm == "/api":
             return await JSONResponse({"detail": "Not Found"}, status_code=404)(scope, receive, send)
         if scope["method"] not in ("GET", "HEAD"):
             return await Response(status_code=405)(scope, receive, send)

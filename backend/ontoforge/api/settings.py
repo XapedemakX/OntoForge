@@ -72,9 +72,26 @@ def _view() -> dict[str, Any]:
     return view
 
 
+def _is_admin() -> bool:
+    from ..collab import access
+    c = access.current()
+    return c is None or c.identity.is_admin
+
+
+def _redact(view: dict[str, Any]) -> dict[str, Any]:
+    """Vue d'un compte non administrateur (L40) : il utilise les fournisseurs et endpoints sans en voir ni l'adresse, ni la clé, ni le réglage."""
+    v = dict(view)
+    v["llm_providers"] = [{"id": p["id"], "name": p["name"], "kind": p["kind"], "model": p["model"], "configured": p["configured"]} for p in view["llm_providers"]]
+    v["sparql_endpoints"] = [{"id": e["id"], "name": e["name"], "url": ""} for e in view["sparql_endpoints"]]
+    v["sparql_endpoint"] = {"url": "", "auth": None}
+    v["read_only"] = True
+    return v
+
+
 @router.get("")
 def get_settings() -> Any:
-    return _view()
+    v = _view()
+    return v if _is_admin() else _redact(v)
 
 
 @router.put("")
@@ -282,7 +299,10 @@ _EP_RO = ("has_secret", "secret_unreadable")
 @router.get("/endpoints")
 def list_endpoints() -> Any:
     s = store.load()
-    return {"endpoints": [e.public() for e in s.sparql_endpoints], "active_endpoint_id": s.active_endpoint_id}
+    eps = [e.public() for e in s.sparql_endpoints]
+    if not _is_admin():
+        eps = [{"id": e["id"], "name": e["name"], "url": ""} for e in eps]
+    return {"endpoints": eps, "active_endpoint_id": s.active_endpoint_id}
 
 
 @router.post("/endpoints", status_code=201)

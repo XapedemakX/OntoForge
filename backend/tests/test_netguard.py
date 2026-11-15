@@ -136,9 +136,9 @@ def test_allowlist(public, monkeypatch):
 
 
 def test_llm_provider_post_json_blocked(public):
-    with pytest.raises(LLMError, match="Adresse refusée"):
+    with pytest.raises(LLMError, match="protection des adresses"):
         post_json("Ollama", "http://169.254.169.254/api/chat", {}, {})
-    with pytest.raises(LLMError, match="Adresse refusée"):
+    with pytest.raises(LLMError, match="protection des adresses"):
         post_json("OpenAI-compatible", "http://10.0.0.8:8000/v1/chat/completions", {"authorization": "Bearer sk-secret"}, {})
 
 

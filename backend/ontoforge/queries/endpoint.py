@@ -17,6 +17,7 @@ from ..settings.models import EndpointConfig
 
 ACCEPT = "application/sparql-results+json"
 HARD_LIMIT = 5000
+TEMP_ID = "temporaire"  # identifiant de l'endpoint saisi à la volée (api/queries.py)
 
 
 class EndpointError(Exception):
@@ -130,7 +131,11 @@ def _post(ep: EndpointConfig, query: str, timeout: Optional[float] = None) -> ht
         with make_client(t) as c:
             return c.post(ep.url, data=data, headers=headers, auth=auth)
     except netguard.NetGuardError as exc:
-        raise EndpointError(f"Endpoint « {ep.name} » : {exc}", 403) from None
+        if ep.id == TEMP_ID:  # adresse saisie par l'appelant lui-même : le motif du refus l'aide à la corriger
+            raise EndpointError(f"Endpoint « {ep.name} » : {exc}", 403) from None
+        # L41 (L40-01) : endpoint enregistré par un administrateur : ni hôte, ni adresse résolue dans le message (cartographie interne)
+        raise EndpointError(f"Endpoint « {ep.name} » ({ep.id}) : appel sortant refusé par la protection des adresses (nom ou adresse non autorisés). "
+                            "Demandez à un administrateur de vérifier l'endpoint.", 403) from None
     except httpx.TimeoutException:
         raise EndpointError(f"Délai dépassé ({t:.0f} s) en attendant l'endpoint SPARQL « {ep.name} ».", 504) from None
     except httpx.HTTPError as exc:
@@ -164,7 +169,9 @@ def run_select(ep: EndpointConfig, sparql: str, limit: int = 100) -> QueryResult
     if r.status_code in (401, 403):
         raise EndpointError(f"Authentification refusée par l'endpoint (HTTP {r.status_code}).", 502)
     if r.status_code >= 400:
-        raise EndpointError(f"L'endpoint a répondu HTTP {r.status_code} : {r.text[:200].strip()}", 502)
+        # L41 (L40-03) : avec la protection des appels sortants active, jamais le début de la réponse d'un hôte (canal de lecture SSRF)
+        detail = "" if netguard.enabled() else f" : {r.text[:200].strip()}"
+        raise EndpointError(f"L'endpoint a répondu HTTP {r.status_code}{detail}", 502)
     try:
         js = r.json()
     except ValueError:

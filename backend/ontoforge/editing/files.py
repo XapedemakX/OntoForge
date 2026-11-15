@@ -17,7 +17,9 @@ from dataclasses import dataclass, field
 from typing import Any, Optional
 
 import rdflib
-from rdflib.compare import graph_diff, to_canonical_graph, to_isomorphic
+from rdflib.compare import graph_diff, to_isomorphic
+
+from ..io.safe_parse import canonical_or_same
 from rdflib.namespace import RDF, SH
 from rdflib.plugins.parsers.notation3 import BadSyntax
 
@@ -86,7 +88,7 @@ def _fallback_prefixes(g: rdflib.Graph, taken: set[str], bound: set[str]) -> dic
 
 
 def canonical_turtle(g: rdflib.Graph) -> str:
-    cg = to_canonical_graph(g)
+    cg, _ = canonical_or_same(g)  # plafonné (SEC-06)
     out = rdflib.Graph(bind_namespaces="none")
     taken: set[str] = set()
     bound: set[str] = set()

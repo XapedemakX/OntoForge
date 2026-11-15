@@ -24,6 +24,7 @@ from .document import EXCERPT_MAX, Chunk, Document, chunk, digest, limits, locat
 from .naming import _words as _name_words
 from .naming import camel, humanize, pascal
 from .providers import LLMError
+from .untrusted import fence
 
 log = logging.getLogger("ontoforge.assistant.document")
 
@@ -150,7 +151,7 @@ def _ask(p: Any, system: str, user: str, max_tokens: int = 6000) -> dict[str, An
 
 
 def _llm_questions(p: Any, doc: Document, lang: str) -> list[str]:
-    data = _ask(p, QUESTIONS_SYSTEM + f"\nLangue de la réponse : {'English' if lang == 'en' else 'français'}.", "DOCUMENT\n" + digest(doc), 2000)
+    data = _ask(p, QUESTIONS_SYSTEM + f"\nLangue de la réponse : {'English' if lang == 'en' else 'français'}.", "DOCUMENT\n" + fence("document importé (résumé)", digest(doc)), 2000)
     qs = data.get("questions")
     if not isinstance(qs, list):
         raise LLMError("réponse sans liste de questions")
@@ -168,8 +169,8 @@ def _known_names(onto: OntoModel, acc: list[dict[str, Any]]) -> str:
 
 
 def _llm_chunk(p: Any, ch: Chunk, qs: list[str], onto: OntoModel, acc: list[dict[str, Any]], base: str) -> dict[str, Any]:
-    user = (f"Base IRI : {base}\n\nQUESTIONS DE COMPÉTENCE\n" + "\n".join(f"- {q}" for q in qs)
-            + f"\n\nNOMS DÉJÀ CONNUS : {_known_names(onto, acc)}\n\nTEXTE\n{ch.text}\n")
+    user = (f"Base IRI : {base}\n\nQUESTIONS DE COMPÉTENCE\n" + fence("questions de compétence", "\n".join(f"- {q}" for q in qs))
+            + "\n\nNOMS DÉJÀ CONNUS :\n" + fence("noms déjà connus", _known_names(onto, acc)) + "\n\nTEXTE\n" + fence("document importé", ch.text) + "\n")
     return _ask(p, DRAFT_SYSTEM, user)
 
 

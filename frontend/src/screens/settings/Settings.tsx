@@ -10,6 +10,7 @@ import { DefaultsSection } from './DefaultsSection'
 import { EndpointsSection } from './EndpointsSection'
 import { VersionsSection } from './VersionsSection'
 import { DisplaySection } from './DisplaySection'
+import { useAuth } from '../../auth/AuthGate'
 import './settings.css'
 
 type Sec = 'llm' | 'lang' | 'defaults' | 'versions' | 'display' | 'sparql'
@@ -20,7 +21,10 @@ export function Settings() {
   const { t, lang } = useI18n()
   const [s, setS] = useState<SettingsView | null>(null)
   const [err, setErr] = useState('')
-  const [sec, setSec] = useState<Sec>('llm')
+  const auth = useAuth()
+  const locked = auth.enabled && !auth.admin   // L40 : les réglages globaux sont réservés aux administrateurs
+  const [sec0, setSec] = useState<Sec>('llm')
+  const sec: Sec = locked ? 'display' : sec0
   const reload = useCallback(async () => { try { setS(await settingsApi.get()); setErr('') } catch (e) { setErr(errMsg(e)) } }, [])
   useEffect(() => { reload() }, [reload])
   // Krakie (L38) : l'onglet affiché et deux suggestions propres à l'onglet ; « Aller à cette section » change d'onglet, fait défiler et met le bloc en évidence
@@ -38,7 +42,8 @@ export function Settings() {
   return (
     <div className="page set-page">
       <div className="page-head"><h1 style={{ margin: 0 }}>{t('settings.title')}</h1><span className="sub">{t('settings.sub')}</span></div>
-      <Tabs value={sec} onChange={setSec} items={[['llm', t('settings.tab.llm')], ['lang', t('settings.tab.lang')], ['defaults', t('settings.tab.defaults')], ['versions', t('settings.tab.versions')], ['display', t('settings.tab.display')], ['sparql', t('settings.tab.sparql')]]} />
+      {locked && <div className="notice soon" data-testid="settings-locked"><div><b>{t('settings.admin.t')}</b><div>{t('settings.admin.d')}</div></div></div>}
+      <Tabs value={sec} onChange={setSec} items={(locked ? [['display', t('settings.tab.display')]] : [['llm', t('settings.tab.llm')], ['lang', t('settings.tab.lang')], ['defaults', t('settings.tab.defaults')], ['versions', t('settings.tab.versions')], ['display', t('settings.tab.display')], ['sparql', t('settings.tab.sparql')]]) as [Sec, string][]} />
       <ErrorLine msg={err} />
       <div ref={box} className={'set-sec' + (flash?.sec === sec ? ' flash' : '')} data-set-sec={sec} data-testid={'set-sec-' + sec}>
       {sec === 'display' && <DisplaySection />}

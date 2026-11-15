@@ -100,6 +100,9 @@ Vocabulaire d'OntoForge, du monde OWL/SHACL et du monde property graph. Les réf
 | **Rôle** | Étiquette d'un type sur la carte métier (principal, composant, pivot, liste de valeurs, contexte, référentiel, document, paramétrage), déduite de la structure puis corrigeable. |
 | **Scénario** | Mise en avant de certaines relations de la carte métier (style, notes) sans toucher au modèle. |
 | **Saisie rapide** | Panneau de l'éditeur : une ligne de DSL = un axiome. |
+| **Propriétaire / éditeur / lecteur** | Rôles d'un compte sur un projet (L40) : le propriétaire partage, transfère et supprime ; l'éditeur modifie ; le lecteur consulte et exporte (« lecture seule »). |
+| **Version du projet (`rev`, ETag)** | Numéro qui augmente à chaque enregistrement ; chaque écriture l'envoie (`If-Match`) pour qu'un conflit (409) ne soit jamais écrasé en silence. |
+| **Présence** | Initiales des comptes actuellement sur le projet, signalées toutes les 20 secondes environ, oubliées après 60 secondes. |
 
 ## Équipe d'agents {#equipe-d-agents}
 

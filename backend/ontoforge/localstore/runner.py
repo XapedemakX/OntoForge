@@ -15,6 +15,7 @@ import time
 from pathlib import Path
 from typing import Any, Optional
 
+from .. import childproc
 from ..queries import endpoint as ep_mod
 from ..queries.endpoint import EndpointError, HARD_LIMIT, QueryResult
 from . import store as st
@@ -63,15 +64,6 @@ def dataset_clause(sparql: str) -> Optional[dict[str, list[str]]]:
             "named": [str(c["named"]) for c in clauses if "named" in c]}
 
 
-def _limits(mem_mb: int, cpu_s: int):
-    def apply() -> None:  # exécuté dans le fils, avant exec
-        import resource
-        resource.setrlimit(resource.RLIMIT_AS, (mem_mb << 20, mem_mb << 20))
-        resource.setrlimit(resource.RLIMIT_CPU, (cpu_s, cpu_s + 1))
-        resource.setrlimit(resource.RLIMIT_FSIZE, (0, 0))  # la base est ouverte en lecture seule : aucune écriture de fichier
-    return apply
-
-
 def run_local(p: Any, sparql: str, limit: int = 100, timeout_s: Optional[float] = None) -> QueryResult:
     """Exécute `sparql` sur le triplestore local du projet `p` (créé à la volée avec l'ontologie et les individus)."""
     lim = st.limits()
@@ -91,8 +83,8 @@ def run_local(p: Any, sparql: str, limit: int = 100, timeout_s: Optional[float] 
     t0 = time.perf_counter()
     with st.lock(p.id).read():
         try:
-            proc = subprocess.run([sys.executable, "-I", str(WORKER)], input=payload.encode("utf-8"), capture_output=True,
-                                  timeout=timeout, cwd="/", preexec_fn=_limits(lim["query_memory_mb"], int(timeout) + 2))
+            # plafonds posés par le fils lui-même, environnement minimal, aucune écriture de fichier (base en lecture seule) : L41
+            proc = childproc.run_limited(WORKER, payload.encode("utf-8"), timeout=timeout, mem_mb=lim["query_memory_mb"], cpu_s=int(timeout) + 2, fsize=0)
         except subprocess.TimeoutExpired:
             raise EndpointError(f"Délai dépassé ({timeout:.0f} s) : la requête a été interrompue sur le triplestore local.", 504) from None
     ms = int((time.perf_counter() - t0) * 1000)

@@ -1,15 +1,35 @@
+# Instance locale. Par défaut, le port n'est publié QUE sur cette machine (127.0.0.1). Pour l'ouvrir volontairement au réseau,
+# voir le guide (section « Ouvrir l'instance au réseau ») : activer d'abord l'authentification (ONTOFORGE_AUTH=password),
+# puis définir ONTOFORGE_BIND (ex. 0.0.0.0). Variables : ONTOFORGE_BIND (adresse publiée, 127.0.0.1), ONTOFORGE_PORT (8088).
+x-backend-build: &backend-build
+  context: .
+  dockerfile: backend/Dockerfile
 services:
+  # Étape unique, en root, qui remet les droits des volumes à l'utilisateur de l'application (volumes créés par une version
+  # antérieure, propriété de root). Le backend lui-même ne tourne jamais en root.
+  init-perms:
+    build: *backend-build
+    image: ontoforge-backend:local
+    user: "0:0"
+    command: ["sh", "-c", "chown -R 10001:10001 /data /keys && chmod 700 /keys"]
+    volumes: [ontoforge-data:/data, ontoforge-keys:/keys]
+    restart: "no"
   backend:
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
+    build: *backend-build
+    image: ontoforge-backend:local
+    depends_on:
+      init-perms:
+        condition: service_completed_successfully
     env_file:
       - path: ./.env
         required: false
     environment:
       ONTOFORGE_LLM_PROVIDER: ${ONTOFORGE_LLM_PROVIDER:-mock}
       ONTOFORGE_SECRET_KEY: ${ONTOFORGE_SECRET_KEY:-}
-    volumes: [ontoforge-data:/data]
+      ONTOFORGE_SECRET_FILE: /keys/master.key   # clé maître hors du volume des données (SEC-13)
+      ONTOFORGE_BIND_HOST: ${ONTOFORGE_BIND:-127.0.0.1}   # sert à l'avertissement de démarrage si l'instance est ouverte sans authentification
+      ONTOFORGE_PROXY_HOPS: "1"   # nginx renseigne X-Forwarded-For : limitation de débit par adresse de client
+    volumes: [ontoforge-data:/data, ontoforge-keys:/keys]
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:8000/api/health')"]
       interval: 10s
@@ -18,7 +38,8 @@ services:
     build:
       context: .
       dockerfile: frontend/Dockerfile
-    ports: ["${ONTOFORGE_PORT:-8088}:80"]
+    ports: ["${ONTOFORGE_BIND:-127.0.0.1}:${ONTOFORGE_PORT:-8088}:8080"]
     depends_on: [backend]
 volumes:
   ontoforge-data:
+  ontoforge-keys:

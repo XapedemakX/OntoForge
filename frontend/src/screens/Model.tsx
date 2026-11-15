@@ -75,7 +75,7 @@ export function Model({ p, target }: ScreenProps) {
   const [tab, setTab] = useState<'nodes' | 'edges' | 'vals' | 'mats'>('nodes')
   const pending = pg?.findings.filter(f => f.severity !== 'auto' && !f.chosen).length ?? 0
   return (
-    <div className="page">
+    <div className="page" data-safe>
       <div className="page-head"><h1>{t('mo.title')}</h1><span className="badge">{target === 'curiosity' ? 'Curiosity' : 'Neo4j'}</span>
         <button type="button" className="btn sm" style={{ marginLeft: 'auto' }} data-testid="mo-bmap" onClick={() => { try { localStorage.setItem('ontoforge.bmap.source', 'target') } catch { /* ignoré */ } location.hash = `#/projet/${p.id}/carte-metier` }}><i className="fa-solid fa-map" aria-hidden="true" /> {t('mo.bmap')}</button>
         {pg && pending > 0 && <span className="notice warn" style={{ padding: '2px 10px' }}>{t('mo.pending', { n: pending })}</span>}</div>

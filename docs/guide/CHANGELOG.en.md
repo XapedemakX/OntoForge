@@ -2,6 +2,34 @@
 
 Format: by version, what changes for the user, then the detail per work package. Sources: reports `journal/L*/rapport*.md`, reviews, `journal/decisions.md`. Work packages are described in `lots/`.
 
+## L41: fixes from the security review (15 Nov 2026) {#l41-corrections-relecture-securite-15-nov-2026}
+
+- **Outbound calls checked as soon as there are accounts.** With `ONTOFORGE_AUTH=password`, the server refuses to call an internal address (private network, loopback, cloud metadata), as in public mode. Without authentication (local use), nothing changes. For an internal endpoint or provider (Fuseki, Ollama), name it in `ONTOFORGE_EGRESS_ALLOW_INTERNAL`. Default choice D-L41-01, which you can change.
+- **Addresses hidden from non-administrator accounts.** The Settings assistant and query error messages no longer give the host or port of a registered endpoint or provider, and no longer show the start of a refused host's response.
+- **A read no longer writes to the project.** Generation history is in a side file; the initial business map is no longer saved by a plain read. An editor no longer loses changes while a generation runs.
+- **Neutral sharing.** "Unknown account" and "already the owner" give the same answer.
+- **Unreadable sharing file.** The project is locked read-only (administrator only), with a message and a log line, instead of being silently reassigned.
+- **SHACL validation.** At most 2 validations at once (`ONTOFORGE_SHACL_SLOTS`), otherwise `503` with `Retry-After`; the child process sets its own ceilings and receives no key.
+- **Other.** Wider "heavy" ceiling (conformance, graph, operations, exports, files); master key file tightened to 600; credentials also dropped when the port or scheme changes on a redirect; nginx keeps the port in the `Host` header (browser writes on port 8088 work with authentication).
+
+## L39-secu: security fixes (15 Nov 2026) {#l39-secu-15-nov-2026}
+
+- **Local instance closed by default.** `docker compose` now publishes the interface on `127.0.0.1` only (address set with `ONTOFORGE_BIND`, port with `ONTOFORGE_PORT`). CORS is closed (explicit list in `ONTOFORGE_CORS_ORIGINS`), and nginx sends a CSP and the usual security headers. An instance opened to the network without authentication is flagged in the logs at startup. The guide explains how to open it on purpose.
+- **Hardened imports.** An RDF/XML file that declares a `DOCTYPE` or entities is refused. A JSON-LD file whose context is a remote address is refused. Very long RDF lists are capped (beyond 1,500 unrecognised triples, blank nodes are not renumbered; beyond 10,000, the file is refused). SHACL validation runs in a separate process, with bounded time and memory and a clear message.
+- **Keys bound to their address.** Changing the address of an LLM provider or a SPARQL endpoint erases the stored key or token (to be entered again). Connection tests never send a stored secret to another address.
+- **Rate limited.** The API limits requests per address and per session, more strictly for the assistant and costly routes. The answer is `429` with `Retry-After`.
+- **Unprivileged containers, separate master key, reproducible builds.** Backend and front end run without root. The master key lives in a separate volume (`ontoforge-keys`). `npm ci` is strict and Python dependencies are installed at the exact versions of `backend/constraints.txt` (no version changed).
+- **Assistant and explanations.** Imported content (documents, labels, attachments) is marked as untrusted data in the prompts. The assistant's explanation now shows only `http(s)` and `mailto` links, and no images. Cloud Run draft: outbound host list required, trust in `Forwarded` headers limited, container without root. Dead reasoner code removed.
+
+## L40: named projects and collaborative sharing (15 Nov 2026) {#l40-partage-collaboratif-15-nov-2026}
+
+- With authentication on, every project has an owner. You only see your projects and those shared with you; an inaccessible project answers "not found".
+- "Share" button in the header: enter another account's identifier and a role (editor or reader). The owner changes a role, removes an access or transfers ownership; an editor can neither share nor delete. A reader views and exports, nothing more ("read-only").
+- Working together without real time: presence dots, a "bob changed the project" banner, a clearly explained conflict (never a silent overwrite) with "Reload and reapply", an activity log on the dashboard.
+- Global settings (LLM providers, keys, endpoints) are reserved for administrators (first account, or `ONTOFORGE_AUTH_ADMINS`).
+- Without authentication nothing changes. On first start with authentication, existing projects go to the first administrator.
+- Details: `docs/CONTRACTS.md` §16, D-L40-01.
+
 ## L38: Krakie in Settings (15 Nov 2026) {#l38-krakie-parametres-15-nov-2026}
 
 - Krakie is now on the Settings screen, with no project open: the same aquarium and panel, a context of its own (the tab on display) and suggestions per tab. She explains, diagnoses and recommends; she changes no setting, you do the saving.

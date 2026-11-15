@@ -1,0 +1,42 @@
+# Contraintes d'installation des images Docker (L39-secu, SEC-14) : versions exactes des dépendances de production et de leurs
+# dépendances transitives, relevées dans l'environnement de test (pip freeze restreint à la fermeture de `.[reasoner]`).
+# Aucune version n'a été changée : les épingles directes sont celles de pyproject.toml ; les transitives sont celles qui ont passé
+# la recette. Utilisation : pip install -c backend/constraints.txt ".[reasoner]". Test de cohérence : tests/test_sec_supply.py.
+# Mise à jour : décision de Jerem (D-L21-02), puis régénérer ce fichier. Hachages (--require-hashes) : non fournis ; À VÉRIFIER si exigés.
+annotated-types==0.8.0
+anyio==4.16.0
+argon2-cffi==25.1.0
+argon2-cffi-bindings==26.1.0
+bcrypt==5.0.0
+certifi==2026.10.23
+cffi==2.1.1
+click==8.5.0
+cryptography==50.0.2
+fastapi==0.115.6
+h11==0.16.0
+httpcore==1.0.9
+httptools==0.9.0
+httpx==0.28.1
+idna==3.20
+owlready2==0.47
+owlrl==7.1.2
+packaging==26.3
+prettytable==3.18.0
+pycparser==3.12
+pydantic==2.10.3
+pydantic-core==2.27.1
+pyoxigraph==0.5.13
+pyparsing==3.3.3
+pypdf==7.0.0
+pyshacl==0.29.1
+python-dotenv==1.2.4
+python-multipart==0.0.19
+pyyaml==6.0.2
+rdflib==7.1.1
+starlette==0.41.3
+typing-extensions==4.16.0
+uvicorn==0.32.1
+uvloop==0.23.0
+watchfiles==1.3.0
+wcwidth==0.9.4
+websockets==17.4

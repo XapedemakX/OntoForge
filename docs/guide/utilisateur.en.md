@@ -14,9 +14,18 @@ cp .env.example .env        # optional: ONTOFORGE_SECRET_KEY, assistant keys
 docker compose up --build
 ```
 
-Open http://localhost:8088 (change the port with `ONTOFORGE_PORT` in `.env`). Projects and settings live in the Docker volume `ontoforge-data`. Each project has its own folder with `project.json`, `onto.ttl`, `shapes.ttl` and `decisions.json`, plus `ops-history.json` and `queries.json` depending on use. `settings.json` sits at the root.
+Open http://localhost:8088 (change the port with `ONTOFORGE_PORT` in `.env`). By default this port is reachable only from your own machine (`127.0.0.1`): see "Instance security" below. Projects and settings live in the Docker volume `ontoforge-data`. Each project has its own folder with `project.json`, `onto.ttl`, `shapes.ttl` and `decisions.json`, plus `ops-history.json` and `queries.json` depending on use. `settings.json` sits at the root.
 
-Master key: the API keys of LLM providers and the secrets of SPARQL endpoints are encrypted on the server. Set `ONTOFORGE_SECRET_KEY` in `.env`. Otherwise a key is generated on first use in `$ONTOFORGE_DATA/.secret`, with a warning in the logs. If you lose the master key, you have to re-enter the API keys.
+Master key: the API keys of LLM providers and the secrets of SPARQL endpoints are encrypted on the server. Set `ONTOFORGE_SECRET_KEY` in `.env`. Otherwise a key is generated on first use, in a separate file (mode 600). With Docker this is the `ontoforge-keys` volume (`/keys/master.key`), apart from the data volume. Without Docker it is `$ONTOFORGE_DATA/.secret`, or the path given by `ONTOFORGE_SECRET_FILE`, with a warning in the logs. Do not back up the key together with `settings.json`. If you lose the master key, you have to re-enter the API keys. A stored key is bound to the address it was entered for: if you change the address of a provider or an endpoint, the stored key or token is erased and must be entered again.
+
+### Instance security {#securite-instance}
+
+- **Local listening.** `docker compose` publishes the interface on `127.0.0.1` only, so another machine on the network cannot reach it. The containers run without privileges. The `.env` file (your keys) should be readable by you only (`chmod 600 .env`); OntoForge warns you at startup if everyone can read it.
+- **Other websites.** No third-party site can call the API from your browser (CORS closed). To allow one specific site, for example the front-end development server, list its origin in `ONTOFORGE_CORS_ORIGINS` (comma-separated, never `*`).
+- **Headers.** The interface is served with a content security policy (CSP) and the usual headers (anti-framing, `nosniff`, referrer policy).
+- **Rate.** The API limits the number of requests per minute, per address and per session, with lower ceilings on costly routes (assistant, import, analysis, reasoner). Beyond a ceiling the answer is `429` with a `Retry-After` header, and the interface shows the waiting time. The ceilings are set with `ONTOFORGE_RATE_GLOBAL_PER_MIN`, `ONTOFORGE_RATE_ASSISTANT_PER_MIN` and `ONTOFORGE_RATE_HEAVY_PER_MIN`.
+- **Imported files.** An RDF/XML file that declares a `DOCTYPE` or entities is refused (export it again without entities, or as Turtle). A JSON-LD file whose context is a remote address is refused (embed the context in the file). SHACL validation has a bounded time and memory, with a clear message if it is interrupted.
+- **Opening the instance to the network, on purpose.** Turn authentication on first, in `.env`: `ONTOFORGE_AUTH=password`, `ONTOFORGE_AUTH_USERS` (accounts `user:hash`, hash made by `python -m ontoforge.auth hash`) and `ONTOFORGE_SECRET_KEY` (at least 32 characters, `python -m ontoforge.auth secret`). Serve the interface over HTTPS (trusted front end): without HTTPS the secure session cookie does not work. Then set `ONTOFORGE_BIND=0.0.0.0` (or the address you want) and restart. If the instance is opened without authentication, OntoForge says so in the logs at startup: anyone who reaches the port can then read and change your projects and use the stored keys.
 
 Without Docker (development): see [`README.en.md`](../../README.en.md), section "Development without Docker".
 
@@ -47,6 +56,27 @@ The home screen (`#/`) lists the projects with a summary: classes, properties, s
 - Import: drop a file. Ontologies: Turtle, RDF/XML (Protégé export), JSON-LD, N-Triples, N3, TriG. SHACL shapes are recognised by their content. A CSV, SQL, text or Markdown file is passed to the assistant (ontology draft).
 
 ![New project form: Name field and Starting point list](img/en/projets-nouveau.png "New project: 1 the name, 2 the starting point (empty project or sample).")
+
+### Sharing a project {#partager-un-projet}
+
+When authentication is on (`ONTOFORGE_AUTH=password`), projects belong to accounts.
+
+- **Owner.** Every project belongs to the account that creates it. The list only shows your projects and those shared with you, with the owner and a "Shared" (or "Read-only") badge. A project you cannot access answers "not found", as if it did not exist.
+- **Share.** In the project header, the "Share" button opens the access panel: the list of accounts, an "Account identifier" field and a role. The identifier is the other account's sign-in name. If no account has that identifier, the panel answers "No account with that identifier"; the number of lookups is limited to 10 per minute.
+- **Roles.** A *reader* views and exports, nothing more: action buttons are disabled, the header shows "Read-only" and the server refuses every write. An *editor* changes the project but can neither share nor delete it. The *owner* can do everything: change a role, remove an access, transfer ownership (the former owner stays an editor) and delete the project. An account can also leave a project shared with it.
+
+![The "Share this project" panel: owner, one reader, identifier field and role](img/en/partage-panneau.png "The sharing panel: 1 the access list, 2 the identifier field and role, 3 the rules per role.")
+
+![List view of a project opened read-only: "Read-only" label in the header, greyed-out action buttons](img/en/partage-lecture-seule.png "A reader: 1 the “Read-only” label, 2 the disabled action buttons.")
+
+Working together, without real time:
+
+- **Presence.** The initials of the accounts currently on the project appear in the header. Each tab signals its presence about every 20 seconds; an account disappears after 60 seconds without a signal.
+- **Change by another account.** When someone saves, a banner "bob changed the project: reload to see their changes" appears. The "Reload" button loads the latest version.
+- **Conflict.** Every write carries the project version you loaded. If someone saved in the meantime, nothing is overwritten: a dialog explains it. "Reload and reapply" reloads the project and replays your last change when that is safe (ontology operations, decisions, scopes, saved queries, versions); otherwise it only reloads, and you redo the change on the new version.
+- **Activity.** The dashboard shows the project log: who created, shared or changed it, and when.
+
+Global settings (LLM providers, keys, SPARQL endpoints) can only be changed by an administrator: the first declared account, or the accounts listed in `ONTOFORGE_AUTH_ADMINS`. Other accounts use the providers without seeing them. In local use, without authentication, nothing changes: an implicit user owns every project, and the sharing panel says that sharing needs authentication. On first start with authentication, existing projects are assigned to the first administrator.
 
 ## 4. Dashboard {#tableau-de-bord}
 

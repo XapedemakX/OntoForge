@@ -35,9 +35,10 @@ class LoginBody(BaseModel):
 
 def _info(cfg: AuthConfig, s: sess.Session | None) -> dict:
     if not cfg.enabled:
-        return {"enabled": False, "authenticated": True, "user": None, "csrf": None, "expires_at": None, "lang": _lang()}
+        return {"enabled": False, "authenticated": True, "user": None, "csrf": None, "expires_at": None, "lang": _lang(), "admin": True}
     return {"enabled": True, "authenticated": s is not None, "user": s.user if s else None, "csrf": s.csrf if s else None,
-            "expires_at": int(s.exp) if s else None, "lang": _lang(), "session_hours": cfg.session_hours}
+            "expires_at": int(s.exp) if s else None, "lang": _lang(), "session_hours": cfg.session_hours,
+            "admin": bool(s and cfg.is_admin(s.user))}
 
 
 @router.get("/session")

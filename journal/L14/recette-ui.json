@@ -10,57 +10,57 @@
   {
    "screen": "02-tableau",
    "ok": true,
-   "detail": "texte=1450c erreurs=0"
+   "detail": "texte=1459c erreurs=0"
   },
   {
    "screen": "03-ontologie-editeur",
    "ok": true,
-   "detail": "texte=2637c erreurs=0"
+   "detail": "texte=2646c erreurs=0"
   },
   {
    "screen": "04-ontologie-liste",
    "ok": true,
-   "detail": "texte=1126c erreurs=0"
+   "detail": "texte=1135c erreurs=0"
   },
   {
    "screen": "05-shapes",
    "ok": true,
-   "detail": "texte=2523c erreurs=0"
+   "detail": "texte=2532c erreurs=0"
   },
   {
    "screen": "06-conformite",
    "ok": true,
-   "detail": "texte=932c erreurs=0"
+   "detail": "texte=941c erreurs=0"
   },
   {
    "screen": "07-shacl",
    "ok": true,
-   "detail": "texte=847c erreurs=0"
+   "detail": "texte=856c erreurs=0"
   },
   {
    "screen": "08-analyse",
    "ok": true,
-   "detail": "texte=1935c erreurs=0"
+   "detail": "texte=1944c erreurs=0"
   },
   {
    "screen": "09-modele",
    "ok": true,
-   "detail": "texte=2221c erreurs=0"
+   "detail": "texte=2230c erreurs=0"
   },
   {
    "screen": "10-exports",
    "ok": true,
-   "detail": "texte=5102c erreurs=0"
+   "detail": "texte=5111c erreurs=0"
   },
   {
    "screen": "11-requetes",
    "ok": true,
-   "detail": "texte=2018c erreurs=0"
+   "detail": "texte=2027c erreurs=0"
   },
   {
    "screen": "12-assistant",
    "ok": true,
-   "detail": "texte=1328c erreurs=0"
+   "detail": "texte=1337c erreurs=0"
   },
   {
    "screen": "13-parametres",

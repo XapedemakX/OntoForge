@@ -141,3 +141,9 @@ Les actions sont épinglées par SHA de commit (version en commentaire) ; caches
 ### Dépendances {#dependances}
 
 Dependabot (`.github/dependabot.yml`) signale les mises à jour, ignore les versions majeures et limite les demandes ouvertes. Rien n'est fusionné sans l'accord de Jerem, mises à jour de sécurité comprises (D-L21-02).
+
+### Épingler les images et les dépendances {#epingler-images}
+
+Les constructions Docker sont reproductibles : le front s'installe avec `npm ci` seul (le verrou `package-lock.json` fait foi), le backend avec `pip install -c backend/constraints.txt`, fichier qui fixe la version exacte de chaque dépendance de production, directe ou transitive. Ce fichier ne change aucune version : il fige celles qui ont passé la recette. Pour le régénérer après une montée de version décidée par Jerem, relevez le `pip freeze` de l'environnement de test, restreint aux dépendances de production, et vérifiez-le avec `pytest tests/test_sec_network.py`.
+
+Les images de base (`python:3.12-slim`, `node:22-alpine`, `nginxinc/nginx-unprivileged:1.27-alpine`) sont désignées par étiquette. Pour les épingler par condensat, à faire sur une machine connectée : `docker buildx imagetools inspect <image>:<étiquette>`, puis écrire `image:étiquette@sha256:…` dans les `FROM`. Le condensat n'a pas pu être relevé hors ligne : À VÉRIFIER avant la mise en production.

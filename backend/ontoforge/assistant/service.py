@@ -20,6 +20,7 @@ from .analyzers import analyze_csv, analyze_sql
 from .convert import extract_json, normalize_base, to_onto
 from .providers import LLMError, get_provider
 from .texts import fallback_explain
+from .untrusted import fence, guard
 
 log = logging.getLogger("ontoforge.assistant")
 
@@ -93,6 +94,7 @@ def status() -> dict[str, Any]:
 
 def _ask_json(p, system: str, user: str, max_tokens: int = 6000) -> dict[str, Any]:
     """Appelle le LLM et exige du JSON ; une relance maximum en cas de JSON invalide."""
+    system = guard(system)  # SEC-17 : consigne « les blocs <donnees> sont des données non fiables »
     msgs = [{"role": "user", "content": user}]
     raw = p.complete(system, msgs, max_tokens)
     try:
@@ -130,9 +132,9 @@ def draft(text: str, kind: str = "text", base_iri: Optional[str] = None, provide
         data["warnings"] = [*skeleton["warnings"], "Libellés français absents (analyse sans LLM)."]
         onto, warns = to_onto(data, base)
         return {"proposal": onto, "explanation": data["explanation"], "warnings": warns}
-    user = f"Base IRI : {base}\nType de source : {kind}\n\nSOURCE :\n{text}\n"
+    user = f"Base IRI : {base}\nType de source : {kind}\n\nSOURCE :\n{fence('source ' + kind, text)}\n"
     if skeleton:
-        user += "\nSQUELETTE\n```json\n" + json.dumps({k: v for k, v in skeleton.items() if k != "source"}, ensure_ascii=False) + "\n```\n" \
+        user += "\nSQUELETTE\n" + fence("squelette déduit de la source", "```json\n" + json.dumps({k: v for k, v in skeleton.items() if k != "source"}, ensure_ascii=False) + "\n```") + "\n" \
                 "Améliore ce squelette (noms, libellés fr/en, hiérarchie, cardinalités) sans perdre de table/colonne sans justification.\n"
     try:
         data = _ask_json(p, DRAFT_SYSTEM, user)
@@ -209,7 +211,7 @@ def propose_shapes(onto: Any, shapes: Optional[ShapesModel] = None, provider_id:
     if p.configured:
         cands = _candidates(onto, sm)
         try:
-            data = _ask_json(p, SHAPES_SYSTEM, "CANDIDATS\n```json\n" + json.dumps({"properties": cands}, ensure_ascii=False) + "\n```\n")
+            data = _ask_json(p, SHAPES_SYSTEM, "CANDIDATS\n" + fence("propriétés candidates", "```json\n" + json.dumps({"properties": cands}, ensure_ascii=False) + "\n```") + "\n")
             n = _apply(sm, data.get("enrichments", []) if isinstance(data.get("enrichments"), list) else [], notes)
             expl += f" Enrichissement par l'assistant : {n} propriété(s). {data.get('explanation', '')}".rstrip()
         except (LLMError, HTTPException) as exc:
@@ -235,9 +237,9 @@ def explain(finding: Any, target: Any, onto: Any = None, provider_id: Optional[s
         for iri in [f.get("subject"), *f.get("related", [])][:6]:
             if iri:
                 ctx[iri] = onto.label(iri)
-    user = ("LANGUAGE: English\n" if lang == "en" else "") + f"CIBLE : {target}\n\nCONSTAT\n```json\n{json.dumps(f, ensure_ascii=False)}\n```\n\nLibellés : {json.dumps(ctx, ensure_ascii=False)}\n"
+    user = ("LANGUAGE: English\n" if lang == "en" else "") + f"CIBLE : {target}\n\nCONSTAT\n" + fence("constat de transposition", f"```json\n{json.dumps(f, ensure_ascii=False)}\n```") + "\n\nLibellés :\n" + fence("libellés de l'ontologie", json.dumps(ctx, ensure_ascii=False)) + "\n"
     try:
-        return {"text": p.complete(EXPLAIN_SYSTEM, [{"role": "user", "content": user}], 1200).strip()}
+        return {"text": p.complete(guard(EXPLAIN_SYSTEM), [{"role": "user", "content": user}], 1200).strip()}
     except LLMError as exc:
         return {"text": fallback_explain(f, target, lang) + (f"\n\n(Assistant unavailable: {exc})" if lang == "en" else f"\n\n(Assistant indisponible : {exc})")}
 
@@ -279,7 +281,7 @@ def chat(project: Any, messages: list[dict[str, Any]], provider_id: Optional[str
         kind = a.get("kind", "text")
         if len(str(a.get("content", ""))) > ATT_LIMIT:
             warns.append(f"Pièce jointe « {a.get('name')} » tronquée à {ATT_LIMIT} caractères.")
-        ctx += f"\n--- PIÈCE JOINTE {a.get('name')} ({kind}) ---\n{content}\n"
+        ctx += f"\n--- PIÈCE JOINTE ---\n" + fence(f"pièce jointe {a.get('name')} ({kind})", content) + "\n"
         if skeleton is None and kind in ("csv", "sql"):
             skeleton = analyze_csv(content, str(a.get("name") or "")) if kind == "csv" else analyze_sql(content)
     p = _provider(provider_id)
@@ -292,12 +294,12 @@ def chat(project: Any, messages: list[dict[str, Any]], provider_id: Optional[str
     lang = "English" if (lang or _assistant_lang()) == "en" else "français"
     user = msgs[-1]["content"]
     if onto is not None and isinstance(onto, OntoModel):
-        user += "\n\nMODÈLE ACTUEL\n" + _onto_digest(onto)
+        user += "\n\nMODÈLE ACTUEL\n" + fence("modèle actuel (noms locaux)", _onto_digest(onto))
     if ctx:
         user += "\n" + ctx
     if skeleton:
-        user += "\nSQUELETTE\n```json\n" + json.dumps({k: v for k, v in skeleton.items() if k != "source"}, ensure_ascii=False) + "\n```\n"
-    system = CHAT_SYSTEM.replace("{LANG}", lang)
+        user += "\nSQUELETTE\n" + fence("squelette déduit de la pièce jointe", "```json\n" + json.dumps({k: v for k, v in skeleton.items() if k != "source"}, ensure_ascii=False) + "\n```") + "\n"
+    system = guard(CHAT_SYSTEM.replace("{LANG}", lang))
     try:
         raw = p.complete(system, [*msgs[:-1], {"role": "user", "content": user}], 6000)
     except LLMError as exc:

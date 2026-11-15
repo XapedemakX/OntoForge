@@ -82,7 +82,7 @@ export function Conformance({ p, setP }: ScreenProps) {
   const n = (l: string) => data?.issues.filter(i => i.level === l).length ?? 0
   const ref = (s?: string | null) => !s ? null : /^https?:/.test(s) ? <a href={s} target="_blank" rel="noreferrer">{s.replace(/^https?:\/\/(www\.)?/, '')}</a> : <span>{s}</span>
   return (
-    <div className="page">
+    <div className="page" data-safe>
       <div className="page-head"><h1>{t('cf.title')}</h1><span className="sub">{t('cf.sub')}</span><span className="grow" /><button className="btn" onClick={reload}>{t('cf.recheck')}</button></div>
       {loading && <Spin />}<ErrorView error={error} what={t('cf.what')} />
       {data && <>

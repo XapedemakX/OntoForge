@@ -20,6 +20,7 @@ from fastapi import HTTPException
 
 from .agent import help_section, is_help_request, reply_lang
 from .providers import LLMError
+from .untrusted import fence, guard
 
 SECTIONS = ("llm", "lang", "defaults", "versions", "display", "sparql")
 LABELS = {"llm": ("Fournisseurs LLM", "LLM providers"), "lang": ("Langues", "Languages"), "defaults": ("Valeurs par défaut", "Defaults"),
@@ -97,10 +98,11 @@ def safe_iri(iri: Optional[str]) -> str:
     return origin + "/".join(segs) + ("#" if u.endswith("#") else "")
 
 
-def snapshot() -> dict[str, Any]:
+def snapshot(admin: bool = True) -> dict[str, Any]:
     """Configuration NON sensible : fournisseurs (type, modèle, URL nettoyée, configuré, clé présente oui/non), langues, défauts,
     versions, endpoints SPARQL (URL nettoyée, type d'authentification, secret présent oui/non). Ni clé, ni 4 derniers caractères,
-    ni nom d'utilisateur, ni ``extra``."""
+    ni nom d'utilisateur, ni ``extra``. Pour un compte non administrateur (``admin=False``, L41) : aucune adresse de fournisseur ni
+    d'endpoint (ni hôte, ni port) : il les utilise sans les voir."""
     from .. import standards
     from ..settings import store
     from ..settings.models import DEFAULT_MODELS
@@ -108,7 +110,7 @@ def snapshot() -> dict[str, Any]:
     chk = standards.check(None, "en", base=s.versions.model_dump())
     return {
         "llm": {"default_provider_id": s.default_provider_id,
-                "providers": [{"id": p.id, "name": p.name, "kind": p.kind, "model": p.model or DEFAULT_MODELS[p.kind], "base_url": safe_url(p.base_url),
+                "providers": [{"id": p.id, "name": p.name, "kind": p.kind, "model": p.model or DEFAULT_MODELS[p.kind], "base_url": safe_url(p.base_url) if admin else "",
                                "configured": p.configured, "has_key": bool(p.api_key), "key_unreadable": p.key_unreadable,
                                "default": p.id == s.default_provider_id} for p in s.llm_providers]},
         "language": s.language.model_dump(),
@@ -117,7 +119,7 @@ def snapshot() -> dict[str, Any]:
         "versions": {"values": s.versions.model_dump(), "needs_attention": chk["needs_attention"],
                      "gaps": [g["message"] for g in chk["gaps"] if g["severity"] != "info"], "recommended": chk["recommended"]},
         "sparql": {"active_endpoint_id": s.active_endpoint_id,
-                   "endpoints": [{"id": e.id, "name": e.name, "url": safe_url(e.url), "auth": e.auth, "has_secret": bool(e.secret),
+                   "endpoints": [{"id": e.id, "name": e.name, "url": safe_url(e.url) if admin else "", "auth": e.auth, "has_secret": bool(e.secret),
                                   "secret_unreadable": e.secret_unreadable, "default_graph": e.default_graph, "timeout_s": e.timeout_s,
                                   "active": e.id == s.active_endpoint_id} for e in s.sparql_endpoints]},
     }
@@ -271,14 +273,15 @@ def _sparql_reply(snap: dict, message: str, lang: str) -> str:
     elif act is None:
         state = _L(lang, f"{len(eps)} endpoint(s) enregistré(s), mais aucun n'est actif : activez-en un pour qu'il soit interrogé.", f"{len(eps)} endpoint(s) registered, but none is active: activate one so it gets queried.")
     else:
-        state = _L(lang, f"L'endpoint actif est « {act['name']} » ({act['url']}, authentification {act['auth']}, délai {act['timeout_s']:g} s). Sa joignabilité n'a pas été vérifiée ici.",
-                   f"The active endpoint is “{act['name']}” ({act['url']}, {act['auth']} authentication, {act['timeout_s']:g} s timeout). Its reachability has not been checked here.")
+        at = f"{act['url']}, " if act["url"] else ""
+        state = _L(lang, f"L'endpoint actif est « {act['name']} » ({at}authentification {act['auth']}, délai {act['timeout_s']:g} s). Sa joignabilité n'a pas été vérifiée ici.",
+                   f"The active endpoint is “{act['name']}” ({at}{act['auth']} authentication, {act['timeout_s']:g} s timeout). Its reachability has not been checked here.")
     for e in eps:
         if e["auth"] != "none" and not e["has_secret"]:
             notes.append(_L(lang, f"« {e['name']} » est en authentification {e['auth']} sans secret enregistré : ressaisissez le mot de passe ou le jeton.", f"“{e['name']}” uses {e['auth']} authentication with no stored secret: enter the password or token again."))
         if e["secret_unreadable"]:
             notes.append(_L(lang, f"Le secret de « {e['name']} » est illisible (clé maître changée) : ressaisissez-le.", f"The secret of “{e['name']}” is unreadable (master key changed): enter it again."))
-        if re.match(r"https?://(localhost|127\.|0\.0\.0\.0|\[::1\])", e["url"]):
+        if e["url"] and re.match(r"https?://(localhost|127\.|0\.0\.0\.0|\[::1\])", e["url"]):
             notes.append(_L(lang, f"« {e['name']} » vise une adresse locale : si OntoForge tourne dans Docker, « localhost » désigne le conteneur ; sur une instance publique, les adresses locales sont refusées par la protection SSRF.",
                             f"“{e['name']}” targets a local address: if OntoForge runs in Docker, “localhost” means the container; on a public instance, local addresses are refused by SSRF protection."))
     steps = _steps(lang, [
@@ -367,7 +370,7 @@ def _test_action(snap: dict, topic: str, lang: str) -> Optional[dict[str, Any]]:
         eps = snap["sparql"]["endpoints"]
         e = next((x for x in eps if x["active"]), eps[0] if eps else None)
         if e:
-            return {"kind": "settings_test", "target": "sparql", "id": e["id"], "summary": _L(lang, f"Endpoint « {e['name']} » ({e['url']})", f"Endpoint “{e['name']}” ({e['url']})")}
+            return {"kind": "settings_test", "target": "sparql", "id": e["id"], "summary": _L(lang, f"Endpoint « {e['name']} »" + (f" ({e['url']})" if e["url"] else ""), f"Endpoint “{e['name']}”" + (f" ({e['url']})" if e["url"] else ""))}
     return None
 
 
@@ -425,8 +428,36 @@ Réponds en {LANG}, de façon concise, avec des étapes numérotées quand on de
 Aucun texte hors du JSON."""
 
 
-def _drop_mentions(reply: str, known: list[str]) -> str:
-    return redact(reply, known)[0]
+def stored_addresses() -> list[str]:
+    """Adresses enregistrées (fournisseurs, endpoints) : URL, ``hôte:port`` et hôte, pour les masquer à un compte non administrateur."""
+    from ..settings import store
+    s = store.load(persist=False)
+    out: set[str] = set()
+    for u in [p.base_url for p in s.llm_providers] + [e.url for e in s.sparql_endpoints] + [s.sparql_endpoint.url]:
+        u = (u or "").strip()
+        if not u:
+            continue
+        out.add(u.rstrip("/"))
+        try:
+            pr = urlsplit(u)
+            host = pr.hostname or ""
+            if host:
+                out.add(f"{host}:{pr.port}" if pr.port else host)
+                if host != "localhost":
+                    out.add(host)
+        except ValueError:
+            pass
+    return sorted((a for a in out if len(a) >= 4), key=len, reverse=True)
+
+
+def _hide_addresses(text: str, addrs: list[str]) -> str:
+    for a in addrs:
+        text = re.sub(re.escape(a), "[adresse masquée]", text, flags=re.I)
+    return text
+
+
+def _drop_mentions(reply: str, known: list[str], addrs: Optional[list[str]] = None) -> str:
+    return _hide_addresses(redact(reply, known)[0], addrs or [])
 
 
 def deterministic(snap: dict, message: str, section: Optional[str], lang: str) -> dict[str, Any]:
@@ -468,7 +499,11 @@ def run(messages: list[dict[str, Any]], context: dict[str, Any], provider_id: Op
         raise HTTPException(status_code=422, detail="La conversation doit se terminer par un message de l'utilisateur.")
     last = msgs[-1]["content"]
     lang = reply_lang(last)
-    snap = snapshot()
+    from ..collab import access
+    ctx = access.current()
+    admin = ctx is not None and ctx.identity.is_admin   # échec fermé : sans contexte (appel hors middleware), traité comme non administrateur
+    addrs = [] if admin else stored_addresses()  # L41 (L40-01) : un compte non administrateur ne reçoit aucune adresse, même par le LLM
+    snap = snapshot(admin)
     warns: list[str] = []
     if masked:
         warns.append(_L(lang, "Un secret semblait figurer dans la conversation : je l'ai masqué avant tout traitement. Saisissez clés, mots de passe et jetons uniquement dans leur champ.",
@@ -484,12 +519,12 @@ def run(messages: list[dict[str, Any]], context: dict[str, Any], provider_id: Op
     if real and not asks_secret and not is_help_request(last):
         topic = topic_of(last, section)
         user = (f"ÉCRAN : Paramètres (aucun projet)\nSECTION AFFICHÉE : {section or 'inconnue'}\nCONFIGURATION (non sensible) :\n"
-                + json.dumps(snap, ensure_ascii=False) + "\n\nDEMANDE\n" + last)
+                + fence("configuration non sensible", json.dumps(snap, ensure_ascii=False)) + "\n\nDEMANDE\n" + last)
         user, _ = redact(user, known)  # ceinture et bretelles : rien de secret ne part, même si une valeur enregistrée se retrouve dans une URL
         try:
-            raw = p.complete(SETTINGS_SYSTEM.replace("{LANG}", "français" if lang == "fr" else "English"), [*msgs[:-1], {"role": "user", "content": user}], 2000)
+            raw = p.complete(guard(SETTINGS_SYSTEM.replace("{LANG}", "français" if lang == "fr" else "English")), [*msgs[:-1], {"role": "user", "content": user}], 2000)
         except LLMError as exc:
-            warns.append(_L(lang, "Le fournisseur LLM n'a pas répondu (", "The LLM provider did not answer (") + redact(str(exc), known)[0][:160] + _L(lang, ") : réponse intégrée à la place.", "): built-in answer instead."))
+            warns.append(_L(lang, "Le fournisseur LLM n'a pas répondu (", "The LLM provider did not answer (") + _hide_addresses(redact(str(exc), known)[0], addrs)[:160] + _L(lang, ") : réponse intégrée à la place.", "): built-in answer instead."))
         except Exception as exc:  # noqa: BLE001 — jamais de fuite : seul le type d'erreur est dit
             warns.append(_L(lang, f"Échec inattendu du fournisseur LLM ({type(exc).__name__}) : réponse intégrée à la place.", f"Unexpected LLM provider failure ({type(exc).__name__}): built-in answer instead."))
         else:
@@ -502,12 +537,12 @@ def run(messages: list[dict[str, Any]], context: dict[str, Any], provider_id: Op
                 reply, raw_actions = raw.strip(), None
             if reply:
                 actions = build_actions(snap, raw_actions, lang) or build_actions(snap, default_actions(snap, topic, lang), lang)
-                return {"reply": _drop_mentions(reply, known), "actions": _clean_actions(actions, known), "warnings": warns, "proposal": None}
+                return {"reply": _drop_mentions(reply, known, addrs), "actions": _clean_actions(actions, known, addrs), "warnings": warns, "proposal": None}
     det = deterministic(snap, last, section, lang)
     actions = build_actions(snap, det["actions"], lang)
-    return {"reply": _drop_mentions(det["reply"], known), "actions": _clean_actions(actions, known), "warnings": warns, "proposal": None}
+    return {"reply": _drop_mentions(det["reply"], known, addrs), "actions": _clean_actions(actions, known, addrs), "warnings": warns, "proposal": None}
 
 
-def _clean_actions(actions: list[dict[str, Any]], known: list[str]) -> list[dict[str, Any]]:
-    """Dernier filet : aucune chaîne secrète dans les cartes renvoyées au navigateur."""
-    return json.loads(redact(json.dumps(actions, ensure_ascii=False), known)[0])
+def _clean_actions(actions: list[dict[str, Any]], known: list[str], addrs: Optional[list[str]] = None) -> list[dict[str, Any]]:
+    """Dernier filet : aucune chaîne secrète (ni adresse, pour un non-administrateur) dans les cartes renvoyées au navigateur."""
+    return json.loads(_hide_addresses(redact(json.dumps(actions, ensure_ascii=False), known)[0], addrs or []))

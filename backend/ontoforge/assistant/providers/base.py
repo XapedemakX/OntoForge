@@ -93,8 +93,11 @@ def post_json(provider: str, url: str, headers: dict[str, str], payload: dict[st
     try:
         tmo = timeout_s if timeout_s else timeout()
         r = _ng.post(url, headers=headers, json=payload, timeout=tmo)
-    except _ng.NetGuardError as exc:
-        raise LLMError(f"{provider} : {exc}") from None
+    except _ng.NetGuardError:
+        # L41-R1 : fournisseur enregistré par un administrateur ; le motif de netguard cite l'hôte ou l'adresse résolue,
+        # il ne doit pas atteindre un compte non administrateur (cartographie du réseau interne). Message générique pour tous.
+        raise LLMError(f"{provider} : appel sortant refusé par la protection des adresses (nom ou adresse non autorisés). "
+                       "Un administrateur peut autoriser un service interne avec ONTOFORGE_EGRESS_ALLOW_INTERNAL.") from None
     except httpx.TimeoutException:
         raise LLMError(f"{provider} : délai dépassé ({tmo:.0f} s) en attendant la réponse.") from None
     except httpx.HTTPError as exc:

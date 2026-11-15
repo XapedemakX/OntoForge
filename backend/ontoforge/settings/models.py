@@ -2,16 +2,43 @@
 les vues publiques (``public_view``) n'exposent que ``has_key`` / ``key_last4``."""
 from __future__ import annotations
 
+import contextvars
+import logging
 import re
 from typing import Any, Literal, Optional
+from urllib.parse import urlsplit
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 from ..standards import TargetVersions
 
 Kind = Literal["anthropic", "openai_compat", "ollama", "mock"]
 DEFAULT_MODELS = {"anthropic": "claude-sonnet-5-5", "openai_compat": "gpt-4o", "ollama": "llama3.1", "mock": "mock"}
 _ID = re.compile(r"^[a-z0-9][a-z0-9_-]{0,47}$")
+log = logging.getLogger("ontoforge.settings")
+
+# L39-secu (SEC-03) : un secret est lié à l'origine (schéma, hôte, port) pour laquelle il a été saisi. Si une configuration
+# validée change cette origine sans fournir un NOUVEAU secret, le secret enregistré est effacé : il ne peut ni partir vers une
+# autre adresse (routes de test, conversation) ni être récupéré en changeant l'URL. Pendant la lecture du disque, le contrôle est suspendu.
+LOADING: contextvars.ContextVar[bool] = contextvars.ContextVar("ontoforge_settings_loading", default=False)
+
+
+def origin(url: Optional[str]) -> str:
+    """Origine normalisée d'une URL (``https://hôte:port``) ; chaîne vide si absente (adresse par défaut du fournisseur)."""
+    u = (url or "").strip()
+    if not u:
+        return ""
+    try:
+        sp = urlsplit(u)
+        port = sp.port or {"http": 80, "https": 443}.get(sp.scheme.lower())
+        return f"{sp.scheme.lower()}://{(sp.hostname or '').lower()}:{port}"
+    except ValueError:
+        return u.lower()
+
+
+def _registered():
+    from . import store  # import tardif : store importe ce module
+    return store.registered()
 
 
 class ProviderConfig(BaseModel):
@@ -38,6 +65,15 @@ class ProviderConfig(BaseModel):
         if not v:
             raise ValueError("le nom est obligatoire")
         return v
+
+    @model_validator(mode="after")
+    def _bind_key_to_origin(self) -> "ProviderConfig":
+        if self.api_key and not LOADING.get():
+            cur = (_registered() or Settings()).provider(self.id)
+            if cur is not None and cur.api_key == self.api_key and origin(cur.base_url) != origin(self.base_url):
+                log.warning("Fournisseur « %s » : l'adresse a changé, la clé d'API enregistrée est effacée (à ressaisir).", self.id)
+                self.api_key = None
+        return self
 
     @property
     def configured(self) -> bool:
@@ -76,6 +112,15 @@ class SparqlAuth(BaseModel):
 class SparqlEndpoint(BaseModel):
     url: str = ""
     auth: Optional[SparqlAuth] = None
+
+    @model_validator(mode="after")
+    def _bind_secret_to_origin(self) -> "SparqlEndpoint":
+        if self.auth is not None and self.auth.secret and not LOADING.get():
+            cur = (_registered() or Settings()).sparql_endpoint
+            if cur.auth is not None and cur.auth.secret == self.auth.secret and origin(cur.url) != origin(self.url):
+                log.warning("Endpoint SPARQL : l'adresse a changé, le secret enregistré est effacé (à ressaisir).")
+                self.auth = self.auth.model_copy(update={"secret": None})
+        return self
 
     def public(self) -> dict[str, Any]:
         a = self.auth
@@ -124,6 +169,15 @@ class EndpointConfig(BaseModel):
         if not 1 <= v <= 300:
             raise ValueError("le délai doit être compris entre 1 et 300 secondes")
         return v
+
+    @model_validator(mode="after")
+    def _bind_secret_to_origin(self) -> "EndpointConfig":
+        if self.secret and not LOADING.get():
+            cur = (_registered() or Settings()).endpoint(self.id)
+            if cur is not None and cur.secret == self.secret and origin(cur.url) != origin(self.url):
+                log.warning("Endpoint « %s » : l'adresse a changé, le secret enregistré est effacé (à ressaisir).", self.id)
+                self.secret = None
+        return self
 
     def public(self) -> dict[str, Any]:
         return {"id": self.id, "name": self.name, "url": self.url, "auth": self.auth, "username": self.username,

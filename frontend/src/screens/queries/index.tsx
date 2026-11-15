@@ -113,7 +113,7 @@ export function Queries({ p, target }: ScreenProps) {
   const canRun = mode === 'guided' ? !!guided : !!free.trim()
 
   return (
-    <div className="page qpage">
+    <div className="page qpage" data-safe>
       <div className="page-head">
         <h1>{t('nav.requetes')}</h1>
         <span className="grow" />
