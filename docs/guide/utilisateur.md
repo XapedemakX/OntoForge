@@ -436,7 +436,7 @@ Sans LLM (fournisseur `mock`, non configuré ou en panne), un repli déterminist
 
 ### Krakie, l'assistant global {#krakie-l-assistant-global}
 
-Krakie est présente sur tous les écrans du projet (L16), en plus de l'écran plein écran ci-dessus.
+Krakie est présente sur tous les écrans du projet (L16), en plus de l'écran plein écran ci-dessus, et sur l'écran Paramètres (voir Krakie dans les Paramètres).
 
 - Ouvrir : bouton flottant en bas à droite, ou Ctrl+K (Cmd+K sur Mac). Le panneau latéral se redimensionne à la souris ou aux flèches gauche/droite sur la poignée ; sous 900 px il passe en plein écran ; il reste ouvert quand vous changez d'écran. Échap dans la zone de saisie le ferme.
 - Contexte : une ligne « Contexte : [écran] [sélection] » indique ce que Krakie voit. Elle reçoit l'écran, l'élément sélectionné (classe avec ses propriétés et restrictions, shape, propriété) et, dans Requêtes, la requête en cours. Vous pouvez retirer la sélection ou tout le contexte, puis le rétablir. Des puces de suggestions propres à l'écran remplissent la saisie. Les boutons Krakie des fiches (Vue liste, Shapes) ouvrent le panneau avec leur élément en contexte.
@@ -459,20 +459,48 @@ Krakie est présente sur tous les écrans du projet (L16), en plus de l'écran p
 
 ## 14. Paramètres {#parametres}
 
-Route globale `#/parametres` (engrenage en bas du menu), quatre onglets ; chaque onglet s'enregistre explicitement (« Enregistré »).
+Route globale `#/parametres` (engrenage en bas du menu), six onglets : Fournisseurs LLM, Langues, Valeurs par défaut, Versions, Affichage, Endpoints SPARQL. Chaque onglet s'enregistre explicitement (« Enregistré »). Krakie est disponible ici aussi, sans projet ouvert (voir Krakie dans les Paramètres).
+
+Les variables d'environnement (`ONTOFORGE_LLM_PROVIDER`, `ANTHROPIC_API_KEY`…) ne servent qu'à initialiser `settings.json` au premier démarrage.
 
 ![Paramètres, onglet Fournisseurs LLM : fournisseur de démonstration et fournisseur avec clé factice masquée](img/fr/parametres-llm.png "Les fournisseurs LLM (1) : la clé n'est jamais réaffichée, seuls ses quatre derniers caractères.")
 
-- LLM : un tableau de fournisseurs (nom, type, modèle, URL, clé affichée « •••• abcd »). Types : `anthropic`, `openai_compat` (Azure OpenAI, vLLM, LM Studio…), `ollama`, `mock` (toujours présent, non supprimable). Un fournisseur par défaut, un bouton Tester (latence, modèle, message ; 15 s). La clé est chiffrée sur le serveur et jamais renvoyée au navigateur : on ne peut que la remplacer ou la supprimer. Pour tester un nouveau fournisseur, enregistrez-le d'abord.
-- Langues : interface (fr/en, appliquée immédiatement), langue des labels (affichage du graphe et des listes), langue de l'assistant.
-  ![Paramètres, onglet Langues : interface, libellés, assistant](img/fr/parametres-langues.png "Les trois langues : interface, libellés, assistant.")
-- Défauts : IRI de base (utilisée par l'assistant pour ses brouillons), préfixes (table éditable), cible par défaut, conventions de nommage.
-  ![Paramètres, onglet Valeurs par défaut : IRI de base, cible, nommage, préfixes](img/fr/parametres-defauts.png "Les valeurs par défaut.")
-- Endpoints SPARQL : plusieurs endpoints (nom, URL, authentification aucune / basic / bearer, secret masqué et chiffré, graphe par défaut, délai 1-300 s), Tester (`ASK {}`), un actif à la fois, suppression confirmée.
+### Fournisseurs LLM {#parametres-fournisseurs-llm}
+
+Un tableau de fournisseurs (nom, type, modèle, URL, clé affichée « •••• abcd »). Types : `anthropic`, `openai_compat` (OpenAI, Azure OpenAI, vLLM, LM Studio…), `ollama` (local, sans clé), `mock` (toujours présent, non supprimable, aucun appel réseau). Un fournisseur par défaut, un bouton Tester (latence, modèle, message ; 15 s). La clé est chiffrée sur le serveur et jamais renvoyée au navigateur : on ne peut que la remplacer ou la supprimer. Pour tester un nouveau fournisseur, enregistrez-le d'abord.
+
+### Langues {#parametres-langues}
+
+Interface (fr/en, appliquée immédiatement), langue des labels (affichage du graphe et des listes), langue de l'assistant.
+
+![Paramètres, onglet Langues : interface, libellés, assistant](img/fr/parametres-langues.png "Les trois langues : interface, libellés, assistant.")
+
+### Valeurs par défaut {#parametres-valeurs-par-defaut}
+
+IRI de base (utilisée par l'assistant pour ses brouillons), préfixes (table éditable), cible par défaut, conventions de nommage.
+
+![Paramètres, onglet Valeurs par défaut : IRI de base, cible, nommage, préfixes](img/fr/parametres-defauts.png "Les valeurs par défaut.")
+
+### Endpoints SPARQL {#parametres-endpoints-sparql}
+
+Plusieurs endpoints (nom, URL, authentification aucune / basic / bearer, secret masqué et chiffré, graphe par défaut, délai 1-300 s), Tester (`ASK {}`), un actif à la fois, suppression confirmée.
 
 ![Paramètres, onglet Endpoints SPARQL : un endpoint actif avec son URL, son délai et les boutons Tester, Modifier, Supprimer](img/fr/parametres-endpoints.png "Les endpoints SPARQL.")
 
-Les variables d'environnement (`ONTOFORGE_LLM_PROVIDER`, `ANTHROPIC_API_KEY`…) ne servent qu'à initialiser `settings.json` au premier démarrage.
+### Affichage {#parametres-affichage}
+
+Le bandeau latéral : automatique (replié sur les écrans de plein canevas), ouvert ou replié. Ce réglage est mémorisé dans ce navigateur, pas sur le serveur. L'onglet Versions est décrit à la section suivante.
+
+### Krakie dans les Paramètres {#krakie-dans-les-parametres}
+
+Krakie est aussi présente sur l'écran Paramètres, sans projet ouvert (L38) : même aquarium en bas à droite, même panneau (Ctrl+K). Elle aide à configurer, surtout au premier lancement, quand aucun LLM n'est encore branché.
+
+- Contexte : la ligne « Contexte » indique l'onglet affiché (par exemple « Paramètres · Fournisseurs LLM »). Krakie connaît la configuration non sensible : fournisseur par défaut, type, modèle et URL des fournisseurs, langues, valeurs par défaut, versions, endpoints SPARQL (hôte et port seulement, type d'authentification). Elle ne reçoit jamais les clés, mots de passe ou jetons enregistrés, et n'en renvoie jamais. Les adresses lui arrivent réduites à l'hôte et au port, sans chemin ni paramètres. Si vous collez un secret dans la conversation, il est masqué avant tout traitement quand il a une forme connue ; une clé sous une forme inhabituelle peut passer. Saisissez les secrets uniquement dans leur champ.
+- Sans LLM : avec le fournisseur de démonstration (`mock`) ou un fournisseur non configuré, Krakie répond avec des explications intégrées, par onglet : pas à pas pour brancher Anthropic, un serveur compatible OpenAI ou Ollama, pour ajouter un endpoint SPARQL, choisir les versions ou régler les langues, avec un diagnostic de l'état actuel (par exemple « le fournisseur par défaut est la démonstration »). Avec un fournisseur réel, c'est le modèle qui répond sur la même configuration ; s'il ne répond pas, la réponse intégrée prend le relais.
+- Cartes d'actions : « Aller à cette section » (ouvre l'onglet, fait défiler et met le bloc en évidence), « Tester la connexion » (le même test que le bouton de l'onglet, sans rien enregistrer) et « Ouvrir l'aide » (la section du guide de l'onglet). Krakie ne modifie aucun réglage : c'est vous qui cliquez sur « Enregistrer ».
+- Aide : le bouton « ? » de la barre du haut ouvre le guide à la section de l'onglet affiché, même sans projet ; l'adresse du guide est alors `#/aide/<page>/<ancre>`.
+
+![Krakie sur l'écran Paramètres : question sur le LLM, réponse pas à pas et cartes Aller à cette section, Tester la connexion et Ouvrir l'aide](img/fr/krakie-parametres.png "Krakie dans les Paramètres : 1 le contexte (l'onglet affiché), 2 les cartes d'actions.")
 
 ## 15. Versions des normes et des cibles {#versions-des-normes-et-des-cibles}
 
@@ -495,11 +523,11 @@ Krakie répond à « quelles versions ? » (« which versions? ») et propose un
 
 Le guide est embarqué dans l'application (L28) : il se lit hors ligne et correspond toujours à la version installée, car il est compilé avec le front à partir de `docs/guide/*.md`.
 
-- Ouvrir : entrée Documentation de la section Outils du bandeau latéral, ou bouton « ? » de l'en-tête de chaque écran de projet. Le bouton ouvre directement la section qui décrit l'écran courant.
+- Ouvrir : entrée Documentation de la section Outils du bandeau latéral, ou bouton « ? » de l'en-tête de chaque écran de projet et de l'écran Paramètres. Le bouton ouvre directement la section qui décrit l'écran courant (ou l'onglet affiché des Paramètres).
 - Lire : sommaire à gauche (replié derrière le bouton « Sommaire » sur mobile), liste des pages du guide au-dessus (utilisateur, limites, contribuer, API, architecture, règles, glossaire, journal des versions). Les titres, tableaux, blocs de code colorés et liens sont rendus ; les liens vers un autre fichier `.md` du guide ouvrent la page correspondante dans l'écran.
   ![Écran Documentation : liste des pages du guide, champ de recherche et sommaire à gauche, texte à droite](img/fr/documentation.png "La documentation intégrée : 1 les pages du guide, 2 la recherche, 3 le sommaire.")
 - Chercher : le champ de recherche surligne les occurrences dans la page affichée et donne leur nombre ; Entrée et Maj+Entrée passent à la suivante ou à la précédente, Échap efface.
-- Adresse stable : `#/projet/<id>/documentation/<page>/<ancre>`. L'ancre est écrite explicitement en fin de titre dans les fichiers traduits (`## 8. Analyse & arbitrage {#analyse-arbitrage}`), donc elle ne change pas quand on renumérote ou reformule un titre. Sans `{#id}`, l'ancre est le titre sans accents ni numéro de section.
+- Adresse stable : `#/projet/<id>/documentation/<page>/<ancre>` (ou `#/aide/<page>/<ancre>` hors projet, depuis les Paramètres). L'ancre est écrite explicitement en fin de titre dans les fichiers traduits (`## 8. Analyse & arbitrage {#analyse-arbitrage}`), donc elle ne change pas quand on renumérote ou reformule un titre. Sans `{#id}`, l'ancre est le titre sans accents ni numéro de section.
 - Langue : si une version anglaise d'un fichier existe (`<nom>.en.md`), elle s'affiche quand l'interface est en anglais. Sinon la version française s'affiche avec le bandeau « Documentation available in French only ». Les pages utilisateur, limites, contribuer, API et journal des versions existent en anglais. Les fichiers français et anglais d'une page portent les mêmes ancres `{#id}` : le bouton « ? » et Krakie ouvrent la bonne section dans les deux langues.
 - Krakie : les demandes « aide », « comment ça marche ici », « doc » (en anglais « help », « how does this work ») renvoient une carte Aide avec le titre de la section de l'écran courant, un résumé de deux ou trois lignes et le bouton « Ouvrir l'aide ».
   ![Carte d'aide de Krakie : titre de la section du guide pour l'écran courant et bouton Ouvrir l'aide](img/fr/krakie-aide.png "La carte d'aide : 1 le bouton qui ouvre la bonne section du guide.")

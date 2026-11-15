@@ -1,4 +1,4 @@
-import { Suspense, useCallback, useEffect, useRef, useState, type FocusEvent, type MouseEvent } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useRef, useState, type FocusEvent, type MouseEvent } from 'react'
 import { api, type Perimeter, type Project, type Target } from '../api'
 import { Icon, IconButton, Segmented } from '../kit'
 import { ErrorView, useToast } from '../ui'
@@ -10,6 +10,7 @@ import { AssistantDock } from '../assistant-global'
 import { VersionsNudge } from '../screens/versions/VersionsNudge'
 import { TourHost, tour } from '../tour'
 import { helpFor, openDoc } from '../lib/docs'
+import { getAssistantContext } from '../lib/assistantContext'
 import { ROUTE_SCREEN } from '../assistant-global/context'
 import { SCREENS, STEPS } from './registry'
 import { useAuth } from '../auth/AuthGate'
@@ -18,10 +19,13 @@ import { Logo } from './Logo'
 import { useMedia, useSidePref } from './sidePref'
 import type { ScreenProps } from './types'
 
-type Route = { kind: 'projects' } | { kind: 'settings' } | { kind: 'project'; id: string; screen: string }
+const Documentation = lazy(() => import('../screens/documentation/Documentation').then(m => ({ default: m.Documentation })))
+
+type Route = { kind: 'projects' } | { kind: 'settings' } | { kind: 'help' } | { kind: 'project'; id: string; screen: string }
 function parseHash(): Route {
   const h = location.hash
   if (h.startsWith('#/parametres')) return { kind: 'settings' }
+  if (h.startsWith('#/aide')) return { kind: 'help' }  // L38 : le guide hors projet (depuis les Paramètres)
   const m = h.match(/^#\/projet\/([^/]+)(?:\/([\w-]+))?/)
   return m ? { kind: 'project', id: decodeURIComponent(m[1]), screen: m[2] || 'tableau' } : { kind: 'projects' }
 }
@@ -151,7 +155,7 @@ export function Shell() {
         <header className="topbar">
           <IconButton className="menu-btn" icon="bars" label={t('nav.menu')} onClick={() => setMenu(m => !m)} />
           <Logo variant="mark" className="logo-top" />
-          <div className="crumb">{p && pid ? <><b title={p.name}>{p.name}</b>{def && <span className="muted"> / {t(def.labelKey)}</span>}</> : <b>{route.kind === 'settings' ? t('nav.parametres') : t('common.projects')}</b>}</div>
+          <div className="crumb">{p && pid ? <><b title={p.name}>{p.name}</b>{def && <span className="muted"> / {t(def.labelKey)}</span>}</> : <b>{route.kind === 'settings' ? t('nav.parametres') : route.kind === 'help' ? t('nav.documentation') : t('common.projects')}</b>}</div>
           <span className="grow" />
           {p && <>
             <span className="tour-wrap" data-tour="target"><Segmented label={t('head.target')} value={target} onChange={setTarget} items={[['curiosity', 'Curiosity'], ['neo4j', 'Neo4j']]} /></span>
@@ -162,14 +166,18 @@ export function Shell() {
           <a className={'endpoint' + (endpoint ? ' on' : '')} href="#/parametres" title={endpoint?.url ?? t('head.sparqlNone')}>
             <Icon name="database" /><span>{endpoint ? (endpoint.name || endpoint.url.replace(/^https?:\/\//, '')) : t('head.sparqlNone')}</span></a>
           {p && pid && <IconButton icon="circle-question" label={t('docs.helpBtn')} data-testid="help-btn" onClick={() => { const h = helpFor(ROUTE_SCREEN[screen]?.name ?? screen); openDoc(pid, h.page, h.anchor) }} />}
+          {route.kind === 'settings' && <IconButton icon="circle-question" label={t('docs.helpBtn')} data-testid="help-btn" onClick={() => {
+            const c = getAssistantContext(), sec = c.screen === 'settings' && typeof c.extra?.section === 'string' ? c.extra.section : ''
+            const h = helpFor(sec ? 'settings-' + sec : 'settings'); openDoc(null, h.page, h.anchor) }} />}
           <IconButton icon="route" label={t('tour.btn')} onClick={() => void tour.start()} />
           <IconButton icon={themeIcon} label={t('head.theme.' + themePref)} onClick={cycleTheme} />
           {auth.enabled && <button type="button" className="btn sm ghost logout" data-testid="logout" title={auth.user ?? ''} onClick={() => void auth.logout()}><Icon name="right-from-bracket" /><span>{t('auth.logout')}</span></button>}
         </header>
-        <main className={'content' + (def?.fullBleed ? ' bleed' : '')}>
+        <main className={'content' + (def?.fullBleed || route.kind === 'help' ? ' bleed' : '')}>
           {def?.editing && <div className="notice soon mobile-only">{t('head.mobileReadOnly')}</div>}
           {route.kind === 'projects' && <Projects />}
           {route.kind === 'settings' && <Settings />}
+          {route.kind === 'help' && <Suspense fallback={<div className="page muted">…</div>}><Documentation /></Suspense>}
           {route.kind === 'project' && err != null && <div className="page"><ErrorView error={err} what={t('common.projects')} /></div>}
           {sp && (def ? <Suspense key={def.key} fallback={<div className="page muted">…</div>}>{def.render(sp)}</Suspense> : <div className="page"><ErrorView error={new Error('?')} /></div>)}
         </main>
@@ -177,6 +185,7 @@ export function Shell() {
       <TourHost />
       {p && pid && <VersionsNudge p={p} setP={setP} screen={screen} />}
       {p && pid && <AssistantDock p={p} setP={setP} target={target} screen={screen} perimeter={activePeri || null} />}
+      {route.kind === 'settings' && <AssistantDock key="settings" p={null} setP={setP} target={target} screen="parametres" perimeter={null} />}
     </div>
   )
 }

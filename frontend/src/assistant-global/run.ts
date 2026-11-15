@@ -7,16 +7,16 @@ import { gapi } from './gapi'
 import { patchAction, setLastApplied, uid, type AgentAction, type Msg } from './store'
 
 export async function runChat(opts: {
-  p: Project; setP: (p: Project) => void; lang: string; history: Msg[]; provider?: string; context: AssistantContext
+  p: Project | null; setP: (p: Project) => void; lang: string; history: Msg[]; provider?: string; context: AssistantContext
   attachments?: { name: string; kind: string; content: string }[]; sourceLabel?: string
 }): Promise<Msg> {
   const { p, setP, lang, history, provider, context, attachments } = opts
   try {
-    const r = await gapi.chat(p.id, history.filter(m => !m.error).slice(-20).map(m => ({ role: m.role, content: m.content })), provider, context, attachments)
+    const r = await gapi.chat(p?.id ?? null, history.filter(m => !m.error).slice(-20).map(m => ({ role: m.role, content: m.content })), provider, context, attachments)
     const actions = (r.actions ?? []).map(a => ({ ...a, status: 'idle' as const }))
     let count: number | undefined
-    const pa = actions.find(a => a.kind === 'proposal')
-    if (pa) {
+    const pa = p ? actions.find(a => a.kind === 'proposal') : undefined
+    if (p && pa) {
       const onto = pa.payload.proposal as OntoModel
       const items = buildItems(p.onto, onto, lang)
       count = items.length

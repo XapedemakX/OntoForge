@@ -1,7 +1,9 @@
 // Conversation du projet partagée entre le panneau global et l'écran Assistant plein écran (même clé localStorage que L10).
 import { useCallback, useSyncExternalStore } from 'react'
 
-export type ActionKind = 'ops' | 'proposal' | 'shapes' | 'guided_query' | 'navigate' | 'versions' | 'help'
+export type ActionKind = 'ops' | 'proposal' | 'shapes' | 'guided_query' | 'navigate' | 'versions' | 'help' | 'settings_goto' | 'settings_test'
+/** Clé de conversation de Krakie sur l'écran Paramètres (aucun projet, L38). */
+export const SETTINGS_CONV = '__settings'
 export interface AgentAction {
   kind: ActionKind
   payload: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any

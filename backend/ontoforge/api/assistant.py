@@ -43,7 +43,7 @@ class ChatMessage(BaseModel):
 
 
 class ChatRequest(BaseModel):
-    project_id: str
+    project_id: Optional[str] = None  # L38 : absent seulement sur l'écran Paramètres (context.screen == "settings")
     messages: list[ChatMessage]
     provider_id: Optional[str] = None
     attachments: list[Attachment] = []
@@ -96,6 +96,11 @@ def explain(body: ExplainRequest) -> Any:
 
 @router.post("/chat")
 def chat(body: ChatRequest) -> Any:
+    if body.project_id is None:  # L38 : Krakie sur l'écran Paramètres, sans projet ; rien n'est lu ni modifié dans un projet
+        if not isinstance(body.context, dict) or body.context.get("screen") != "settings":
+            raise HTTPException(status_code=422, detail="project_id est obligatoire, sauf pour le contexte « settings » (écran Paramètres).")
+        from ..assistant import settings_help
+        return dump(settings_help.run([m.model_dump() for m in body.messages], body.context, body.provider_id))
     fn = service(SERVICE, "chat")
     p = load_project(body.project_id)
     atts = [a.model_dump() for a in body.attachments]

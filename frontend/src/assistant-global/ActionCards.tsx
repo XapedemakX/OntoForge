@@ -3,12 +3,30 @@ import type { Project } from '../api'
 import { Button, Icon } from '../kit'
 import { useI18n } from '../i18n'
 import { openDoc } from '../lib/docs'
+import { settingsApi, errMsg, type TestResult } from '../screens/settings/settingsApi'
+import { TestOutcome } from '../screens/settings/shared'
+import { gotoSettingsSection } from '../lib/assistantContext'
 import { applyAction, go, openGuidedQuery, undoAction } from './run'
 import { getLastApplied, useDockUi, type AgentAction } from './store'
 
-const ICON: Record<string, string> = { ops: 'pen-ruler', proposal: 'wand-magic-sparkles', shapes: 'shield-halved', guided_query: 'magnifying-glass-chart', navigate: 'arrow-up-right-from-square', help: 'circle-question', versions: 'tags' }
+const ICON: Record<string, string> = { ops: 'pen-ruler', proposal: 'wand-magic-sparkles', shapes: 'shield-halved', guided_query: 'magnifying-glass-chart', navigate: 'arrow-up-right-from-square', help: 'circle-question', versions: 'tags', settings_goto: 'location-crosshairs', settings_test: 'plug' }
 
-/** Cartes d'actions d'un message : aperçu lisible, puis « Appliquer » (jamais automatique) et « Annuler ». */
+/** « Tester la connexion » (L38) : le même test que le bouton de l'onglet, sur ce qui est enregistré ; il ne change aucun réglage. */
+function TestCard({ target, id }: { target: 'llm' | 'sparql'; id: string }) {
+  const { t } = useI18n()
+  const [res, setRes] = useState<TestResult | 'loading'>()
+  const run = async () => {
+    setRes('loading')
+    try { setRes(target === 'llm' ? await settingsApi.testProvider(id) : await settingsApi.testEndpoint(id)) } catch (e) { setRes({ ok: false, message: errMsg(e) }) }
+  }
+  return <>
+    <Button size="sm" variant="primary" icon="plug" data-testid="ag-settings-test" disabled={res === 'loading'} onClick={() => void run()}>{t('ag.test')}</Button>
+    <div style={{ flexBasis: '100%' }} data-testid="ag-settings-test-result"><TestOutcome r={res} /></div>
+  </>
+}
+
+/** Cartes d'actions d'un message : aperçu lisible, puis « Appliquer » (jamais automatique) et « Annuler ».
+ *  `pid` vide : écran Paramètres, sans projet (cartes « section », « test », « aide » seulement, aucune ne modifie un réglage). */
 export function ActionCards({ pid, msgId, actions, setP }: { pid: string; msgId: string; actions: AgentAction[]; setP: (p: Project) => void }) {
   const { t } = useI18n()
   useDockUi() // se met à jour quand la dernière action appliquée change
@@ -46,6 +64,7 @@ export function ActionCards({ pid, msgId, actions, setP }: { pid: string; msgId:
             )}
             {a.kind === 'navigate' && <p>{a.summary}</p>}
             {a.kind === 'help' && <div className="ag-help"><b>{a.payload.title}</b><p>{a.summary}</p></div>}
+            {(a.kind === 'settings_goto' || a.kind === 'settings_test') && <p>{a.summary}</p>}
             {a.error && <p className="ag-err" role="alert"><Icon name="triangle-exclamation" />{a.error}</p>}
             <footer>
               {a.kind === 'ops' && st !== 'applied' && st !== 'undone' && <Button size="sm" variant="primary" icon="check" disabled={busy} onClick={() => void applyAction(pid, msgId, i, a, setP)}>{busy ? '…' : t('ag.apply')}</Button>}
@@ -54,7 +73,9 @@ export function ActionCards({ pid, msgId, actions, setP }: { pid: string; msgId:
               {a.kind === 'versions' && st === 'applied' && <Button size="sm" icon="rotate-left" disabled={!canUndo} onClick={() => void undoAction(pid, msgId, i, setP, a)}>{t('ag.undo')}</Button>}
               {a.kind === 'proposal' && <Button size="sm" variant="primary" icon="diagram-project" onClick={() => go(pid, 'ontologie')}>{t('asst.toEditor')}</Button>}
               {a.kind === 'guided_query' && <Button size="sm" variant="primary" icon="magnifying-glass-chart" onClick={() => openGuidedQuery(pid, a)}>{t('ag.openQuery')}</Button>}
-              {a.kind === 'help' && <Button size="sm" variant="primary" icon="book-open" data-testid="ag-open-help" onClick={() => openDoc(pid, a.payload.page, a.payload.anchor)}>{t('ag.openHelp')}</Button>}
+              {a.kind === 'help' && <Button size="sm" variant="primary" icon="book-open" data-testid="ag-open-help" onClick={() => openDoc(pid || null, a.payload.page, a.payload.anchor)}>{t('ag.openHelp')}</Button>}
+              {a.kind === 'settings_goto' && <Button size="sm" variant="primary" icon="location-crosshairs" data-testid="ag-settings-goto" onClick={() => gotoSettingsSection(a.payload.section)}>{t('ag.goto')}</Button>}
+              {a.kind === 'settings_test' && <TestCard target={a.payload.target} id={a.payload.id} />}
               {a.kind === 'navigate' && <Button size="sm" variant="primary" icon="arrow-right" onClick={() => go(pid, a.payload.screen)}>{t('ag.open')}</Button>}
               {a.kind === 'shapes' && st === 'applied' && <Button size="sm" icon="rotate-left" disabled={!canUndo} onClick={() => void undoAction(pid, msgId, i, setP)}>{t('ag.undo')}</Button>}
               {a.kind === 'ops' && st === 'applied' && <>

@@ -1007,6 +1007,8 @@ The old `sparql_endpoint` field is migrated to the `default` endpoint and is sti
 | POST | `/api/assistant/chat` | `{project_id, messages:[{role, content}], provider_id?, attachments?:[{name, kind: csv\|sql\|text\|markdown, content}]}` | `{reply, proposal: OntoModel \| null, warnings}` |
 | POST | `/api/assistant/upload` | multipart `file` (2 MB max: 413 beyond; empty file: 422) | `{name, kind, preview:{lines (20), total_lines, truncated, columns?, tables?}, size, content}` |
 
+Without `project_id`, the request is accepted only for `context: {screen: "settings", extra?: {section}}` (Krakie on the Settings screen, 422 otherwise). The reply is then `{reply, actions, warnings, proposal: null}` with the `settings_goto`, `settings_test` and `help` actions; no API key, password or token enters the context sent to the LLM or the reply (contract: `docs/CONTRACTS.md` §14).
+
 `content` (decoded text) is returned so that the front end can put it back unchanged in `attachments`. Recognised extensions: `.csv`, `.tsv`, `.sql`, `.md`, `.markdown`, `.txt`; otherwise detection by content.
 
 ### Editor: operations, graph, perimeters {#editeur-operations-graphe-perimetres}

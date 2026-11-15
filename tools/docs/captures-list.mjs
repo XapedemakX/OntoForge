@@ -404,6 +404,13 @@ cap('parametres', 'parametres-defauts', async c => {
   await c.click(c.page.getByRole('tab', { name: c.t('settings.tab.defaults') }).or(c.page.getByRole('button', { name: c.t('settings.tab.defaults') })).first()); await c.sleep(600)
   await c.snap('parametres-defauts', { upTo: 'main .card' })
 })
+cap('parametres', 'krakie-parametres', async c => {   // L38 : Krakie sur l'écran Paramètres, sans projet (fournisseur et endpoint factices présents : cartes Aller / Tester / Aide)
+  await c.dropExtras(); await c.addProvider(); await c.addEndpoint()
+  await c.go('parametres', { wait: 'table, .card' }); await clearChat(c); await c.page.reload(); await c.page.waitForSelector('table'); await c.sleep(700)
+  await c.openKrakie(); await c.ask(c.X.chatSettings, '.ag-card.settings_test', { timeout: 25000 }); await c.sleep(800)
+  await c.snap('krakie-parametres', { fab: true, ann: [{ at: '.ag-ctx', n: 1, box: true, pos: 'tr', out: true }, { at: '.ag-actions', n: 2, box: true, pos: 'tr' }] })
+  await c.closeKrakie()
+})
 cap('parametres', 'parametres-endpoints', async c => {
   await c.go('parametres', { wait: 'button' })
   await c.click(c.page.getByRole('tab', { name: c.t('settings.tab.sparql') }).or(c.page.getByRole('button', { name: c.t('settings.tab.sparql') })).first()); await c.sleep(700)

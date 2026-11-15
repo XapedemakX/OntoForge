@@ -114,7 +114,7 @@ Text too long gives `413`, not configured gives `503`, and invalid JSON from the
 No. The mock returns only a skeleton and the `[TASK:nl]` prompt has not been tried on a real model (no network in tests). Validate it on your provider (`journal/L10/rapport-front.md`, `journal/L15/rapport-backend.md`). Proposed shapes are applied by merging, not element by element. The proposal mini-graph is a simple grid (labels sometimes overlap). The conversation history is kept only in the browser (80 messages).
 
 **Global Krakie: what has not been tried?**
-The `[TASK:agent]` prompt has not been tried on a real provider (no network in tests). The JSON is strictly validated, and a non-JSON reply is displayed as text. "Undo" is offered only for the latest change. The fallback without an LLM understands only the phrasings listed in the user guide. When open, the panel covers the right part of the header (`journal/L16/cloture.md`).
+The `[TASK:agent]` prompt has not been tried on a real provider (no network in tests). The JSON is strictly validated, and a non-JSON reply is displayed as text. "Undo" is offered only for the latest change. The fallback without an LLM understands only the phrasings listed in the user guide. When open, the panel covers the right part of the header (`journal/L16/cloture.md`). On the Settings screen (L38), the `[TASK:settings]` prompt has not been tried on a real provider either; the built-in answers cover the three provider types, but a provider's connection test remains the tab's own, and Krakie cannot see the result of a test she did not run.
 
 **What are the limits of the screens redone in L17?**
 List view: individual facts, equivalences and complex expressions are read-only. Shapes: pattern, range and list constraints cannot be edited inline. Queries: label autocompletion mixes French and English (`journal/L17/cloture.md`).
@@ -134,6 +134,9 @@ In the Docker volume `ontoforge-data` (`/data/projects/<id>/`). No data is sent 
 
 **Where are the API keys, and are they protected?**
 They are encrypted on the server (Fernet, key derived from `ONTOFORGE_SECRET_KEY`) and never sent back to the browser. Without a master key, one is generated in `$ONTOFORGE_DATA/.secret`. A wrong master key makes the keys `key_unreadable` (to be re-entered). Rotation cancels everything without writing anything if the old key is wrong. There is no SSRF filtering on provider and endpoint URLs (self-hosted single-user tool, D-L8-01): review this before any public exposure. `cryptography` is installed through `pyproject.toml`; the Docker image was not rebuilt to verify it.
+
+**What does Krakie see in Settings, and what can slip past her?**
+She receives the non-sensitive configuration, with addresses reduced to host and port. Stored keys, passwords and tokens are never passed to her. Two limits remain: a secret pasted in the conversation is masked only in its usual forms, and the Settings screen (`GET /api/settings`) shows addresses back as typed, including a credential pasted into a URL. Do not put a secret in an address: use the field meant for it.
 
 **Can SPARQL queries be run now?**
 Yes, on the active endpoint (resolved in iteration 2, CONTRACTS §6), read-only. Updates are refused, `LIMIT` is forced (ceiling 5000) and the timeout is the endpoint's. Limits:

@@ -72,3 +72,12 @@ export function onAssistantContext(fn: (c: AssistantContext) => void): () => voi
   window.addEventListener(CTX_EVENT, h)
   return () => window.removeEventListener(CTX_EVENT, h)
 }
+
+/** L38 : « Aller à cette section » des Paramètres. L'écran Paramètres écoute cet événement (onglet, défilement, mise en évidence). */
+const SETTINGS_GOTO = 'ontoforge:settings-goto'
+export const gotoSettingsSection = (section: string): void => { window.dispatchEvent(new CustomEvent(SETTINGS_GOTO, { detail: { section } })) }
+export function onSettingsGoto(fn: (section: string) => void): () => void {
+  const h = (e: Event) => fn(String((e as CustomEvent).detail?.section ?? ''))
+  window.addEventListener(SETTINGS_GOTO, h)
+  return () => window.removeEventListener(SETTINGS_GOTO, h)
+}

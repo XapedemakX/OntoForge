@@ -51,11 +51,12 @@ export function slugify(text: string): string {
   return base || 'section'
 }
 
-export const docHash = (pid: string, page = DEFAULT_PAGE, anchor?: string | null) =>
-  `#/projet/${encodeURIComponent(pid)}/documentation/${page}${anchor ? '/' + encodeURIComponent(anchor) : ''}`
-export function openDoc(pid: string, page = DEFAULT_PAGE, anchor?: string | null): void { location.hash = docHash(pid, page, anchor) }
+/** Adresse d'une page du guide. Sans projet (`pid` vide, par exemple depuis les Paramètres, L38) : `#/aide/<page>/<ancre>`. */
+export const docHash = (pid: string | null | undefined, page = DEFAULT_PAGE, anchor?: string | null) =>
+  `${pid ? `#/projet/${encodeURIComponent(pid)}/documentation` : '#/aide'}/${page}${anchor ? '/' + encodeURIComponent(anchor) : ''}`
+export function openDoc(pid: string | null | undefined, page = DEFAULT_PAGE, anchor?: string | null): void { location.hash = docHash(pid, page, anchor) }
 export function parseDocHash(h = location.hash): { page: string; anchor: string | null } {
-  const m = /^#\/projet\/[^/]+\/documentation(?:\/([\w-]+))?(?:\/([^?]+))?/.exec(h)
+  const m = /^#\/(?:projet\/[^/]+\/documentation|aide)(?:\/([\w-]+))?(?:\/([^?]+))?/.exec(h)
   let anchor: string | null = null
   try { anchor = m?.[2] ? decodeURIComponent(m[2]) : null } catch { anchor = m?.[2] ?? null }
   return { page: m?.[1] && hasPage(m[1].toLowerCase()) ? m[1].toLowerCase() : DEFAULT_PAGE, anchor }
@@ -75,7 +76,7 @@ export interface TocItem { level: number; text: string; id: string }
 export interface Rendered { html: string; toc: TocItem[] }
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
-export function renderMarkdown(md: string, pid: string, page: string, lang: Lang = 'fr'): Rendered {
+export function renderMarkdown(md: string, pid: string | null, page: string, lang: Lang = 'fr'): Rendered {
   const toc: TocItem[] = []
   const seen = new Map<string, number>()
   const unique = (base: string) => { const n = seen.get(base) ?? 0; seen.set(base, n + 1); return n ? `${base}-${n + 1}` : base }

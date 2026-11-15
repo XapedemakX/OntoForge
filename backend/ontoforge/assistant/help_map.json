@@ -157,6 +157,78 @@
     "en": "Settings cover languages, LLM providers, the SPARQL endpoint and the defaults for new projects."
    }
   },
+  "settings-llm": {
+   "page": "utilisateur",
+   "anchor": "parametres-fournisseurs-llm",
+   "title": {
+    "fr": "Fournisseurs LLM",
+    "en": "LLM providers"
+   },
+   "summary": {
+    "fr": "Un fournisseur LLM branche un modèle (Anthropic, compatible OpenAI, Ollama local) à Krakie. La clé est chiffrée sur le serveur ; testez la connexion, puis définissez-le par défaut.",
+    "en": "An LLM provider connects a model (Anthropic, OpenAI-compatible, local Ollama) to Krakie. The key is encrypted on the server; test the connection, then make it the default."
+   }
+  },
+  "settings-lang": {
+   "page": "utilisateur",
+   "anchor": "parametres-langues",
+   "title": {
+    "fr": "Langues",
+    "en": "Languages"
+   },
+   "summary": {
+    "fr": "Trois langues se règlent séparément : l'interface, les libellés d'ontologie affichés et les réponses de l'assistant.",
+    "en": "Three languages are set separately: the interface, the ontology labels shown and the assistant's answers."
+   }
+  },
+  "settings-defaults": {
+   "page": "utilisateur",
+   "anchor": "parametres-valeurs-par-defaut",
+   "title": {
+    "fr": "Valeurs par défaut",
+    "en": "Defaults"
+   },
+   "summary": {
+    "fr": "Les valeurs par défaut des nouveaux projets : IRI de base, cible (Curiosity ou Neo4j), conventions de nommage et préfixes.",
+    "en": "Defaults for new projects: base IRI, target (Curiosity or Neo4j), naming conventions and prefixes."
+   }
+  },
+  "settings-versions": {
+   "page": "utilisateur",
+   "anchor": "versions-des-normes-et-des-cibles",
+   "title": {
+    "fr": "Versions des normes et des cibles",
+    "en": "Standard and target versions"
+   },
+   "summary": {
+    "fr": "Le défaut global des versions visées par les générateurs (Neo4j, Cypher, Curiosity.Library, SHACL, SPARQL, RDF), avec le statut de chacune.",
+    "en": "The global default of the versions the generators aim for (Neo4j, Cypher, Curiosity.Library, SHACL, SPARQL, RDF), with the status of each."
+   }
+  },
+  "settings-display": {
+   "page": "utilisateur",
+   "anchor": "parametres-affichage",
+   "title": {
+    "fr": "Affichage",
+    "en": "Display"
+   },
+   "summary": {
+    "fr": "Le bandeau latéral peut se replier en icônes : automatique, ouvert ou replié. Ce réglage est mémorisé dans ce navigateur.",
+    "en": "The side bar can fold into icons: automatic, open or folded. This setting is remembered in this browser."
+   }
+  },
+  "settings-sparql": {
+   "page": "utilisateur",
+   "anchor": "parametres-endpoints-sparql",
+   "title": {
+    "fr": "Endpoints SPARQL",
+    "en": "SPARQL endpoints"
+   },
+   "summary": {
+    "fr": "Un endpoint SPARQL est un service distant interrogé par les requêtes : URL, authentification, délai. Testez-le, puis activez-le ; un seul est actif à la fois.",
+    "en": "A SPARQL endpoint is a remote service the queries talk to: URL, authentication, timeout. Test it, then activate it; only one is active at a time."
+   }
+  },
   "projects": {
    "page": "utilisateur",
    "anchor": "projets",

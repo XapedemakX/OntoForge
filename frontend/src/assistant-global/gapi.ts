@@ -17,8 +17,9 @@ async function call<T>(path: string, body?: unknown): Promise<T> {
 export interface AgentReply { reply: string; actions: AgentAction[]; warnings: string[]; proposal: unknown | null }
 export interface OpsRes { ok: boolean; project: Project; errors: { message: string }[]; warnings: string[] }
 export const gapi = {
-  chat: (project_id: string, messages: { role: string; content: string }[], provider_id: string | undefined, context: AssistantContext, attachments?: unknown[]) =>
-    call<AgentReply>('/assistant/chat', { project_id, messages, provider_id: provider_id || undefined, context, attachments: attachments?.length ? attachments : undefined }),
+  /** `project_id` null : Krakie sur l'écran Paramètres (L38), le serveur n'accepte alors que le contexte « settings ». */
+  chat: (project_id: string | null, messages: { role: string; content: string }[], provider_id: string | undefined, context: AssistantContext, attachments?: unknown[]) =>
+    call<AgentReply>('/assistant/chat', { project_id: project_id || undefined, messages, provider_id: provider_id || undefined, context, attachments: attachments?.length ? attachments : undefined }),
   ops: (pid: string, ops: unknown[], label: string) => call<OpsRes>(`/projects/${encodeURIComponent(pid)}/ops`, { ops, label }),
   undo: (pid: string) => call<OpsRes>(`/projects/${encodeURIComponent(pid)}/ops/undo`),
   shapes: (project_id: string, patches: unknown[]) => call<{ project: Project }>('/assistant/shapes/apply', { project_id, patches }),

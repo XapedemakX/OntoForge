@@ -3,7 +3,7 @@ import { localName, type Project, type Target } from '../api'
 import { Button, Icon, IconButton, Krakie, Select } from '../kit'
 import type { Pose } from '../krakie/Krakie'
 import { useI18n } from '../i18n'
-import { onAssistantContext, onAssistantOpen, type AssistantContext, type OpenAssistantOptions } from '../lib/assistantContext'
+import { getAssistantContext, onAssistantContext, onAssistantOpen, type AssistantContext, type OpenAssistantOptions } from '../lib/assistantContext'
 import { aapi, type AStatus } from '../screens/assistant/aapi'
 import { DocImport } from '../screens/assistant/DocImport'
 import { DocResult } from '../screens/assistant/DocResult'
@@ -11,17 +11,19 @@ import { ProposalCards } from '../screens/assistant/ProposalCards'
 import { useProposal } from '../lib/proposal'
 import { ActionCards } from './ActionCards'
 import { Aquarium } from './Aquarium'
-import { effectiveContext, forSend, ROUTE_SCREEN, type CtxMode } from './context'
+import { effectiveContext, forSend, forSendSettings, ROUTE_SCREEN, settingsContext, type CtxMode } from './context'
 import { runChat, go } from './run'
-import { getMsgs, getUi, setMsgs, setUi, uid, useConversation, useDockUi, type Msg } from './store'
+import { getMsgs, getUi, SETTINGS_CONV, setMsgs, setUi, uid, useConversation, useDockUi, type Msg } from './store'
 import './dock.css'
 
 const SEL_KEY: Record<string, string> = { class: 'class', prop: 'prop', property: 'prop', shape: 'shape', finding: 'finding', query: 'query' }
 
-export function AssistantDock({ p, setP, target, screen, perimeter }: { p: Project; setP: (p: Project) => void; target: Target; screen: string; perimeter: string | null }) {
+/** `p` nul : écran Paramètres (L38), sans projet : conversation à part, contexte = onglet affiché, aucune action de modèle. */
+export function AssistantDock({ p, setP, target, screen, perimeter }: { p: Project | null; setP: (p: Project) => void; target: Target; screen: string; perimeter: string | null }) {
   const { t, lang } = useI18n()
   const ui = useDockUi()
-  const [msgs] = useConversation(p.id)
+  const cid = p?.id ?? SETTINGS_CONV
+  const [msgs] = useConversation(cid)
   const [text, setText] = useState('')
   const [busy, setBusy] = useState(false)
   const [happy, setHappy] = useState(false)
@@ -39,24 +41,25 @@ export function AssistantDock({ p, setP, target, screen, perimeter }: { p: Proje
   const aq = useAquariumSize()
   useAquariumFloor(screen)
 
-  useEffect(() => onAssistantContext(setDeclared), [])
-  useEffect(() => { setMode('full'); setOneShot(null) }, [screen, p.id])
+  useEffect(() => { setDeclared(getAssistantContext()); return onAssistantContext(setDeclared) }, [])  // l'écran a pu publier son contexte avant l'abonnement du panneau (Paramètres, L38)
+  useEffect(() => { setMode('full'); setOneShot(null) }, [screen, cid])
   useEffect(() => { aapi.status().then(s => { setStatus(s); if (!getUi().provider) setUi({ provider: s.default_provider_id || s.providers?.find(x => x.default)?.id || s.providers?.[0]?.id || '' }) }).catch(() => {}) }, [])
   useEffect(() => { endRef.current?.scrollIntoView({ block: 'end' }) }, [msgs, busy, ui.open])
 
   const ctx = useMemo(() => {
+    if (!p) return settingsContext(declared)
     const c = effectiveContext(screen, p.id, target, perimeter, declared)
     return oneShot ? { ...c, ...oneShot, extra: { ...c.extra, ...oneShot.extra } } : c
-  }, [screen, p.id, target, perimeter, declared, oneShot])
+  }, [screen, p?.id, target, perimeter, declared, oneShot])
 
   const send = useCallback(async (content: string, override?: Partial<AssistantContext>) => {
     const body = content.trim(); if (!body || busy) return
-    const c = forSend(override ? { ...ctx, ...override } : ctx, mode, p.id)
+    const c = p ? forSend(override ? { ...ctx, ...override } : ctx, mode, p.id) : forSendSettings(ctx, mode)
     const user: Msg = { id: uid(), role: 'user', content: body }
-    setMsgs(p.id, m => [...m, user]); setText(''); setBusy(true); setHappy(false)
-    const reply = await runChat({ p, setP, lang, history: getMsgs(p.id), provider: ui.provider, context: c })
-    setMsgs(p.id, m => [...m, reply]); setBusy(false); setHappy(!reply.error && !!reply.actions?.length); setOneShot(null)
-  }, [busy, ctx, mode, p, setP, lang, ui.provider])
+    setMsgs(cid, m => [...m, user]); setText(''); setBusy(true); setHappy(false)
+    const reply = await runChat({ p, setP, lang, history: getMsgs(cid), provider: ui.provider, context: c })
+    setMsgs(cid, m => [...m, reply]); setBusy(false); setHappy(!reply.error && !!reply.actions?.length); setOneShot(null)
+  }, [busy, ctx, mode, p, cid, setP, lang, ui.provider])
   const sendRef = useRef(send); sendRef.current = send
 
   const open = useCallback((o: OpenAssistantOptions = {}) => {
@@ -87,7 +90,8 @@ export function AssistantDock({ p, setP, target, screen, perimeter }: { p: Proje
   const lastMsg = msgs[msgs.length - 1]
   const pose: Pose = busy ? 'reflechit' : lastMsg?.error ? 'inquiete' : happy ? 'contente' : 'accueil'
   const providers = status?.providers ?? []
-  const screenLabel = t('ag.screen.' + (ROUTE_SCREEN[screen]?.name ?? screen))
+  const section = !p && typeof ctx.extra?.section === 'string' ? ctx.extra.section : ''
+  const screenLabel = t('ag.screen.' + (ROUTE_SCREEN[screen]?.name ?? screen)) + (section ? ' · ' + t('settings.tab.' + section) : '')
   const sel = ctx.selection
   const selText = sel ? t('ag.sel.' + (SEL_KEY[sel.kind] ?? 'other'), { label: sel.label || localName(sel.id) }) : ''
   const suggestions = (mode === 'none' ? [] : ctx.suggestions?.length ? ctx.suggestions : defaultSuggestions(screen, t)).slice(0, 4)
@@ -109,12 +113,12 @@ export function AssistantDock({ p, setP, target, screen, perimeter }: { p: Proje
             onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onKeyDown={onHandleKey} />
           <header className="ag-head">
             <Krakie pose={pose} size={40} float={busy} />
-            <div className="ag-ttl"><b>{t('ag.title')}</b><span className="muted">{busy ? t('asst.thinking') : t('ag.sub')}</span></div>
+            <div className="ag-ttl"><b>{t('ag.title')}</b><span className="muted">{busy ? t('asst.thinking') : t(p ? 'ag.sub' : 'ag.sub.settings')}</span></div>
             <span className="grow" />
             {providers.length > 0 && <Select aria-label={t('asst.provider')} value={ui.provider} onChange={e => setUi({ provider: e.target.value })}
               options={providers.map(x => ({ value: x.id, label: `${x.name}${x.configured ? '' : ' ' + t('asst.notConfigured')}` }))} />}
-            <IconButton icon="up-right-and-down-left-from-center" label={t('ag.fullscreen')} onClick={() => { setUi({ open: false }); go(p.id, 'assistant') }} />
-            {msgs.length > 0 && <IconButton icon="eraser" label={t('asst.clear')} onClick={() => setMsgs(p.id, [])} />}
+            {p && <IconButton icon="up-right-and-down-left-from-center" label={t('ag.fullscreen')} onClick={() => { setUi({ open: false }); go(p.id, 'assistant') }} />}
+            {msgs.length > 0 && <IconButton icon="eraser" label={t('asst.clear')} onClick={() => setMsgs(cid, [])} />}
             <IconButton icon="xmark" label={t('common.close')} onClick={() => setUi({ open: false })} />
           </header>
 
@@ -132,7 +136,7 @@ export function AssistantDock({ p, setP, target, screen, perimeter }: { p: Proje
 
           <div className="ag-log" role="log" aria-live="polite">
             {msgs.length === 0 && (
-              <div className="ag-hello"><Krakie pose="accueil" size={72} /><b>{t('ag.hello')}</b><p className="muted">{t('ag.hello.d')}</p></div>
+              <div className="ag-hello"><Krakie pose="accueil" size={72} /><b>{t(p ? 'ag.hello' : 'ag.hello.settings')}</b><p className="muted">{t(p ? 'ag.hello.d' : 'ag.hello.settings.d')}</p></div>
             )}
             {msgs.map(m => (
               <div key={m.id} className={'ag-msg ' + m.role + (m.error ? ' err' : '')}>
@@ -140,9 +144,9 @@ export function AssistantDock({ p, setP, target, screen, perimeter }: { p: Proje
                   {m.content && <p>{m.content}</p>}
                   {m.warnings?.map((w, i) => <p key={i} className="ag-warn"><Icon name="circle-info" />{w}</p>)}
                   {m.doc && <DocResult doc={m.doc} />}
-                  {m.doc && prop && prop.projectId === p.id && prop.doc?.id === m.doc.id && prop.items.length > 0 &&
+                  {p && m.doc && prop && prop.projectId === p.id && prop.doc?.id === m.doc.id && prop.items.length > 0 &&
                     <ProposalCards compact mine={prop} prefixes={p.onto.meta.prefixes} onEditor={() => go(p.id, 'ontologie')} />}
-                  {m.actions && m.actions.length > 0 && <ActionCards pid={p.id} msgId={m.id} actions={m.actions} setP={setP} />}
+                  {m.actions && m.actions.length > 0 && <ActionCards pid={p?.id ?? ''} msgId={m.id} actions={m.actions} setP={setP} />}
                 </div>
               </div>
             ))}
@@ -153,11 +157,11 @@ export function AssistantDock({ p, setP, target, screen, perimeter }: { p: Proje
           <div className="ag-compose">
             {suggestions.length > 0 && !text && <div className="ag-sugg" role="group" aria-label={t('ag.suggestions')}>
               {suggestions.map(s => <button key={s} className="ag-pill" disabled={busy} onClick={() => setText(s)}>{s}</button>)}</div>}
-            {docOpen && <DocImport compact p={p} setP={setP} provider={ui.provider || undefined} onBusy={setBusy} onClose={() => setDocOpen(false)} />}
+            {p && docOpen && <DocImport compact p={p} setP={setP} provider={ui.provider || undefined} onBusy={setBusy} onClose={() => setDocOpen(false)} />}
             <div className="ag-box">
-              <textarea ref={taRef} rows={2} value={text} placeholder={t('ag.placeholder')} aria-label={t('ag.placeholder')} onChange={e => setText(e.target.value)}
+              <textarea ref={taRef} rows={2} value={text} placeholder={t(p ? 'ag.placeholder' : 'ag.placeholder.settings')} aria-label={t(p ? 'ag.placeholder' : 'ag.placeholder.settings')} onChange={e => setText(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void send(text) } }} />
-              <IconButton icon="file-import" label={t('doc.open')} aria-expanded={docOpen} disabled={busy} onClick={() => setDocOpen(o => !o)} />
+              {p && <IconButton icon="file-import" label={t('doc.open')} aria-expanded={docOpen} disabled={busy} onClick={() => setDocOpen(o => !o)} />}
               <Button variant="primary" icon="paper-plane" disabled={busy || !text.trim()} onClick={() => void send(text)}>{t('asst.send')}</Button>
             </div>
             <span className="muted ag-hint">{t('ag.hint')}</span>

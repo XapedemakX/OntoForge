@@ -436,7 +436,7 @@ Without an LLM (`mock` provider, not configured or down), a deterministic fallba
 
 ### Krakie, the global assistant {#krakie-l-assistant-global}
 
-Krakie is present on every project screen (L16), in addition to the full-screen view above.
+Krakie is present on every project screen (L16), in addition to the full-screen view above, and on the Settings screen (see Krakie in Settings).
 
 - Open: floating button at the bottom right, or Ctrl+K (Cmd+K on Mac). The side panel resizes with the mouse or with the left/right arrows on the handle. Below 900 px it goes full screen. It stays open when you change screens. Esc in the input area closes it.
 - Context: a "Context: [screen] [selection]" line shows what Krakie sees. She receives the screen, the selected element (class with its properties and restrictions, shape, property) and, in Queries, the current query. You can remove the selection or the whole context, then restore it. Suggestion chips specific to the screen fill the input. The Krakie buttons on the sheets (List view, Shapes) open the panel with their element as context.
@@ -459,20 +459,48 @@ Krakie is present on every project screen (L16), in addition to the full-screen 
 
 ## 14. Settings {#parametres}
 
-The global route is `#/parametres` (gear at the bottom of the menu), with four tabs. Each tab saves explicitly ("Saved").
+The global route is `#/parametres` (gear at the bottom of the menu), with six tabs: LLM providers, Languages, Defaults, Versions, Display, SPARQL endpoints. Each tab saves explicitly ("Saved"). Krakie is available here too, with no project open (see Krakie in Settings).
+
+Environment variables (`ONTOFORGE_LLM_PROVIDER`, `ANTHROPIC_API_KEY`...) only initialise `settings.json` on first start.
 
 ![Settings, LLM providers tab: demo provider and a provider with a masked dummy key](img/en/parametres-llm.png "The LLM providers (1): the key is never shown again, only its last four characters.")
 
-- LLM: a table of providers (name, type, model, URL, key shown as "•••• abcd"). Types: `anthropic`, `openai_compat` (Azure OpenAI, vLLM, LM Studio...), `ollama`, `mock` (always present, cannot be deleted). One default provider, and a Test connection button (latency, model, message; 15 s). The key is encrypted on the server and never sent back to the browser: you can only replace or delete it. To test a new provider, save it first.
-- Languages: interface (fr/en, applied immediately), label language (display of the graph and lists), assistant language.
-  ![Settings, Languages tab: interface, labels, assistant](img/en/parametres-langues.png "The three languages: interface, labels, assistant.")
-- Defaults: base IRI (used by the assistant for its drafts), prefixes (editable table), default target, naming conventions.
-  ![Settings, Defaults tab: base IRI, target, naming, prefixes](img/en/parametres-defauts.png "The defaults.")
-- SPARQL endpoints: several endpoints (name, URL, authentication none / basic / bearer, masked and encrypted secret, default graph, timeout 1-300 s), Test (`ASK {}`), one active at a time, deletion with confirmation.
+### LLM providers {#parametres-fournisseurs-llm}
+
+A table of providers (name, type, model, URL, key shown as "•••• abcd"). Types: `anthropic`, `openai_compat` (OpenAI, Azure OpenAI, vLLM, LM Studio...), `ollama` (local, no key), `mock` (always present, cannot be deleted, no network call). One default provider, and a Test connection button (latency, model, message; 15 s). The key is encrypted on the server and never sent back to the browser: you can only replace or delete it. To test a new provider, save it first.
+
+### Languages {#parametres-langues}
+
+Interface (fr/en, applied immediately), label language (display of the graph and lists), assistant language.
+
+![Settings, Languages tab: interface, labels, assistant](img/en/parametres-langues.png "The three languages: interface, labels, assistant.")
+
+### Defaults {#parametres-valeurs-par-defaut}
+
+Base IRI (used by the assistant for its drafts), prefixes (editable table), default target, naming conventions.
+
+![Settings, Defaults tab: base IRI, target, naming, prefixes](img/en/parametres-defauts.png "The defaults.")
+
+### SPARQL endpoints {#parametres-endpoints-sparql}
+
+Several endpoints (name, URL, authentication none / basic / bearer, masked and encrypted secret, default graph, timeout 1-300 s), Test (`ASK {}`), one active at a time, deletion with confirmation.
 
 ![Settings, SPARQL endpoints tab: an active endpoint with its URL, timeout and Test, Edit, Delete buttons](img/en/parametres-endpoints.png "The SPARQL endpoints.")
 
-Environment variables (`ONTOFORGE_LLM_PROVIDER`, `ANTHROPIC_API_KEY`...) only initialise `settings.json` on first start.
+### Display {#parametres-affichage}
+
+The side bar: automatic (folded on full-canvas screens), open or folded. This setting is remembered in this browser, not on the server. The Versions tab is described in the next section.
+
+### Krakie in Settings {#krakie-dans-les-parametres}
+
+Krakie is also present on the Settings screen, with no project open (L38): the same aquarium at the bottom right, the same panel (Ctrl+K). She helps you configure the application, above all on first launch, when no LLM is connected yet.
+
+- Context: the "Context" line shows the tab on display (for example "Settings · LLM providers"). Krakie knows the non-sensitive configuration: default provider, type, model and URL of the providers, languages, defaults, versions, SPARQL endpoints (host and port only, authentication type). She never receives the stored keys, passwords or tokens, and never sends one back. Addresses reach her as host and port only, with no path or parameters. If you paste a secret in the conversation, it is masked before any processing when it has a known shape; a key in an unusual form can slip through. Enter secrets only in their own field.
+- Without an LLM: with the demo provider (`mock`) or an unconfigured provider, Krakie answers with built-in explanations, tab by tab: steps to connect Anthropic, an OpenAI-compatible server or Ollama, to add a SPARQL endpoint, choose versions or set languages, with a diagnosis of the current state (for example "the default provider is the demo"). With a real provider, the model answers on the same configuration; if it does not answer, the built-in answer takes over.
+- Action cards: "Go to this section" (opens the tab, scrolls and highlights the block), "Test connection" (the same test as the tab's button, without saving anything) and "Open help" (the guide section for the tab). Krakie changes no setting: you click "Save" yourself.
+- Help: the "?" button in the top bar opens the guide at the section of the tab on display, even with no project; the guide address is then `#/aide/<page>/<anchor>`.
+
+![Krakie on the Settings screen: a question about the LLM, a step-by-step answer and the Go to this section, Test connection and Open help cards](img/en/krakie-parametres.png "Krakie in Settings: 1 the context (the tab on display), 2 the action cards.")
 
 ## 15. Standard and target versions {#versions-des-normes-et-des-cibles}
 
@@ -495,11 +523,11 @@ When you open a project that has an obsolete or end-of-support version, Krakie a
 
 The guide is embedded in the application (L28). You can read it offline and it always matches the installed version, because it is compiled with the front end from `docs/guide/*.md`.
 
-- Open: the Documentation entry in the Tools section of the side menu, or the "?" button in the header of every project screen. The button opens the section that describes the current screen.
+- Open: the Documentation entry in the Tools section of the side menu, or the "?" button in the header of every project screen and of the Settings screen. The button opens the section that describes the current screen (or the Settings tab on display).
 - Read: contents on the left (collapsed behind the "Contents" button on mobile), with the list of guide pages above it (user guide, limits, contributing, API, architecture, rules, glossary, changelog). Headings, tables, coloured code blocks and links are rendered. Links to another `.md` file of the guide open the matching page in the screen.
   ![Documentation screen: guide pages, search field and contents on the left, text on the right](img/en/documentation.png "The built-in documentation: 1 the guide pages, 2 the search, 3 the contents.")
 - Search: the search field highlights the matches in the displayed page and shows their count. Enter and Shift+Enter jump to the next or previous one, Esc clears.
-- Stable address: `#/projet/<id>/documentation/<page>/<ancre>`. The anchor is written explicitly at the end of each heading of the translated files (`## 8. Analyse & arbitrage {#analyse-arbitrage}`), so it does not change when you renumber or rename a heading. For a heading without `{#id}`, the anchor is the title without accents or section number.
+- Stable address: `#/projet/<id>/documentation/<page>/<ancre>` (or `#/aide/<page>/<ancre>` outside a project, from Settings). The anchor is written explicitly at the end of each heading of the translated files (`## 8. Analyse & arbitrage {#analyse-arbitrage}`), so it does not change when you renumber or rename a heading. For a heading without `{#id}`, the anchor is the title without accents or section number.
 - Language: if an English version of a file exists (`<name>.en.md`), it is shown when the interface is in English. Otherwise the French version is shown with the banner "Documentation available in French only". The user guide, limits, contributing, API and changelog pages exist in English. The French and English files of a page carry the same `{#id}` anchors, so the "?" button and Krakie open the right section in both languages.
 - Krakie: the requests `aide`, `comment ça marche ici`, `doc` (in English "help", "how does this work") return a Help card with the title of the section for the current screen, a summary of two or three lines and the "Open help" button.
   ![Krakie help card: guide section title for the current screen and an Open help button](img/en/krakie-aide.png "The help card: 1 the button that opens the right guide section.")

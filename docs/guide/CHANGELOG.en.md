@@ -2,6 +2,14 @@
 
 Format: by version, what changes for the user, then the detail per work package. Sources: reports `journal/L*/rapport*.md`, reviews, `journal/decisions.md`. Work packages are described in `lots/`.
 
+## L38: Krakie in Settings (15 Nov 2026) {#l38-krakie-parametres-15-nov-2026}
+
+- Krakie is now on the Settings screen, with no project open: the same aquarium and panel, a context of its own (the tab on display) and suggestions per tab. She explains, diagnoses and recommends; she changes no setting, you do the saving.
+- With no LLM (the first-launch case: demo provider), she still answers, tab by tab: steps to connect Anthropic, an OpenAI-compatible server or Ollama, add a SPARQL endpoint, choose versions, set languages and defaults, with a diagnosis of the current state. With a real provider the model answers; if it fails, the built-in answer takes over.
+- Three action cards: "Go to this section" (opens the tab, scrolls, highlights the block), "Test connection" (the existing provider or endpoint test) and "Open help" (the guide section for the tab).
+- Privacy: Krakie never receives an API key, a password or a token (only "a key is stored: yes or no"), cannot send one back, and masks any you paste in the conversation. Addresses are reduced to host and port (no credentials, path or parameters); the base IRI keeps its path, with opaque segments masked.
+- The "?" button is also on the Settings screen and opens the guide at the section of the tab on display; the guide opens with no project (`#/aide/…`). The guide now describes each tab in its own section.
+
 ## L37c: Krakie rests on the Files status bar (15 Nov 2026) {#l37c-fichiers-15-nov-2026}
 
 - On the Files screen, the reef now sits above the status bar instead of covering it, and the problems list keeps a right margin so it never runs under Krakie.

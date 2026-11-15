@@ -2,6 +2,14 @@
 
 Format : par version, ce qui change pour l'utilisateur, puis le détail par lot. Sources : rapports `journal/L*/rapport*.md`, revues, `journal/decisions.md`. Les lots sont décrits dans `lots/`.
 
+## L38 : Krakie dans les Paramètres (15 nov. 2026) {#l38-krakie-parametres-15-nov-2026}
+
+- Krakie est maintenant sur l'écran Paramètres, sans projet ouvert : même aquarium, même panneau, un contexte propre (l'onglet affiché) et des suggestions par onglet. Elle explique, diagnostique et recommande ; elle ne modifie aucun réglage, c'est vous qui enregistrez.
+- Sans LLM (cas du premier lancement : fournisseur de démonstration), elle répond quand même, onglet par onglet : pas à pas pour brancher Anthropic, un serveur compatible OpenAI ou Ollama, ajouter un endpoint SPARQL, choisir les versions, régler les langues et les valeurs par défaut, avec un diagnostic de l'état actuel. Avec un vrai fournisseur, c'est le modèle qui répond ; s'il échoue, la réponse intégrée prend le relais.
+- Trois cartes d'actions : « Aller à cette section » (ouvre l'onglet, défile, met le bloc en évidence), « Tester la connexion » (le test existant du fournisseur ou de l'endpoint) et « Ouvrir l'aide » (la section du guide de l'onglet).
+- Confidentialité : Krakie ne reçoit jamais de clé d'API, de mot de passe ni de jeton (seulement « une clé est enregistrée : oui ou non »), ne peut pas en renvoyer, et masque ceux que l'on collerait dans la conversation. Les adresses sont réduites à l'hôte et au port (ni identifiants, ni chemin, ni paramètres) ; l'IRI de base garde son chemin, segments opaques masqués.
+- Le bouton « ? » est aussi sur l'écran Paramètres et ouvre le guide à la section de l'onglet affiché ; le guide s'ouvre sans projet (`#/aide/…`). Le guide décrit maintenant chaque onglet dans sa propre section.
+
 ## L37c : Krakie se pose sur la barre d'état de l'écran Fichiers (15 nov. 2026) {#l37c-fichiers-15-nov-2026}
 
 - Sur l'écran Fichiers, le récif se pose au-dessus de la barre d'état au lieu de la recouvrir ; la liste des problèmes garde une marge à droite pour ne pas passer sous Krakie.

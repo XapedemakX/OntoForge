@@ -30,9 +30,11 @@ function markHits(root: HTMLElement, q: string): HTMLElement[] {
   return marks
 }
 
-export function Documentation({ p }: ScreenProps) {
+/** `p` est absent quand le guide est ouvert hors projet (route `#/aide`, depuis les Paramètres). */
+export function Documentation({ p }: { p?: ScreenProps['p'] | null }) {
+  const pid = p?.id ?? null
   const { t, lang } = useI18n()
-  useAssistantContext({ screen: 'documentation', projectId: p.id })
+  useAssistantContext({ screen: 'documentation', projectId: pid ?? undefined })
   const [route, setRoute] = useState(parseDocHash())
   const [doc, setDoc] = useState<LoadedDoc | null | undefined>(undefined)  // undefined = chargement, null = page absente
   const [q, setQ] = useState('')
@@ -51,7 +53,7 @@ export function Documentation({ p }: ScreenProps) {
   useEffect(() => { const f = () => { setRoute(parseDocHash()); setTocOpen(false) }; addEventListener('hashchange', f); return () => removeEventListener('hashchange', f) }, [])
   useEffect(() => { let off = false; setDoc(undefined); loadPage(route.page, lang).then(d => { if (!off) setDoc(d) }).catch(() => { if (!off) setDoc(null) }); return () => { off = true } }, [route.page, lang])
 
-  const rendered = useMemo(() => (doc ? renderMarkdown(doc.md, p.id, route.page, doc.shown) : null), [doc, p.id, route.page])
+  const rendered = useMemo(() => (doc ? renderMarkdown(doc.md, pid, route.page, doc.shown) : null), [doc, pid, route.page])
 
   const scrollToAnchor = useCallback((id: string | null) => {
     const sc = scroller.current; if (!sc) return
@@ -104,7 +106,7 @@ export function Documentation({ p }: ScreenProps) {
     const a = (e.target as HTMLElement).closest<HTMLAnchorElement>('a[data-doc-page]'); if (!a || e.metaKey || e.ctrlKey) return
     e.preventDefault()
     const pg = a.dataset.docPage!, an = a.dataset.docAnchor || null
-    if (pg === route.page) { history.replaceState(null, '', docHash(p.id, pg, an)); setRoute({ page: pg, anchor: an }); scrollToAnchor(an) } else openDoc(p.id, pg, an)
+    if (pg === route.page) { history.replaceState(null, '', docHash(pid, pg, an)); setRoute({ page: pg, anchor: an }); scrollToAnchor(an) } else openDoc(pid, pg, an)
   }
   const step = (d: number) => { if (hits) setCur(c => (c + d + hits) % hits) }
   const title = rendered?.toc.find(x => x.level === 1)?.text
@@ -113,13 +115,13 @@ export function Documentation({ p }: ScreenProps) {
   const side = (
     <nav className={'doc-side' + (tocOpen ? ' open' : '')} aria-label={t('docs.toc')} id="doc-side" data-doc-fallback={fr || undefined}>
       <div className="doc-pages" role="group" aria-label={t('docs.pages')}>
-        {DOC_PAGES.map(id => <a key={id} href={docHash(p.id, id)} aria-current={id === route.page ? 'page' : undefined}>{t('docs.page.' + id) === 'docs.page.' + id ? id : t('docs.page.' + id)}</a>)}
+        {DOC_PAGES.map(id => <a key={id} href={docHash(pid, id)} aria-current={id === route.page ? 'page' : undefined}>{t('docs.page.' + id) === 'docs.page.' + id ? id : t('docs.page.' + id)}</a>)}
       </div>
       <div className="doc-toc-title">{t('docs.toc')}</div>
       <ul className="doc-toc">
         {rendered?.toc.filter(x => x.level > 1).map(x => (
-          <li key={x.id} className={'l' + x.level}><a href={docHash(p.id, route.page, x.id)} aria-current={active === x.id ? 'location' : undefined}
-            onClick={e => { e.preventDefault(); history.replaceState(null, '', docHash(p.id, route.page, x.id)); setRoute({ page: route.page, anchor: x.id }); setTocOpen(false); scrollToAnchor(x.id) }}>{x.text}</a></li>))}
+          <li key={x.id} className={'l' + x.level}><a href={docHash(pid, route.page, x.id)} aria-current={active === x.id ? 'location' : undefined}
+            onClick={e => { e.preventDefault(); history.replaceState(null, '', docHash(pid, route.page, x.id)); setRoute({ page: route.page, anchor: x.id }); setTocOpen(false); scrollToAnchor(x.id) }}>{x.text}</a></li>))}
       </ul>
     </nav>)
 

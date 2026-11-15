@@ -87,7 +87,7 @@ Les secrets (`api_key`, `auth.secret`) ne sont **jamais** renvoyés : la vue pub
 **Secrets dans PUT** : clé absente ou `""` = inchangée ; `null` explicite = supprimée ; chaîne = remplacée.
 
 **Assistant (extension de §2)** : `GET /assistant/status` → `{provider, model, configured, default_provider_id, providers: [{id, name, kind, model, configured, default}]}`. `draft`, `shapes`, `explain` acceptent `provider_id?` (défaut : fournisseur par défaut ; inconnu → 404 ; non configuré → 503). Nouveau :
-| POST | `/assistant/chat` | `{project_id, messages: [{role: user\|assistant, content}], provider_id?, attachments?: [{name, kind: csv\|sql\|text\|markdown, content}]}` | `{reply, proposal: OntoModel \| null, warnings}` |
+| POST | `/assistant/chat` | `{project_id (absent seulement pour context.screen = settings, §14), messages: [{role: user\|assistant, content}], provider_id?, attachments?: [{name, kind: csv\|sql\|text\|markdown, content}]}` | `{reply, proposal: OntoModel \| null, warnings}` |
 | POST | `/assistant/upload` | multipart `file` (2 Mo max) | `{name, kind: csv\|sql\|text\|markdown, preview: {lines (20), total_lines, truncated, columns? (csv), tables? (sql)}, size, content}` |
 `content` (texte décodé) est ajouté à l'upload pour que le front le renvoie tel quel dans `attachments`.
 
@@ -325,3 +325,24 @@ Code : `backend/ontoforge/businessmap/` (model, graph, counts, roles, zones, fra
 **Cadres suggérés** : groupes d'au moins 2 types qui partagent au moins 2 relations identiques (même propriété, même cible) ; un type n'est que dans un cadre.
 
 **Mise en page** : recuit simulé en Python pur (numpy n'est pas une dépendance, D-L21-02). Contraintes dures : nœud dans le rectangle de sa zone, aucun chevauchement de disques, nœuds épinglés (avec position) immobiles. Pénalités : croisements d'arêtes, arêtes qui frôlent un nœud étranger, arêtes trop courtes pour leur étiquette ou trop longues, écart à la grille de départ. Durée bornée par `time_limit_s` (3,5 s par défaut ; 60 nœuds en moins de 5 s), après 100 itérations la vitesse est mesurée et, si le budget de temps ne suffit pas, le nombre d'itérations est réduit (le refroidissement suit, `stats.time_limited: true`) ; résultat déterministe pour une graine et un nombre d'itérations donnés tant que ce cas ne se produit pas.
+
+## 14. Krakie sur l'écran Paramètres (L38, D-L38-01)
+Code : `backend/ontoforge/assistant/settings_help.py`, route `POST /api/assistant/chat` dans `api/assistant.py`. Front : `frontend/src/assistant-global/` (`AssistantDock` avec `p = null`, `ActionCards`), `screens/settings/Settings.tsx`.
+
+**Entrée** : `project_id` devient facultatif. Absent, la requête n'est acceptée que si `context.screen == "settings"` (sinon 422) ; avec `project_id`, le chemin de §4 est inchangé. `context = {screen: "settings", extra?: {section: llm|lang|defaults|versions|display|sparql}}` ; aucun contexte de projet (`projectId`, `target`, `perimeter`, sélection) n'est envoyé ni lu. `attachments` est ignoré. `provider_id?` choisit qui répond ; inconnu ou non configuré, la réponse intégrée est donnée avec un avertissement (pas d'erreur 404 / 503 : c'est l'écran où l'on répare cela).
+
+**Sortie** : `{reply, actions, warnings, proposal: null}`. Actions (au plus 4, jamais appliquées par le serveur, aucune ne modifie un réglage) :
+| `kind` | `payload` | Effet au clic |
+|---|---|---|
+| `settings_goto` | `{section}` (une des six sections) | ouvre l'onglet, fait défiler, met le bloc en évidence (événement `ontoforge:settings-goto`) |
+| `settings_test` | `{target: llm\|sparql, id, name}` ; `id` = fournisseur configuré non `mock` ou endpoint existant, sinon l'action est retirée | appelle `POST /api/settings/providers/{id}/test` ou `/endpoints/{id}/test` (tests existants, sur ce qui est enregistré) ; affiche le résultat dans la carte |
+| `help` | `{screen: settings-<section>, page, anchor, title}` | ouvre le guide à la section de l'onglet (`#/aide/<page>/<ancre>`, guide hors projet) |
+
+**Réponses** : avec le fournisseur `mock` ou un fournisseur non configuré, ou si le LLM échoue (avertissement « réponse intégrée »), réponses déterministes par section (fr / en selon la langue du message, de l'assistant et de l'interface) : état de la configuration, puis pas à pas (Anthropic, compatible OpenAI, Ollama ; endpoint SPARQL ; versions ; langues ; valeurs par défaut ; affichage). Les intentions « aide », « teste la connexion », « diagnostic / ça ne marche pas » et « montre-moi ma clé » sont reconnues. Avec un fournisseur réel, le LLM reçoit `SETTINGS_SYSTEM` et l'instantané non sensible, répond en JSON `{reply, actions}` ; ses actions sont revalidées. La table `help_map.json` gagne `settings-llm`, `settings-lang`, `settings-defaults`, `settings-versions`, `settings-display`, `settings-sparql` (ancres de `docs/guide/utilisateur(.en).md`).
+
+**Confidentialité (testée, `tests/test_settings_assistant.py`)** :
+- Le contexte envoyé au LLM est `snapshot()` : fournisseurs (id, nom, type, modèle, URL nettoyée, `configured`, `has_key` oui/non), langues, valeurs par défaut (IRI de base, cible, nommage, noms de préfixes), versions et écarts, endpoints SPARQL (URL nettoyée, type d'authentification, `has_secret` oui/non, graphe, délai). Jamais : clé d'API, mot de passe, jeton, les 4 derniers caractères d'une clé, nom d'utilisateur, `extra`. L'adresse d'un endpoint ou d'un fournisseur est réduite à schéma, hôte et port (`safe_url`) : ni identifiants, ni chemin (il peut porter un jeton), ni requête, ni fragment ; un chemin non vide est signalé par `/…`. L'IRI de base garde son chemin (`safe_iri`), sans identifiants, requête ni fragment, et ses segments opaques (jetons probables) sont remplacés par `…`. Une adresse invalide donne une chaîne vide, jamais la valeur brute. Les secrets collés dans la conversation ne sont masqués que sous leurs formes usuelles (préfixes connus, motifs `clé=`, `Bearer`…) : une clé sous une forme inhabituelle peut passer.
+- Les messages de la conversation et la réponse passent par `redact` : valeurs secrètes enregistrées (substring à partir de 8 caractères, mot entier de 4 à 7) et formes usuelles (`sk-ant-…`, `sk-…`, `Bearer …`, jetons GitHub, JWT, `password=…`). Un secret masqué ajoute un avertissement. La réponse du LLM et les résumés d'actions sont filtrés de la même façon avant de revenir au navigateur.
+- Limite connue : `GET /api/settings` renvoie les URL telles que saisies ; un identifiant collé dans une URL est donc visible dans l'écran Paramètres lui-même (hors périmètre de L38).
+
+**Guide hors projet** : route du front `#/aide/<page>/<ancre>` (écran Documentation sans projet), pour « Ouvrir l'aide » et le bouton « ? » des Paramètres ; `docHash(null, page, ancre)`.

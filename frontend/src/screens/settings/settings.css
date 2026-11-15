@@ -1,4 +1,8 @@
-.set-page { max-width: 1040px; }
+.set-page { max-width: 1040px; padding-bottom: 72px; }  /* L38 : place pour le récif de Krakie en bas à droite */
+.set-sec { border-radius: var(--r-md); scroll-margin-top: 72px; }
+.set-sec.flash { outline: 2px solid var(--accent); outline-offset: 6px; animation: set-flash 2.8s ease-out forwards; }
+@keyframes set-flash { 0%, 55% { outline-color: var(--accent); } 100% { outline-color: transparent; } }
+@media (prefers-reduced-motion: reduce) { .set-sec.flash { animation: none; } }
 .set-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--s3); }
 .set-row { display: flex; gap: var(--s2); align-items: center; flex-wrap: wrap; }
 .set-row .grow { flex: 1; min-width: 0; }

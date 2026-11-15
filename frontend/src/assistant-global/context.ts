@@ -17,6 +17,7 @@ export const ROUTE_SCREEN: Record<string, { name: string; aliases: string[] }> =
   requetes: { name: 'queries', aliases: ['queries'] },
   assistant: { name: 'assistant', aliases: ['assistant'] },
   documentation: { name: 'documentation', aliases: ['documentation'] },
+  parametres: { name: 'settings', aliases: ['settings'] },
 }
 
 export type CtxMode = 'full' | 'screen' | 'none'
@@ -27,6 +28,15 @@ export function effectiveContext(route: string, projectId: string, target: strin
   const base: AssistantContext = { screen: r.name, projectId, target: target as AssistantContext['target'], perimeter: perimeter || null }
   if (declared && r.aliases.includes(declared.screen) && (!declared.projectId || declared.projectId === projectId)) return { ...base, ...declared, screen: declared.screen, projectId }
   return base
+}
+
+/** Écran Paramètres (L38) : pas de projet. Le contexte déclaré par l'écran porte l'onglet affiché (`extra.section`) et ses suggestions. */
+export function settingsContext(declared: AssistantContext = getAssistantContext()): AssistantContext {
+  return declared && declared.screen === 'settings' ? { ...declared, projectId: undefined, target: undefined, perimeter: null } : { screen: 'settings' }
+}
+/** Ce qui part au serveur depuis les Paramètres : l'écran et l'onglet (rien d'autre), ou l'écran seul si l'utilisateur a retiré le contexte. */
+export function forSendSettings(ctx: AssistantContext, mode: CtxMode): AssistantContext {
+  return mode === 'none' ? { screen: 'settings' } : { screen: 'settings', extra: ctx.extra?.section ? { section: ctx.extra.section } : undefined }
 }
 
 export function forSend(ctx: AssistantContext, mode: CtxMode, projectId: string): AssistantContext {

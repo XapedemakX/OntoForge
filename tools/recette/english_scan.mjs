@@ -150,10 +150,18 @@ for (const msg of ['add the class Tyre under Part with a property pressure in ba
 // panneau Krakie
 await go(`#/projet/${pid}/ontologie`)
 try {
-  await page.locator('button.ag-fab').click(); await sleep(900); await scan('krakie (ouvert)')
+  await page.keyboard.press('Control+k'); await sleep(900); await scan('krakie (ouvert)')  // le bouton flottant ne capte plus que Krakie et le récif (L37b) : raccourci clavier
   const ta = page.locator('.ag-dock textarea, .ag-panel textarea, [class*=ag-] textarea').first()
   if (await ta.count()) { await ta.fill('add the class Tyre under Part with a property pressure in bar'); await page.keyboard.press('Enter'); await sleep(3000); await scan('krakie (réponse)') }
 } catch (e) { console.error('Krakie KO : ' + String(e).slice(0, 120)) }
+// Krakie sur l'écran Paramètres (L38), sans projet : trois questions en anglais, cartes comprises
+await go('#/parametres')
+try {
+  await page.keyboard.press('Control+k'); await sleep(900); await scan('krakie paramètres (ouvert)')
+  for (const q of ['How do I set up an LLM?', 'How do I add a SPARQL endpoint?', 'Which versions?']) {
+    const ta = page.locator('.ag-panel textarea').first(); await ta.fill(q); await page.keyboard.press('Enter'); await sleep(2500); await scan('krakie paramètres : ' + q)
+  }
+} catch (e) { console.error('Krakie paramètres KO : ' + String(e).slice(0, 120)) }
 // visite guidée complète
 await go(`#/projet/${pid}/tableau`)
 await page.evaluate(() => window.ontoforgeTour.start())
