@@ -94,7 +94,7 @@ log('bob : API d\'administration refusée (403)', (await fetchJ(B.page, 'GET', '
 await B.page.goto(`${base}/#/`)
 await A.page.goto(`${base}/#/administration`); await A.page.waitForSelector('[data-testid=adm-table]')
 const rowTxt = async l => (await A.page.locator(`[data-testid=adm-row-${l}]`).innerText()).replace(/\s+/g, ' ')
-log('liste : alice et bob « gérés par la configuration », sans boutons', /Géré par la configuration/.test(await rowTxt('bob')) && (await A.page.locator('[data-testid=adm-reset-bob]').count()) === 0 && /Administrateur/.test(await rowTxt('alice')))
+log('liste : alice et bob « gérés par la configuration », sans désactivation ni suppression (L43 : mot de passe réinitialisable)', /Géré par la configuration/.test(await rowTxt('bob')) && (await A.page.locator('[data-testid=adm-toggle-bob], [data-testid=adm-delete-bob], [data-testid=adm-admin-bob]').count()) === 0 && /Administrateur/.test(await rowTxt('alice')))
 await shot(A.page, '01-admin-comptes-fr-clair')
 
 // 2. création de carol : mot de passe provisoire affiché une seule fois

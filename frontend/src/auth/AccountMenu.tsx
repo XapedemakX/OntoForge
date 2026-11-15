@@ -13,9 +13,10 @@ export function AccountMenu() {
   const toast = useToast()
   const [open, setOpen] = useState(false)
   const [pwOpen, setPwOpen] = useState(false)
+  const [pwDone, setPwDone] = useState(false)
   const box = useRef<HTMLDivElement>(null)
   useEffect(() => {
-    if (!open) return
+    if (!open) { setPwOpen(false); setPwDone(false); return }
     const k = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
     const c = (e: MouseEvent) => { if (box.current && !box.current.contains(e.target as Node)) setOpen(false) }
     addEventListener('keydown', k); addEventListener('mousedown', c)
@@ -40,22 +41,25 @@ export function AccountMenu() {
           <p className="muted" style={{ margin: 0, fontSize: 'var(--fs-xs)' }}>{t('acct.lang.hint')}{' '}
             <button type="button" className="auth-link" onClick={() => { setOpen(false); openDoc(null, 'utilisateur', 'langue-de-l-interface') }}>{t('acct.lang.help')}</button></p>
           <hr className="sep" />
-          {auth.source === 'config'
-            ? <p className="muted" style={{ margin: 0, fontSize: 'var(--fs-sm)' }}><Icon name="lock" /> {t('acct.pw.config')}</p>
-            : pwOpen ? <PasswordForm onDone={() => { setPwOpen(false); toast(t('acct.pw.done')) }} onCancel={() => setPwOpen(false)} />
-              : <Button size="sm" icon="key" data-testid="account-pw" onClick={() => setPwOpen(true)}>{t('acct.pw')}</Button>}
+          {pwDone && <p className="acct-ok" role="status" data-testid="account-pw-done"><Icon name="circle-check" /> {t('acct.pw.done.inline')}</p>}
+          {pwOpen ? <PasswordForm config={auth.source === 'config'} onDone={() => { setPwOpen(false); setPwDone(true); toast(t('acct.pw.done')) }} onCancel={() => setPwOpen(false)} />
+            : <Button size="sm" icon="key" data-testid="account-pw" onClick={() => { setPwDone(false); setPwOpen(true) }}>{t('acct.pw')}</Button>}
           {auth.admin && <Button size="sm" icon="user-shield" data-testid="account-admin" onClick={() => { setOpen(false); location.hash = '#/administration' }}>{t('acct.adminLink')}</Button>}
         </div>)}
     </div>
   )
 }
 
-function PasswordForm({ onDone, onCancel }: { onDone: () => void; onCancel: () => void }) {
+function PasswordForm({ config, onDone, onCancel }: { config: boolean; onDone: () => void; onCancel: () => void }) {
   const { t } = useI18n()
   const auth = useAuth()
   const [cur, setCur] = useState(''), [pw, setPw] = useState(''), [pw2, setPw2] = useState('')
+  const [show, setShow] = useState(false)
   const [err, setErr] = useState(''), [busy, setBusy] = useState(false)
+  const first = useRef<HTMLInputElement>(null)
+  useEffect(() => { first.current?.focus() }, [])
   const valid = !!cur && pw.length >= 10 && pw === pw2
+  const kind = show ? 'text' : 'password'
   const submit = async (e: FormEvent) => {
     e.preventDefault(); if (!valid || busy) return
     setBusy(true); setErr('')
@@ -65,10 +69,14 @@ function PasswordForm({ onDone, onCancel }: { onDone: () => void; onCancel: () =
   }
   return (
     <form onSubmit={submit} noValidate data-testid="account-pw-form">
-      <label className="f">{t('auth.pw.current')}<input type="password" autoComplete="current-password" value={cur} onChange={e => setCur(e.target.value)} /></label>
-      <label className="f">{t('auth.pw.new')}<input type="password" autoComplete="new-password" value={pw} onChange={e => setPw(e.target.value)} /></label>
-      <label className="f">{t('auth.pw.confirm')}<input type="password" autoComplete="new-password" value={pw2} onChange={e => setPw2(e.target.value)} /></label>
-      <div className="acct-err" role="alert">{err || (pw && pw.length < 10 ? t('auth.pw.err.password_too_short') : pw2 && pw !== pw2 ? t('auth.pw.mismatch') : '')}</div>
-      <div className="row"><Button size="sm" variant="primary" type="submit" disabled={!valid || busy}>{t('auth.pw.submit')}</Button><Button size="sm" variant="ghost" type="button" onClick={onCancel}>{t('common.cancel')}</Button></div>
+      {config && <p className="muted" style={{ margin: 0, fontSize: 'var(--fs-sm)' }} data-testid="account-pw-config"><Icon name="lock" /> {t('acct.pw.config')}</p>}
+      <label className="f">{t('acct.pw.current')}<input ref={first} type={kind} autoComplete="current-password" value={cur} data-testid="account-pw-current" onChange={e => setCur(e.target.value)} /></label>
+      <label className="f">{t('auth.pw.new')}<input type={kind} autoComplete="new-password" value={pw} data-testid="account-pw-new" onChange={e => setPw(e.target.value)} /></label>
+      <label className="f">{t('auth.pw.confirm')}<input type={kind} autoComplete="new-password" value={pw2} data-testid="account-pw-confirm" onChange={e => setPw2(e.target.value)} /></label>
+      <label className="adm-check"><input type="checkbox" checked={show} data-testid="account-pw-show" onChange={e => setShow(e.target.checked)} /> {t('auth.show')}</label>
+      <div className="acct-err" role="alert" data-testid="account-pw-err">{err || (pw && pw.length < 10 ? t('auth.pw.err.password_too_short') : pw2 && pw !== pw2 ? t('auth.pw.mismatch') : '')}</div>
+      <p className="muted" style={{ margin: 0, fontSize: 'var(--fs-xs)' }}>{t('acct.pw.rule')}{' '}
+        <button type="button" className="auth-link" onClick={() => openDoc(null, 'utilisateur', 'changer-mon-mot-de-passe')}>{t('acct.pw.help')}</button></p>
+      <div className="row"><Button size="sm" variant="primary" type="submit" data-testid="account-pw-submit" disabled={!valid || busy}>{t('acct.pw.save')}</Button><Button size="sm" variant="ghost" type="button" onClick={onCancel}>{t('common.cancel')}</Button></div>
     </form>)
 }

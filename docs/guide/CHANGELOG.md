@@ -2,6 +2,15 @@
 
 Format : par version, ce qui change pour l'utilisateur, puis le détail par lot. Sources : rapports `journal/L*/rapport*.md`, revues, `journal/decisions.md`. Les lots sont décrits dans `lots/`.
 
+## L43 : changement de mot de passe pour tous les comptes (15 nov. 2026) {#l43-mot-de-passe-tous-comptes-15-nov-2026}
+
+Demande de Jerem du 15/11 (D-L43-01, remplace le point 2 de D-L42-02).
+
+- **Changer son mot de passe, pour tous.** Menu du compte › « Changer mon mot de passe » : ancien mot de passe, nouveau (10 caractères au moins), confirmation, afficher/masquer, message de succès. Les autres sessions du compte sont fermées, la session courante reste ouverte. Aide de Krakie et guide (« Changer mon mot de passe »).
+- **Comptes de la configuration.** Le nouveau mot de passe est enregistré (argon2, `accounts.json`, 600) et masque celui de `ONTOFORGE_AUTH_USERS`, qui ne fonctionne plus. Un administrateur peut réinitialiser ce mot de passe (provisoire) ou « revenir au mot de passe de la configuration ». Le panneau Administration affiche « Mot de passe redéfini dans l'interface ». Le masque reste prioritaire si vous modifiez ensuite le hachage dans `.env` : un avertissement l'indique.
+- **Corrections de la relecture L42.** L42-01 : le hachage ne bloque plus l'annuaire, limite de 5 changements par minute et par compte. L42-03 : le journal d'administration est archivé (`admin-audit.1.jsonl`…, réglable) et une action dont la trace échoue est refusée. L42-05 : le mot de passe saisi à la création est masqué (avec bouton afficher).
+- Détail : `docs/CONTRACTS.md` §17, D-L43-01. Pas de montée de version (D-L21-02).
+
 ## L42 : comptes, langue par compte, administrateur sur tous les projets (15 nov. 2026) {#l42-comptes-langue-administration-15-nov-2026}
 
 Réponses de Jerem à la question Q-L40-1 (D-L42-01).

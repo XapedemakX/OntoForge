@@ -8,7 +8,7 @@ from fastapi import APIRouter, Request, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
-from ..auth import limiter, passwords, session as sess
+from ..auth import accounts as accounts_mod, limiter, passwords, session as sess
 from ..auth.accounts import AccountDirectory, AccountError
 from ..auth.config import AuthConfig
 from ..auth.middleware import current_session, origin_ok
@@ -132,8 +132,10 @@ class PrefsBody(BaseModel):
 
 @router.post("/password")
 def change_password(body: PasswordBody, request: Request) -> JSONResponse:
-    """Changer son propre mot de passe (ancien requis), y compris le mot de passe provisoire. Même limiteur que la connexion : une erreur sur
-    l'ancien mot de passe compte comme un échec de connexion. Les autres sessions du compte sont coupées ; celle-ci est renouvelée."""
+    """Changer son propre mot de passe (ancien requis), pour tout compte, y compris ceux de la configuration (D-L43-01) et le mot de passe
+    provisoire. Deux limiteurs : celui de la connexion (une erreur sur l'ancien mot de passe compte comme un échec, par adresse) et, depuis L43
+    (L42-01), ``pwd:<compte>`` : 5 tentatives par minute et par compte, réussies ou non, vérifiées avant tout calcul de hachage. Les autres
+    sessions du compte sont coupées ; celle-ci est renouvelée."""
     cfg = _cfg(request)
     s, acc, err = _session(request)
     if err is not None:
@@ -143,6 +145,9 @@ def change_password(body: PasswordBody, request: Request) -> JSONResponse:
     if wait > 0:
         n = int(wait) + 1
         return JSONResponse({"detail": f"Trop de tentatives. Réessayez dans {n} s.", "code": "rate_limited", "retry_after": n}, status_code=429, headers={**NOSTORE, "Retry-After": str(n)})
+    if not limiter.allow("pwd:" + s.user, accounts_mod.PWD_LIMIT):
+        return JSONResponse({"detail": "Trop de changements de mot de passe pour ce compte : réessayez dans une minute.", "code": "rate_limited", "retry_after": 60},
+                            status_code=429, headers={**NOSTORE, "Retry-After": "60"})
     accounts = _dir(request)
     try:
         new = accounts.change_password(s.user, body.current, body.new)

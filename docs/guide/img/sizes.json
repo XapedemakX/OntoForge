@@ -566,5 +566,21 @@
 "fr/visite-guidee.png": [
 1280,
 800
+],
+"fr/changer-mot-de-passe.png": [
+1360,
+820
+],
+"fr/admin-mot-de-passe-config.png": [
+1360,
+820
+],
+"en/changer-mot-de-passe.png": [
+1360,
+820
+],
+"en/admin-mot-de-passe-config.png": [
+1360,
+820
 ]
 }

@@ -1,6 +1,8 @@
 """Administration des comptes (L42, D-L42-01, CONTRACTS §17) : ``/api/admin/*``, administrateurs seulement (403 ``admin_only`` par le garde).
 
-Les comptes de la configuration sont listés « gérés par la configuration » et refusent toute modification (409 ``managed_by_config``). Chaque
+Les comptes de la configuration sont listés « gérés par la configuration » : existence, rôle et état refusent toute modification (409
+``managed_by_config``). Depuis L43 (D-L43-01) leur mot de passe peut être réinitialisé (provisoire) ou revenir à celui de la configuration
+(``revert-password``). Chaque
 action est écrite dans le journal d'administration, sans mot de passe ni hachage. Un mot de passe provisoire généré n'est renvoyé qu'une fois,
 dans la réponse qui le crée ; le compte doit le changer à sa première connexion.
 """
@@ -81,6 +83,13 @@ def reset_password(login: str, request: Request, body: ResetBody = ResetBody()) 
     return _json(200, {"account": acc.public(), "provisional_password": provisional})
 
 
+@router.post("/accounts/{login}/revert-password")
+def revert_password(login: str, request: Request) -> JSONResponse:
+    """Compte de la configuration : supprime le mot de passe redéfini dans l'interface, celui de la configuration redevient valable (409 ``no_override`` sinon)."""
+    d, actor = _ctx(request)
+    return _json(200, {"account": d.revert_password(actor, login.strip().lower()).public()})
+
+
 @router.post("/accounts/{login}/disable")
 def disable(login: str, request: Request) -> JSONResponse:
     d, actor = _ctx(request)
@@ -107,6 +116,7 @@ def delete_account(login: str, request: Request, transfer_to: Optional[str] = Qu
     fa = request.app.state.auth.first_admin
     with d.lock:
         d.check_deletable(login)
+        d.audit_ready()   # L42-03 : pas de transfert de projets si la trace de la suppression ne pourra pas être écrite
         owned = access.owned_by(login, fa)
         target = (transfer_to or "").strip().lower()
         if owned:

@@ -50,4 +50,8 @@
 .acct-pop .sep { border-top: 1px solid var(--line); margin: 0; }
 .acct-pop form { display: flex; flex-direction: column; gap: 8px; }
 .acct-pop .acct-err { color: var(--lost); font-size: var(--fs-sm); }
+.acct-pop .acct-err:empty { display: none; }
+.acct-pop .acct-ok { margin: 0; color: var(--auto); background: var(--auto-soft); border: 1px solid var(--auto); border-radius: var(--r-sm); padding: 6px 8px; font-size: var(--fs-sm); }
+.acct-pop .adm-check { display: flex; align-items: center; gap: 8px; min-height: 28px; font-size: var(--fs-sm); }
+.acct-pop .adm-check input { width: auto; }
 @media (max-width: 900px) { .acct-btn .nm { display: none; } .acct-pop { position: fixed; right: 8px; left: 8px; top: 52px; width: auto; } }

@@ -88,21 +88,35 @@ Avec l'authentification, chaque compte choisit sa langue, français ou anglais, 
 
 ![Menu du compte : langue de l'interface, changement de mot de passe, lien vers l'administration](img/fr/compte-langue.png "Le menu du compte : 1 la langue de l'interface, 2 le mot de passe, 3 l'accès à l'administration (administrateurs).")
 
+### Changer mon mot de passe {#changer-mon-mot-de-passe}
+
+Tout compte connecté, y compris un compte déclaré dans `ONTOFORGE_AUTH_USERS`, change son mot de passe depuis le menu du compte (nom du compte, en haut à droite) : « Changer mon mot de passe ». On saisit l'ancien mot de passe, le nouveau (10 caractères au moins) et sa confirmation ; la case « Afficher le mot de passe » montre la saisie. Un message confirme le changement.
+
+- **Sessions.** Les autres sessions du compte (autre navigateur, autre appareil) sont fermées tout de suite ; celle où vous êtes reste ouverte.
+- **Compte de la configuration.** Le nouveau mot de passe est enregistré dans le magasin `accounts.json` (droits 600, hachage argon2) et **masque** celui de la configuration : l'ancien mot de passe de `ONTOFORGE_AUTH_USERS` ne fonctionne plus pour ce compte. Le masque reste prioritaire même si vous modifiez ensuite le hachage dans votre `.env` : le panneau Administration l'avertit alors (« Configuration modifiée »). Pour que la valeur de la configuration redevienne valable, un administrateur utilise « Revenir au mot de passe de la configuration ». Si `accounts.json` est perdu ou illisible, les mots de passe de la configuration fonctionnent de nouveau.
+- **Limites.** 5 tentatives par minute et par compte, en plus du limiteur de connexion.
+
+![Menu du compte avec le formulaire « Changer mon mot de passe »](img/fr/changer-mot-de-passe.png "Le menu du compte : 1 l'ancien mot de passe, 2 le nouveau et sa confirmation, 3 « Afficher le mot de passe ».")
+
 ### Administration des comptes {#administration-des-comptes}
 
 Avec l'authentification, un compte administrateur ouvre « Administration » (menu de gauche, ou menu du compte) : le panneau « Administration › Comptes » n'existe que pour les administrateurs (les autres reçoivent « réservé aux administrateurs »).
 
 ![Panneau Administration › Comptes : mot de passe provisoire affiché une fois, formulaire de création, liste des comptes](img/fr/admin-comptes.png "Administration › Comptes : 1 le mot de passe provisoire (affiché une seule fois), 2 la création d'un compte, 3 la liste, 4 les actions.")
 
-- **Liste.** Identifiant, rôle (administrateur ou utilisateur), source, actif, dernière connexion, nombre de projets. Un compte déclaré dans `ONTOFORGE_AUTH_USERS` ou `ONTOFORGE_AUTH_USERS_FILE` est « géré par la configuration » : on ne le modifie pas ici (seule sa langue se règle, depuis son menu). Les comptes créés dans l'interface sont enregistrés dans le dossier de données (`accounts.json`, droits 600) et s'ajoutent à ceux de la configuration.
+- **Liste.** Identifiant, rôle (administrateur ou utilisateur), source, actif, dernière connexion, nombre de projets. Un compte déclaré dans `ONTOFORGE_AUTH_USERS` ou `ONTOFORGE_AUTH_USERS_FILE` est « géré par la configuration » : son existence, son rôle et son état se règlent là ; ici on peut seulement réinitialiser son mot de passe ou le ramener à celui de la configuration (voir « Changer mon mot de passe »). Les comptes créés dans l'interface sont enregistrés dans le dossier de données (`accounts.json`, droits 600) et s'ajoutent à ceux de la configuration.
 - **Créer.** Un identifiant (2 à 64 caractères : minuscules, chiffres, point, tiret, soulignement), une case « Administrateur », et un mot de passe : saisi, ou généré. Un mot de passe généré s'affiche une seule fois ; notez-le et transmettez-le par un canal sûr.
 - **Première connexion.** Le mot de passe donné est provisoire : à sa première connexion, le compte voit l'écran « Choisissez votre mot de passe » et rien d'autre tant qu'il ne l'a pas changé (10 caractères au moins).
-- **Réinitialiser.** Génère un nouveau mot de passe provisoire (affiché une fois) ; les sessions ouvertes du compte sont coupées.
+- **Réinitialiser.** Génère un nouveau mot de passe provisoire (affiché une fois) ; les sessions ouvertes du compte sont coupées. Pour un compte de la configuration, ce mot de passe masque celui de la configuration ; l'étiquette « Mot de passe redéfini dans l'interface » le signale.
+- **Revenir au mot de passe de la configuration.** Compte de la configuration seulement : supprime le masque, sessions coupées.
+
+![Panneau Administration : compte de la configuration au mot de passe redéfini, avertissement « Configuration modifiée »](img/fr/admin-mot-de-passe-config.png "Administration › Comptes : 1 l'avertissement, 2 l'étiquette « Mot de passe redéfini dans l'interface », 3 Réinitialiser et Revenir au mot de passe de la configuration.")
+
 - **Désactiver, réactiver.** Un compte désactivé ne peut plus se connecter et perd ses sessions immédiatement ; ses projets restent.
 - **Supprimer.** Les sessions sont coupées tout de suite et l'accès du compte aux projets des autres est retiré. Ses projets ne sont jamais supprimés : on choisit le compte qui les reçoit.
 - **Promouvoir, rétrograder.** Donne ou retire le rôle d'administrateur, avec effet immédiat. Il doit toujours rester au moins un administrateur actif : sinon l'action est refusée.
-- **Journal d'administration.** Qui a créé, réinitialisé, désactivé, supprimé, promu quel compte, et quand ; jamais un mot de passe ni un hachage.
-- **Changer son mot de passe.** Tout compte créé dans l'interface le fait depuis son menu (l'ancien mot de passe est demandé ; les essais ratés comptent dans le même limiteur que la connexion). Un compte géré par la configuration change son mot de passe là où il est défini.
+- **Journal d'administration.** Qui a créé, réinitialisé, désactivé, supprimé, promu quel compte, et quand ; jamais un mot de passe ni un hachage. Il tourne : à 1 000 lignes il est archivé dans `admin-audit.1.jsonl`, `.2.jsonl`… (`ONTOFORGE_AUDIT_ARCHIVES`, 10 par défaut). Une action dont la trace ne peut pas être écrite est refusée.
+- **Changer son mot de passe.** Tout compte, de la configuration ou de l'interface, le fait depuis son menu (voir « Changer mon mot de passe »).
 
 **Un administrateur voit tous les projets.** La liste affiche le propriétaire de chacun et un filtre « Mes projets / Partagés avec moi / Tous ». L'administrateur a, sur chaque projet, les droits du propriétaire : lire, modifier, partager, transférer, supprimer. Chaque action faite sur le projet d'un autre est tracée dans le journal d'activité du projet avec la mention « en tant qu'administrateur » (une suppression, dont le journal disparaît avec le projet, est tracée dans le journal d'administration). Pour les autres comptes, rien ne change : un projet qui ne les concerne pas est « introuvable ».
 

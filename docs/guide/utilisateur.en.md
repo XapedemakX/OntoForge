@@ -88,21 +88,35 @@ With authentication on, each account picks its language, French or English, in t
 
 ![Account menu: interface language, password change, link to administration](img/en/compte-langue.png "The account menu: 1 the interface language, 2 the password, 3 the way to administration (administrators).")
 
+### Change my password {#changer-mon-mot-de-passe}
+
+Any signed-in account, including one declared in `ONTOFORGE_AUTH_USERS`, changes its password from the account menu (the account name, top right): "Change my password". Type the current password, the new one (at least 10 characters) and its confirmation; the "Show password" box reveals what you type. A message confirms the change.
+
+- **Sessions.** The account's other sessions (another browser, another device) are closed right away; the one you are in stays open.
+- **Configuration account.** The new password is saved in the `accounts.json` store (mode 600, argon2 hash) and **masks** the configuration one: the old `ONTOFORGE_AUTH_USERS` password no longer works for that account. The mask still takes priority if you later edit the hash in your `.env`: the Administration panel then warns you ("Configuration edited"). For the configuration value to work again, an administrator uses "Revert to the configuration password". If `accounts.json` is lost or unreadable, the configuration passwords work again.
+- **Limits.** 5 attempts per minute per account, on top of the sign-in limiter.
+
+![Account menu with the "Change my password" form](img/en/changer-mot-de-passe.png "The account menu: 1 the current password, 2 the new one and its confirmation, 3 \"Show password\".")
+
 ### Account administration {#administration-des-comptes}
 
 With authentication on, an administrator account opens "Administration" (left menu, or the account menu): the "Administration › Accounts" panel exists only for administrators (other accounts get "reserved for administrators").
 
 ![Administration › Accounts panel: provisional password shown once, creation form, account list](img/en/admin-comptes.png "Administration › Accounts: 1 the provisional password (shown only once), 2 creating an account, 3 the list, 4 the actions.")
 
-- **List.** Identifier, role (administrator or user), source, active, last sign-in, number of projects. An account declared in `ONTOFORGE_AUTH_USERS` or `ONTOFORGE_AUTH_USERS_FILE` is "managed by the configuration": it cannot be changed here (only its language, from its own menu). Accounts created in the interface are stored in the data folder (`accounts.json`, mode 600) and add to those of the configuration.
+- **List.** Identifier, role (administrator or user), source, active, last sign-in, number of projects. An account declared in `ONTOFORGE_AUTH_USERS` or `ONTOFORGE_AUTH_USERS_FILE` is "managed by the configuration": its existence, role and state are set there; here you can only reset its password or bring it back to the configuration one (see "Change my password"). Accounts created in the interface are stored in the data folder (`accounts.json`, mode 600) and add to those of the configuration.
 - **Create.** An identifier (2 to 64 characters: lowercase letters, digits, dot, hyphen, underscore), an "Administrator" box, and a password: typed, or generated. A generated password is shown only once; note it and hand it over through a safe channel.
 - **First sign-in.** The password you hand over is provisional: at first sign-in the account sees the "Choose your password" screen and nothing else until it has changed it (at least 10 characters).
-- **Reset.** Generates a new provisional password (shown once); the account's open sessions are cut.
+- **Reset.** Generates a new provisional password (shown once); the account's open sessions are cut. For a configuration account this password masks the configuration one; the "Password redefined in the interface" label shows it.
+- **Revert to the configuration password.** Configuration accounts only: removes the mask, sessions cut.
+
+![Administration panel: configuration account with a redefined password, "Configuration edited" warning](img/en/admin-mot-de-passe-config.png "Administration › Accounts: 1 the warning, 2 the \"Password redefined in the interface\" label, 3 Reset and Revert to the configuration password.")
+
 - **Disable, re-enable.** A disabled account can no longer sign in and loses its sessions immediately; its projects stay.
 - **Delete.** Sessions are cut right away and the account's access to other people's projects is removed. Its projects are never deleted: you choose the account that receives them.
 - **Promote, demote.** Gives or removes the administrator role, with immediate effect. At least one active administrator must always remain: otherwise the action is refused.
-- **Administration log.** Who created, reset, disabled, deleted or promoted which account, and when; never a password or a hash.
-- **Changing your own password.** Any account created in the interface does it from its menu (the current password is asked; failed attempts count in the same limiter as sign-in). An account managed by the configuration changes its password where it is defined.
+- **Administration log.** Who created, reset, disabled, deleted or promoted which account, and when; never a password or a hash. It rotates: at 1,000 lines it is archived to `admin-audit.1.jsonl`, `.2.jsonl`… (`ONTOFORGE_AUDIT_ARCHIVES`, 10 by default). An action whose trace cannot be written is refused.
+- **Changing your own password.** Any account, from the configuration or the interface, does it from its menu (see "Change my password").
 
 **An administrator sees every project.** The list shows each project's owner and a "My projects / Shared with me / All" filter. On each project the administrator has the owner's rights: read, change, share, transfer, delete. Every action taken on someone else's project is traced in the project's activity log with the mention "as administrator" (a deletion, whose log disappears with the project, is traced in the administration log). For other accounts nothing changes: a project that does not concern them is "not found".
 

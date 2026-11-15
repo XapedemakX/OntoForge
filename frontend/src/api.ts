@@ -158,7 +158,7 @@ export interface GenerateResult { files: Record<string, string>; missing?: strin
 export interface AssistantStatus { provider: string; model: string; configured: boolean }
 export interface DraftResult { proposal: OntoModel; explanation: string; warnings: string[] }
 
-export interface AdminAccount { login: string; source: 'config' | 'interface'; managed: boolean; admin: boolean; active: boolean; must_change: boolean; created_at: string | null; last_login: string | null; lang: 'fr' | 'en' | null; projects?: number }
+export interface AdminAccount { login: string; source: 'config' | 'interface'; managed: boolean; admin: boolean; active: boolean; must_change: boolean; created_at: string | null; last_login: string | null; lang: 'fr' | 'en' | null; projects?: number; pw_override?: boolean; cfg_changed?: boolean }
 export interface AuditEntry { at: string; actor: string; action: string; target: string; detail?: Record<string, unknown> }
 
 export class ApiError extends Error {
@@ -255,6 +255,7 @@ export const api = {
   adminAccounts: () => req<{ accounts: AdminAccount[]; min_password: number }>('GET', '/admin/accounts'),
   adminCreate: (b: { login: string; password?: string; admin: boolean }) => req<{ account: AdminAccount; provisional_password: string | null }>('POST', '/admin/accounts', b),
   adminReset: (login: string, password?: string) => req<{ account: AdminAccount; provisional_password: string | null }>('POST', `/admin/accounts/${encodeURIComponent(login)}/reset-password`, password ? { password } : {}),
+  adminRevert: (login: string) => req<{ account: AdminAccount }>('POST', `/admin/accounts/${encodeURIComponent(login)}/revert-password`),
   adminActive: (login: string, on: boolean) => req<{ account: AdminAccount }>('POST', `/admin/accounts/${encodeURIComponent(login)}/${on ? 'enable' : 'disable'}`),
   adminSetAdmin: (login: string, admin: boolean) => req<{ account: AdminAccount }>('POST', `/admin/accounts/${encodeURIComponent(login)}/admin`, { admin }),
   adminDelete: (login: string, transferTo?: string) => req<{ ok: boolean; projects_moved: number }>('DELETE', `/admin/accounts/${encodeURIComponent(login)}${transferTo ? '?transfer_to=' + encodeURIComponent(transferTo) : ''}`),

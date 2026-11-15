@@ -324,6 +324,18 @@
     "fr": "Chaque compte choisit sa langue (français ou anglais) dans le menu du compte : elle s'applique à l'interface, aux réponses de Krakie et aux textes générés, pour lui seul. Le réglage global est la langue par défaut des nouveaux comptes.",
     "en": "Each account picks its own language (French or English) in the account menu: it applies to the interface, Krakie's answers and generated texts, for that account only. The global setting is the default language for new accounts."
    }
+  },
+  "account-password": {
+   "page": "utilisateur",
+   "anchor": "changer-mon-mot-de-passe",
+   "title": {
+    "fr": "Changer mon mot de passe",
+    "en": "Change my password"
+   },
+   "summary": {
+    "fr": "Tout compte connecté change son mot de passe depuis le menu du compte (en haut à droite) : ancien mot de passe, nouveau (10 caractères au moins), confirmation. Vos autres sessions sont fermées, celle-ci reste ouverte. Pour un compte déclaré dans la configuration, le nouveau mot de passe remplace celui de la configuration.",
+    "en": "Any signed-in account changes its password from the account menu (top right): current password, new one (at least 10 characters), confirmation. Your other sessions are closed, this one stays open. For an account declared in the configuration, the new password replaces the configuration one."
+   }
   }
  }
 }

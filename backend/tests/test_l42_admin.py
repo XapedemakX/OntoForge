@@ -130,12 +130,12 @@ def test_list_merges_config_and_store(alice):
 
 
 def test_config_account_is_not_editable_from_the_interface(alice, bob):
-    for url, kw in (("/api/admin/accounts/bob/reset-password", {}), ("/api/admin/accounts/bob/disable", {}), ("/api/admin/accounts/bob/enable", {}),
+    for url, kw in (("/api/admin/accounts/bob/disable", {}), ("/api/admin/accounts/bob/enable", {}),
                     ("/api/admin/accounts/bob/admin", {"json": {"admin": True}})):
         r = alice.post(url, rev=None, **kw)
         assert r.status_code == 409 and r.json()["code"] == "managed_by_config", (url, r.text)
     assert alice.delete("/api/admin/accounts/bob", rev=None).json()["code"] == "managed_by_config"
-    assert bob.post("/api/auth/password", json={"current": PW, "new": NEWPW}, rev=None).json()["code"] == "managed_by_config"
+    # D-L43-01 : le mot de passe d'un compte de la configuration n'est plus verrouillé (voir test_l43_password.py) ; le reste l'est toujours
     assert alice.post("/api/admin/accounts/ghost/disable", rev=None).status_code == 404
 
 

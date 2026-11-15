@@ -2,6 +2,15 @@
 
 Format: by version, what changes for the user, then the detail per work package. Sources: reports `journal/L*/rapport*.md`, reviews, `journal/decisions.md`. Work packages are described in `lots/`.
 
+## L43: password change for every account (15 Nov 2026) {#l43-mot-de-passe-tous-comptes-15-nov-2026}
+
+Jerem's request of 15/11 (D-L43-01, replaces point 2 of D-L42-02).
+
+- **Change your own password, for everyone.** Account menu › "Change my password": current password, new one (at least 10 characters), confirmation, show/hide, success message. The account's other sessions are closed, the current one stays open. Krakie help and guide ("Change my password").
+- **Configuration accounts.** The new password is saved (argon2, `accounts.json`, 600) and masks the `ONTOFORGE_AUTH_USERS` one, which no longer works. An administrator can reset that password (provisional) or "revert to the configuration password". The Administration panel shows "Password redefined in the interface". The mask keeps priority if you later edit the hash in `.env`: a warning says so.
+- **L42 review fixes.** L42-01: hashing no longer blocks the directory, 5 changes per minute per account. L42-03: the administration log is archived (`admin-audit.1.jsonl`…, adjustable) and an action whose trace fails is refused. L42-05: the password typed at creation is masked (with a show button).
+- Detail: `docs/CONTRACTS.md` §17, D-L43-01. No version bump (D-L21-02).
+
 ## L42: accounts, per-account language, administrator on every project (15 Nov 2026) {#l42-comptes-langue-administration-15-nov-2026}
 
 Jerem's answers to question Q-L40-1 (D-L42-01).

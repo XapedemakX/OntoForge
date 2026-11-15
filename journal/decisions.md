@@ -140,5 +140,14 @@ Contrat : CONTRACTS §17. Pas de montée de version (D-L21-02).
 
 ## D-L42-02 (15/11, Jerem) : confirmations sur L42
 - Le lecteur n'a pas l'archive zip des fichiers générés (classée avec la génération) ; il garde l'export de l'ontologie et des shapes.
-- Les comptes déclarés dans la configuration (.env) ne changent leur mot de passe que par la configuration ; les comptes créés dans l'interface le changent eux-mêmes.
+- ~~Les comptes déclarés dans la configuration (.env) ne changent leur mot de passe que par la configuration ; les comptes créés dans l'interface le changent eux-mêmes.~~ **Remplacé le 15/11 par D-L43-01** (tout compte change son mot de passe depuis l'interface).
 - Seules les écritures et actions de propriétaire d'un administrateur sur le projet d'un autre sont tracées, pas ses lectures.
+
+## D-L43-01 (15/11, Jerem) : changement de mot de passe pour TOUS les comptes
+Demande de Jerem : « donne la possibilité, une fois connecté, de changer de mot de passe », y compris pour les comptes de `ONTOFORGE_AUTH_USERS`. Remplace le point 2 de D-L42-02 (et l'alternative écartée de D-L42-01, désormais retenue).
+1. **Masque.** Le changement d'un compte de la configuration écrit un hachage argon2 dans `accounts.json` (`config.<login>.hash`, 600) qui MASQUE celui de la configuration : l'ancien mot de passe de la configuration ne fonctionne plus. Existence, rôle et état restent gérés par la configuration.
+2. **Administrateur.** Il peut réinitialiser le mot de passe d'un compte de la configuration (provisoire, à changer à la connexion, même masque) et « revenir au mot de passe de la configuration » (supprime le masque, sessions coupées). Le panneau affiche « mot de passe redéfini dans l'interface ».
+3. **Priorité du masque.** Si le hachage de la configuration change (édition du `.env`), le masque reste prioritaire. Pour éviter la surprise (le nouveau mot de passe du `.env` « ne marche pas »), l'empreinte du hachage de la configuration est notée à la pose du masque et le panneau affiche un avertissement tant qu'elle diffère. Remède : « Revenir au mot de passe de la configuration ». Si `accounts.json` est perdu, les mots de passe de la configuration redeviennent valables (documenté dans les limites).
+4. **Sessions.** Chaque changement renouvelle `gen` : les autres sessions sont coupées, la courante reçoit une nouvelle session.
+5. **Corrections L42** (relecture sécurité) : L42-01 (hachage hors verrou, relecture de `hash`/`gen` sous verrou, 409 `password_changed_meanwhile` ; limiteur `pwd:<login>` 5/min compté sur toutes les tentatives, plus strict que « réussites seulement », avant tout calcul) ; L42-03 (rotation avec archives, `ONTOFORGE_AUDIT_ARCHIVES`, 10 par défaut ; échec d'écriture du journal = action refusée, magasin rétabli) ; L42-05 (champ en `type=password`).
+Alternative écartée : refuser le changement tant que la configuration porte un autre hachage (bloque Jerem hors de son propre usage). Contrat : CONTRACTS §17. Pas de montée de version (D-L21-02).

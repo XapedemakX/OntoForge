@@ -1104,13 +1104,14 @@ Available with authentication on (without it: an implicit "local" user owns ever
 
 ### Accounts and administration — `/api/admin` {#administration-api}
 
-Administrators only (403 `admin_only` for the others, 401 without a session). Without authentication: 409 `auth_required_for_accounts`. Configuration accounts answer 409 `managed_by_config` to any change. A password with fewer than 10 characters is refused (422 `password_too_short`).
+Administrators only (403 `admin_only` for the others, 401 without a session). Without authentication: 409 `auth_required_for_accounts`. Configuration accounts answer 409 `managed_by_config` to any change except their password (reset, revert to the configuration). An action whose log entry cannot be written answers 500 `audit_write_failed`. A password with fewer than 10 characters is refused (422 `password_too_short`).
 
 | Method | Path | Role |
 |---|---|---|
-| GET | `/accounts` | `{accounts:[{login, source: config\|interface, managed, admin, active, must_change, created_at, last_login, lang, projects}]}`; never a hash |
+| GET | `/accounts` | `{accounts:[{login, source: config\|interface, managed, admin, active, must_change, created_at, last_login, lang, projects, pw_override, cfg_changed}]}`; never a hash |
 | POST | `/accounts` | `{login, password?, admin?}` → 201 `{account, provisional_password}`; without `password`, a provisional password is generated and returned ONCE (`null` otherwise); 409 `login_taken`, 422 `bad_login` |
-| POST | `/accounts/{login}/reset-password` | `{password?}` → `{account, provisional_password}`; cuts the sessions, forces a change |
+| POST | `/accounts/{login}/reset-password` | `{password?}` → `{account, provisional_password}`; cuts the sessions, forces a change; on a configuration account, sets a mask (`pw_override`) |
+| POST | `/accounts/{login}/revert-password` | configuration account: removes the mask, sessions cut; 409 `no_override` or `not_config_account` |
 | POST | `/accounts/{login}/disable` · `/enable` | disables (sessions cut) or re-enables; 409 `last_admin` if it is the last active administrator |
 | POST | `/accounts/{login}/admin` | `{admin: bool}`: promotes or demotes; 409 `last_admin` |
 | DELETE | `/accounts/{login}?transfer_to=<login>` | deletes; if it owns projects, `transfer_to` (an existing active account) is required (409 `transfer_required`); → `{ok, projects_moved, transferred_to}` |
@@ -1120,7 +1121,7 @@ Current account, for any signed-in account (routes under `/api/auth`, which chec
 
 | Method | Path | Role |
 |---|---|---|
-| POST | `/auth/password` | `{current, new}`: changes your password (403 `bad_current_password`, 422 `password_too_short` or `password_unchanged`, 409 `managed_by_config`); same limiter as sign-in (429); returns the renewed session (new `csrf`) |
+| POST | `/auth/password` | `{current, new}`: changes your password (403 `bad_current_password`, 422 `password_too_short` or `password_unchanged`, 409 `password_changed_meanwhile`); any account, including configuration ones (the hash masks the configuration one); sign-in limiter plus 5 attempts per minute per account (429); returns the renewed session (new `csrf`) |
 | PUT | `/auth/preferences` | `{lang: fr\|en}`: the account's language, stored on the server |
 
 `GET /api/auth/session` adds `must_change`, `source` and `lang` (the account's language). While `must_change` is true, every other `/api` route answers 403 `password_change_required`.
