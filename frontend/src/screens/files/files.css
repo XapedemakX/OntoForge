@@ -70,8 +70,9 @@
 }
 
 /* le bouton Krakie flotte en bas à droite : on lui laisse la place */
-.fx-ph, .fx-plist button, .fx-plist li.empty, .fx-status { padding-right: 84px; }
-@media (max-width: 900px) { .fx-ph, .fx-plist button, .fx-plist li.empty, .fx-status { padding-right: 76px; } }
+/* L37c : le récif de Krakie se pose sur la barre d'état (data-ag-floor) ; la liste des problèmes et l'en-tête gardent une marge à droite pour ne pas passer sous Krakie */
+.fx-ph, .fx-plist button, .fx-plist li.empty { padding-right: 210px; }
+@media (max-width: 900px) { .fx-ph, .fx-plist button, .fx-plist li.empty { padding-right: 132px; } }
 .fx-banner.warn { background: var(--warn-soft, #fff4d6); color: var(--ink); border: 1px solid var(--warn, #c98a00); border-radius: 6px; margin: 6px 0; }
 .fx-banner.warn span { flex: 1; }
 .fx-rw { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 6px; max-height: 160px; overflow: auto; }

@@ -2,6 +2,11 @@
 
 Format: by version, what changes for the user, then the detail per work package. Sources: reports `journal/L*/rapport*.md`, reviews, `journal/decisions.md`. Work packages are described in `lots/`.
 
+## L37c: Krakie rests on the Files status bar (15 Nov 2026) {#l37c-fichiers-15-nov-2026}
+
+- On the Files screen, the reef now sits above the status bar instead of covering it, and the problems list keeps a right margin so it never runs under Krakie.
+- Any bar pinned to the bottom of a screen can say so (`data-ag-floor`), and the reef rests on it.
+
 ## L37b: Krakie's reef grows from the screen edge (15 Nov 2026) {#l37b-recif-krakie-15-nov-2026}
 
 - The water halo from L37 is gone: no coloured blob over the cards any more. The reef grows from the bottom edge of the window, bottom right, in the app's own colours (theme teal, softened coral and starfish), in light and dark. Krakie swims just above it, with a few rare micro-bubbles. Only Krakie and the reef react to clicks; the rest of the area lets the mouse through. The keyboard focus is a discreet ring around Krakie, and the proposals badge stays. The editor minimap was raised accordingly.

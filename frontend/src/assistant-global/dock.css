@@ -1,7 +1,7 @@
 /* Assistant global : Krakie flottante + panneau latéral redimensionnable. Variables : design/tokens.css uniquement. */
 /* Aquarium (L37b) : aucune boîte ni tache d'eau ; le récif pousse depuis le bord bas de la fenêtre. Le bouton est transparent aux clics
    (pointer-events:none) sauf quand le pointeur est sur Krakie ou le récif (classe .aq-hit posée par Aquarium.tsx). */
-.ag-fab { position: fixed; right: 0; bottom: env(safe-area-inset-bottom, 0px); z-index: 35; width: 201px; height: 150px; padding: 0; border: 0; background: none; cursor: pointer; color: var(--ink); pointer-events: none; outline: none; }
+.ag-fab { position: fixed; right: 0; bottom: calc(var(--ag-floor, 0px) + env(safe-area-inset-bottom, 0px)); z-index: 35; width: 201px; height: 150px; padding: 0; border: 0; background: none; cursor: pointer; color: var(--ink); pointer-events: none; outline: none; }
 .ag-fab.aq-hit { pointer-events: auto; }
 .ag-fab canvas { display: block; position: absolute; left: 0; top: 0; pointer-events: none; }
 .ag-fab .aq-reef { -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent); mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent); }

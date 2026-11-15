@@ -2,6 +2,11 @@
 
 Format : par version, ce qui change pour l'utilisateur, puis le détail par lot. Sources : rapports `journal/L*/rapport*.md`, revues, `journal/decisions.md`. Les lots sont décrits dans `lots/`.
 
+## L37c : Krakie se pose sur la barre d'état de l'écran Fichiers (15 nov. 2026) {#l37c-fichiers-15-nov-2026}
+
+- Sur l'écran Fichiers, le récif se pose au-dessus de la barre d'état au lieu de la recouvrir ; la liste des problèmes garde une marge à droite pour ne pas passer sous Krakie.
+- Toute barre collée en bas d'un écran peut le signaler (`data-ag-floor`) : le récif se pose dessus.
+
 ## L37b : le récif de Krakie sort du bord de l'écran (15 nov. 2026) {#l37b-recif-krakie-15-nov-2026}
 
 - Le halo d'eau de L37 disparaît : plus de tache colorée par-dessus les cartes. Le récif pousse depuis le bord bas de la fenêtre, en bas à droite, aux couleurs de l'application (teal du thème, corail et étoile adoucis), en clair comme en sombre. Krakie nage juste au-dessus, dans un espace plus grand, avec de rares micro-bulles. Seuls Krakie et le récif réagissent au clic ; le reste de la zone laisse passer la souris. Le focus clavier est un anneau discret autour de Krakie, et la pastille de propositions reste. La mini-carte de l'éditeur est remontée d'autant.

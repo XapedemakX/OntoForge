@@ -264,7 +264,7 @@ export function Files({ p, setP }: ScreenProps) {
           </ul>}
         </div>
 
-        <footer className="fx-status" role="status">
+        <footer className="fx-status" role="status" data-ag-floor>
           <span data-testid="fx-pos">{t('fx.pos', { l: cursor.line, c: cursor.col })}</span>
           {sel && <span>{t('fx.selChars', { n: sel.length })}</span>}
           <span>{buf ? t('fx.fmt.' + buf.language) : ''}</span>

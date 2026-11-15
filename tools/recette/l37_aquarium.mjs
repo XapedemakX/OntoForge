@@ -25,9 +25,14 @@ for (const [theme, dsf] of [['light', 2], ['dark', 2]]) for (const [dev, vp] of 
   const ctx = await browser.newContext({ viewport: vp, colorScheme: theme, deviceScaleFactor: dsf, locale: 'fr-FR' })
   await ctx.route(`${base}/api/**`, r => r.continue({ url: r.request().url().replace(base, `http://127.0.0.1:${BP}`) }))
   const page = await ctx.newPage()
-  for (const scr of dev === 'mobile' ? ['tableau'] : ['ontologie', 'requetes', 'exports', 'documentation/accueil', 'tableau']) {
+  for (const scr of dev === 'mobile' ? ['tableau'] : ['ontologie', 'requetes', 'exports', 'documentation/accueil', 'fichiers', 'tableau']) {
     await page.goto(`${base}/#/projet/${pid}/${scr}`, { waitUntil: 'load' }); await page.waitForSelector('.ag-fab', { timeout: 15000 }); await sleep(2500)
     await page.screenshot({ path: `${SHOTS}/${dev}-${theme}-${scr.replace('/', '-')}.png` })
+    if (scr === 'fichiers' && dev === 'desktop') { // L37c : le récif se pose sur la barre d'état, sans la recouvrir
+      const bar = await page.locator('.fx-status').boundingBox(), fab = await page.locator('.ag-fab').boundingBox()
+      if (!bar || !fab || fab.y + fab.height > bar.y + 1) { console.error('KO fichiers : Krakie recouvre la barre d\'état', bar, fab); process.exitCode = 1 } else console.log('OK fichiers : récif posé sur la barre d\'état')
+      await page.screenshot({ path: `${SHOTS}/zoom-fichiers-${theme}.png`, clip: { x: vp.width - 520, y: vp.height - 260, width: 520, height: 260 } })
+    }
     if (scr === 'tableau' && dev === 'desktop') { const b = await page.locator('.ag-fab').boundingBox(); await page.screenshot({ path: `${SHOTS}/zoom-${theme}.png`, clip: { x: Math.max(0, b.x - 60), y: b.y - 40, width: Math.min(vp.width, b.x + b.width + 12) - Math.max(0, b.x - 60), height: b.height + 40 } }) }
   }
   if (dev === 'desktop') { // panneau assistant ouvert : l'aquarium disparaît, rien d'autre ne bouge

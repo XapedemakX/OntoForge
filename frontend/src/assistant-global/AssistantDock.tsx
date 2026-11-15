@@ -37,6 +37,7 @@ export function AssistantDock({ p, setP, target, screen, perimeter }: { p: Proje
   const [hover, setHover] = useState(false)
   const cursor = useRef<{ x: number; y: number } | null>(null)
   const aq = useAquariumSize()
+  useAquariumFloor(screen)
 
   useEffect(() => onAssistantContext(setDeclared), [])
   useEffect(() => { setMode('full'); setOneShot(null) }, [screen, p.id])
@@ -174,6 +175,30 @@ function defaultSuggestions(screen: string, t: (k: string) => string): string[] 
 }
 
 /** Aquarium (L37b) : 134×100 pixels à l'échelle 1,5 (≈201×150) sur desktop, 120×90 à l'échelle 1 sous 900 px ; récif de 120 px logiques (≈180 / 120 px) collé en bas. */
+/* Une barre collée en bas de l'écran (ex. barre d'état de l'écran Fichiers) porte data-ag-floor : le récif se pose dessus au lieu de la recouvrir.
+   La hauteur visible de cette barre est publiée dans --ag-floor sur <html>. */
+function useAquariumFloor(screen: string) {
+  useEffect(() => {
+    const root = document.documentElement
+    let ro: ResizeObserver | null = null, el: Element | null = null
+    const measure = () => {
+      if (!el || !el.isConnected) { root.style.setProperty('--ag-floor', '0px'); return }
+      const r = el.getBoundingClientRect()
+      const floor = r.width > 0 && r.bottom >= window.innerHeight - 2 ? Math.max(0, window.innerHeight - r.top) : 0
+      root.style.setProperty('--ag-floor', `${Math.round(floor)}px`)
+    }
+    const attach = () => {
+      const next = document.querySelector('[data-ag-floor]')
+      if (next !== el) { ro?.disconnect(); el = next; if (el && 'ResizeObserver' in window) { ro = new ResizeObserver(measure); ro.observe(el) } }
+      measure()
+    }
+    attach()
+    const mo = new MutationObserver(attach); mo.observe(document.body, { childList: true, subtree: true })
+    window.addEventListener('resize', measure)
+    return () => { mo.disconnect(); ro?.disconnect(); window.removeEventListener('resize', measure); root.style.setProperty('--ag-floor', '0px') }
+  }, [screen])
+}
+
 function useAquariumSize() {
   const q = '(max-width: 900px)'
   const [small, setSmall] = useState(() => !!window.matchMedia?.(q).matches)
