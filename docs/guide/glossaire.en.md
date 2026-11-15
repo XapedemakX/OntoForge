@@ -101,6 +101,10 @@ Vocabulary of OntoForge, of the OWL/SHACL world and of the property graph world.
 | **Scenario** | Highlighting of some relationships of the business map (style, notes) without touching the model. |
 | **Quick input** | Editor panel: one DSL line = one axiom. |
 | **Owner / editor / reader** | An account's roles on a project (L40): the owner shares, transfers and deletes; the editor changes; the reader views and exports ("read-only"). |
+| **Administrator** | Account (L42) that manages accounts (create, reset, disable, delete, promote), changes global settings and sees every project with the owner's rights. Its actions on someone else's project are traced "as administrator". |
+| **Configuration-managed account** | Account declared in `ONTOFORGE_AUTH_USERS` or its file: the interface does not change it (only its language can be set). |
+| **Provisional password** | Password given when an account is created or reset; when generated it is shown only once, and the account must change it at first sign-in. |
+| **Per-account language** | Interface language (fr or en) chosen by each account and stored on the server; it also applies to Krakie and to texts generated at display time. The global setting is the default language for new accounts. |
 | **Project version (`rev`, ETag)** | Number that grows with every save; every write sends it (`If-Match`) so that a conflict (409) is never silently overwritten. |
 | **Presence** | Initials of the accounts currently on the project, signalled about every 20 seconds, forgotten after 60 seconds. |
 

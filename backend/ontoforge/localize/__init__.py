@@ -49,12 +49,31 @@ def _build() -> list[tuple[str, str]]:
 _SORTED = _build()
 
 
+# L42 : langue du compte connecté pour la requête en cours (posée par l'authentification) ; ``None`` = réglage global (mode local, ou compte sans choix).
+REQUEST_LANG: ContextVar[Optional[str]] = ContextVar("request_lang", default=None)
+
+
 def ui_lang() -> str:
-    """Langue des messages affichés à l'écran (``settings.language.ui``) ; ``fr`` si les paramètres sont illisibles."""
+    """Langue des messages affichés à l'écran : celle du compte connecté (L42), sinon ``settings.language.ui`` ; ``fr`` si les paramètres sont illisibles."""
+    own = REQUEST_LANG.get()
+    if own in ("fr", "en"):
+        return own  # type: ignore[return-value]
     try:
         from ..settings import store
         return store.load(persist=False).language.ui
     except Exception:  # noqa: BLE001 — jamais d'échec dur pour une traduction
+        return "fr"
+
+
+def assistant_lang() -> str:
+    """Langue par défaut des réponses de Krakie : celle du compte connecté (L42), sinon ``settings.language.assistant``."""
+    own = REQUEST_LANG.get()
+    if own in ("fr", "en"):
+        return own  # type: ignore[return-value]
+    try:
+        from ..settings import store
+        return store.load(persist=False).language.assistant
+    except Exception:  # noqa: BLE001
         return "fr"
 
 

@@ -31,6 +31,9 @@ _lock = threading.RLock()
 _presence: dict[str, dict[str, float]] = {}
 
 
+admin_audit: Any = None   # fonction (acteur, action, cible, **détail) du journal d'administration, posée par main.create_app (L42)
+
+
 def now() -> float:
     return time.time()
 
@@ -64,6 +67,7 @@ class Ctx:
     if_match: Optional[str] = None
     before: dict[str, tuple] = field(default_factory=dict)   # projet écrit pendant la requête -> signature de project.json avant
     action: str = "edit"
+    admin_for: set = field(default_factory=set)   # projets d'un autre compte touchés en tant qu'administrateur (L42) : tracés « en tant qu'administrateur »
 
 
 _CTX: ContextVar[Optional[Ctx]] = ContextVar("ontoforge_collab_ctx", default=None)
@@ -170,7 +174,24 @@ def role_for(pid: str, ident: Identity) -> Optional[str]:
     owner = d["owner"] or ident.first_admin
     if ident.user == owner:
         return "owner"
+    return d["members"].get(ident.user) or ("owner" if ident.is_admin else None)   # L42 : un administrateur a les droits du propriétaire sur tout projet
+
+
+def real_role(pid: str, ident: Identity) -> Optional[str]:
+    """Rôle propre du compte (propriétaire, éditeur, lecteur), sans la prérogative d'administrateur."""
+    if not ident.auth:
+        return "owner"
+    d = read(pid)
+    if d["corrupt"]:
+        return None
+    if ident.user == (d["owner"] or ident.first_admin):
+        return "owner"
     return d["members"].get(ident.user)
+
+
+def admin_override(pid: str, ident: Identity) -> bool:
+    """Vrai si l'accès de ce compte à ce projet ne tient qu'à son statut d'administrateur."""
+    return bool(ident.auth and ident.is_admin and real_role(pid, ident) is None)
 
 
 def init_project(pid: str, owner: str) -> None:
@@ -191,6 +212,9 @@ def bump(pid: str, actor: str) -> int:
 
 
 def log(pid: str, actor: str, action: str, **detail: Any) -> None:
+    c = current()
+    if c is not None and pid in c.admin_for and actor == c.identity.user:
+        detail["as_admin"] = True
     with _lock:
         try:
             f = _dir(pid) / "activity.jsonl"
@@ -249,6 +273,9 @@ def check_precondition(pid: str, ident: Identity, if_match: Optional[str]) -> No
 
 def require(pid: str, level: str, ident: Identity, if_match: Optional[str] = None, check_rev: bool = True) -> str:
     """Vérifie l'accès ; renvoie le rôle. 404 si le projet est inaccessible ou inconnu, 403 si le rôle ne suffit pas."""
+    c = current()
+    if c is not None and level in ("write", "owner") and admin_override(pid, ident):
+        c.admin_for.add(pid)   # tracé dans le journal du projet : « en tant qu'administrateur »
     try:
         exists = store.exists(pid)
     except Exception:  # noqa: BLE001
@@ -347,6 +374,48 @@ def transfer(pid: str, login: str, actor: str, ident: Identity) -> None:
         d["owner"] = login
         _write(pid, d)
     log(pid, actor, "transfer", login=login)
+
+
+def owned_by(login: str, first_admin: Optional[str]) -> list[str]:
+    """Projets dont ``login`` est propriétaire (un projet sans propriétaire revient au premier administrateur)."""
+    out: list[str] = []
+    root = store.projects_dir()
+    if not root.is_dir():
+        return out
+    for d in sorted(root.iterdir()):
+        if (d / "project.json").is_file():
+            st = read(d.name)
+            if not st["corrupt"] and (st["owner"] or first_admin) == login:
+                out.append(d.name)
+    return out
+
+
+def reassign_account(login: str, to: str, actor: str, first_admin: Optional[str]) -> int:
+    """Suppression d'un compte (L42) : ses projets passent à ``to`` (qui devient propriétaire, sans doublon dans les membres), et son accès aux
+    projets des autres est retiré. Renvoie le nombre de projets transférés."""
+    n = 0
+    root = store.projects_dir()
+    if not root.is_dir():
+        return 0
+    for d in sorted(root.iterdir()):
+        if not (d / "project.json").is_file():
+            continue
+        with _lock:
+            st = read(d.name)
+            if st["corrupt"]:
+                continue
+            if (st["owner"] or first_admin) == login:
+                st["owner"] = to
+                st["members"].pop(to, None)
+                st["members"].pop(login, None)
+                _write(d.name, st)
+                n += 1
+                log(d.name, actor, "transfer", login=to, account_deleted=login)
+            elif login in st["members"]:
+                del st["members"][login]
+                _write(d.name, st)
+                log(d.name, actor, "unshare", login=login, account_deleted=True)
+    return n
 
 
 def migrate(default_owner: Optional[str]) -> int:

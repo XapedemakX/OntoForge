@@ -132,9 +132,9 @@ export interface StandardsRef {
 export type Role = 'reader' | 'editor'
 export interface AccessView { owner: string | null; members: { login: string; role: Role }[]; rev: number; last_actor: string | null; last_at: string | null; role: 'owner' | Role | null; me: string; sharing_available: boolean; admin: boolean }
 export interface PresenceView { present: { user: string; role: 'owner' | Role; me: boolean }[]; rev: number; last_actor: string | null; last_at: string | null; role: 'owner' | Role | null; me: string; auth: boolean }
-export interface ActivityEntry { at: string; user: string; action: string; detail?: { login?: string; role?: string } }
+export interface ActivityEntry { at: string; user: string; action: string; detail?: { login?: string; role?: string; as_admin?: boolean } }
 export interface ProjectSummary {
-  owner?: string | null; role?: 'owner' | Role; shared?: boolean
+  owner?: string | null; role?: 'owner' | Role; shared?: boolean; via_admin?: boolean
   id: string; name: string; description: string; created_at: string; updated_at: string; source_files: string[]; target: Target
   stats: { classes: number; object_properties: number; datatype_properties: number; individuals: number; shapes: number }
 }
@@ -158,8 +158,12 @@ export interface GenerateResult { files: Record<string, string>; missing?: strin
 export interface AssistantStatus { provider: string; model: string; configured: boolean }
 export interface DraftResult { proposal: OntoModel; explanation: string; warnings: string[] }
 
+export interface AdminAccount { login: string; source: 'config' | 'interface'; managed: boolean; admin: boolean; active: boolean; must_change: boolean; created_at: string | null; last_login: string | null; lang: 'fr' | 'en' | null; projects?: number }
+export interface AuditEntry { at: string; actor: string; action: string; target: string; detail?: Record<string, unknown> }
+
 export class ApiError extends Error {
   status: number
+  code?: string   // code stable du serveur (ex. last_admin, transfer_required)
   constructor(status: number, message: string) { super(message); this.status = status }
   /** 501 = module backend pas encore livré */
   get notReady() { return this.status === 501 }
@@ -176,11 +180,14 @@ async function req<T>(method: string, path: string, body?: unknown, form?: FormD
   try { r = await fetch(BASE + path, init) } catch { throw new ApiError(0, tr('ui.unreachable')) }
   if (!r.ok) {
     let detail = tr('ui.http', { s: r.status })
+    let code: string | undefined
     try {
       const j = await r.json()
+      code = j.code
       detail = typeof j.detail === 'string' ? j.detail : Array.isArray(j.detail) ? j.detail.map((d: { msg?: string }) => d.msg).join(' ; ') : detail
     } catch { /* corps non JSON */ }
-    throw new ApiError(r.status, detail)
+    const err = new ApiError(r.status, detail); err.code = code
+    throw err
   }
   return (text ? await r.text() : await r.json()) as T
 }
@@ -231,7 +238,27 @@ export const api = {
   acceptRecommended: (id: string, t: Target, includeLost = false) => req<PGModel>('POST', p(id) + `/decisions/${t}/accept-recommended${includeLost ? '?include_lost=true' : ''}`),
   generate: (id: string, t: Target) => req<GenerateResult>('GET', p(id) + `/generate/${t}`),
   generations: (id: string) => req<GenerationRecord[]>('GET', p(id) + '/generations'),
-  zipUrl: (id: string, t: Target) => `${BASE}${p(id)}/generate/${t}/zip`,
+  /** L42 : générer est une écriture (historique) : le zip se télécharge par fetch, qui porte le jeton CSRF et la version ; plus de lien direct. */
+  zip: async (id: string, t: Target): Promise<Blob> => {
+    const r = await fetch(BASE + p(id) + `/generate/${t}/zip`)
+    if (!r.ok) { let m = tr('ui.http', { s: r.status }); try { const j = await r.json(); if (typeof j.detail === 'string') m = j.detail } catch { /* corps non JSON */ } throw new ApiError(r.status, m) }
+    return r.blob()
+  },
+  downloadZip: async (id: string, t: Target) => {
+    const b = await api.zip(id, t)
+    const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = `${id}-${t}.zip`; document.body.appendChild(a); a.click(); a.remove()
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000)
+  },
+  // Compte courant et administration des comptes (L42)
+  changePassword: (current: string, next: string) => req<{ ok: boolean; csrf: string; must_change: boolean }>('POST', '/auth/password', { current, new: next }),
+  setAccountLang: (lang: 'fr' | 'en') => req<{ lang: string }>('PUT', '/auth/preferences', { lang }),
+  adminAccounts: () => req<{ accounts: AdminAccount[]; min_password: number }>('GET', '/admin/accounts'),
+  adminCreate: (b: { login: string; password?: string; admin: boolean }) => req<{ account: AdminAccount; provisional_password: string | null }>('POST', '/admin/accounts', b),
+  adminReset: (login: string, password?: string) => req<{ account: AdminAccount; provisional_password: string | null }>('POST', `/admin/accounts/${encodeURIComponent(login)}/reset-password`, password ? { password } : {}),
+  adminActive: (login: string, on: boolean) => req<{ account: AdminAccount }>('POST', `/admin/accounts/${encodeURIComponent(login)}/${on ? 'enable' : 'disable'}`),
+  adminSetAdmin: (login: string, admin: boolean) => req<{ account: AdminAccount }>('POST', `/admin/accounts/${encodeURIComponent(login)}/admin`, { admin }),
+  adminDelete: (login: string, transferTo?: string) => req<{ ok: boolean; projects_moved: number }>('DELETE', `/admin/accounts/${encodeURIComponent(login)}${transferTo ? '?transfer_to=' + encodeURIComponent(transferTo) : ''}`),
+  adminAudit: () => req<{ entries: AuditEntry[] }>('GET', '/admin/audit'),
   translate: (id: string, t: Target, sparql: string) => req<TranslationResult>('POST', p(id) + `/queries/translate?target=${t}`, { sparql }),
   competency: (id: string, t: Target) => req<CompetencyQuestion[]>('GET', p(id) + `/queries/competency?target=${t}`),
   settings: () => req<PublicSettings>('GET', '/settings'),

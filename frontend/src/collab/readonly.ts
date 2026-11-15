@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 /**
  * Lecture seule (L40) : un lecteur ne peut rien modifier. Le serveur refuse toute écriture (403) ; ici on désactive en plus, dans
@@ -39,4 +39,17 @@ export function useReadOnlyGuard(on: boolean, label: string, root: () => HTMLEle
     return () => { mo.disconnect(); document.body.classList.remove('of-readonly'); applyReadOnly(el, false, label) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [on, label, ...deps])
+}
+
+/** État « lecture seule » courant, lisible par les écrans (L42 : la génération est réservée aux éditeurs) ; suit la classe posée sur <body>. */
+export function useReadOnly(): boolean {
+  const [on, setOn] = useState(() => typeof document !== 'undefined' && document.body.classList.contains('of-readonly'))
+  useEffect(() => {
+    const read = () => setOn(document.body.classList.contains('of-readonly'))
+    read()
+    const mo = new MutationObserver(read)
+    mo.observe(document.body, { attributes: true, attributeFilter: ['class'] })
+    return () => mo.disconnect()
+  }, [])
+  return on
 }

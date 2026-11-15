@@ -2,6 +2,16 @@
 
 Format : par version, ce qui change pour l'utilisateur, puis le détail par lot. Sources : rapports `journal/L*/rapport*.md`, revues, `journal/decisions.md`. Les lots sont décrits dans `lots/`.
 
+## L42 : comptes, langue par compte, administrateur sur tous les projets (15 nov. 2026) {#l42-comptes-langue-administration-15-nov-2026}
+
+Réponses de Jerem à la question Q-L40-1 (D-L42-01).
+
+- **Langue par compte.** Chaque compte choisit sa langue (français ou anglais) dans le menu du compte ; elle est enregistrée côté serveur et s'applique à l'interface, aux réponses de Krakie et aux textes générés à l'affichage, pour ce compte seulement. Le réglage global devient la langue par défaut des nouveaux comptes. Sans authentification : comportement inchangé.
+- **Pas de génération par le lecteur.** Générer (écran Exports, tableau de bord, archive zip) écrit l'historique du projet : c'est maintenant une écriture, réservée aux éditeurs et au propriétaire (verrou, version `If-Match` sur un projet partagé, jeton CSRF, ligne dans le journal d'activité). Le lecteur voit un bouton grisé « lecture seule », consulte l'historique et exporte l'ontologie et les shapes.
+- **Administration des comptes.** Nouveau panneau « Administration › Comptes » réservé aux administrateurs : liste (rôle, source, actif, dernière connexion), création (mot de passe provisoire généré et affiché une fois, ou saisi), réinitialisation, désactivation, suppression avec transfert des projets, promotion, journal d'administration. Le mot de passe provisoire se change à la première connexion ; tout compte créé dans l'interface peut changer le sien. Les comptes de `ONTOFORGE_AUTH_USERS` restent gérés par la configuration. Il reste toujours un administrateur actif ; un compte désactivé ou supprimé perd ses sessions tout de suite.
+- **L'administrateur voit tous les projets.** Colonne propriétaire, filtre « Mes projets / Partagés avec moi / Tous », droits du propriétaire sur chaque projet ; ses actions sur le projet d'un autre sont tracées « en tant qu'administrateur ». Les autres comptes : inchangé.
+- Détail : `docs/CONTRACTS.md` §17, D-L42-01. Pas de montée de version (D-L21-02).
+
 ## L41 : corrections de la relecture de sécurité (15 nov. 2026) {#l41-corrections-relecture-securite-15-nov-2026}
 
 - **Appels sortants contrôlés dès qu'il y a des comptes.** Avec `ONTOFORGE_AUTH=password`, le serveur refuse d'appeler une adresse interne (réseau privé, boucle locale, métadonnées de cloud), comme en mode public. Sans authentification (usage local), rien ne change. Pour un endpoint ou un fournisseur interne (Fuseki, Ollama), nommez-le dans `ONTOFORGE_EGRESS_ALLOW_INTERNAL`. Choix par défaut D-L41-01, que vous pouvez changer.

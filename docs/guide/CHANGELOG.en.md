@@ -2,6 +2,16 @@
 
 Format: by version, what changes for the user, then the detail per work package. Sources: reports `journal/L*/rapport*.md`, reviews, `journal/decisions.md`. Work packages are described in `lots/`.
 
+## L42: accounts, per-account language, administrator on every project (15 Nov 2026) {#l42-comptes-langue-administration-15-nov-2026}
+
+Jerem's answers to question Q-L40-1 (D-L42-01).
+
+- **Per-account language.** Each account picks its language (French or English) in the account menu; it is stored on the server and applies to the interface, to Krakie's answers and to texts generated at display time, for that account only. The global setting becomes the default language for new accounts. Without authentication: unchanged.
+- **No generation by the reader.** Generating (Exports screen, dashboard, zip archive) writes the project's history: it is now a write, reserved for editors and the owner (lock, `If-Match` version on a shared project, CSRF token, a line in the activity log). A reader sees a greyed-out "read-only" button, views the history and exports the ontology and the shapes.
+- **Account administration.** New "Administration › Accounts" panel for administrators only: list (role, source, active, last sign-in), creation (provisional password generated and shown once, or typed), reset, disable, delete with project transfer, promote, administration log. The provisional password is changed at first sign-in; any account created in the interface can change its own. Accounts from `ONTOFORGE_AUTH_USERS` stay managed by the configuration. An active administrator always remains; a disabled or deleted account loses its sessions at once.
+- **The administrator sees every project.** Owner column, "My projects / Shared with me / All" filter, the owner's rights on each project; their actions on someone else's project are traced "as administrator". Other accounts: unchanged.
+- Details: `docs/CONTRACTS.md` §17, D-L42-01. No version bump (D-L21-02).
+
 ## L41: fixes from the security review (15 Nov 2026) {#l41-corrections-relecture-securite-15-nov-2026}
 
 - **Outbound calls checked as soon as there are accounts.** With `ONTOFORGE_AUTH=password`, the server refuses to call an internal address (private network, loopback, cloud metadata), as in public mode. Without authentication (local use), nothing changes. For an internal endpoint or provider (Fuseki, Ollama), name it in `ONTOFORGE_EGRESS_ALLOW_INTERNAL`. Default choice D-L41-01, which you can change.

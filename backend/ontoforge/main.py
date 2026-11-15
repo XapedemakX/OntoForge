@@ -14,6 +14,7 @@ from starlette.middleware.gzip import GZipMiddleware
 from . import hardening, security
 from .api import ROUTERS
 from .api.system import VERSION
+from .auth.accounts import AccountDirectory
 from .auth.config import load_config, public
 from .auth.middleware import AuthMiddleware
 from .collab import access as collab_access
@@ -28,6 +29,9 @@ def create_app() -> FastAPI:
     app = FastAPI(title="OntoForge API", version=VERSION, docs_url=None if pub else "/docs",
                   redoc_url=None if pub else "/redoc", openapi_url=None if pub else "/openapi.json")
     app.state.auth = cfg
+    accounts = AccountDirectory(cfg)   # L42 : comptes de la configuration + magasin d'interface
+    app.state.accounts = accounts
+    collab_access.admin_audit = accounts.audit
     _handlers(app)
     for r in ROUTERS:
         app.include_router(r)
@@ -35,12 +39,12 @@ def create_app() -> FastAPI:
     if static is not None:
         app.mount("/", GZipMiddleware(security.SpaStatic(static), minimum_size=1024))
     # L40 : cloisonnement des projets, rôles, versions ; derrière l'authentification (qui fournit l'identité)
-    app.add_middleware(CollabMiddleware, cfg=cfg, router=app.router)
+    app.add_middleware(CollabMiddleware, cfg=cfg, router=app.router, accounts=accounts)
     if cfg.enabled:
         collab_access.migrate(cfg.first_admin)   # projets sans propriétaire -> premier administrateur (idempotent)
     # Ordre : le dernier ajouté est le plus extérieur (corps limité d'abord, puis en-têtes, CORS, authentification).
     if cfg.enabled:
-        app.add_middleware(AuthMiddleware, cfg=cfg)
+        app.add_middleware(AuthMiddleware, cfg=cfg, accounts=accounts)
     # CORS fermé par défaut (SEC-02) : seules les origines listées dans ONTOFORGE_CORS_ORIGINS sont autorisées.
     hardening.add_cors(app)
     if pub or cfg.enabled or static is not None:
@@ -80,7 +84,8 @@ def _handlers(app: FastAPI) -> None:
         if en:
             parts = [localize.tr(x, "en") for x in parts]
         return JSONResponse(status_code=422, content={"detail": ("Invalid input — " if en else "Entrée invalide — ") + " ; ".join(parts),
-                                                      "errors": jsonable(exc.errors())})
+                                                      # L42-04 : sans « input » ni « ctx » (un mot de passe trop long reviendrait dans la réponse)
+                                                      "errors": jsonable([{k: v for k, v in e.items() if k not in ("input", "ctx", "url")} for e in exc.errors()])})
 
 
 def jsonable(errors: list) -> list:

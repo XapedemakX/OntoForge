@@ -5,6 +5,7 @@ import type { Pose } from '../krakie/Krakie'
 import { useT } from '../i18n'
 import { useAssistantContext } from '../lib/assistantContext'
 import { useLoad, useToast } from '../ui'
+import { useReadOnly } from '../collab/readonly'
 import { useState } from 'react'
 import { TourCard } from '../tour'
 import { ActivityCard } from '../collab/ActivityCard'
@@ -26,6 +27,8 @@ export function Dashboard({ p, target }: ScreenProps) {
   const peri = useLoad(() => api.perimeters(p.id).catch(() => []), [p.id])
   const toast = useToast()
   const [genBusy, setGenBusy] = useState(false)
+  const ro = useReadOnly()   // L42 : un lecteur ne génère pas ; l'écran est « data-safe », on désactive donc les boutons de génération explicitement
+  const roHint = ro ? t('collab.ro.hint') : undefined
   const [genTick, setGenTick] = useState(0)
   const [trophy, setTrophy] = useState(false)
   const hist = useLoad(() => api.generations(p.id).catch(() => []), [p.id, genTick])
@@ -89,8 +92,8 @@ export function Dashboard({ p, target }: ScreenProps) {
           <h2>{next.title}</h2>
           <p>{next.text}</p>
           <div className="row">
-            {next.to || next.run ? <Button variant="primary" icon={next.run ? 'bolt' : undefined} disabled={genBusy} onClick={() => (next.run ? next.run() : go(p.id, next.to!))}>{genBusy ? t('dash.gen.busy') : next.action}</Button>
-              : <a className="btn primary" href={api.zipUrl(p.id, target)}><Icon name="download" /> {next.action}</a>}
+            {next.to || next.run ? <Button variant="primary" icon={next.run ? 'bolt' : undefined} data-write={next.run ? '' : undefined} title={next.run ? roHint : undefined} disabled={genBusy || (ro && !!next.run)} onClick={() => (next.run ? next.run() : go(p.id, next.to!))}>{genBusy ? t('dash.gen.busy') : next.action}</Button>
+              : <Button variant="primary" icon="download" disabled={ro} title={roHint} onClick={() => void api.downloadZip(p.id, target).catch(e => toast((e as Error).message))}>{next.action}</Button>}
             {next.extra?.map(x => <Button key={x.label} icon={x.icon} onClick={() => go(p.id, x.to!)}>{x.label}</Button>)}
           </div>
         </div>
@@ -124,8 +127,8 @@ export function Dashboard({ p, target }: ScreenProps) {
         <Card title={t('dash.gen.title')} tone={loaded && cc.review + cc.lost === 0 ? 'auto' : undefined}>
           <p className="muted" style={{ margin: '0 0 10px' }}>{loaded ? (cc.review + cc.lost === 0 ? t('dash.gen.ready', tp) : t('dash.gen.blocked', { n: cc.review + cc.lost, ...tp })) : t('dash.loading')}</p>
           <div className="row" style={{ marginBottom: 12 }}>
-            <Button variant={loaded && cc.review + cc.lost === 0 ? 'primary' : 'default'} icon="bolt" disabled={genBusy || nCls === 0} onClick={generate}>{genBusy ? t('dash.gen.busy') : t('dash.gen.btn', tp)}</Button>
-            {gens[target] && <a className="btn" href={api.zipUrl(p.id, target)}><Icon name="download" /> {t('dash.gen.zip')}</a>}
+            <Button variant={loaded && cc.review + cc.lost === 0 ? 'primary' : 'default'} icon="bolt" data-write data-testid="gen-btn" title={roHint} disabled={genBusy || nCls === 0 || ro} onClick={generate}>{genBusy ? t('dash.gen.busy') : t('dash.gen.btn', tp)}</Button>
+            {gens[target] && <Button icon="download" data-write disabled={ro} title={roHint} onClick={() => void api.downloadZip(p.id, target).catch(e => toast((e as Error).message))}>{t('dash.gen.zip')}</Button>}
           </div>
           <h3 style={{ fontSize: 'var(--fs-sm)', margin: '0 0 6px' }}>{t('dash.generations')}</h3>
           {history.length === 0 ? <div className="muted">{t('dash.noGeneration')}</div> :

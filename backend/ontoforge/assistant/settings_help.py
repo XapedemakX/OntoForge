@@ -312,6 +312,14 @@ def _versions_reply(snap: dict, message: str, lang: str) -> str:
 
 def _lang_reply(snap: dict, message: str, lang: str) -> str:
     lg = snap["language"]
+    from ..collab import access
+    c = access.current()
+    if c is not None and c.identity.auth:   # L42 : avec des comptes, la langue d'interface est propre à chaque compte
+        return _L(lang, f"Avec les comptes, chaque personne choisit sa langue d'interface dans le menu de son compte (en haut à droite) : elle s'applique à l'interface, à mes réponses et aux textes générés, pour elle seule. Le réglage « Interface » d'ici ({lg['ui']}) est la langue par défaut des nouveaux comptes.",
+                       f"With accounts, each person picks their own interface language in their account menu (top right): it applies to the interface, my answers and generated texts, for them only. The “Interface” setting here ({lg['ui']}) is the default language for new accounts.") + "\n\n" + _steps(lang, [
+            ("Libellés : la langue préférée des libellés d'ontologie affichés dans le graphe et les listes.", "Labels: the preferred language of ontology labels shown in the graph and lists."),
+            ("« Enregistrer » mémorise ces réglages pour les prochaines sessions.", "“Save” remembers these settings for future sessions."),
+        ])
     state = _L(lang, f"Réglages actuels : interface {lg['ui']}, libellés {lg['labels']}, assistant {lg['assistant']}.", f"Current settings: interface {lg['ui']}, labels {lg['labels']}, assistant {lg['assistant']}.")
     return state + "\n\n" + _steps(lang, [
         ("Interface : la langue des menus et messages ; elle s'applique tout de suite.", "Interface: the language of menus and messages; it applies immediately."),

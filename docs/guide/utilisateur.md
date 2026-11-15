@@ -61,9 +61,9 @@ L'en-tête porte, sur chaque écran de projet : le choix de la cible (Curiosity 
 
 Quand l'authentification est activée (`ONTOFORGE_AUTH=password`), les projets sont nominatifs.
 
-- **Propriétaire.** Chaque projet appartient au compte qui le crée. La liste n'affiche que vos projets et ceux qu'on a partagés avec vous, avec le propriétaire et un badge « Partagé » (ou « Lecture seule »). Un projet auquel vous n'avez pas accès répond « introuvable », comme s'il n'existait pas.
+- **Propriétaire.** Chaque projet appartient au compte qui le crée. La liste n'affiche que vos projets et ceux qu'on a partagés avec vous, avec le propriétaire et un badge « Partagé » (ou « Lecture seule »). Un projet auquel vous n'avez pas accès répond « introuvable », comme s'il n'existait pas. Exception : un administrateur voit tous les projets (voir « Administration des comptes »).
 - **Partager.** Dans l'en-tête du projet, le bouton « Partager » ouvre le panneau des accès : la liste des comptes, un champ « Identifiant du compte » et un rôle. L'identifiant est celui de l'autre compte (le même qu'à la connexion). Si aucun compte ne porte cet identifiant, le panneau répond « Aucun compte avec cet identifiant » ; le nombre de recherches est limité à 10 par minute.
-- **Rôles.** Le *lecteur* consulte et exporte, rien de plus : les boutons d'action sont désactivés, l'en-tête porte la mention « Lecture seule » et le serveur refuse toute écriture. L'*éditeur* modifie le projet, mais ne le partage ni ne le supprime. Le *propriétaire* fait tout : il change un rôle, retire un accès, transfère la propriété (l'ancien propriétaire reste éditeur) et supprime le projet. Un compte peut aussi quitter un projet qu'on a partagé avec lui.
+- **Rôles.** Le *lecteur* consulte et exporte l'ontologie et les shapes, et consulte l'historique des générations, rien de plus : les boutons d'action sont désactivés, l'en-tête porte la mention « Lecture seule » et le serveur refuse toute écriture. Il ne génère pas : générer écrit l'historique du projet, donc le bouton de génération est grisé et l'écran Exports l'explique. L'*éditeur* modifie le projet, mais ne le partage ni ne le supprime. Le *propriétaire* fait tout : il change un rôle, retire un accès, transfère la propriété (l'ancien propriétaire reste éditeur) et supprime le projet. Un compte peut aussi quitter un projet qu'on a partagé avec lui.
 
 ![Panneau « Partager ce projet » : propriétaire, un lecteur, champ identifiant et rôle](img/fr/partage-panneau.png "Le panneau de partage : 1 la liste des accès, 2 le champ identifiant et le rôle, 3 les règles par rôle.")
 
@@ -77,6 +77,36 @@ Travailler à plusieurs, sans temps réel :
 - **Activité.** Le tableau de bord affiche le journal du projet : qui l'a créé, partagé, modifié, et quand.
 
 Les réglages globaux (fournisseurs LLM, clés, endpoints SPARQL) ne sont modifiables que par un administrateur : le premier compte déclaré, ou les comptes listés dans `ONTOFORGE_AUTH_ADMINS`. Les autres comptes utilisent les fournisseurs sans les voir. En usage local, sans authentification, rien ne change : un utilisateur implicite possède tous les projets, et le panneau de partage indique que le partage demande l'authentification. Au premier démarrage avec authentification, les projets existants sont attribués au premier administrateur.
+
+### Langue de l'interface {#langue-de-l-interface}
+
+Avec l'authentification, chaque compte choisit sa langue, français ou anglais, dans le menu du compte (le nom du compte, en haut à droite). Le choix est enregistré côté serveur, dans les préférences du compte : on le retrouve d'un navigateur à l'autre. Il s'applique à l'interface, aux réponses de Krakie et aux textes générés à l'affichage (constats, messages d'erreur, notes), pour ce compte seulement : les autres gardent la leur. Les fichiers générés suivent aussi la langue du compte, sauf si on précise la langue de génération.
+
+- **Langue par défaut.** Dans Paramètres, onglet Langues (administrateurs), le réglage « Langue par défaut des nouveaux comptes » donne sa langue à un compte à sa création. Les libellés d'ontologie ont leur propre réglage.
+- **Comptes de la configuration.** Ils choisissent leur langue comme les autres.
+- **Sans authentification.** Rien ne change : la langue vient des Paramètres et vaut pour tout le monde.
+
+![Menu du compte : langue de l'interface, changement de mot de passe, lien vers l'administration](img/fr/compte-langue.png "Le menu du compte : 1 la langue de l'interface, 2 le mot de passe, 3 l'accès à l'administration (administrateurs).")
+
+### Administration des comptes {#administration-des-comptes}
+
+Avec l'authentification, un compte administrateur ouvre « Administration » (menu de gauche, ou menu du compte) : le panneau « Administration › Comptes » n'existe que pour les administrateurs (les autres reçoivent « réservé aux administrateurs »).
+
+![Panneau Administration › Comptes : mot de passe provisoire affiché une fois, formulaire de création, liste des comptes](img/fr/admin-comptes.png "Administration › Comptes : 1 le mot de passe provisoire (affiché une seule fois), 2 la création d'un compte, 3 la liste, 4 les actions.")
+
+- **Liste.** Identifiant, rôle (administrateur ou utilisateur), source, actif, dernière connexion, nombre de projets. Un compte déclaré dans `ONTOFORGE_AUTH_USERS` ou `ONTOFORGE_AUTH_USERS_FILE` est « géré par la configuration » : on ne le modifie pas ici (seule sa langue se règle, depuis son menu). Les comptes créés dans l'interface sont enregistrés dans le dossier de données (`accounts.json`, droits 600) et s'ajoutent à ceux de la configuration.
+- **Créer.** Un identifiant (2 à 64 caractères : minuscules, chiffres, point, tiret, soulignement), une case « Administrateur », et un mot de passe : saisi, ou généré. Un mot de passe généré s'affiche une seule fois ; notez-le et transmettez-le par un canal sûr.
+- **Première connexion.** Le mot de passe donné est provisoire : à sa première connexion, le compte voit l'écran « Choisissez votre mot de passe » et rien d'autre tant qu'il ne l'a pas changé (10 caractères au moins).
+- **Réinitialiser.** Génère un nouveau mot de passe provisoire (affiché une fois) ; les sessions ouvertes du compte sont coupées.
+- **Désactiver, réactiver.** Un compte désactivé ne peut plus se connecter et perd ses sessions immédiatement ; ses projets restent.
+- **Supprimer.** Les sessions sont coupées tout de suite et l'accès du compte aux projets des autres est retiré. Ses projets ne sont jamais supprimés : on choisit le compte qui les reçoit.
+- **Promouvoir, rétrograder.** Donne ou retire le rôle d'administrateur, avec effet immédiat. Il doit toujours rester au moins un administrateur actif : sinon l'action est refusée.
+- **Journal d'administration.** Qui a créé, réinitialisé, désactivé, supprimé, promu quel compte, et quand ; jamais un mot de passe ni un hachage.
+- **Changer son mot de passe.** Tout compte créé dans l'interface le fait depuis son menu (l'ancien mot de passe est demandé ; les essais ratés comptent dans le même limiteur que la connexion). Un compte géré par la configuration change son mot de passe là où il est défini.
+
+**Un administrateur voit tous les projets.** La liste affiche le propriétaire de chacun et un filtre « Mes projets / Partagés avec moi / Tous ». L'administrateur a, sur chaque projet, les droits du propriétaire : lire, modifier, partager, transférer, supprimer. Chaque action faite sur le projet d'un autre est tracée dans le journal d'activité du projet avec la mention « en tant qu'administrateur » (une suppression, dont le journal disparaît avec le projet, est tracée dans le journal d'administration). Pour les autres comptes, rien ne change : un projet qui ne les concerne pas est « introuvable ».
+
+![Liste des projets vue par un administrateur : filtre Mes projets / Partagés avec moi / Tous, badge Administrateur](img/fr/admin-liste-projets.png "La liste vue par un administrateur : 1 le filtre, 2 le badge « Administrateur » sur un projet d'un autre compte, 3 le propriétaire.")
 
 ## 4. Tableau de bord {#tableau-de-bord}
 

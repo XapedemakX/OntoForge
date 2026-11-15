@@ -122,3 +122,23 @@ Constat L40-03 de la relecture sécurité : hors `ONTOFORGE_PUBLIC=1`, tout comp
 2. Option explicite pour les endpoints internes nommés quand l'authentification est active : `ONTOFORGE_EGRESS_ALLOW_INTERNAL` (noms ou adresses, `*.exemple.org` accepté). Variable distincte de `ONTOFORGE_EGRESS_ALLOW` (qui reste une liste de destinations permises, restriction, sémantique inchangée en mode public) pour ne pas changer le sens d'un réglage de déploiement existant. Les adresses de métadonnées (link-local, `fd00:ec2`), multicast et non spécifiées restent refusées même listées ; contrôle après résolution, épinglage et contrôle des redirections inchangés.
 3. Les erreurs ne reprennent plus le début de la réponse d'un hôte quand le contrôle est actif, et ne citent ni l'hôte ni l'adresse résolue d'un endpoint enregistré.
 Alternative écartée : réserver aux administrateurs les endpoints temporaires en ligne (empêcherait un lecteur de tester un endpoint public). À revoir par Jerem si un usage interne est gêné : lister l'hôte, ou revenir au comportement d'avant en retirant la condition `ONTOFORGE_AUTH` dans `netguard.enabled()`.
+
+## D-L42-01 (15/11, lead, réponses de Jerem à Q-L40-1) : langue par compte, pas de génération par le lecteur, administration des comptes, administrateur sur tous les projets
+Jerem a répondu le 15/11 à Q-L40-1 ; ses quatre réponses remplacent les hypothèses (a) à (d) de D-L40-01 :
+1. **Langue par compte** : chaque compte choisit fr / en, enregistré côté serveur, appliqué à l'interface, à Krakie et aux textes générés à l'affichage ; le réglage global devient la langue par défaut des nouveaux comptes ; le sélecteur est dans le menu du compte, accessible à tous ; mode local inchangé.
+2. **Pas de génération par le lecteur** : `generate/{target}` (et son zip) reclassés en écriture (éditeur, propriétaire ; verrou, `If-Match`, journal d'activité) ; bouton désactivé « lecture seule » ; le lecteur garde la consultation et l'export de l'existant.
+3. **Compte admin avec panneau d'administration** : « Administration › Comptes » (lister, créer avec mot de passe provisoire affiché une fois, réinitialiser, désactiver, supprimer avec transfert des projets, promouvoir) ; magasin persistant 600 fusionné avec la configuration (comptes de la configuration non modifiables) ; au moins un administrateur actif ; sessions coupées immédiatement ; journal d'administration sans secret ; limiteur conservé.
+4. **L'administrateur voit tous les projets** avec les droits du propriétaire, actions tracées « en tant qu'administrateur ».
+Précisions prises à l'implémentation (à confirmer par Jerem si besoin) :
+- **Zip de génération** : classé en écriture comme `generate/{target}` (il génère à la volée), alors qu'il n'écrit pas d'historique ; cohérent avec « pas de génération par le lecteur ». Le lecteur exporte l'ontologie et les shapes. Alternative : le laisser en lecture.
+- **`GET` qui écrit** : on garde le verbe pour ne pas casser les clients ; le jeton CSRF est exigé pour ces deux routes.
+- **Compte de la configuration** : pas de changement de mot de passe depuis l'interface (409 `managed_by_config`) ; « changer son mot de passe pour tout compte » vaut pour les comptes créés dans l'interface. Alternative écartée : un mot de passe du magasin qui masque celui de la configuration, source de surprises quand la configuration change.
+- **Suppression d'un compte propriétaire de projets** : transfert obligatoire à un compte actif, jamais de suppression de projets.
+- **Traçabilité** : écritures et actions de propriétaire seulement ; les lectures d'un administrateur ne sont pas journalisées (le journal serait noyé). Une suppression de projet par un administrateur va aussi au journal d'administration.
+- **Langue** : un compte neuf reçoit la langue globale au moment de sa création ; un compte de la configuration sans choix suit le réglage global.
+Contrat : CONTRACTS §17. Pas de montée de version (D-L21-02).
+
+## D-L42-02 (15/11, Jerem) : confirmations sur L42
+- Le lecteur n'a pas l'archive zip des fichiers générés (classée avec la génération) ; il garde l'export de l'ontologie et des shapes.
+- Les comptes déclarés dans la configuration (.env) ne changent leur mot de passe que par la configuration ; les comptes créés dans l'interface le changent eux-mêmes.
+- Seules les écritures et actions de propriétaire d'un administrateur sur le projet d'un autre sont tracées, pas ses lectures.

@@ -68,6 +68,9 @@ def remove_member(pid: str, login: str) -> dict:
     ident = _ident()
     login = login.strip().lower()
     role = access.role_for(pid, ident)
+    c = access.current()
+    if c is not None and access.admin_override(pid, ident):
+        c.admin_for.add(pid)   # L42 : retrait fait en tant qu'administrateur, tracé comme tel
     if role != "owner" and login != ident.user:
         raise CollabError(403, access.msg("Seul le propriétaire peut retirer l'accès d'un autre compte.", "Only the owner can remove another account's access."), "owner_only")
     access.unshare(pid, login, ident.user)
@@ -89,7 +92,7 @@ def presence(pid: str) -> JSONResponse:
     d = access.read(pid)
     owner = d["owner"] or ident.first_admin
     who = access.beat(pid, ident.user)
-    present = [{"user": w["user"], "role": "owner" if w["user"] == owner else d["members"].get(w["user"], "owner" if not ident.auth else "reader"),
+    present = [{"user": w["user"], "role": access.role_for(pid, ident) if w["user"] == ident.user else ("owner" if w["user"] == owner else d["members"].get(w["user"], "reader")),
                 "me": w["user"] == ident.user} for w in who]
     return JSONResponse({"present": present, "rev": d["rev"], "last_actor": d["last_actor"], "last_at": d["last_at"],
                          "role": access.role_for(pid, ident), "me": ident.user, "auth": ident.auth}, headers={"Cache-Control": "no-store"})

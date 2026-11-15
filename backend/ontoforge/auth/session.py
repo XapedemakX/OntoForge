@@ -31,6 +31,7 @@ class Session:
     csrf: str
     iat: float
     exp: float
+    gen: str = ""   # L42 : génération du compte à l'émission (voir accounts.py)
 
 
 def _b64(b: bytes) -> str:
@@ -45,10 +46,10 @@ def _sign(key: bytes, body: str) -> str:
     return _b64(hmac.new(key, ("v1." + body).encode("ascii"), hashlib.sha256).digest())
 
 
-def issue(key: bytes, user: str, hours: float) -> tuple[str, Session]:
+def issue(key: bytes, user: str, hours: float, gen: str = "") -> tuple[str, Session]:
     t = now()
-    s = Session(user=user, sid=secrets.token_urlsafe(12), csrf=secrets.token_urlsafe(24), iat=t, exp=t + hours * 3600)
-    body = _b64(json.dumps({"u": s.user, "s": s.sid, "c": s.csrf, "i": int(s.iat), "e": int(s.exp)}, separators=(",", ":")).encode("utf-8"))
+    s = Session(user=user, sid=secrets.token_urlsafe(12), csrf=secrets.token_urlsafe(24), iat=t, exp=t + hours * 3600, gen=gen)
+    body = _b64(json.dumps({"u": s.user, "s": s.sid, "c": s.csrf, "i": int(s.iat), "e": int(s.exp), "g": s.gen}, separators=(",", ":")).encode("utf-8"))
     return f"v1.{body}.{_sign(key, body)}", s
 
 
@@ -60,7 +61,7 @@ def verify(key: bytes, token: Optional[str]) -> Optional[Session]:
         if ver != "v1" or not hmac.compare_digest(sig, _sign(key, body)):
             return None
         d = json.loads(_unb64(body))
-        s = Session(user=str(d["u"]), sid=str(d["s"]), csrf=str(d["c"]), iat=float(d["i"]), exp=float(d["e"]))
+        s = Session(user=str(d["u"]), sid=str(d["s"]), csrf=str(d["c"]), iat=float(d["i"]), exp=float(d["e"]), gen=str(d.get("g") or ""))
     except Exception:  # noqa: BLE001 — jeton mal formé
         return None
     if s.exp <= now() or s.iat > now() + 60:

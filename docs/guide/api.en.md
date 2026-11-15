@@ -55,6 +55,8 @@ The examples below are real responses (backend started with `ONTOFORGE_LLM_PROVI
 | POST | `/api/projects/{pid}/business-map/suggest-zones` · `/suggest-frames` · `/layout` | zone and frame suggestions, layout |
 | GET / POST / DELETE | `/api/projects/{pid}/access`, `/access/members`, `/access/transfer` | project sharing: access, roles, transfer (L40) |
 | POST / GET | `/api/projects/{pid}/presence` · `/activity` | account presence, activity log (L40) |
+| GET / POST / DELETE | `/api/admin/accounts`, `/api/admin/audit` | account administration, administrators only (L42) |
+| POST / PUT | `/api/auth/password` · `/api/auth/preferences` | change your password, pick your language (L42) |
 
 ## System {#systeme}
 
@@ -731,6 +733,8 @@ Saves the recommended option of the findings to decide (`review`) as a decision.
 
 ### `GET /api/projects/{pid}/generate/{target}` {#get-api-projects-pid-generate-target}
 
+**Write (L42).** This route records the generation history: it is reserved for the owner and editors (a reader gets 403 `read_only`), needs the `X-CSRF-Token` header with authentication, `If-Match` on a shared project (428 otherwise), and leaves a "generate" entry in the activity log.
+
 The target's files + `schema.graphql` + `README-graphql.md` + `rapport-transposition.md`, taking the decisions into account. Response: `{files: {name: content}}` (sizes in bytes on automaint: `Connector.cs` 65516, `Edges.cs` 7479, `README-curiosity.md` 22903, `RegisterSchema.cs` 1973, `Schema.cs` 18624, `schema.graphql` 26451, `README-graphql.md` 3106, `rapport-transposition.md` 33721).
 
 **Response 200**
@@ -752,7 +756,7 @@ For Neo4j: `README-neo4j.md`, `ingest.cypher`, `model.mmd`, `schema.cypher`, `va
 
 ### `GET /api/projects/{pid}/generate/{target}/zip` {#get-api-projects-pid-generate-target-zip}
 
-The same files as an archive (same `?lang=fr|en` parameter). Actual headers: `content-type: application/zip`, `content-disposition: attachment; filename="<pid>-neo4j.zip"`.
+The same files as an archive (same `?lang=fr|en` parameter). Like `generate/{target}`, it is a write (L42): owner and editors only, CSRF token, `If-Match` on a shared project; a reader gets 403 `read_only`. Actual headers: `content-type: application/zip`, `content-disposition: attachment; filename="<pid>-neo4j.zip"`.
 
 ## Queries {#requetes}
 
@@ -1092,8 +1096,31 @@ Available with authentication on (without it: an implicit "local" user owns ever
 | POST | `/presence` | read | heartbeat (every ~20 s) → `{present:[{user, role, me}], rev, last_actor, last_at, role, me}`; expires after 60 s |
 | GET | `/activity?limit=100` | read | log `[{at, user, action, detail?}]`, most recent first (500 entries kept) |
 
-`GET /api/projects` adds `owner`, `role` (`owner`, `editor`, `reader`) and `shared` to each summary.
+`GET /api/projects` adds `owner`, `role` (`owner`, `editor`, `reader`), `shared` and `via_admin` to each summary. An administrator receives every project: `via_admin: true` marks other accounts' projects the administrator is not invited to (effective role `owner`).
 
 **Version and conflicts.** Every successful project-route response carries `ETag: "<rev>"`; `rev` increases when `project.json` changes. A write sends `If-Match: "<rev>"`: if the version changed, **409** `{code: "conflict", current_rev, last_actor, last_at}` and nothing is written. Without `If-Match`, the write goes through on an unshared project; on a shared project it answers **428** `precondition_required`. `If-Match: *` turns the check off.
 
 **Settings.** `PUT`, `POST` and `DELETE` under `/api/settings` (including the `/test` routes) answer 403 `admin_only` to accounts that are not administrators; `GET /api/settings` returns them a reduced view (provider name, type and model; endpoint names, without addresses).
+
+### Accounts and administration — `/api/admin` {#administration-api}
+
+Administrators only (403 `admin_only` for the others, 401 without a session). Without authentication: 409 `auth_required_for_accounts`. Configuration accounts answer 409 `managed_by_config` to any change. A password with fewer than 10 characters is refused (422 `password_too_short`).
+
+| Method | Path | Role |
+|---|---|---|
+| GET | `/accounts` | `{accounts:[{login, source: config\|interface, managed, admin, active, must_change, created_at, last_login, lang, projects}]}`; never a hash |
+| POST | `/accounts` | `{login, password?, admin?}` → 201 `{account, provisional_password}`; without `password`, a provisional password is generated and returned ONCE (`null` otherwise); 409 `login_taken`, 422 `bad_login` |
+| POST | `/accounts/{login}/reset-password` | `{password?}` → `{account, provisional_password}`; cuts the sessions, forces a change |
+| POST | `/accounts/{login}/disable` · `/enable` | disables (sessions cut) or re-enables; 409 `last_admin` if it is the last active administrator |
+| POST | `/accounts/{login}/admin` | `{admin: bool}`: promotes or demotes; 409 `last_admin` |
+| DELETE | `/accounts/{login}?transfer_to=<login>` | deletes; if it owns projects, `transfer_to` (an existing active account) is required (409 `transfer_required`); → `{ok, projects_moved, transferred_to}` |
+| GET | `/audit?limit=200` | administration log `[{at, actor, action, target, detail?}]`, most recent first; never a password |
+
+Current account, for any signed-in account (routes under `/api/auth`, which check the session and the CSRF token themselves):
+
+| Method | Path | Role |
+|---|---|---|
+| POST | `/auth/password` | `{current, new}`: changes your password (403 `bad_current_password`, 422 `password_too_short` or `password_unchanged`, 409 `managed_by_config`); same limiter as sign-in (429); returns the renewed session (new `csrf`) |
+| PUT | `/auth/preferences` | `{lang: fr\|en}`: the account's language, stored on the server |
+
+`GET /api/auth/session` adds `must_change`, `source` and `lang` (the account's language). While `must_change` is true, every other `/api` route answers 403 `password_change_required`.

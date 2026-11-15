@@ -48,7 +48,7 @@ KNOWN_EXAMPLES=(
   'sk-ant-SECRET-1234567890abcd'   # backend/tests/test_settings_api.py
 )
 fail=0
-PATTERN='sk-ant-[A-Za-z0-9_-]{20,}|AIza[0-9A-Za-z_-]{30,}|AQ\.Ab[0-9A-Za-z_.-]{20,}|ghp_[A-Za-z0-9]{30,}|nvapi-[A-Za-z0-9_-]{20,}|-----BEGIN [A-Z ]*(PRIVATE KEY|CERTIFICATE|PGP)'
+PATTERN='sk-ant-[A-Za-z0-9_-]{20,}|AIza[0-9A-Za-z_-]{30,}|AQ\.Ab[0-9A-Za-z_.-]{20,}|ghp_[A-Za-z0-9]{30,}|nvapi-[A-Za-z0-9_-]{20,}|-----BEGIN [A-Z ]*(PRIVATE KEY|CERTIFICATE|PGP)|\$argon2id\$v=[0-9]+\$m=[0-9]+,t=[0-9]+,p=[0-9]+\$[A-Za-z0-9+/]{16,}\$[A-Za-z0-9+/]{20,}'
 hits="$(grep -rIEno "$PATTERN" "$STAGE" 2>/dev/null || true)"
 while IFS= read -r line; do
   [ -n "$line" ] || continue

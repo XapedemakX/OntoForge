@@ -1,4 +1,12 @@
 {
+"en/admin-comptes.png": [
+1280,
+772
+],
+"en/admin-liste-projets.png": [
+1280,
+772
+],
 "en/analyse-constat.png": [
 1188,
 341
@@ -42,6 +50,10 @@
 "en/carte-metier.png": [
 1280,
 800
+],
+"en/compte-langue.png": [
+1280,
+772
 ],
 "en/conformite-profils.png": [
 1280,
@@ -271,6 +283,14 @@
 1280,
 800
 ],
+"fr/admin-comptes.png": [
+1280,
+772
+],
+"fr/admin-liste-projets.png": [
+1280,
+772
+],
 "fr/analyse-constat.png": [
 1188,
 341
@@ -314,6 +334,10 @@
 "fr/carte-metier.png": [
 1280,
 800
+],
+"fr/compte-langue.png": [
+1280,
+772
 ],
 "fr/conformite-profils.png": [
 1280,

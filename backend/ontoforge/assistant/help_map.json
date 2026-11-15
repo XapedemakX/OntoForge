@@ -300,6 +300,30 @@
     "fr": "La carte métier dessine le schéma en zones métier teintées. Survolez un type pour voir ses relations, glissez-le pour l'épingler, puis exportez en SVG ou en PNG.",
     "en": "The business map draws the schema in tinted business zones. Hover a type to see its relationships, drag it to pin it, then export to SVG or PNG."
    }
+  },
+  "admin": {
+   "page": "utilisateur",
+   "anchor": "administration-des-comptes",
+   "title": {
+    "fr": "Administration des comptes",
+    "en": "Account administration"
+   },
+   "summary": {
+    "fr": "Les administrateurs créent les comptes (mot de passe provisoire à changer à la première connexion), les réinitialisent, désactivent, suppriment ou promeuvent, et consultent le journal d'administration. Un administrateur voit tous les projets.",
+    "en": "Administrators create accounts (provisional password to change at first sign-in), reset, disable, delete or promote them, and read the administration log. An administrator sees every project."
+   }
+  },
+  "account-language": {
+   "page": "utilisateur",
+   "anchor": "langue-de-l-interface",
+   "title": {
+    "fr": "Langue de l'interface",
+    "en": "Interface language"
+   },
+   "summary": {
+    "fr": "Chaque compte choisit sa langue (français ou anglais) dans le menu du compte : elle s'applique à l'interface, aux réponses de Krakie et aux textes générés, pour lui seul. Le réglage global est la langue par défaut des nouveaux comptes.",
+    "en": "Each account picks its own language (French or English) in the account menu: it applies to the interface, Krakie's answers and generated texts, for that account only. The global setting is the default language for new accounts."
+   }
   }
  }
 }

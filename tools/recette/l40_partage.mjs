@@ -62,6 +62,9 @@ const open = async (who, { locale = 'fr-FR', scheme = 'light', lang = 'fr', vp =
   await page.waitForSelector('[data-testid=login]')
   await page.fill('[data-testid=login-user]', who); await page.fill('[data-testid=login-password]', PW[who]); await page.click('[data-testid=login-submit]')
   await page.waitForSelector('[data-testid=logout]', { timeout: 10000 })
+  // L42 : la langue d'interface est celle du compte (côté serveur) ; on la fixe pour la capture
+  const cur = await page.evaluate(() => document.documentElement.lang)
+  if (cur !== lang) { await page.evaluate(async l => { const csrf = (await (await fetch('/api/auth/session')).json()).csrf; await fetch('/api/auth/preferences', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf }, body: JSON.stringify({ lang: l }) }) }, lang); await page.reload(); await page.waitForSelector('[data-testid=logout]') }
   return { ctx, page }
 }
 const calm = async page => { try { await page.waitForFunction(() => document.querySelectorAll('.toast').length === 0, null, { timeout: 7000 }) } catch {} await sleep(150) }

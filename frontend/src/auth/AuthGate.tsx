@@ -1,6 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useI18n, type Lang } from '../i18n'
 import { Login } from './Login'
+import { ChangePassword } from './ChangePassword'
+import { api } from '../api'
 import { conflictFrom, forceRev, noteRev, projectOf, queued, getRev, tracksRev } from '../collab/rev'
 import './auth.css'
 
@@ -9,12 +11,22 @@ import './auth.css'
  * (usage local, docker compose) l'application s'ouvre directement. Le jeton CSRF est ajouté par un `fetch` global à toute requête
  * /api qui modifie, et un 401 renvoie à la page de connexion.
  */
-export interface AuthState { enabled: boolean; user: string | null; admin: boolean; logout: () => Promise<void> }
-const Ctx = createContext<AuthState>({ enabled: false, user: null, admin: true, logout: async () => {} })
+export interface AuthState {
+  enabled: boolean; user: string | null; admin: boolean; logout: () => Promise<void>
+  /** L42 : « config » = compte géré par la configuration (mot de passe non modifiable ici) ; « interface » = créé par un administrateur. */
+  source: 'config' | 'interface' | null
+  /** Langue d'interface du compte, enregistrée côté serveur ; le changement s'applique tout de suite à cet écran seulement. */
+  setAccountLang: (l: Lang) => Promise<void>
+  /** Remplace la session après un changement de mot de passe (nouveau jeton CSRF). */
+  renewed: (csrf: string) => void
+}
+const Ctx = createContext<AuthState>({ enabled: false, user: null, admin: true, source: null, logout: async () => {}, setAccountLang: async () => {}, renewed: () => {} })
 export const useAuth = () => useContext(Ctx)
 
 let csrf: string | null = null
 const SAFE = new Set(['GET', 'HEAD', 'OPTIONS'])
+/** L42 : la génération (GET) écrit l'historique du projet : traitée comme une écriture (jeton CSRF, version, file d'attente par projet). */
+const WRITE_GET = /\/api\/projects\/[^/?#]+\/generate\/[^/?#]+(\/zip)?(\?|#|$)/
 if (typeof window !== 'undefined' && !(window as unknown as { __ofFetch?: boolean }).__ofFetch) {
   (window as unknown as { __ofFetch?: boolean }).__ofFetch = true
   const orig = window.fetch.bind(window)
@@ -22,7 +34,7 @@ if (typeof window !== 'undefined' && !(window as unknown as { __ofFetch?: boolea
     const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
     const isApi = url.startsWith('/api/') || url.startsWith(location.origin + '/api/')
     const method = (init?.method ?? (input instanceof Request ? input.method : 'GET')).toUpperCase()
-    const write = isApi && !SAFE.has(method)
+    const write = isApi && (!SAFE.has(method) || WRITE_GET.test(url))
     if (write && csrf) {
       const h = new Headers(init?.headers ?? (input instanceof Request ? input.headers : undefined))
       h.set('X-CSRF-Token', csrf)
@@ -55,12 +67,13 @@ if (typeof window !== 'undefined' && !(window as unknown as { __ofFetch?: boolea
     }
     const r = write && pid ? await queued(pid, send) : await send()
     if (r.status === 401 && isApi && !url.includes('/api/auth/')) dispatchEvent(new Event('ontoforge:auth-required'))
+    if (r.status === 403 && isApi && !url.includes('/api/auth/')) { const j = await r.clone().json().catch(() => ({})); if (j.code === 'password_change_required') dispatchEvent(new Event('ontoforge:must-change')) }
     return r
   }
 }
 
-export interface SessionInfo { enabled: boolean; authenticated: boolean; user: string | null; admin?: boolean; csrf: string | null; lang?: string; session_hours?: number }
-type Phase = 'loading' | 'login' | 'open'
+export interface SessionInfo { enabled: boolean; authenticated: boolean; user: string | null; admin?: boolean; csrf: string | null; lang?: string; session_hours?: number; must_change?: boolean; source?: 'config' | 'interface' | null }
+type Phase = 'loading' | 'login' | 'change' | 'open'
 
 export function AuthGate({ children }: { children: ReactNode }) {
   const { setLang } = useI18n()
@@ -70,7 +83,9 @@ export function AuthGate({ children }: { children: ReactNode }) {
   const apply = useCallback((s: SessionInfo) => {
     csrf = s.csrf
     setInfo(s)
-    setPhase(!s.enabled || s.authenticated ? 'open' : 'login')
+    if (s.enabled && s.authenticated && (s.lang === 'fr' || s.lang === 'en')) setLang(s.lang)   // L42 : la langue du compte l'emporte, côté serveur
+    setPhase(!s.enabled || s.authenticated ? (s.must_change ? 'change' : 'open') : 'login')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   useEffect(() => {
     let live = true
@@ -80,7 +95,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
         let saved: string | null = null
         try { saved = localStorage.getItem('ontoforge.lang') } catch { /* stockage indisponible */ }
         const l = (saved ?? s.lang ?? (navigator.language || 'fr').slice(0, 2)) as string
-        if (s.enabled && !s.authenticated && (l === 'fr' || l === 'en')) setLang(l as Lang)
+        if (s.enabled && !s.authenticated && (l === 'fr' || l === 'en')) setLang(l as Lang)   // page de connexion : choix fait avant la connexion
         apply(s)
       })
       .catch(() => { if (live) setPhase('open') })   // serveur injoignable : l'application affiche ses propres erreurs
@@ -100,9 +115,22 @@ export function AuthGate({ children }: { children: ReactNode }) {
     setPhase('login')
     location.hash = '#/'
   }, [])
-  const value = useMemo<AuthState>(() => ({ enabled: !!info?.enabled, user: info?.user ?? null, admin: info?.admin !== false, logout }), [info?.enabled, info?.user, info?.admin, logout])
+  useEffect(() => {
+    const f = () => setPhase(p => (p === 'open' ? 'change' : p))
+    addEventListener('ontoforge:must-change', f)
+    return () => removeEventListener('ontoforge:must-change', f)
+  }, [])
+  const setAccountLang = useCallback(async (l: Lang) => {
+    await api.setAccountLang(l)
+    setLang(l); setInfo(i => (i ? { ...i, lang: l } : i))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  const renewed = useCallback((c: string) => { csrf = c; setInfo(i => (i ? { ...i, csrf: c, must_change: false } : i)); setPhase('open') }, [])
+  const value = useMemo<AuthState>(() => ({ enabled: !!info?.enabled, user: info?.user ?? null, admin: info?.admin !== false, source: info?.source ?? null, logout, setAccountLang, renewed }),
+    [info?.enabled, info?.user, info?.admin, info?.source, logout, setAccountLang, renewed])
 
   if (phase === 'loading') return <div className="auth-boot" aria-busy="true" />
-  if (phase === 'login') return <Login hours={info?.session_hours} onSuccess={s => { apply(s); dispatchEvent(new Event('ontoforge:authed')) }} />
+  if (phase === 'change') return <ChangePassword user={info?.user ?? ''} onDone={renewed} onLogout={() => void logout()} />
+  if (phase === 'login') return <Login hours={info?.session_hours} onSuccess={s => { apply(s); dispatchEvent(new Event('ontoforge:authed')); try { localStorage.removeItem('ontoforge.lang') } catch { /* ignoré */ } }} />
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }

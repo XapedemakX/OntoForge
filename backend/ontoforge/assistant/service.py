@@ -65,8 +65,8 @@ def _provider(provider_id: Optional[str] = None):
 
 
 def _assistant_lang() -> str:
-    from ..settings import store
-    return store.load(persist=False).language.assistant
+    from ..localize import assistant_lang
+    return assistant_lang()   # L42 : langue du compte connecté, sinon réglage global
 
 
 def _default_base() -> Optional[str]:

@@ -11,13 +11,13 @@ export function ActivityCard({ pid, rev }: { pid: string; rev: string }) {
   const log = useLoad(() => (auth.enabled ? api.activity(pid) : Promise.resolve([])), [pid, rev, auth.enabled])
   if (!auth.enabled) return null
   const fmt = (iso: string) => new Date(iso).toLocaleString(lang, { dateStyle: 'short', timeStyle: 'short' })
-  const known = new Set(['create', 'share', 'role', 'unshare', 'leave', 'transfer', 'migrate', 'project', 'ontology', 'shapes', 'import', 'decisions', 'perimeters', 'business_map', 'files', 'queries', 'store', 'versions', 'edit'])
+  const known = new Set(['create', 'share', 'role', 'unshare', 'leave', 'transfer', 'migrate', 'project', 'ontology', 'shapes', 'import', 'decisions', 'perimeters', 'business_map', 'files', 'queries', 'store', 'versions', 'edit', 'generate'])
   return (
     <Card title={t('collab.activity')}>
       {(log.data ?? []).length === 0 ? <p className="muted">{t('collab.activity.none')}</p> : (
         <ul className="collab-activity" data-testid="activity">
           {(log.data ?? []).slice(0, 12).map((e, i) => (
-            <li key={i}><span className="muted">{fmt(e.at)}</span> <b>{e.user}</b> {t('collab.act.' + (known.has(e.action) ? e.action : 'edit'), { login: e.detail?.login ?? '', role: e.detail?.role ? t('collab.role.' + e.detail.role) : '' })}</li>))}
+            <li key={i}><span className="muted">{fmt(e.at)}</span> <b>{e.user}</b> {t('collab.act.' + (known.has(e.action) ? e.action : 'edit'), { login: e.detail?.login ?? '', role: e.detail?.role ? t('collab.role.' + e.detail.role) : '' })}{e.detail?.as_admin && <span className="badge review" style={{ marginLeft: 6 }} data-testid="as-admin">{t('collab.asAdmin')}</span>}</li>))}
         </ul>)}
     </Card>
   )

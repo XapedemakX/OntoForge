@@ -5,6 +5,8 @@ import { ErrorView, useToast } from '../ui'
 import { useI18n } from '../i18n'
 import { Projects } from '../screens/Projects'
 import { Settings } from '../screens/Settings'
+import { Admin } from '../screens/admin/Admin'
+import { AccountMenu } from '../auth/AccountMenu'
 import { useActiveEndpoint } from '../screens/settings/activeEndpoint'
 import { AssistantDock } from '../assistant-global'
 import { VersionsNudge } from '../screens/versions/VersionsNudge'
@@ -25,10 +27,11 @@ import type { ScreenProps } from './types'
 
 const Documentation = lazy(() => import('../screens/documentation/Documentation').then(m => ({ default: m.Documentation })))
 
-type Route = { kind: 'projects' } | { kind: 'settings' } | { kind: 'help' } | { kind: 'project'; id: string; screen: string }
+type Route = { kind: 'projects' } | { kind: 'settings' } | { kind: 'admin' } | { kind: 'help' } | { kind: 'project'; id: string; screen: string }
 function parseHash(): Route {
   const h = location.hash
   if (h.startsWith('#/parametres')) return { kind: 'settings' }
+  if (h.startsWith('#/administration')) return { kind: 'admin' }  // L42 : administration des comptes (administrateurs)
   if (h.startsWith('#/aide')) return { kind: 'help' }  // L38 : le guide hors projet (depuis les Paramètres)
   const m = h.match(/^#\/projet\/([^/]+)(?:\/([\w-]+))?/)
   return m ? { kind: 'project', id: decodeURIComponent(m[1]), screen: m[2] || 'tableau' } : { kind: 'projects' }
@@ -160,6 +163,7 @@ export function Shell() {
           </>}
         </nav>
         <div className="side-foot">
+          {auth.enabled && auth.admin && navItem('admin', 'nav.admin', 'user-shield', route.kind === 'admin', () => { location.hash = '#/administration' })}
           {navItem('settings', 'nav.parametres', 'gear', route.kind === 'settings', () => { location.hash = '#/parametres' })}
           {desk && <button type="button" className="side-toggle" data-testid="side-toggle" aria-expanded={!collapsed} aria-keyshortcuts="Control+B"
             aria-label={t(collapsed ? 'nav.expandTip' : 'nav.collapseTip')} data-tip={collapsed ? t('nav.expandTip') : undefined} onClick={toggleSide}>
@@ -172,7 +176,7 @@ export function Shell() {
         <header className="topbar">
           <IconButton className="menu-btn" icon="bars" label={t('nav.menu')} onClick={() => setMenu(m => !m)} />
           <Logo variant="mark" className="logo-top" />
-          <div className="crumb">{p && pid ? <><b title={p.name}>{p.name}</b>{def && <span className="muted"> / {t(def.labelKey)}</span>}</> : <b>{route.kind === 'settings' ? t('nav.parametres') : route.kind === 'help' ? t('nav.documentation') : t('common.projects')}</b>}</div>
+          <div className="crumb">{p && pid ? <><b title={p.name}>{p.name}</b>{def && <span className="muted"> / {t(def.labelKey)}</span>}</> : <b>{route.kind === 'settings' ? t('nav.parametres') : route.kind === 'admin' ? t('nav.admin') : route.kind === 'help' ? t('nav.documentation') : t('common.projects')}</b>}</div>
           <span className="grow" />
           {p && <>
             <span className="tour-wrap" data-tour="target" data-ro-write><Segmented label={t('head.target')} value={target} onChange={setTarget} items={[['curiosity', 'Curiosity'], ['neo4j', 'Neo4j']]} /></span>
@@ -187,8 +191,10 @@ export function Shell() {
           {route.kind === 'settings' && <IconButton icon="circle-question" label={t('docs.helpBtn')} data-testid="help-btn" onClick={() => {
             const c = getAssistantContext(), sec = c.screen === 'settings' && typeof c.extra?.section === 'string' ? c.extra.section : ''
             const h = helpFor(sec ? 'settings-' + sec : 'settings'); openDoc(null, h.page, h.anchor) }} />}
+          {route.kind === 'admin' && <IconButton icon="circle-question" label={t('docs.helpBtn')} data-testid="help-btn" onClick={() => { const h = helpFor('admin'); openDoc(null, h.page, h.anchor) }} />}
           <IconButton icon="route" label={t('tour.btn')} onClick={() => void tour.start()} />
           <IconButton icon={themeIcon} label={t('head.theme.' + themePref)} onClick={cycleTheme} />
+          {auth.enabled && <AccountMenu />}
           {auth.enabled && <button type="button" className="btn sm ghost logout" data-testid="logout" title={auth.user ?? ''} onClick={() => void auth.logout()}><Icon name="right-from-bracket" /><span>{t('auth.logout')}</span></button>}
         </header>
         {p && pid && <StaleBanner collab={collab} />}
@@ -196,6 +202,7 @@ export function Shell() {
           {def?.editing && <div className="notice soon mobile-only">{t('head.mobileReadOnly')}</div>}
           {route.kind === 'projects' && <Projects />}
           {route.kind === 'settings' && <Settings />}
+          {route.kind === 'admin' && (auth.admin ? <Admin /> : <div className="page"><div className="notice error" role="alert" data-testid="admin-denied"><div>{t('adm.denied')}</div></div></div>)}
           {route.kind === 'help' && <Suspense fallback={<div className="page muted">…</div>}><Documentation /></Suspense>}
           {route.kind === 'project' && err != null && <div className="page"><ErrorView error={err} what={t('common.projects')} /></div>}
           {sp && (def ? <Suspense key={def.key + ':' + reloadKey} fallback={<div className="page muted">…</div>}>{def.render(sp)}</Suspense> : <div className="page"><ErrorView error={new Error('?')} /></div>)}

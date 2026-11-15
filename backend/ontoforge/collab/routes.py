@@ -18,7 +18,8 @@ ROUTES: dict[tuple[str, str], tuple[str, str]] = {
     ("POST", P + "/shacl/generate"): (W, "shapes"), ("POST", P + "/shacl/validate"): (R, ""),
     ("POST", P + "/analyze"): (R, ""), ("PUT", P + "/decisions/{target}"): (W, "decisions"),
     ("POST", P + "/decisions/{target}/accept-recommended"): (W, "decisions"),
-    ("GET", P + "/generate/{target}"): (R, ""), ("GET", P + "/generations"): (R, ""), ("GET", P + "/generate/{target}/zip"): (R, ""),
+    # L42 (D-L42-01) : générer écrit l'historique (generations.json) : éditeur et propriétaire seulement ; le lecteur consulte l'historique
+    ("GET", P + "/generate/{target}"): (W, "generate"), ("GET", P + "/generations"): (R, ""), ("GET", P + "/generate/{target}/zip"): (W, "generate"),
     ("POST", P + "/queries/translate"): (R, ""), ("GET", P + "/queries/competency"): (R, ""),
     ("POST", P + "/ops"): (W, "ontology"), ("GET", P + "/ops/history"): (R, ""),
     ("POST", P + "/ops/undo"): (W, "ontology"), ("POST", P + "/ops/redo"): (W, "ontology"), ("GET", P + "/graph"): (R, ""),
@@ -54,12 +55,14 @@ BODY_PROJECT_ROUTES: dict[tuple[str, str], str] = {
 NO_PROJECT: set[tuple[str, str]] = {
     ("GET", "/api/health"), ("GET", "/api/samples"), ("GET", "/api/standards"), ("GET", "/api/icons"),
     ("GET", "/api/auth/session"), ("POST", "/api/auth/login"), ("POST", "/api/auth/logout"),
+    ("POST", "/api/auth/password"), ("PUT", "/api/auth/preferences"),   # L42 : le garde d'authentification les laisse passer, ils contrôlent la session eux-mêmes
     ("GET", "/api/projects"), ("POST", "/api/projects"),
     ("GET", "/api/assistant/status"), ("POST", "/api/assistant/draft"), ("POST", "/api/assistant/upload"),
     ("GET", "/api/assistant/document/demo"), ("POST", "/api/assistant/document/upload"), ("POST", "/api/assistant/document/estimate"),
 }
 
 SETTINGS_PREFIX = "/api/settings"
+ADMIN_PREFIX = "/api/admin"   # L42 : toutes les routes d'administration des comptes (administrateurs seulement, 403 admin_only)
 
 
 def is_settings_write(method: str, path: str) -> bool:

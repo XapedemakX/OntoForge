@@ -55,6 +55,8 @@ Les exemples ci-dessous sont des réponses réelles (backend lancé avec `ONTOFO
 | POST | `/api/projects/{pid}/business-map/suggest-zones` · `/suggest-frames` · `/layout` | propositions de zones et de cadres, mise en page |
 | GET / POST / DELETE | `/api/projects/{pid}/access`, `/access/members`, `/access/transfer` | partage d'un projet : accès, rôles, transfert (L40) |
 | POST / GET | `/api/projects/{pid}/presence` · `/activity` | présence des comptes, journal d'activité (L40) |
+| GET / POST / DELETE | `/api/admin/accounts`, `/api/admin/audit` | administration des comptes, administrateurs seulement (L42) |
+| POST / PUT | `/api/auth/password` · `/api/auth/preferences` | changer son mot de passe, choisir sa langue (L42) |
 
 ## Système {#systeme}
 
@@ -731,6 +733,8 @@ Enregistre l'option recommandée des constats à arbitrer (`review`) comme déci
 
 ### `GET /api/projects/{pid}/generate/{target}` {#get-api-projects-pid-generate-target}
 
+**Écriture (L42).** Cette route enregistre l'historique des générations : elle est réservée au propriétaire et aux éditeurs (un lecteur reçoit 403 `read_only`), exige le jeton `X-CSRF-Token` avec l'authentification, `If-Match` sur un projet partagé (428 sinon), et laisse une entrée « generate » dans le journal d'activité.
+
 Fichiers de la cible + `schema.graphql` + `README-graphql.md` + `rapport-transposition.md`, en tenant compte des décisions. Réponse : `{files: {nom: contenu}}` (tailles en octets sur automaint : `Connector.cs` 65516, `Edges.cs` 7479, `README-curiosity.md` 22903, `RegisterSchema.cs` 1973, `Schema.cs` 18624, `schema.graphql` 26451, `README-graphql.md` 3106, `rapport-transposition.md` 33721).
 
 **Réponse 200**
@@ -752,7 +756,7 @@ Pour Neo4j : `README-neo4j.md`, `ingest.cypher`, `model.mmd`, `schema.cypher`, `
 
 ### `GET /api/projects/{pid}/generate/{target}/zip` {#get-api-projects-pid-generate-target-zip}
 
-Les mêmes fichiers en archive (même paramètre `?lang=fr|en`). En-têtes réels : `content-type: application/zip`, `content-disposition: attachment; filename="<pid>-neo4j.zip"`.
+Les mêmes fichiers en archive (même paramètre `?lang=fr|en`). Comme `generate/{target}`, c'est une écriture (L42) : propriétaire et éditeur seulement, jeton CSRF, `If-Match` sur un projet partagé ; un lecteur reçoit 403 `read_only`. En-têtes réels : `content-type: application/zip`, `content-disposition: attachment; filename="<pid>-neo4j.zip"`.
 
 ## Requêtes {#requetes}
 
@@ -1092,8 +1096,31 @@ Disponibles avec l'authentification activée (sans elle : un utilisateur implici
 | POST | `/presence` | lecture | battement (toutes les ~20 s) → `{present:[{user, role, me}], rev, last_actor, last_at, role, me}` ; expiration à 60 s |
 | GET | `/activity?limit=100` | lecture | journal `[{at, user, action, detail?}]`, le plus récent d'abord (500 entrées conservées) |
 
-`GET /api/projects` ajoute `owner`, `role` (`owner`, `editor`, `reader`) et `shared` à chaque résumé.
+`GET /api/projects` ajoute `owner`, `role` (`owner`, `editor`, `reader`), `shared` et `via_admin` à chaque résumé. Un administrateur reçoit tous les projets : `via_admin: true` marque ceux d'un autre compte auxquels il n'est pas invité (rôle effectif `owner`).
 
 **Version et conflits.** Toute réponse d'une route de projet réussie porte `ETag: "<rev>"` ; `rev` augmente quand `project.json` change. Une écriture envoie `If-Match: "<rev>"` : si la version a changé, **409** `{code: "conflict", current_rev, last_actor, last_at}` et rien n'est écrit. Sans `If-Match`, l'écriture passe sur un projet non partagé ; sur un projet partagé elle répond **428** `precondition_required`. `If-Match: *` désactive le contrôle.
 
 **Réglages.** `PUT`, `POST` et `DELETE` sous `/api/settings` (y compris les routes `/test`) répondent 403 `admin_only` aux comptes qui ne sont pas administrateurs ; `GET /api/settings` renvoie à ceux-là une vue réduite (nom, type, modèle des fournisseurs ; nom des endpoints, sans adresse).
+
+### Comptes et administration — `/api/admin` {#administration-api}
+
+Réservé aux administrateurs (403 `admin_only` pour les autres, 401 sans session). Sans authentification : 409 `auth_required_for_accounts`. Les comptes de la configuration répondent 409 `managed_by_config` à toute modification. Un mot de passe est refusé s'il a moins de 10 caractères (422 `password_too_short`).
+
+| Méthode | Chemin | Rôle |
+|---|---|---|
+| GET | `/accounts` | `{accounts:[{login, source: config\|interface, managed, admin, active, must_change, created_at, last_login, lang, projects}]}` ; jamais de hachage |
+| POST | `/accounts` | `{login, password?, admin?}` → 201 `{account, provisional_password}` ; sans `password`, un mot de passe provisoire est généré et renvoyé UNE fois (`null` sinon) ; 409 `login_taken`, 422 `bad_login` |
+| POST | `/accounts/{login}/reset-password` | `{password?}` → `{account, provisional_password}` ; coupe les sessions, impose le changement |
+| POST | `/accounts/{login}/disable` · `/enable` | désactive (sessions coupées) ou réactive ; 409 `last_admin` si c'est le dernier administrateur actif |
+| POST | `/accounts/{login}/admin` | `{admin: bool}` : promeut ou rétrograde ; 409 `last_admin` |
+| DELETE | `/accounts/{login}?transfer_to=<login>` | supprime ; s'il possède des projets, `transfer_to` (compte actif existant) est obligatoire (409 `transfer_required`) ; → `{ok, projects_moved, transferred_to}` |
+| GET | `/audit?limit=200` | journal d'administration `[{at, actor, action, target, detail?}]`, le plus récent d'abord ; jamais de mot de passe |
+
+Compte courant, pour tout compte connecté (routes sous `/api/auth`, qui contrôlent elles-mêmes la session et le jeton CSRF) :
+
+| Méthode | Chemin | Rôle |
+|---|---|---|
+| POST | `/auth/password` | `{current, new}` : change son mot de passe (403 `bad_current_password`, 422 `password_too_short` ou `password_unchanged`, 409 `managed_by_config`) ; même limiteur que la connexion (429) ; renvoie la session renouvelée (nouveau `csrf`) |
+| PUT | `/auth/preferences` | `{lang: fr\|en}` : langue du compte, enregistrée côté serveur |
+
+`GET /api/auth/session` ajoute `must_change`, `source` et `lang` (langue du compte). Tant que `must_change` vaut vrai, toute autre route `/api` répond 403 `password_change_required`.

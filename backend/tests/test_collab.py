@@ -10,7 +10,7 @@ from starlette.routing import Mount
 from ontoforge.auth import limiter, passwords
 from ontoforge.collab import access
 from ontoforge.collab.middleware import CollabMiddleware
-from ontoforge.collab.routes import BODY_PROJECT_ROUTES, NO_PROJECT, ROUTES, SETTINGS_PREFIX
+from ontoforge.collab.routes import ADMIN_PREFIX, BODY_PROJECT_ROUTES, NO_PROJECT, ROUTES, SETTINGS_PREFIX
 
 PW = "correct horse battery"
 HASH = passwords.hash_password(PW)
@@ -50,7 +50,7 @@ class User:
 
     def req(self, method, url, rev="*", **kw):
         h = {"X-CSRF-Token": self.csrf, **kw.pop("headers", {})}
-        if rev is not None and method not in ("GET", "HEAD"):
+        if rev is not None and (method not in ("GET", "HEAD") or "/generate/" in url):   # L42 : la génération est une écriture
             h["If-Match"] = str(rev)
         return self.c.request(method, url, headers=h, **kw)
 
@@ -110,6 +110,8 @@ def test_every_route_is_classified(app):
             ok = (m, path) in ROUTES
         elif path == SETTINGS_PREFIX or path.startswith(SETTINGS_PREFIX + "/"):
             ok = True    # écritures réservées aux administrateurs par le garde
+        elif path == ADMIN_PREFIX or path.startswith(ADMIN_PREFIX + "/"):
+            ok = True    # L42 : administration des comptes, réservée aux administrateurs par le garde (test_l42_admin.py)
         else:
             ok = (m, path) in NO_PROJECT or (m, path) in BODY_PROJECT_ROUTES
         if not ok:
@@ -585,11 +587,11 @@ def test_l40_03_auth_enables_netguard_for_any_account(users):
 
 
 def _tree(pid):
-    """Empreinte du dossier du projet. Seul fichier annexe d'historique exclu : ``generations.json`` (comme collab.json, hors modèle du projet)."""
+    """Empreinte de TOUS les fichiers du dossier du projet (L42 : plus d'exception pour ``generations.json`` : un lecteur n'écrit rien du tout)."""
     from ontoforge.projects import store
     out = {}
     for f in sorted(store.project_dir(pid).rglob("*")):
-        if f.is_file() and f.name != "generations.json":
+        if f.is_file():
             st = f.stat()
             out[str(f.relative_to(store.project_dir(pid)))] = (st.st_size, st.st_mtime_ns, hashlib.sha256(f.read_bytes()).hexdigest())
     return out
@@ -615,11 +617,14 @@ def test_l40_02_no_read_route_modifies_the_project_folder(users):
         assert r.status_code != 403, (method, template, r.text)   # le lecteur a bien le droit : la route a été réellement atteinte
         assert _tree(pid) == before, f"{method} {template} a modifié le dossier du projet"
     assert served == len(reads) - 1
-    for t in ("curiosity", "neo4j"):   # la génération elle-même, deux fois, avec son historique
-        assert b.get(f"/api/projects/{pid}/generate/{t}", rev=None).status_code == 200
-        assert b.get(f"/api/projects/{pid}/generate/{t}/zip", rev=None).status_code == 200
-    assert _tree(pid) == before, "project.json ou un autre fichier a changé"
-    assert len(b.get(f"/api/projects/{pid}/generations", rev=None).json()) == 3   # 1 (balayage) + 2 ; l historique existe bien, dans le fichier annexe
+    for t in ("curiosity", "neo4j"):   # L42 : le lecteur ne génère plus (ni historique, ni archive) ; l'éditeur, si
+        for suffix in ("", "/zip"):
+            r = b.get(f"/api/projects/{pid}/generate/{t}{suffix}", rev=None)
+            assert r.status_code == 403 and r.json()["code"] == "read_only", r.text
+    assert _tree(pid) == before, "un fichier du dossier du projet a changé"
+    assert b.get(f"/api/projects/{pid}/generations", rev=None).json() == []
+    assert a.get(f"/api/projects/{pid}/generate/curiosity", rev="*").status_code == 200
+    assert len(b.get(f"/api/projects/{pid}/generations", rev=None).json()) == 1   # le lecteur consulte l'historique existant
 
 
 def test_l40_02_editor_change_during_generation_is_not_lost(users, monkeypatch):
@@ -637,7 +642,7 @@ def test_l40_02_editor_change_during_generation_is_not_lost(users, monkeypatch):
         done["put"] = c.put(f"/api/projects/{pid}", json=cur, rev="*").status_code
         return out
     monkeypatch.setattr(analysis, "_generate", slow)
-    assert a.get(f"/api/projects/{pid}/generate/curiosity", rev=None).status_code == 200
+    assert a.get(f"/api/projects/{pid}/generate/curiosity", rev="*").status_code == 200
     assert done["put"] == 200
     assert a.get(f"/api/projects/{pid}", rev=None).json()["notes"] == "modif de l'éditeur"
     assert len(a.get(f"/api/projects/{pid}/generations", rev=None).json()) == 1

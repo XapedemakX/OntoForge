@@ -38,9 +38,9 @@ class DslRequest(BaseModel):
     merge: bool = True
 
 
-def summary(p: Project, role: str = "owner", owner: Optional[str] = None, shared: bool = False) -> dict:
+def summary(p: Project, role: str = "owner", owner: Optional[str] = None, shared: bool = False, via_admin: bool = False) -> dict:
     return {
-        "owner": owner, "role": role, "shared": shared,
+        "owner": owner, "role": role, "shared": shared, "via_admin": via_admin,
         "id": p.id,
         "name": p.name,
         "description": p.description,
@@ -94,7 +94,8 @@ def list_projects() -> list[dict]:
     for p in store.list_projects():
         if p.id in vis:
             d = access.read(p.id)
-            out.append(summary(p, vis[p.id], (d["owner"] or ident.first_admin) if ident.auth else None, bool(d["members"]) or (vis[p.id] != "owner")))
+            via = access.admin_override(p.id, ident)   # L42 : projet d'un autre compte, vu parce qu'on est administrateur
+            out.append(summary(p, vis[p.id], (d["owner"] or ident.first_admin) if ident.auth else None, bool(d["members"]) or (vis[p.id] != "owner") or via, via))
     return out
 
 
@@ -152,6 +153,9 @@ def put_project(pid: str, body: Project) -> Project:
 @router.delete("/projects/{pid}", response_model=Project)
 def delete_project(pid: str) -> Project:
     load_project(pid, "owner")
+    c = access.current()
+    if c is not None and access.admin_override(pid, c.identity) and access.admin_audit:   # l'activité du projet disparaît avec lui : la trace va au journal d'administration
+        access.admin_audit(c.identity.user, "project_delete", pid, owner=access.owner_of(pid, c.identity), as_admin=True)
     access.forget(pid)
     from ..localstore import store as local_store
     local_store.drop(pid)  # verrou d'écriture du triplestore local : attend les requêtes en cours, évite le rmtree sous leurs pieds

@@ -479,12 +479,8 @@ def looks_english(text: str) -> bool:
 
 def reply_lang(message: str) -> str:
     """Langue de la réponse : anglais si le message est en anglais ou si l'assistant / l'interface sont réglés en anglais."""
-    from ..localize import ui_lang
-    from ..settings import store
-    try:
-        assistant = store.load(persist=False).language.assistant
-    except Exception:  # noqa: BLE001
-        assistant = "fr"
+    from ..localize import assistant_lang, ui_lang
+    assistant = assistant_lang()   # L42 : langue du compte connecté, sinon réglage global
     return "en" if (looks_english(message) or assistant == "en" or ui_lang() == "en") else "fr"
 
 

@@ -27,14 +27,12 @@ const LangCtx = createContext<Ctx>({ lang: 'fr', setLang: () => {} })
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>('fr')
   useEffect(() => {
-    const load = () => fetch('/api/settings').then(r => (r.ok ? r.json() : null)).then(s => {
-      const l = s?.language?.ui; if (l === 'fr' || l === 'en') setLangState(l)
+    // Sans authentification : langue des réglages (settings.language.ui). Avec authentification (L42), la langue est celle du compte,
+    // posée par AuthGate dès que la session est connue : on ne lit donc pas les réglages globaux (ils ne servent que de défaut aux nouveaux comptes).
+    fetch('/api/auth/session').then(r => (r.ok ? r.json() : null)).then(s => {
+      if (s?.enabled) return
+      return fetch('/api/settings').then(r => (r.ok ? r.json() : null)).then(x => { const l = x?.language?.ui; if (l === 'fr' || l === 'en') setLangState(l) })
     }).catch(() => { /* backend absent : français */ })
-    void load()
-    // instance protégée par mot de passe : les réglages ne sont lisibles qu'après la connexion (L27) ; un choix fait sur la page de connexion prime
-    const onAuthed = () => { let chosen = false; try { chosen = !!localStorage.getItem('ontoforge.lang') } catch { /* ignoré */ } if (!chosen) void load() }
-    addEventListener('ontoforge:authed', onAuthed)
-    return () => removeEventListener('ontoforge:authed', onAuthed)
   }, [])
   CURRENT = lang
   useEffect(() => { document.documentElement.lang = lang }, [lang])

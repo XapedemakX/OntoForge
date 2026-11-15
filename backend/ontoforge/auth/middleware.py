@@ -11,9 +11,19 @@ from typing import Any, Optional
 from urllib.parse import urlsplit
 
 from . import session as sess
+import re
+
 from .config import AuthConfig
 
 SAFE = {"GET", "HEAD", "OPTIONS"}
+
+
+# L42 : routes de lecture (GET) qui écrivent (génération : historique) : elles exigent le jeton CSRF comme une écriture
+_WRITE_GET = re.compile(r"^/api/projects/[^/]+/generate/[^/]+(/zip)?$")
+
+
+def csrf_required(method: str, path: str) -> bool:
+    return method not in SAFE or bool(_WRITE_GET.match(path))
 
 
 def is_public_path(path: str) -> bool:
@@ -67,8 +77,8 @@ async def send_json(send: Any, status: int, body: dict, headers: Optional[list[t
 
 
 class AuthMiddleware:
-    def __init__(self, app: Any, cfg: AuthConfig) -> None:
-        self.app, self.cfg = app, cfg
+    def __init__(self, app: Any, cfg: AuthConfig, accounts: Any = None) -> None:
+        self.app, self.cfg, self.accounts = app, cfg, accounts
 
     async def __call__(self, scope: dict, receive: Any, send: Any) -> None:
         if scope["type"] not in ("http", "websocket") or not scope.get("path", "").startswith("/api") or is_public_path(scope["path"]):
@@ -80,10 +90,22 @@ class AuthMiddleware:
         s = current_session(scope, self.cfg)
         if s is None:
             return await send_json(send, 401, {"detail": "Connexion requise.", "code": "auth_required"})
-        if scope["method"] not in SAFE:
+        acc = None
+        if self.accounts is not None:   # L42 : compte supprimé, désactivé ou mot de passe changé = session coupée sur-le-champ
+            acc = self.accounts.session_ok(s.user, s.gen)
+            if acc is None:
+                return await send_json(send, 401, {"detail": "Session terminée : reconnectez-vous.", "code": "auth_required"})
+            if acc.must_change:
+                return await send_json(send, 403, {"detail": "Changez d'abord votre mot de passe provisoire.", "code": "password_change_required"})
+        if csrf_required(scope["method"], scope["path"]):
             if not origin_ok(scope):
                 return await send_json(send, 403, {"detail": "Origine refusée.", "code": "bad_origin"})
             if not sess.csrf_ok(s, header(scope, "x-csrf-token")):
                 return await send_json(send, 403, {"detail": "Jeton CSRF absent ou invalide : rechargez la page.", "code": "csrf"})
         scope.setdefault("state", {})["auth_user"] = s.user
-        await self.app(scope, receive, send)
+        from .. import localize
+        tok = localize.REQUEST_LANG.set(acc.lang if acc is not None else None)   # langue du compte pour toute la requête
+        try:
+            await self.app(scope, receive, send)
+        finally:
+            localize.REQUEST_LANG.reset(tok)

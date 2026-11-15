@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { api, type ProjectSummary } from '../api'
-import { Button, Card, EmptyState, Icon, IconButton } from '../kit'
+import { Button, Card, EmptyState, Icon, IconButton, Segmented } from '../kit'
 import { useI18n } from '../i18n'
 import { ErrorView, Spin, useLoad, useToast } from '../ui'
+import { useAuth } from '../auth/AuthGate'
 import { aapi, type UploadedFile } from './assistant/aapi'
 
 const ASSISTANT_EXT = /\.(csv|tsv|sql|txt|md|markdown)$/i
@@ -18,6 +19,8 @@ export function Projects() {
   const [over, setOver] = useState(false)
   const [err, setErr] = useState<unknown>(null)
   const [busy, setBusy] = useState(false)
+  const auth = useAuth()
+  const [scope, setScope] = useState<'all' | 'mine' | 'shared'>('all')   // L42 : filtre de l'administrateur
   const [staged, setStaged] = useState<File | null>(null)
   const open = (id: string, screen = 'tableau') => { location.hash = `#/projet/${id}/${screen}` }
   const date = (iso: string) => new Date(iso).toLocaleDateString(lang, { dateStyle: 'medium' })
@@ -89,8 +92,11 @@ export function Projects() {
       {list.loading && <Spin />}
       <ErrorView error={list.error} what={t('proj.list')} />
       {list.data && list.data.length === 0 && <EmptyState title={t('proj.none.t')} pose="accueil">{t('proj.none.d')}</EmptyState>}
+      {auth.enabled && auth.admin && (list.data?.length ?? 0) > 0 && (
+        <div className="row" data-testid="proj-scope"><Segmented label={t('proj.scope')} value={scope} onChange={setScope}
+          items={[['mine', t('proj.scope.mine')], ['shared', t('proj.scope.shared')], ['all', t('proj.scope.all')]]} /></div>)}
       <div className="proj-grid">
-        {list.data?.map(pr => <ProjectCard key={pr.id} pr={pr} date={date} open={() => open(pr.id)} reload={list.reload} fail={setErr} />)}
+        {list.data?.filter(pr => !(auth.enabled && auth.admin) || scope === 'all' || (scope === 'mine' ? pr.owner === auth.user : !!pr.owner && pr.owner !== auth.user && !pr.via_admin)).map(pr => <ProjectCard key={pr.id} pr={pr} date={date} open={() => open(pr.id)} reload={list.reload} fail={setErr} />)}
       </div>
     </div>
   )
@@ -119,7 +125,8 @@ function ProjectCard({ pr, date, open, reload, fail }: { pr: ProjectSummary; dat
         </div>
       ) : (
         <>
-          <div className="row"><h2 className="grow">{pr.name}</h2>{pr.shared && <span className="badge info" data-testid="proj-shared">{pr.role && pr.role !== 'owner' ? t('proj.role.' + pr.role) : t('proj.shared')}</span>}<span className="badge">{pr.target === 'curiosity' ? 'Curiosity' : 'Neo4j'}</span>
+          <div className="row"><h2 className="grow">{pr.name}</h2>{pr.via_admin ? <span className="badge review" data-testid="proj-admin" title={t('proj.viaAdmin.hint')}>{t('proj.viaAdmin')}</span>
+            : pr.shared && <span className="badge info" data-testid="proj-shared">{pr.role && pr.role !== 'owner' ? t('proj.role.' + pr.role) : t('proj.shared')}</span>}<span className="badge">{pr.target === 'curiosity' ? 'Curiosity' : 'Neo4j'}</span>
             <IconButton icon="pen" label={t('proj.rename')} onClick={e => { stop(e); setEdit(true) }} /></div>
           {pr.description ? <div className="muted">{pr.description}</div> : <button className="btn sm ghost" style={{ alignSelf: 'flex-start' }} onClick={e => { stop(e); setEdit(true) }}>{t('proj.desc.add')}</button>}
         </>

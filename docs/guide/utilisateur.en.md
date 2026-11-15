@@ -61,9 +61,9 @@ The home screen (`#/`) lists the projects with a summary: classes, properties, s
 
 When authentication is on (`ONTOFORGE_AUTH=password`), projects belong to accounts.
 
-- **Owner.** Every project belongs to the account that creates it. The list only shows your projects and those shared with you, with the owner and a "Shared" (or "Read-only") badge. A project you cannot access answers "not found", as if it did not exist.
+- **Owner.** Every project belongs to the account that creates it. The list only shows your projects and those shared with you, with the owner and a "Shared" (or "Read-only") badge. A project you cannot access answers "not found", as if it did not exist. Exception: an administrator sees every project (see "Account administration").
 - **Share.** In the project header, the "Share" button opens the access panel: the list of accounts, an "Account identifier" field and a role. The identifier is the other account's sign-in name. If no account has that identifier, the panel answers "No account with that identifier"; the number of lookups is limited to 10 per minute.
-- **Roles.** A *reader* views and exports, nothing more: action buttons are disabled, the header shows "Read-only" and the server refuses every write. An *editor* changes the project but can neither share nor delete it. The *owner* can do everything: change a role, remove an access, transfer ownership (the former owner stays an editor) and delete the project. An account can also leave a project shared with it.
+- **Roles.** A *reader* views and exports the ontology and the shapes, and views the generation history, nothing more: action buttons are disabled, the header shows "Read-only" and the server refuses every write. A reader does not generate: generating writes the project's history, so the generate button is greyed out and the Exports screen explains why. An *editor* changes the project but can neither share nor delete it. The *owner* can do everything: change a role, remove an access, transfer ownership (the former owner stays an editor) and delete the project. An account can also leave a project shared with it.
 
 ![The "Share this project" panel: owner, one reader, identifier field and role](img/en/partage-panneau.png "The sharing panel: 1 the access list, 2 the identifier field and role, 3 the rules per role.")
 
@@ -77,6 +77,36 @@ Working together, without real time:
 - **Activity.** The dashboard shows the project log: who created, shared or changed it, and when.
 
 Global settings (LLM providers, keys, SPARQL endpoints) can only be changed by an administrator: the first declared account, or the accounts listed in `ONTOFORGE_AUTH_ADMINS`. Other accounts use the providers without seeing them. In local use, without authentication, nothing changes: an implicit user owns every project, and the sharing panel says that sharing needs authentication. On first start with authentication, existing projects are assigned to the first administrator.
+
+### Interface language {#langue-de-l-interface}
+
+With authentication on, each account picks its language, French or English, in the account menu (the account name, top right). The choice is stored on the server, in the account's preferences: you find it again from any browser. It applies to the interface, to Krakie's answers and to texts generated at display time (findings, error messages, notes), for that account only: the others keep theirs. Generated files also follow the account's language, unless you state a generation language.
+
+- **Default language.** In Settings, Languages tab (administrators), the "Default language for new accounts" setting gives an account its language when it is created. Ontology labels have their own setting.
+- **Configuration accounts.** They choose their language like any other.
+- **Without authentication.** Nothing changes: the language comes from Settings and applies to everyone.
+
+![Account menu: interface language, password change, link to administration](img/en/compte-langue.png "The account menu: 1 the interface language, 2 the password, 3 the way to administration (administrators).")
+
+### Account administration {#administration-des-comptes}
+
+With authentication on, an administrator account opens "Administration" (left menu, or the account menu): the "Administration › Accounts" panel exists only for administrators (other accounts get "reserved for administrators").
+
+![Administration › Accounts panel: provisional password shown once, creation form, account list](img/en/admin-comptes.png "Administration › Accounts: 1 the provisional password (shown only once), 2 creating an account, 3 the list, 4 the actions.")
+
+- **List.** Identifier, role (administrator or user), source, active, last sign-in, number of projects. An account declared in `ONTOFORGE_AUTH_USERS` or `ONTOFORGE_AUTH_USERS_FILE` is "managed by the configuration": it cannot be changed here (only its language, from its own menu). Accounts created in the interface are stored in the data folder (`accounts.json`, mode 600) and add to those of the configuration.
+- **Create.** An identifier (2 to 64 characters: lowercase letters, digits, dot, hyphen, underscore), an "Administrator" box, and a password: typed, or generated. A generated password is shown only once; note it and hand it over through a safe channel.
+- **First sign-in.** The password you hand over is provisional: at first sign-in the account sees the "Choose your password" screen and nothing else until it has changed it (at least 10 characters).
+- **Reset.** Generates a new provisional password (shown once); the account's open sessions are cut.
+- **Disable, re-enable.** A disabled account can no longer sign in and loses its sessions immediately; its projects stay.
+- **Delete.** Sessions are cut right away and the account's access to other people's projects is removed. Its projects are never deleted: you choose the account that receives them.
+- **Promote, demote.** Gives or removes the administrator role, with immediate effect. At least one active administrator must always remain: otherwise the action is refused.
+- **Administration log.** Who created, reset, disabled, deleted or promoted which account, and when; never a password or a hash.
+- **Changing your own password.** Any account created in the interface does it from its menu (the current password is asked; failed attempts count in the same limiter as sign-in). An account managed by the configuration changes its password where it is defined.
+
+**An administrator sees every project.** The list shows each project's owner and a "My projects / Shared with me / All" filter. On each project the administrator has the owner's rights: read, change, share, transfer, delete. Every action taken on someone else's project is traced in the project's activity log with the mention "as administrator" (a deletion, whose log disappears with the project, is traced in the administration log). For other accounts nothing changes: a project that does not concern them is "not found".
+
+![Project list seen by an administrator: My projects / Shared with me / All filter, Administrator badge](img/en/admin-liste-projets.png "The list seen by an administrator: 1 the filter, 2 the “Administrator” badge on another account's project, 3 the owner.")
 
 ## 4. Dashboard {#tableau-de-bord}
 

@@ -18,7 +18,7 @@ from starlette.routing import Match
 from ..auth.config import AuthConfig
 from . import access
 from .access import CollabError, Ctx, Identity
-from .routes import BODY_PROJECT_ROUTES, SETTINGS_PREFIX, classify
+from .routes import ADMIN_PREFIX, BODY_PROJECT_ROUTES, SETTINGS_PREFIX, classify
 
 SAFE = ("GET", "HEAD", "OPTIONS")
 
@@ -38,18 +38,20 @@ async def _send_json(send: Any, status: int, body: dict) -> None:
     await send({"type": "http.response.body", "body": data})
 
 
-def identity_for(cfg: AuthConfig, scope: dict) -> Optional[Identity]:
+def identity_for(cfg: AuthConfig, scope: dict, accounts: Any = None) -> Optional[Identity]:
     if not cfg.enabled:
         return Identity()
     user = (scope.get("state") or {}).get("auth_user")
     if not user:
         return None
-    return Identity(user=user, is_admin=cfg.is_admin(user), auth=True, first_admin=cfg.first_admin, accounts=frozenset(cfg.users))
+    if accounts is None:
+        return Identity(user=user, is_admin=cfg.is_admin(user), auth=True, first_admin=cfg.first_admin, accounts=frozenset(cfg.users))
+    return Identity(user=user, is_admin=accounts.is_admin(user), auth=True, first_admin=cfg.first_admin, accounts=accounts.active_logins())
 
 
 class CollabMiddleware:
-    def __init__(self, app: Any, cfg: AuthConfig, router: Any) -> None:
-        self.app, self.cfg, self.router = app, cfg, router
+    def __init__(self, app: Any, cfg: AuthConfig, router: Any, accounts: Any = None) -> None:
+        self.app, self.cfg, self.router, self.accounts = app, cfg, router, accounts
         self._locks: dict[tuple, asyncio.Lock] = {}   # (projet, boucle d'événements) : un verrou asyncio ne se partage pas entre boucles
 
     def _match(self, scope: dict) -> tuple[Optional[str], dict]:
@@ -64,13 +66,16 @@ class CollabMiddleware:
         if scope["type"] != "http" or not path.startswith("/api") or scope["method"] == "OPTIONS":
             return await self.app(scope, receive, send)
         method = scope["method"]
-        ident = identity_for(self.cfg, scope)
+        ident = identity_for(self.cfg, scope, self.accounts)
         if ident is None:
             if path == "/api/health" or path.startswith("/api/auth"):
                 return await self.app(scope, receive, send)
             return await _send_json(send, 401, {"detail": "Connexion requise.", "code": "auth_required"})
         if (path == SETTINGS_PREFIX or path.startswith(SETTINGS_PREFIX + "/")) and method not in SAFE and not ident.is_admin:
             return await _send_json(send, 403, {"detail": access.msg("Les réglages sont réservés aux administrateurs.", "Settings are reserved for administrators."),
+                                                "code": "admin_only"})
+        if (path == ADMIN_PREFIX or path.startswith(ADMIN_PREFIX + "/")) and not ident.is_admin:   # L42 : administration des comptes
+            return await _send_json(send, 403, {"detail": access.msg("L'administration est réservée aux administrateurs.", "Administration is reserved for administrators."),
                                                 "code": "admin_only"})
         template, params = self._match(scope)
         pid = params.get("pid") if template and template.startswith("/api/projects/{pid}") else None   # /api/settings/providers/{pid} est un fournisseur, pas un projet
