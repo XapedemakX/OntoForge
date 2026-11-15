@@ -14,6 +14,8 @@ Puis ouvrir http://localhost:8088 (port modifiable via ONTOFORGE_PORT dans .env)
 
 Assistant IA (optionnel) : copier `.env.example` en `.env`, mettre `ONTOFORGE_LLM_PROVIDER=anthropic` et renseigner `ANTHROPIC_API_KEY`. Sans clé, l'assistant tourne en mode `mock` (et les brouillons depuis CSV / SQL utilisent un analyseur déterministe). Fournisseurs possibles : `anthropic`, `openai_compat` (Azure OpenAI, vLLM, LM Studio…), `ollama`, `mock`.
 
+Comptes et partage (optionnel) : par défaut l'instance est mono-utilisateur, sans page de connexion, et n'écoute que ce poste. Pour activer les comptes, mettre dans `.env` `ONTOFORGE_AUTH=password`, `ONTOFORGE_SECRET_KEY` (32 caractères au moins), `ONTOFORGE_AUTH_USERS` (lignes `identifiant:hachage`, générées par `docker compose exec backend python -m ontoforge.auth hash --user prenom`, valeur entre apostrophes) et, au besoin, `ONTOFORGE_AUTH_ADMINS`. On obtient alors la page de connexion Krakie, des projets nominatifs que l'on partage en lecteur ou en éditeur, le panneau Administration › Comptes, la langue par compte et « Changer mon mot de passe » dans le menu du compte. Voir le guide, sections « Partager un projet » et « Administration des comptes ».
+
 ## Parcours de démo (10 minutes)
 1. Projets : « Nouveau projet » depuis l'exemple automaint (maintenance automobile : 24 classes, shapes SHACL, données de test). Le tableau de bord s'ouvre et Krakie propose la prochaine action.
 2. Ontologie (éditeur graphique) : double-clic sur le fond pour créer une classe, glisser la poignée d'un nœud pour une sous-classe ou une propriété, Ctrl+Z, Saisie rapide en bas. Créer un périmètre depuis quelques classes. Ouvrir Krakie (bouton flottant ou Ctrl+K) : elle connaît l'écran et la sélection. Essayer « ajoute la classe Pneu sous Pièce avec une propriété pression en bar », relire la carte, Appliquer puis Annuler. Essayer aussi la Vue liste (fiche d'une classe, ajout de propriété en ligne).
@@ -37,7 +39,7 @@ L'exemple trap est l'ontologie « piège » de test. Elle exerce les 66 règles 
 ## Organisation du dépôt
 | Dossier | Contenu |
 |---|---|
-| `backend/` | API FastAPI (`ontoforge/`), 560+ tests (`cd backend && pytest -q`) |
+| `backend/` | API FastAPI (`ontoforge/`), 1300+ tests (`cd backend && pytest -q`) |
 | `frontend/` | Application React + TypeScript |
 | `samples/` | Ontologies d'exemple (automaint, trap) |
 | `docs/` | Plan, architecture, contrats d'interface, catalogue des 66 règles (`RULES.md`) |

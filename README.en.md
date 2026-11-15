@@ -14,6 +14,8 @@ Then open http://localhost:8088 (change the port with ONTOFORGE_PORT in .env). T
 
 AI assistant (optional): copy `.env.example` to `.env`, set `ONTOFORGE_LLM_PROVIDER=anthropic` and fill in `ANTHROPIC_API_KEY`. Without a key, the assistant runs in `mock` mode (and drafts from CSV / SQL use a deterministic analyser). Available providers: `anthropic`, `openai_compat` (Azure OpenAI, vLLM, LM Studio...), `ollama`, `mock`.
 
+Accounts and sharing (optional): by default the instance is single-user, with no sign-in page, and listens on this machine only. To turn accounts on, set in `.env` `ONTOFORGE_AUTH=password`, `ONTOFORGE_SECRET_KEY` (at least 32 characters), `ONTOFORGE_AUTH_USERS` (`login:hash` entries, produced by `docker compose exec backend python -m ontoforge.auth hash --user name`, value in single quotes) and, if needed, `ONTOFORGE_AUTH_ADMINS`. You then get the Krakie sign-in page, per-user projects shared as reader or editor, the Administration › Accounts panel, per-account language and "Change my password" in the account menu. See the guide, sections "Sharing a project" and "Account administration".
+
 ## Demo path (10 minutes)
 1. Projects: "New project" from the automaint sample (car maintenance: 24 classes, SHACL shapes, test data). The dashboard opens and Krakie suggests the next action.
 2. Ontology (graphical editor): double-click the background to create a class, drag a node's handle for a subclass or a property, Ctrl+Z, Quick input at the bottom. Create a perimeter from a few classes. Open Krakie (floating button or Ctrl+K): it knows the screen and the selection. Try "add the class Tyre under Part with a pressure property in bar", read the card, Apply then Undo. Also try the List view (class sheet, inline property creation).
@@ -37,7 +39,7 @@ The trap sample is the test "trap" ontology. It exercises the 66 transposition r
 ## Repository layout
 | Folder | Contents |
 |---|---|
-| `backend/` | FastAPI API (`ontoforge/`), 560+ tests (`cd backend && pytest -q`) |
+| `backend/` | FastAPI API (`ontoforge/`), 1300+ tests (`cd backend && pytest -q`) |
 | `frontend/` | React + TypeScript application |
 | `samples/` | Sample ontologies (automaint, trap) |
 | `docs/` | Plan, architecture, interface contracts, catalog of the 66 rules (`RULES.md`) |
