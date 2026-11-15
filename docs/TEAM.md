@@ -16,6 +16,7 @@
 | humain | Humaniseur (dernière passe de rédaction) | .claude/agents/humaniseur.md | skills/humanizer |
 | git | Versionnage, CI, livraisons | .claude/agents/git-release.md | — |
 | deploy | Déploiement (Cloud Run, ontoforge.ajlx.fr) | .claude/agents/deploiement.md | — |
+| secu | Cybersécurité (vulnérabilités, OWASP, secrets, dépendances) | .claude/agents/cybersecurite.md | — |
 
 ## Cycle d'un lot
 1. **Contrat** — `lots/Lx.md` (chef) : objectif, livrables, fichiers possédés par agent, critères d'acceptation vérifiables (commandes de test, entrées → sorties attendues), relecteurs.
@@ -72,6 +73,7 @@ Au minimum : au démarrage, à chaque verdict de revue (avec `to` = pilote), à 
 | Fiche de veille | expert du domaine | humain |
 | Documentation | doc (exactitude) | humain (style), puis doc vérifie que le sens n'a pas bougé |
 | Livraison | chef + git (CI verte, tag) | — |
-| Déploiement / sécurité réseau | deploy + query (SSRF) + scout (connexion) | doc |
+| Déploiement / sécurité réseau | deploy + secu + query (SSRF) + scout (connexion) | doc |
+| Tout lot qui touche aux entrées utilisateur, fichiers, appels sortants, secrets, authentification ou à l'assistant LLM | secu (revue-securite.md) + expert du domaine | doc |
 
 Un lot n'est clos qu'avec : tests verts, verdicts OK des relecteurs, `journal/<lot>/doc-ok.md`, passage de l'humaniseur sur la doc du lot, puis push par l'agent git.

@@ -2,7 +2,7 @@
 # Publication d'OntoForge vers le clone léger (agent « git », lot L24).
 #
 # Copie l'état COMMITTÉ du dépôt de travail (git archive HEAD) dans le clone de publication,
-# sans ref/, journal/L18/video/ ni *.whl, recherche des secrets, puis committe.
+# sans ref/, journal/L18/video/, journal/securite/ ni *.whl, recherche des secrets, puis committe.
 # Ne pousse que si --push est passé. Voir docs/guide/contribuer.md §Publication.
 #
 # Usage : tools/git/publish.sh "Lot L22 : éditeur de fichiers" [--push]
@@ -39,7 +39,7 @@ trap 'rm -rf "$STAGE"' EXIT
 
 # 1. État committé, hors exclusions
 git -C "$SRC" archive HEAD | tar -x -C "$STAGE"
-rm -rf "$STAGE/ref" "$STAGE/journal/L18/video"
+rm -rf "$STAGE/ref" "$STAGE/journal/L18/video" "$STAGE/journal/securite"  # journal/securite : audits de vulnérabilités, jamais publiés (TEAM.md, agent secu)
 find "$STAGE" -type f -name '*.whl' -delete
 
 # 2. Recherche de secrets sur ce qui sera publié
