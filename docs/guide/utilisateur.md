@@ -200,6 +200,28 @@ Lecture seule : les faits des individus, les équivalences et expressions comple
 
 ![Vue liste : fiche d'une propriété objet avec domaine, portée, inverse et caractéristiques](img/fr/liste-propriete.png "La fiche d'une propriété objet : domaine, portée, inverse, caractéristiques.")
 
+### Carte métier {#carte-metier}
+
+La Carte métier (L36b) dessine le schéma en zones métier teintées, pour le lire d'un coup d'œil et le présenter à des non-spécialistes. Elle est dans l'étape Concevoir. Le sélecteur en haut choisit le dessin de l'ontologie ou celui du modèle cible ; l'écran Modèle cible a un raccourci « Carte métier ».
+
+![Carte métier : zones teintées, types en cercles colorés par rôle, légende à droite](img/fr/carte-metier.png "La carte métier : 1 le dessin, 2 les panneaux Inspecteur, Zones et Scénarios, 3 l'export.")
+
+- Lecture : chaque zone est un bloc teinté à bordure pointillée, avec son titre et son sous-titre. Chaque type est un cercle coloré selon son rôle, avec son nom et, dessous, son volume abrégé (1,5k, 6,92M). Les relations sont des courbes fléchées, leur nom posé le long de la courbe. Un type estompé est hors du périmètre étudié. L'en-tête donne le titre, la date et le nombre de types et de relations. La légende, à droite, ne liste que les rôles et les styles présents.
+- Volumes : le volume compte les individus distincts du type et de ses sous-classes (un individu d'une sous-classe est aussi une instance de la classe mère). Ils viennent du triplestore local s'il est chargé, sinon des individus de l'ontologie. 0 veut dire « aucun individu connu », pas « vide ».
+- Rôles : les rôles par défaut sont génériques et déduits de la structure du schéma (principal, composant, pivot, liste de valeurs, contexte, référentiel, document, paramétrage). Ce sont des suggestions, pas des faits de l'ontologie : l'inspecteur indique si le rôle est déduit ou choisi à la main.
+- Cadres et hiérarchie : un cadre pointillé bleu regroupe des types qui partagent la même relation. Une seule flèche part du cadre ; son libellé est le nom de la relation suivi de la note du cadre (« Partagent : relation → type, … »). Les liens de hiérarchie portent le mot « est un ».
+- Ce qui n'est pas dessiné ou qui est incertain : une propriété sans domaine ou sans image ne peut pas être dessinée, et un bandeau en donne le nombre et la liste. Une relation dont le domaine ou l'image est une union de classes donne une flèche par combinaison. Chacune est une possibilité (l'une des classes de l'union), pas un fait.
+- Zoom et déplacement : molette ou boutons + et −, glisser le fond pour déplacer, « Tout voir » pour afficher toute la carte. Sur mobile, la carte s'ouvre sur un zoom lisible (au moins 45 %), cadré sur la zone la plus peuplée ; on la parcourt en la faisant glisser, et « Tout voir » donne la vue d'ensemble. Au survol d'un type, ses relations restent en surbrillance et le reste s'estompe. Un clic ouvre l'inspecteur : classe, zone, rôle, volume, relations. Le rôle se choisit dans la liste ou se saisit librement ; « Estompé » retire le type du premier plan.
+- Épingler : glisser un type l'épingle à sa place et enregistre sa position (point orange sur le cercle). Déposer un type dans une autre zone l'y range. « Réorganiser » recalcule la disposition en gardant les types épinglés. « Annuler » (ou Ctrl+Z) revient sur la dernière modification de la carte.
+- Zones : l'onglet liste les zones. On renomme, on change la couleur et le sous-titre, on ajoute ou supprime une zone, et on glisse une classe d'une zone à l'autre. « Proposer des zones » découpe selon une stratégie au choix : périmètres du projet, hiérarchie des classes, espaces de noms, communautés (types les plus reliés) ou Krakie. Un aperçu s'affiche d'abord ; « Appliquer » remplace alors les zones et libère les positions des types non épinglés ; Annuler la retire. « Proposer des cadres » repère les types qui partagent une même relation. Une zone vide est conservée telle quelle, avec sa place sur la carte.
+- Scénarios : un scénario met en avant certaines relations sans toucher au modèle. On le crée, on choisit son style pour chaque relation (clic sur la relation, ou liste de l'onglet), et on rédige des notes en Markdown simple (titres `#`, listes `-`, gras `**`) qui s'affichent sous la légende. Styles : principale (orange épais), condition (bleu épais), lue, contexte, contexte désactivé, regroupée, désactivée, relation déclarée dans les deux sens (propriété inverse), mention, un seul sens retenu pour ce scénario. Le style « un seul sens » se choisit à la main : la carte ne le pose jamais d'elle-même. Une relation symétrique est dessinée à part (teinte lagon). Une inverse non déclarée n'est pas une inverse absente : en monde ouvert, l'ontologie ne dit rien. Les types cochés « mis en évidence » reçoivent un anneau orange.
+
+![Carte métier avec un scénario actif : relation en orange épais, anneaux sur ses deux types, notes sous la légende](img/fr/carte-metier-scenario.png "Un scénario actif : la relation principale en orange épais, les notes sous la légende.")
+
+- Export : le bouton Exporter produit un SVG autonome ou un PNG haute définition (×2 ou ×4), avec la légende et les notes du scénario actif (case à décocher), en thème clair, sombre ou actuel. Un PNG ×4 d'une grande carte peut dépasser ce que le navigateur accepte : il le dit, utilisez alors le SVG ou le ×2.
+- Krakie reçoit la carte en contexte : « Propose des zones métier », « Mets en évidence… ».
+- Sur mobile, la carte est en lecture seule : zoom, déplacement et inspecteur seulement.
+
 ## 6. Conformité OWL {#conformite-owl}
 
 Écran Conformité OWL (bouton « Revérifier ») :
@@ -485,7 +507,7 @@ Le guide est embarqué dans l'application (L28) : il se lit hors ligne et corres
 
 ## 17. Visite guidée {#visite-guidee}
 
-Krakie peut vous faire le tour de l'outil en 20 étapes (environ 5 minutes) : l'écran s'assombrit, l'élément expliqué est entouré d'un halo teal et une bulle dit à quoi il sert. La visite suit le parcours Concevoir → Vérifier → Transposer → Générer sur le projet de démo automaint.
+Krakie peut vous faire le tour de l'outil en 21 étapes (environ 5 minutes) : l'écran s'assombrit, l'élément expliqué est entouré d'un halo teal et une bulle dit à quoi il sert. La visite suit le parcours Concevoir → Vérifier → Transposer → Générer sur le projet de démo automaint.
 
 ![Visite guidée : écran assombri, bulle de Krakie qui explique l'éditeur graphique](img/fr/visite-guidee.png "Une étape de la visite guidée : la bulle de Krakie explique l'élément entouré.")
 

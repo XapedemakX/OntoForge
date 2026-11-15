@@ -96,6 +96,9 @@ The interface is fr/en (Settings). Ontology labels are displayed in the chosen l
 **Why is the page heavy?**
 The bundle exceeds 500 kB (CodeMirror + Cytoscape), with no functional impact.
 
+**What does the business map say, and what does it not say?**
+Counts are the distinct individuals of a type and of its subclasses, from the local triple store if it is loaded, otherwise from the ontology's individuals; 0 means “no known individual” (open world). Roles (main, hub, lookup…) are inferred from the structure by heuristics: they can be corrected by hand and are not facts of the ontology. The simulated-annealing layout depends on the time it is given: on a dense schema, run “Rearrange” again. Properties with no domain or no range are not drawn (a banner lists them). A domain or range given as a union of classes yields one arrow per combination, to be read as a possibility. On the Curiosity target, inheritance is flattened: hierarchy zones are coarser there.
+
 ## AI assistant {#assistant-ia}
 
 **What happens without a key?**

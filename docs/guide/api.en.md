@@ -51,6 +51,8 @@ The examples below are real responses (backend started with `ONTOFORGE_LLM_PROVI
 | GET / POST / PUT / DELETE | `/api/projects/{pid}/perimeters[/{id}]` · `PUT /perimeters/active` · `GET /perimeters/{id}/preview` | perimeters |
 | GET / POST | `/api/projects/{pid}/query/suggest` · `/query/build` · `/query/run` · `/query/values` · `/query/nl` | guided querying |
 | GET / POST / PUT / DELETE | `/api/projects/{pid}/queries/saved[/{qid}]` · GET `/queries/competency/guided` | saved queries |
+| GET / PUT | `/api/projects/{pid}/business-map?source=ontology\|target` | business map: read, save (L36) |
+| POST | `/api/projects/{pid}/business-map/suggest-zones` · `/suggest-frames` · `/layout` | zone and frame suggestions, layout |
 
 ## System {#systeme}
 
@@ -1050,6 +1052,20 @@ curl -s -X POST $B/api/projects/$P/query/run -H 'content-type: application/json'
 | GET | `/queries/competency/guided?target=` | competency questions with a guided version when one exists |
 
 Without reasoning on the endpoint side, `a C` does not return the subclasses: use `subclasses: true`. Subproperties are not expanded in the generated query.
+
+### Business map — `/api/projects/{pid}/business-map` {#carte-metier-api}
+
+Normative contract: `docs/CONTRACTS.md` §13. Code: `backend/ontoforge/businessmap/`, `api/business_map.py`. `?source=ontology` (default) draws the ontology's classes and object properties; `?source=target` draws the node and edge types of the current target model; any other value: 422.
+
+| Method | Path | Role |
+|---|---|---|
+| GET | `/business-map?source=` | full map: `nodes` (role, zone, count, position), `edges` (`link`: `inverse` or `symmetric`, `union`), `zones` (with rectangle, even when empty), `frames`, `scenarios`, `legend`, `meta` (including `skipped`: properties not drawn, and `n_union`). With no saved map: initial suggestion, saved with `generated: true` |
+| PUT | `/business-map?source=` | saves all or part of `{zones, roles, role_colors, faded, pinned, positions, frames, scenarios, title}` and returns the recomputed map; 422 on empty or duplicate ids, a type in two zones, an invalid role, an unknown style |
+| POST | `/business-map/suggest-zones` | `{strategy: perimeters\|hierarchy\|namespace\|communities\|llm, apply=false}`: preview, or replace the zones with `apply: true` |
+| POST | `/business-map/suggest-frames` | `{apply=false}`: types that share the same relationship to the same target |
+| POST | `/business-map/layout` | `{iterations, seed, time_limit_s, apply=false}`: simulated annealing that keeps pinned positions |
+
+The default roles are `main`, `component`, `hub`, `lookup`, `context`, `reference`, `document`, `settings`; a free role is accepted, and the former identifiers (`issue`, `key`, `classifier`…) are read as their current equivalent. The project carries an optional `business_maps` field (backward compatible).
 
 ### Generation history {#historique-des-generations}
 

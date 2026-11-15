@@ -96,6 +96,9 @@ Interface fr/en (Paramètres). Les libellés d'ontologie s'affichent dans la lan
 **Pourquoi la page est-elle lourde ?**
 Le bundle dépasse 500 ko (CodeMirror + Cytoscape), sans impact fonctionnel.
 
+**Que dit la carte métier, et que ne dit-elle pas ?**
+Les volumes comptent les individus distincts d'un type et de ses sous-classes, dans le triplestore local s'il est chargé, sinon dans les individus de l'ontologie ; 0 signifie « aucun individu connu » (monde ouvert). Les rôles (principal, pivot, liste de valeurs…) sont déduits de la structure par heuristique : ils se corrigent à la main et ne sont pas des faits de l'ontologie. La mise en page par recuit simulé dépend du temps alloué : sur un schéma dense, relancez « Réorganiser ». Les propriétés sans domaine ou sans image ne sont pas dessinées (un bandeau les liste). Un domaine ou une image en union de classes donne une flèche par combinaison, à lire comme une possibilité. Sur la cible Curiosity, l'héritage est aplati : les zones par hiérarchie y sont moins fines.
+
 ## Assistant IA {#assistant-ia}
 
 **Que se passe-t-il sans clé ?**

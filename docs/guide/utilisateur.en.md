@@ -200,6 +200,28 @@ Read-only: individual facts, equivalences and complex expressions.
 
 ![List view: sheet for an object property with domain, range, inverse and characteristics](img/en/liste-propriete.png "An object property sheet: domain, range, inverse, characteristics.")
 
+### Business map {#carte-metier}
+
+The Business map (L36b) draws the schema in tinted business zones, to read it at a glance and present it to non-specialists. It is in the Design step. The selector at the top draws either the ontology or the target model; the Target model screen has a “Business map” shortcut.
+
+![Business map: tinted zones, types as circles coloured by role, legend on the right](img/en/carte-metier.png "The business map: 1 the drawing, 2 the Inspector, Zones and Scenarios panels, 3 the export.")
+
+- Reading: each zone is a tinted block with a dotted border, a title and a subtitle. Each type is a circle coloured by role, with its name and, below it, its abbreviated count (1.5k, 6.92M). Relationships are curved arrows with their name laid along the curve. A faded type is outside the studied scope. The header gives the title, the date and the number of types and relationships. The legend on the right lists only the roles and styles that are present.
+- Counts: the count is the number of distinct individuals of the type and of its subclasses (an individual of a subclass is also an instance of the parent class). They come from the local triple store if it is loaded, otherwise from the ontology's individuals. 0 means “no known individual”, not “empty”.
+- Roles: the default roles are generic and inferred from the structure of the schema (main, component, hub, lookup, context, reference, document, settings). They are suggestions, not facts of the ontology: the inspector says whether a role is inferred or set by hand.
+- Frames and hierarchy: a dotted blue frame groups types that share the same relationship. A single arrow leaves the frame; its label is the relationship name followed by the frame's note (“Share: relationship → type, …”). Hierarchy links carry the word “is a”.
+- What is not drawn or is uncertain: a property with no domain or no range cannot be drawn, and a banner gives their number and list. A relationship whose domain or range is a union of classes gets one arrow per combination. Each is a possibility (one of the classes in the union), not a fact.
+- Zoom and pan: mouse wheel or the + and − buttons, drag the background to pan, “Fit all” to show the whole map. On mobile the map opens at a readable zoom (at least 45%), framed on the most populated zone; drag it to move around, and “Fit all” gives the overview. Hovering a type keeps its relationships highlighted and fades the rest. A click opens the inspector: class, zone, role, count, relationships. The role is picked from the list or typed freely; “Faded” moves the type out of the foreground.
+- Pinning: dragging a type pins it where you drop it and saves its position (orange dot on the circle). Dropping a type into another zone moves it there. “Rearrange” recomputes the layout and keeps pinned types in place. “Undo” (or Ctrl+Z) reverts the last change to the map.
+- Zones: the tab lists the zones. Rename them, change the colour and the subtitle, add or delete a zone, and drag a class from one zone to another. “Suggest zones” splits by the strategy you choose: project perimeters, class hierarchy, namespaces, communities (the most connected types) or Krakie. A preview appears first; “Apply” then replaces the zones and releases the positions of unpinned types; Undo removes it. “Suggest frames” spots types that share the same relationship. An empty zone is kept as it is, with its place on the map.
+- Scenarios: a scenario highlights some relationships without touching the model. Create it, pick a style for each relationship (click the relationship, or use the tab's list), and write notes in simple Markdown (`#` headings, `-` lists, `**` bold) that appear under the legend. Styles: main (thick orange), condition (thick blue), read, context, context off, grouped, disabled, relationship declared in both directions (inverse property), mention, a single direction kept for this scenario. The “single direction” style is chosen by hand: the map never sets it on its own. A symmetric relationship is drawn apart (lagoon teal). An undeclared inverse is not an absent inverse: under the open-world assumption the ontology says nothing. Types ticked “highlighted” get an orange ring.
+
+![Business map with an active scenario: relationship in thick orange, rings on its two types, notes under the legend](img/en/carte-metier-scenario.png "An active scenario: the main relationship in thick orange, the notes under the legend.")
+
+- Export: the Export button produces a standalone SVG or a high-definition PNG (×2 or ×4), with the legend and the active scenario's notes (untick to leave them out), in light, dark or the current theme. A ×4 PNG of a large map can exceed what the browser accepts: it says so, then use the SVG or ×2.
+- Krakie receives the map as context: “Suggest business zones”, “Highlight…”.
+- On mobile the map is read-only: zoom, pan and the inspector only.
+
 ## 6. OWL conformance {#conformite-owl}
 
 On the OWL conformance screen (button "Check again"):
@@ -485,7 +507,7 @@ The guide is embedded in the application (L28). You can read it offline and it a
 
 ## 17. Guided tour {#visite-guidee}
 
-Krakie can show you around the tool in 20 steps (about 5 minutes). The screen dims, the element being explained gets a teal halo, and a bubble says what it is for. The tour follows the path Design → Check → Transpose → Generate on the automaint demo project.
+Krakie can show you around the tool in 21 steps (about 5 minutes). The screen dims, the element being explained gets a teal halo, and a bubble says what it is for. The tour follows the path Design → Check → Transpose → Generate on the automaint demo project.
 
 ![Guided tour: dimmed screen and a Krakie bubble explaining the graphical editor](img/en/visite-guidee.png "One step of the guided tour: Krakie's bubble explains the highlighted element.")
 

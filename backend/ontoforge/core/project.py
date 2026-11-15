@@ -5,6 +5,7 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
+from ..businessmap.model import BusinessMapState
 from .onto_model import OntoModel, OntologyMeta
 from .pg_model import Target
 from .shapes_model import ShapesModel
@@ -61,3 +62,5 @@ class Project(BaseModel):
     # L31 : versions de normes et de cibles propres au projet {neo4j, cypher, curiosity_library, shacl, sparql, rdf}.
     # Rétrocompatible : une clé absente prend le défaut global des paramètres (un ancien projet n'en a aucune).
     target_versions: dict[str, str] = Field(default_factory=dict)
+    # L36a : cartes métier {ontology, target} (zones, rôles, cadres, scénarios, positions). Rétrocompatible : absent = aucune carte.
+    business_maps: dict[str, BusinessMapState] = Field(default_factory=dict)

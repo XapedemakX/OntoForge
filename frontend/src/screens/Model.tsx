@@ -77,6 +77,7 @@ export function Model({ p, target }: ScreenProps) {
   return (
     <div className="page">
       <div className="page-head"><h1>{t('mo.title')}</h1><span className="badge">{target === 'curiosity' ? 'Curiosity' : 'Neo4j'}</span>
+        <button type="button" className="btn sm" style={{ marginLeft: 'auto' }} data-testid="mo-bmap" onClick={() => { try { localStorage.setItem('ontoforge.bmap.source', 'target') } catch { /* ignoré */ } location.hash = `#/projet/${p.id}/carte-metier` }}><i className="fa-solid fa-map" aria-hidden="true" /> {t('mo.bmap')}</button>
         {pg && pending > 0 && <span className="notice warn" style={{ padding: '2px 10px' }}>{t('mo.pending', { n: pending })}</span>}</div>
       {loading && !pg && <Spin />}<ErrorView error={error} what={t('mo.title')} />
       {pg && Object.keys(pg.node_types).length === 0 && <Empty title={t('mo.empty.t')}>{t('mo.empty.b')}</Empty>}

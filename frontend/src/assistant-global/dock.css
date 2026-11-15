@@ -1,13 +1,13 @@
 /* Assistant global : Krakie flottante + panneau latéral redimensionnable. Variables : design/tokens.css uniquement. */
-.ag-fab { position: fixed; right: 18px; bottom: 18px; z-index: 35; width: 64px; height: 64px; border-radius: 50%; padding: 0; display: grid; place-items: center;
-  background: var(--panel); border: 1px solid var(--line); box-shadow: var(--shadow-pop); cursor: pointer; color: var(--ink); }
-.ag-fab:hover { border-color: var(--accent); }
-.ag-fab:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-.ag-fab::after { content: ''; position: absolute; inset: -5px; border-radius: 50%; border: 2px solid var(--accent); opacity: 0; pointer-events: none; }
-.ag-fab.busy::after { animation: ag-ring 1.4s ease-out infinite; }
-.ag-badge { position: absolute; top: -4px; right: -4px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px; background: var(--accent); color: var(--accent-ink); font-size: 12px; display: grid; place-items: center; }
-@keyframes ag-ring { from { opacity: .8; transform: scale(.92); } to { opacity: 0; transform: scale(1.25); } }
-@media (prefers-reduced-motion: reduce) { .ag-fab.busy::after { animation: none; opacity: .6; } }
+/* Aquarium (L37b) : aucune boîte ni tache d'eau ; le récif pousse depuis le bord bas de la fenêtre. Le bouton est transparent aux clics
+   (pointer-events:none) sauf quand le pointeur est sur Krakie ou le récif (classe .aq-hit posée par Aquarium.tsx). */
+.ag-fab { position: fixed; right: 0; bottom: env(safe-area-inset-bottom, 0px); z-index: 35; width: 201px; height: 150px; padding: 0; border: 0; background: none; cursor: pointer; color: var(--ink); pointer-events: none; outline: none; }
+.ag-fab.aq-hit { pointer-events: auto; }
+.ag-fab canvas { display: block; position: absolute; left: 0; top: 0; pointer-events: none; }
+.ag-fab .aq-reef { -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent); mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent); }
+.ag-fab .aq-ring { position: absolute; left: 0; top: 0; border-radius: 50%; pointer-events: none; opacity: 0; transition: opacity .12s; }
+.ag-fab:focus-visible .aq-ring { opacity: 1; box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 55%, transparent); }
+.ag-badge { position: absolute; top: 2px; right: 10px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px; background: var(--accent); color: var(--accent-ink); font-size: 12px; display: grid; place-items: center; pointer-events: none; }
 
 .ag-panel { position: fixed; top: 0; right: 0; bottom: 0; width: min(var(--ag-w, 460px), 100vw); z-index: 50; display: flex; flex-direction: column;
   background: var(--panel); border-left: 1px solid var(--line); box-shadow: var(--shadow-pop); animation: ag-in .16s ease-out; }
@@ -80,7 +80,7 @@
 .ag-hint { font-size: 11.5px; }
 
 @media (max-width: 900px) {
-  .ag-fab { right: 12px; bottom: 12px; width: 56px; height: 56px; }
+  .ag-fab { width: 120px; height: 90px; }
   .ag-panel { width: 100vw; }
   .ag-handle { display: none; }
   .ag-head select { max-width: 110px; }

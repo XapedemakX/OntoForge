@@ -3,6 +3,7 @@ import { lazy, type ReactNode } from 'react'
 import type { ScreenProps } from './types'
 const Ontology = lazy(() => import('../screens/ontology-list').then(m => ({ default: m.OntologyList })))
 const Editor = lazy(() => import('../screens/editor/Editor').then(m => ({ default: m.Editor })))
+const BusinessMap = lazy(() => import('../screens/bmap/BusinessMap').then(m => ({ default: m.BusinessMap })))
 const Conformance = lazy(() => import('../screens/Conformance').then(m => ({ default: m.Conformance })))
 const Shacl = lazy(() => import('../screens/shacl').then(m => ({ default: m.Shacl })))
 const Analysis = lazy(() => import('../screens/Analysis').then(m => ({ default: m.Analysis })))
@@ -31,6 +32,7 @@ export const SCREENS: ScreenDef[] = [
   { key: 'tableau', labelKey: 'nav.tableau', icon: 'gauge-high', render: p => <Dashboard {...p} /> },
   { key: 'ontologie', collapseAuto: true, labelKey: 'nav.ontologie', icon: 'sitemap', step: 'concevoir', editing: true, fullBleed: true, render: p => <Editor {...p} /> },
   { key: 'ontologie-liste', collapseAuto: true, labelKey: 'nav.liste', icon: 'list-ul', step: 'concevoir', editing: true, fullBleed: true, render: p => <Ontology {...p} /> },
+  { key: 'carte-metier', collapseAuto: true, labelKey: 'nav.cartemetier', icon: 'map', step: 'concevoir', editing: true, fullBleed: true, render: p => <BusinessMap {...p} /> },
   { key: 'shapes', labelKey: 'nav.shapes', icon: 'shapes', step: 'concevoir', editing: true, render: p => <Shacl {...p} initialTab="shapes" /> },
   { key: 'fichiers', collapseAuto: true, labelKey: 'nav.fichiers', icon: 'file-code', step: 'concevoir', editing: true, fullBleed: true, render: p => <Files {...p} /> },
   { key: 'conformite', labelKey: 'nav.conformite', icon: 'clipboard-check', step: 'verifier', render: p => <Conformance {...p} /> },

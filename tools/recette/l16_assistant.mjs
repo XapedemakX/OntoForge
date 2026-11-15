@@ -10,7 +10,7 @@ let chromium
 try { ({ chromium } = require('playwright')) } catch { ({ chromium } = require('/opt/node22/lib/node_modules/playwright')) }
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const SHOTS = path.join(ROOT, 'journal/L16/screens'); mkdirSync(SHOTS, { recursive: true })
-const BP = 8931, FP = 4931
+const BP = process.env.BACKEND_PORT || 8931, FP = process.env.FRONT_PORT || 4931
 const sleep = ms => new Promise(r => setTimeout(r, ms))
 const procs = []
 const run = (c, a, o) => { const p = spawn(c, a, { stdio: 'ignore', ...o }); procs.push(p); return p }

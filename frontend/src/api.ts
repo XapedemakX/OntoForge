@@ -183,6 +183,13 @@ const p = (id: string) => `/projects/${encodeURIComponent(id)}`
 
 export const api = {
   health: () => req<{ status: string; version: string }>('GET', '/health'),
+  // Carte métier (L36b) : un seul document par projet et par source (ontologie ou modèle cible)
+  businessMap: (id: string, source: string) => req<unknown>('GET', p(id) + `/business-map?source=${source}`),
+  putBusinessMap: (id: string, source: string, m: unknown) => req<unknown>('PUT', p(id) + `/business-map?source=${source}`, m),
+  // sans `apply` le serveur ne retient rien (aperçu) ; avec `apply: true` la réponse porte `map`
+  bmSuggestZones: (id: string, source: string, strategy: string, apply = false) => req<unknown>('POST', p(id) + `/business-map/suggest-zones?source=${source}`, { strategy, apply }),
+  bmSuggestFrames: (id: string, source: string, apply = false) => req<unknown>('POST', p(id) + `/business-map/suggest-frames?source=${source}`, { apply }),
+  bmLayout: (id: string, source: string) => req<unknown>('POST', p(id) + `/business-map/layout?source=${source}`, { apply: true }),
   samples: () => req<Sample[]>('GET', '/samples'),
   listProjects: () => req<ProjectSummary[]>('GET', '/projects'),
   createProject: (b: { name: string; description?: string; sample?: string }) => req<Project>('POST', '/projects', b),

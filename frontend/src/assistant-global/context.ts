@@ -5,6 +5,7 @@ export const ROUTE_SCREEN: Record<string, { name: string; aliases: string[] }> =
   tableau: { name: 'dashboard', aliases: ['dashboard'] },
   ontologie: { name: 'editor', aliases: ['editor', 'ontology'] },
   'ontologie-liste': { name: 'ontology-list', aliases: ['ontology-list', 'list'] },
+  'carte-metier': { name: 'business-map', aliases: ['business-map'] },
   shapes: { name: 'shapes', aliases: ['shapes'] },
   fichiers: { name: 'files', aliases: ['files'] },
   conformite: { name: 'conformance', aliases: ['conformance'] },

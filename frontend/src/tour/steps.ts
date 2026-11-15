@@ -8,7 +8,7 @@ async function until(fn: () => unknown, ms = 2500) { const t0 = performance.now(
 
 let legendWasOpen = false
 
-/** Les 20 étapes de la visite « Découvrir OntoForge » ; textes dans i18n (tour.s.<id>.t / .b). */
+/** Les 21 étapes de la visite « Découvrir OntoForge » ; textes dans i18n (tour.s.<id>.t / .b). */
 export function buildSteps(t: (k: string) => string): TourStep[] {
   const S = (id: string, rest: Omit<TourStep, 'id' | 'title' | 'body'>): TourStep => ({ id, title: t(`tour.s.${id}.t`), body: t(`tour.s.${id}.b`), ...rest })
   return [
@@ -52,6 +52,7 @@ export function buildSteps(t: (k: string) => string): TourStep[] {
       },
     }),
     S('model', { route: 'modele', waitFor: '[data-tour="model-diagram"]', target: '[data-tour="model-diagram"]', placement: 'bottom', pose: 'graphe' }),
+    S('bmap', { route: 'carte-metier', waitFor: '[data-tour="bmap-canvas"] .bm-n', target: '[data-tour="bmap-canvas"]', placement: 'bottom', pose: 'graphe' }),
     S('exports', { route: 'exports', waitFor: '[data-tour="exports"]', target: '[data-tour="exports"]', placement: 'bottom', pose: 'forge' }),
     S('q-nl', { route: 'requetes', waitFor: '[data-tour="q-nl"]', target: '[data-tour="q-nl"]', placement: 'bottom', pose: 'loupe' }),
     S('q-values', {

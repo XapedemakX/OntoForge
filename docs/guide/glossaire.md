@@ -94,6 +94,11 @@ Vocabulaire d'OntoForge, du monde OWL/SHACL et du monde property graph. Les réf
 | **Clé maître** | `ONTOFORGE_SECRET_KEY` : dérive la clé de chiffrement (Fernet) des secrets ; à défaut, fichier `.secret`. |
 | **Krakie** | Mascotte d'OntoForge : petite pieuvre en pixel art couleur lagon, 9 poses (accueil, réfléchit, lit, loupe, graphe, contente, inquiète, forge, trophée). Elle forge (deux marteaux sur une enclume) pendant une génération ou une transposition, puis brandit un trophée en forme de graphe quand c'est fini. |
 | **Tableau de bord** | Écran d'accueil d'un projet : état des quatre étapes et prochaine action. |
+| **Carte métier** | Écran qui dessine le schéma en zones teintées, pour le lire et le présenter (ontologie ou modèle cible). |
+| **Zone** | Bloc teinté de la carte métier qui regroupe des types ; proposée par une stratégie (périmètres, hiérarchie, espaces de noms, communautés, Krakie) et modifiable. |
+| **Cadre** | Pointillé bleu de la carte métier qui regroupe des types partageant une même relation vers une même cible : une seule flèche part du cadre. |
+| **Rôle** | Étiquette d'un type sur la carte métier (principal, composant, pivot, liste de valeurs, contexte, référentiel, document, paramétrage), déduite de la structure puis corrigeable. |
+| **Scénario** | Mise en avant de certaines relations de la carte métier (style, notes) sans toucher au modèle. |
 | **Saisie rapide** | Panneau de l'éditeur : une ligne de DSL = un axiome. |
 
 ## Équipe d'agents {#equipe-d-agents}

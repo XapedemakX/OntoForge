@@ -235,6 +235,27 @@ cap('analyse', 'analyse-regle-appliquee', async c => {
   await c.click(apply); await c.sleep(1800)
   await c.snap('analyse-regle-appliquee', { ann: [{ at: '.kpis', n: 1, box: true, pos: 'tr' }] })
 })
+
+// ============================================================================ carte métier (L36b)
+cap('carte', 'carte-metier', async c => {
+  await c.goTo('carte-metier', { wait: '[data-testid=bm-svg] .bm-n' }); await c.sleep(900)
+  await c.snap('carte-metier', { ann: [
+    { at: c.page.locator('[data-testid=bm-svg]'), n: 1, box: true, pos: 'tl' },
+    { at: c.page.locator('.bm-side'), n: 2, box: true, pos: 'tr' },
+    { at: c.page.locator('[data-testid=bm-export]'), n: 3, box: true, pos: 'bl' },
+  ] })
+})
+cap('carte', 'carte-metier-scenario', async c => {
+  const g = await (await fetch(`${c.B}/projects/${c.pid}/business-map?source=ontology`)).json()
+  const e = g.edges.find(x => x.kind === 'relation') ?? g.edges[0]
+  await fetch(`${c.B}/projects/${c.pid}/business-map?source=ontology`, { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ scenarios: [{ id: 'demo', name: c.lang === 'fr' ? 'Lecture atelier' : 'Workshop reading', description: c.lang === 'fr' ? '# Ce qui compte\n- la relation en orange est la principale\n**À valider avec le métier**' : '# What matters\n- the orange relationship is the main one\n**To confirm with the business**', edge_styles: { [e.id]: 'scored' }, nodes: [e.source, e.target].filter(x => g.nodes.some(n => n.id === x)) }] }) })
+  await c.goTo('tableau', { wait: '.side nav button' })
+  await c.page.evaluate(pid => { try { localStorage.setItem('ontoforge.bmap.sc.' + pid + '.ontology', 'demo') } catch {} }, c.pid)
+  await c.goTo('carte-metier', { wait: '[data-testid=bm-svg] .bm-n' }); await c.sleep(900)
+  await c.page.getByRole('tab', { name: c.lang === 'fr' ? /^Scénarios/ : /^Scenarios/ }).click(); await c.sleep(500)
+  await c.snap('carte-metier-scenario')
+})
+
 cap('modele', 'modele-curiosity', async c => {
   await c.goTo('analyse', { wait: '.kpis' })
   await c.post(`/projects/${c.pid}/decisions/curiosity/accept-recommended`, {}); await c.post(`/projects/${c.pid}/decisions/neo4j/accept-recommended`, {})

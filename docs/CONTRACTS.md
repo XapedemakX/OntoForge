@@ -255,3 +255,73 @@ Référence : `backend/ontoforge/standards/standards.json` (maintenue par la vei
 - `GET /api/settings` : ajoute `versions` (défaut global), `versions_view`, `versions_check` ; `PUT /api/settings` accepte `versions`.
 - Modèle : `Project.target_versions` (dict, clés absentes = défaut global ; rétrocompatible) ; `PGMeta.target_versions` (versions utilisées, renseignées par l'analyse). Les `generate(pg, onto)` des cibles lisent `pg.meta.target_versions` ; sans elle, valeurs d'usine.
 - Krakie : action `versions` `{changes, patch, before, preview}` (le serveur recalcule `patch`, rien n'est appliqué avant le clic) ; `navigate` accepte l'écran `versions`.
+
+## 13. Carte métier (L36a)
+Code : `backend/ontoforge/businessmap/` (model, graph, counts, roles, zones, frames, layout, service), `api/business_map.py`. Une vue du schéma en **zones métier teintées** (rectangles), avec des nœuds colorés par rôle, des arêtes une par relation, des **cadres** et des **scénarios** de lecture. Persistant dans le projet : `Project.business_maps: {ontology?: BusinessMapState, target?: BusinessMapState}` (extension rétrocompatible ; un ancien projet n'en a aucune). L'enregistrement n'avance pas `updated_at` du projet (ce n'est pas un changement du modèle).
+
+**Sources** (`?source=ontology|target`, défaut `ontology`, 422 sinon) : `ontology` = classes (nœuds) et propriétés d'objet (arêtes) de l'ontologie ; `target` = `NodeType` et `EdgeType` du PGModel de la cible courante du projet (`Project.target`, décisions appliquées). Les identifiants de nœud sont l'IRI de la classe, ou le nom du `NodeType` ; les cartes des deux sources sont indépendantes.
+
+| Méthode | Chemin | Entrée | Sortie |
+|---|---|---|---|
+| GET | `/api/projects/{id}/business-map?source=` | — | la carte complète (ci-dessous). Sans carte enregistrée : proposition initiale (zones par périmètres s'il y en a au moins deux, sinon par hiérarchie, sinon par communautés ; mise en page ; `meta.generated: true`), enregistrée pour que les lectures suivantes la retrouvent à l'identique |
+| PUT | `/api/projects/{id}/business-map?source=` | sous-ensemble de `{zones, roles, role_colors, faded, pinned, positions, frames, scenarios, title}` ; un champ absent ou `null` reste inchangé | la carte complète ; 422 : identifiants vides ou en double, un nœud dans deux zones, style d'arête inconnu, rôle vide ou de plus de 40 caractères. Les membres inconnus (type supprimé depuis) sont ignorés à la lecture |
+| POST | `…/business-map/suggest-zones?source=` | `{strategy: perimeters\|hierarchy\|namespace\|communities\|llm, provider_id?, max_zones=8, seed=0, apply=false}` | `{requested, strategy, zones: [Zone], warnings, applied}` ; avec `apply: true` les zones remplacent celles de la carte (les positions non épinglées sont effacées) et la réponse porte `map` |
+| POST | `…/business-map/suggest-frames?source=` | `{apply=false}` | `{frames: [{id, title, members, note, shared: [{relation, label, target, target_label}]}], applied}` ; `apply: true` remplace les cadres (+ `map`) |
+| POST | `…/business-map/layout?source=` | `{iterations?=20000, seed=0, time_limit_s?=3.5, apply=false}` | `{positions: {id: {x, y}}, zones: [{id, rect}], canvas, stats: {iterations, elapsed_ms, cost, crossings, initial_crossings, seed, time_limited}, applied}` ; `apply: true` enregistre les positions (+ `map`) |
+
+**Carte (GET et PUT)** — exemple abrégé sur `samples/automaint` (`am:` = `https://w3id.org/ontoforge/automaint#`, les IRIs sont absolues dans la réponse réelle) :
+```json
+{
+  "source": "ontology",
+  "nodes": [
+    {"id": "am:Vehicle", "label": "Véhicule", "role": "hub", "role_source": "auto", "zone": "z-vehicule",
+     "count": 0, "faded": false, "pinned": false, "x": 400.6, "y": 1131.2, "r": 34.0, "abstract": false},
+    {"id": "am:FuelType", "label": "Carburant", "role": "lookup", "role_source": "auto", "zone": "z-moteur",
+     "count": 4, "faded": false, "pinned": false, "x": 739.4, "y": 1607.7, "r": 32.1, "abstract": false}
+  ],
+  "edges": [
+    {"id": "subClassOf|am:ElectricVehicle|am:Vehicle", "source": "am:ElectricVehicle", "target": "am:Vehicle",
+     "source_kind": "node", "kind": "subclass", "label": "subClassOf", "inverse_label": null, "direction": "forward", "link": null, "union": false, "loop": false},
+    {"id": "am:concerns|am:RepairOrder|am:Vehicle", "source": "am:RepairOrder", "target": "am:Vehicle",
+     "source_kind": "node", "kind": "relation", "label": "concerne", "inverse_label": "a pour ordre de réparation",
+     "direction": "both", "link": "inverse", "union": false, "loop": false},
+    {"id": "frame|frame-1|am:uses|am:Part", "source": "frame-1", "target": "am:Part", "source_kind": "frame", "kind": "frame",
+     "label": "uses", "inverse_label": null, "direction": "forward", "loop": false,
+     "members": ["am:A", "am:B"], "replaces": ["am:uses|am:A|am:Part", "am:uses|am:B|am:Part"]}
+  ],
+  "frames": [{"id": "frame-1", "title": "A · B", "members": ["am:A", "am:B"], "note": "Partagent : uses → Part, owns → Brand",
+              "rect": {"x": 120.0, "y": 90.0, "w": 480.0, "h": 260.0}}],
+  "zones": [{"id": "z-vehicule", "title": "Véhicule", "subtitle": "7 types : Véhicule, Code défaut, Pièce…", "color": "#eef3ff",
+             "members": ["am:Vehicle", "am:Part"], "rect": {"x": 40.0, "y": 830.0, "w": 1060.0, "h": 540.0}}],
+  "scenarios": [{"id": "s1", "name": "Lecture", "description": "…", "edge_styles": {"am:concerns|am:RepairOrder|am:Vehicle": "scored"}, "nodes": ["am:Vehicle"]}],
+  "legend": [{"role": "hub", "label": "pivot : référencé par beaucoup de types", "color": "#c2570c", "count": 1}],
+  "edge_styles": ["scored", "gate", "read", "context", "context_off", "grouped", "disabled", "both", "mention", "oneway"],
+  "canvas": {"width": 1990.0, "height": 1990.0},
+  "meta": {"title": "Automaint", "model_date": "2026-11-14", "n_types": 24, "n_relations": 23, "target": null, "lang": "fr",
+           "generated": true, "updated_at": "2026-11-14T23:18:29+00:00", "counts": "ontology",
+           "skipped": [], "n_union": 0},
+  "warnings": []
+}
+```
+- **Nœud** : `id`, `label` (langue des libellés des paramètres ; pour `target`, le nom du `NodeType`), `role` (rôle effectif), `role_source` (`auto` | `manual`), `zone` (id de zone, jamais nul : les nœuds sans zone sont dans la zone `other` « Autres », ajoutée à la lecture), `count` (voir plus bas, ou `null`), `faded` (estompé), `pinned`, `x`, `y` (centre, en unités du canevas), `r` (rayon, 30 à 50 selon l'effectif), `abstract`.
+- **Arête** : une par relation, dans le sens direct. `id` : `<IRI de la propriété>|<source>|<cible>` (nom du type d'arête pour `target`) ; `subClassOf|<enfant>|<parent>` ; `frame|<id du cadre>|<relation>|<cible>`. `kind` : `relation` | `subclass` | `frame`. `direction` : `forward` | `both` : les **inverses déclarées** (`owl:inverseOf`, ou `reverse` d'un type d'arête distinct) sont fusionnées en une seule arête `both` qui porte `label` et `inverse_label` ; une propriété symétrique est aussi `both` (`inverse_label: null`). `link` précise le cas d'une arête `both` : `inverse` | `symmetric` (`null` pour `forward`) ; `forward` signifie seulement qu'un seul sens est retenu, pas qu'aucune inverse n'existe (monde ouvert). `union: true` quand le domaine ou l'image de la propriété est une union de classes : chaque flèche est une possibilité, pas un fait. Le libellé d'une arête de sous-classe est traduit côté front (« est un » / « is a »). `loop: true` pour une relation d'un type vers lui-même. **Arête de cadre** : quand tous les membres d'un cadre ont la même relation vers la même cible, une seule arête part du cadre (`source_kind: "frame"`, `source` = id du cadre, `members`, `replaces` = ids des arêtes remplacées, qui ne figurent plus dans `edges`). Les `edge_styles` d'un scénario sont indexés par ces `id` (y compris ceux des arêtes remplacées).
+- **Zone** : `{id, title, subtitle, color, members, rect: {x, y, w, h}}`. Une zone sans membre est conservée (PUT puis GET la renvoie) et reçoit un rectangle minimal. Les rectangles sont **toujours calculés** : une grille de colonnes par zone, de taille proportionnelle au nombre de membres, rangées en lignes (zones liées voisines, « Autres » en dernier) ; ils ne sont pas enregistrés. Un nœud épinglé hors de son rectangle l'agrandit ; un nœud non épinglé dont la position enregistrée est hors de sa zone est ramené à l'intérieur à la lecture.
+- **Cadre** : `{id, title, members, note, rect}` ; `rect` est le rectangle englobant des membres.
+- **Scénario** : `{id, name, description, edge_styles: {id d'arête: style}, nodes: [ids]}` ; styles : `scored`, `gate`, `read`, `context`, `context_off`, `grouped`, `disabled`, `both`, `mention`, `oneway` (liste renvoyée dans `edge_styles`). Le serveur n'interprète pas les styles : il les enregistre et les valide.
+- **Légende** : `[{role, label, color, count}]`, un rôle par entrée utilisée. Rôles intégrés et couleurs par défaut : `main` #0b6e6e, `component` #2c4f8f, `hub` #c2570c, `lookup` #9a7b0a, `context` #4f7a8c, `reference` #3f7d3a, `document` #7b4b94, `settings` #8c5a3c. Les anciens ids enregistrés (`issue`, `detail`, `key`, `classifier`, `catalogue`, `knowledge`, `config`) sont lus comme leur équivalent (`LEGACY_ROLES`, D-L36-01) ; un rôle libre prend une couleur déterministe, surchargeable par `role_colors`.
+- **`meta`** : `title` (celui de la carte, sinon le nom du projet), `model_date` (date du projet, ou de la génération du PGModel pour `target`), `n_types`, `n_relations` (relations hors hiérarchie), `target` (`curiosity|neo4j` ou `null`), `lang`, `generated` (proposition initiale jamais modifiée), `updated_at`, `counts` (`store` | `ontology` | `none`), `skipped` (`[{id, label}]` : propriétés non dessinées faute de domaine ou d'image), `n_union` (nombre d'arêtes `union`).
+- **Enregistré (`BusinessMapState`)** : `zones`, `roles` (surcharges manuelles seulement : un rôle égal au rôle déduit n'est pas conservé), `role_colors`, `faded`, `pinned`, `positions`, `frames`, `scenarios`, `title`, `generated`, `updated_at`. Rôles, arêtes, effectifs et rectangles sont recalculés à chaque lecture.
+
+**Effectif (`count`)** : nombre d'individus **distincts** de la classe et de ses sous-classes (fermeture `rdfs:subClassOf` ; pour un `NodeType`, individus distincts sur l'ensemble de ses classes d'origine, sans double compte) dans le triplestore local s'il existe et contient des données (union des graphes, types directs ou inférés), sinon dans l'ontologie (`individuals[].types`), sinon `null`.
+
+**Rôles déduits** (le premier critère satisfait gagne ; un rôle posé par l'humain prime ; un rôle libre est accepté, 40 caractères au plus) :
+1. `lookup` (liste de valeurs) : classe énumérée (`owl:oneOf`), ou ciblée par au moins 3 types différents avec au plus une relation sortante, au plus 3 propriétés littérales si on les connaît et, si les effectifs sont connus, un effectif inférieur ou égal à 10 % de l'effectif médian ;
+2. `hub` (pivot) : ciblé par au moins 4 types différents (15 % des types au-delà de 26 types) ;
+3. `component` : source d'une relation « partie de » sans en être la cible ; `main` (principal) : cible d'une telle relation, ou au moins 2 relations sortantes pour au plus un type entrant ;
+4. `document` : nom évoquant un contenu documentaire (document, guide, rapport, notice…) ; 5. `settings` : nom évoquant un paramétrage (paramètre, règle, profil, gabarit…) ; 6. `reference` : nom évoquant des données de référence (catalogue, code, norme…), ou type référencé par au moins 2 autres types sans presque rien en sortie ; 7. `context` : le reste.
+
+**Stratégies de zones** : `perimeters` (une zone par périmètre du projet, premier périmètre gagnant) ; `hierarchy` (grandes branches sous les racines : la plus grosse racine est éclatée en ses enfants tant qu'il y a moins de 4 branches ; les types isolés rejoignent la branche à laquelle ils sont le plus liés) ; `namespace` (un espace de noms = une zone ; un seul espace de noms : repli sur `hierarchy` avec avertissement) ; `communities` (Louvain écrit à la main, sans dépendance, déterministe pour une graine) ; `llm` (structure : périmètres si au moins deux, sinon hiérarchie équilibrée, sinon communautés ; titres et sous-titres demandés au fournisseur actif ; fournisseur de démonstration, non configuré ou réponse inutilisable : titres déterministes, avec avertissement). Les zones de moins de 2 membres tombent dans « Autres » (sauf `perimeters`), 8 zones au plus (`max_zones`).
+
+**Cadres suggérés** : groupes d'au moins 2 types qui partagent au moins 2 relations identiques (même propriété, même cible) ; un type n'est que dans un cadre.
+
+**Mise en page** : recuit simulé en Python pur (numpy n'est pas une dépendance, D-L21-02). Contraintes dures : nœud dans le rectangle de sa zone, aucun chevauchement de disques, nœuds épinglés (avec position) immobiles. Pénalités : croisements d'arêtes, arêtes qui frôlent un nœud étranger, arêtes trop courtes pour leur étiquette ou trop longues, écart à la grille de départ. Durée bornée par `time_limit_s` (3,5 s par défaut ; 60 nœuds en moins de 5 s), après 100 itérations la vitesse est mesurée et, si le budget de temps ne suffit pas, le nombre d'itérations est réduit (le refroidissement suit, `stats.time_limited: true`) ; résultat déterministe pour une graine et un nombre d'itérations donnés tant que ce cas ne se produit pas.

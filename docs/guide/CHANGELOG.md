@@ -2,6 +2,27 @@
 
 Format : par version, ce qui change pour l'utilisateur, puis le détail par lot. Sources : rapports `journal/L*/rapport*.md`, revues, `journal/decisions.md`. Les lots sont décrits dans `lots/`.
 
+## L37b : le récif de Krakie sort du bord de l'écran (15 nov. 2026) {#l37b-recif-krakie-15-nov-2026}
+
+- Le halo d'eau de L37 disparaît : plus de tache colorée par-dessus les cartes. Le récif pousse depuis le bord bas de la fenêtre, en bas à droite, aux couleurs de l'application (teal du thème, corail et étoile adoucis), en clair comme en sombre. Krakie nage juste au-dessus, dans un espace plus grand, avec de rares micro-bulles. Seuls Krakie et le récif réagissent au clic ; le reste de la zone laisse passer la souris. Le focus clavier est un anneau discret autour de Krakie, et la pastille de propositions reste. La mini-carte de l'éditeur est remontée d'autant.
+
+## L37 : Krakie dans son petit aquarium (15 nov. 2026) {#l37-krakie-aquarium-15-nov-2026}
+
+- Le bouton flottant de Krakie n'est plus un disque : c'est un petit aquarium sans cadre (eau légère aux bords fondus, récif en pixel art, quelques microbulles) dans lequel Krakie nage lentement, avec des arrêts. Au survol elle s'arrête et se tourne vers le curseur ; elle réfléchit, est contente ou inquiète comme avant. Clic, Ctrl+K et libellé inchangés ; version réduite sur mobile ; `prefers-reduced-motion` fige Krakie et les bulles. La mini-carte de l'éditeur est remontée pour lui laisser la place.
+
+## L36c : corrections de la carte métier (15 nov. 2026) {#l36c-corrections-carte-metier-15-nov-2026}
+
+- Une zone vide n'est plus perdue : elle est conservée par le serveur, avec sa place sur la carte, et survit à un rechargement.
+- Libellés plus justes : « relation déclarée dans les deux sens » (inverse ou symétrique, la symétrique étant dessinée à part) et « un seul sens retenu pour ce scénario » ; un `owl:disjointUnionOf` ne rend plus une classe « abstraite » ; le lien de hiérarchie porte « est un » traduit ; un bandeau signale les propriétés non dessinées (domaine ou image manquant) et les relations portées par une union de classes.
+- Volumes : un individu d'une sous-classe compte pour la classe mère, sans double compte.
+- Rôles par défaut génériques (principal, composant, pivot, liste de valeurs, contexte, référentiel, document, paramétrage) avec de nouvelles teintes ; les anciens rôles enregistrés sont relus avec leur équivalent. L'inspecteur indique si le rôle est déduit ou choisi.
+- Mobile : la carte s'ouvre sur un zoom lisible (45 % au moins), « Tout voir » donne la vue d'ensemble.
+- API : routes `/business-map` ajoutées à la documentation (API, architecture, limites, glossaire).
+
+## L36b : carte métier (15 nov. 2026) {#l36b-carte-metier-15-nov-2026}
+
+- Nouvel écran « Carte métier » (étape Concevoir, raccourci depuis le Modèle cible) : le schéma de l'ontologie ou du modèle cible en zones métier teintées, types colorés par rôle avec leur volume, relations courbes fléchées, cadres, légende et notes de scénario. Zoom, survol, épinglage par glisser, zones et scénarios modifiables, propositions de zones (cinq stratégies) et de cadres, réorganisation, annulation, export SVG et PNG ×2 ou ×4. Visite guidée à 21 étapes ; Krakie connaît l'écran.
+
 ## L35 : bandeau latéral repliable en icônes (11 nov. 2026) {#l35-bandeau-lateral-repliable-en-icones-11-nov-2026}
 
 - Le menu de gauche se replie en une bande d'environ 56 px (icônes seules, logo réduit à la tête de Krakie, étapes en pastilles 1 à 4, infobulles au survol et au clavier, nombre de constats à arbitrer en pastille sur l'icône). Bouton en bas du bandeau ou Ctrl+B ; choix mémorisé dans le navigateur.

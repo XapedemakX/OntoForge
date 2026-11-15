@@ -2,6 +2,27 @@
 
 Format: by version, what changes for the user, then the detail per work package. Sources: reports `journal/L*/rapport*.md`, reviews, `journal/decisions.md`. Work packages are described in `lots/`.
 
+## L37b: Krakie's reef grows from the screen edge (15 Nov 2026) {#l37b-recif-krakie-15-nov-2026}
+
+- The water halo from L37 is gone: no coloured blob over the cards any more. The reef grows from the bottom edge of the window, bottom right, in the app's own colours (theme teal, softened coral and starfish), in light and dark. Krakie swims just above it, with a few rare micro-bubbles. Only Krakie and the reef react to clicks; the rest of the area lets the mouse through. The keyboard focus is a discreet ring around Krakie, and the proposals badge stays. The editor minimap was raised accordingly.
+
+## L37: Krakie in a small aquarium (15 Nov 2026) {#l37-krakie-aquarium-15-nov-2026}
+
+- Krakie's floating button is no longer a disc: it is a small frameless aquarium (light water with soft edges, a pixel-art reef, a few micro-bubbles) in which Krakie swims slowly, pausing now and then. On hover she stops and turns towards the cursor; she still thinks, looks happy or worried as before. Click, Ctrl+K and label unchanged; smaller version on mobile; `prefers-reduced-motion` freezes Krakie and the bubbles. The editor minimap was moved up to make room.
+
+## L36c: business map fixes (15 Nov 2026) {#l36c-corrections-carte-metier-15-nov-2026}
+
+- An empty zone is no longer lost: the server keeps it, with its place on the map, and it survives a page reload.
+- More accurate wording: “relationship declared in both directions” (inverse or symmetric, the symmetric one being drawn apart) and “a single direction kept for this scenario”; an `owl:disjointUnionOf` no longer makes a class “abstract”; the hierarchy link carries a translated “is a”; a banner flags properties that are not drawn (missing domain or range) and relationships declared on a union of classes.
+- Counts: an individual of a subclass counts for the parent class, with no double counting.
+- Generic default roles (main, component, hub, lookup, context, reference, document, settings) with new tints; previously saved roles are read as their equivalent. The inspector says whether a role is inferred or chosen.
+- Mobile: the map opens at a readable zoom (at least 45%), “Fit all” gives the overview.
+- API: `/business-map` routes added to the documentation (API, architecture, limits, glossary).
+
+## L36b: business map (15 Nov 2026) {#l36b-carte-metier-15-nov-2026}
+
+- New “Business map” screen (Design step, shortcut from the Target model): the schema of the ontology or of the target model in tinted business zones, types coloured by role with their count, curved arrows, frames, legend and scenario notes. Zoom, hover, pinning by drag, editable zones and scenarios, zone suggestions (five strategies) and frame suggestions, rearranging, undo, SVG and PNG ×2 or ×4 export. 21-step guided tour; Krakie knows the screen.
+
 ## L35: sidebar collapsible to icons (11 Nov 2026) {#l35-bandeau-lateral-repliable-en-icones-11-nov-2026}
 
 - The left menu collapses into a strip of about 56 px (icons only, logo reduced to Krakie's head, steps as badges 1 to 4, tooltips on hover and keyboard focus, number of findings to decide as a badge on the icon). Button at the bottom of the sidebar or Ctrl+B; the choice is remembered in the browser.

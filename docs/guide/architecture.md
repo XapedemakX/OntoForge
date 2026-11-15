@@ -76,6 +76,7 @@ sequenceDiagram
 | `api/projects.py` | CRUD projets, import, DSL, export ontologie/shapes, conformité, SHACL | routeurs `/api/projects…` |
 | `api/analysis.py` | analyse, décisions, génération (+ historique), zip, traduction ; `?perimeter=` | `/analyze`, `/decisions`, `/generate`, `/generations`, `/queries` |
 | `api/assistant.py` | assistant IA : brouillon, shapes, explication, conversation, dépôt de fichier | `/api/assistant/*` |
+| `businessmap/` + `api/business_map.py` | carte métier (L36) : graphe neutre issu de l'ontologie ou du PGModel, volumes (fermeture `rdfs:subClassOf`, individus distincts), rôles déduits, zones (5 stratégies), cadres, mise en page par recuit simulé en Python pur ; état persistant dans `Project.business_maps` (une carte par source) ; les rectangles de zone sont recalculés à chaque lecture | `/api/projects/{pid}/business-map…` |
 | `api/system.py` | santé, exemples | `/api/health`, `/api/samples` |
 | `api/settings.py` | paramètres, fournisseurs LLM, endpoints SPARQL (CONTRACTS §4, §6) | `/api/settings…` |
 | `api/editing.py` | opérations d'édition, annuler/rétablir, graphe, périmètres, icônes (§5) | `/api/projects/{pid}/ops…`, `/graph`, `/perimeters…`, `/api/icons` |

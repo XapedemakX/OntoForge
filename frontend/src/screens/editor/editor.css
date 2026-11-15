@@ -19,7 +19,7 @@
 .of-canvas .react-flow { --xy-background-color: var(--bg); --xy-background-pattern-color: var(--line-strong); --xy-edge-stroke: var(--muted); --xy-controls-button-background-color: var(--panel); --xy-controls-button-color: var(--ink); --xy-controls-button-border-color: var(--line); --xy-minimap-background-color: var(--panel); }
 .of-canvas .react-flow__pane { cursor: default; }
 .of-canvas .react-flow__controls { box-shadow: var(--shadow); }
-.of-canvas .react-flow__minimap { border: 1px solid var(--line); border-radius: var(--r-md); overflow: hidden; }
+.of-canvas .react-flow__minimap { border: 1px solid var(--line); border-radius: var(--r-md); overflow: hidden; margin-bottom: 112px; } /* L37b : laisse la place à Krakie et à son récif (150 px de haut, moins le pied de page) */
 .of-defs { position: absolute; }
 
 /* arbre */

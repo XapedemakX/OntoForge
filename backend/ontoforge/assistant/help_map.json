@@ -204,6 +204,18 @@
     "fr": "L'écran Versions règle les versions de Neo4j, Cypher, Curiosity.Library, SHACL, SPARQL et RDF que visent les générateurs, avec le statut de chacune. Le défaut global se règle dans Paramètres.",
     "en": "The Versions screen sets the Neo4j, Cypher, Curiosity.Library, SHACL, SPARQL and RDF versions the generators aim at, with the status of each. The global default is set in Settings."
    }
+  },
+  "business-map": {
+   "page": "utilisateur",
+   "anchor": "carte-metier",
+   "title": {
+    "fr": "Carte métier",
+    "en": "Business map"
+   },
+   "summary": {
+    "fr": "La carte métier dessine le schéma en zones métier teintées. Survolez un type pour voir ses relations, glissez-le pour l'épingler, puis exportez en SVG ou en PNG.",
+    "en": "The business map draws the schema in tinted business zones. Hover a type to see its relationships, drag it to pin it, then export to SVG or PNG."
+   }
   }
  }
 }

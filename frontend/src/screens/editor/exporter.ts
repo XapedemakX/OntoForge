@@ -154,8 +154,9 @@ export function buildSvg(i: ExportIn): { svg: string; w: number; h: number } {
   return { svg, w: W, h: H }
 }
 
-export async function svgToPng(svg: string, w: number, h: number): Promise<Blob> {
-  const scale = Math.min(2, 8000 / Math.max(w, h))
+/** `ratio` : 2 par défaut ; la carte métier demande 4. La taille du canevas reste bornée (côté et surface) pour que le navigateur l'accepte. */
+export async function svgToPng(svg: string, w: number, h: number, ratio = 2): Promise<Blob> {
+  const scale = Math.min(ratio, (ratio > 2 ? 16000 : 8000) / Math.max(w, h), Math.sqrt(2e8 / (w * h)))
   const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml;charset=utf-8' }))
   try {
     const img = new Image(); img.decoding = 'async'

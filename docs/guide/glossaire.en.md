@@ -94,6 +94,11 @@ Vocabulary of OntoForge, of the OWL/SHACL world and of the property graph world.
 | **Master key** | `ONTOFORGE_SECRET_KEY`: derives the encryption key (Fernet) for secrets. Without it, the `.secret` file is used. |
 | **Krakie** | OntoForge mascot: a small lagoon-colored pixel-art octopus with 9 poses (welcome, thinking, reading, magnifier, graph, happy, worried, forge, trophy). It forges (two hammers on an anvil) during a generation or a transposition, then holds up a graph-shaped trophy when done. |
 | **Dashboard** | Home screen of a project: state of the four steps and next action. |
+| **Business map** | Screen that draws the schema in tinted zones, to read and present it (ontology or target model). |
+| **Zone** | Tinted block of the business map that groups types; suggested by a strategy (perimeters, hierarchy, namespaces, communities, Krakie) and editable. |
+| **Frame** | Dotted blue outline on the business map that groups types sharing the same relationship to the same target: a single arrow leaves the frame. |
+| **Role** | Label of a type on the business map (main, component, hub, lookup, context, reference, document, settings), inferred from the structure and then correctable. |
+| **Scenario** | Highlighting of some relationships of the business map (style, notes) without touching the model. |
 | **Quick input** | Editor panel: one DSL line = one axiom. |
 
 ## The agent team {#equipe-d-agents}

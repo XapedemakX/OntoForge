@@ -10,6 +10,7 @@ import { DocResult } from '../screens/assistant/DocResult'
 import { ProposalCards } from '../screens/assistant/ProposalCards'
 import { useProposal } from '../lib/proposal'
 import { ActionCards } from './ActionCards'
+import { Aquarium } from './Aquarium'
 import { effectiveContext, forSend, ROUTE_SCREEN, type CtxMode } from './context'
 import { runChat, go } from './run'
 import { getMsgs, getUi, setMsgs, setUi, uid, useConversation, useDockUi, type Msg } from './store'
@@ -33,6 +34,9 @@ export function AssistantDock({ p, setP, target, screen, perimeter }: { p: Proje
   const taRef = useRef<HTMLTextAreaElement>(null)
   const endRef = useRef<HTMLDivElement>(null)
   const hidden = screen === 'assistant'
+  const [hover, setHover] = useState(false)
+  const cursor = useRef<{ x: number; y: number } | null>(null)
+  const aq = useAquariumSize()
 
   useEffect(() => onAssistantContext(setDeclared), [])
   useEffect(() => { setMode('full'); setOneShot(null) }, [screen, p.id])
@@ -91,8 +95,10 @@ export function AssistantDock({ p, setP, target, screen, perimeter }: { p: Proje
   return (
     <>
       {!ui.open && (
-        <button className={'ag-fab' + (busy ? ' busy' : '')} data-tour="krakie-fab" onClick={() => open()} aria-label={t('ag.open.label')} title={t('ag.open.title')}>
-          <Krakie pose={pose} size={44} float={false} />
+        <button className={'ag-fab' + (busy ? ' busy' : '')} data-tour="krakie-fab" onClick={() => open()} aria-label={t('ag.open.label')} title={t('ag.open.title')}
+          onPointerEnter={() => setHover(true)} onPointerLeave={() => { setHover(false); cursor.current = null }}
+          onPointerMove={e => { const r = e.currentTarget.getBoundingClientRect(); cursor.current = { x: (e.clientX - r.left) / aq.scale, y: (e.clientY - r.top) / aq.scale } }}>
+          <Aquarium state={busy ? 'busy' : lastMsg?.error ? 'worried' : happy ? 'happy' : 'idle'} hovered={hover} onCursor={cursor} width={aq.w} height={aq.h} scale={aq.scale} reefW={aq.rw} reefH={aq.rh} />
           {pendingActions > 0 && <b className="ag-badge">{pendingActions}</b>}
         </button>
       )}
@@ -165,4 +171,12 @@ function defaultSuggestions(screen: string, t: (k: string) => string): string[] 
   const k = ROUTE_SCREEN[screen]?.name ?? screen
   const out = [t('ag.sugg.' + k), t('ag.sugg.' + k + '.2')].filter(x => !x.startsWith('ag.sugg.'))
   return out.length ? out : [t('ag.sugg.default')]
+}
+
+/** Aquarium (L37b) : 134×100 pixels à l'échelle 1,5 (≈201×150) sur desktop, 120×90 à l'échelle 1 sous 900 px ; récif de 120 px logiques (≈180 / 120 px) collé en bas. */
+function useAquariumSize() {
+  const q = '(max-width: 900px)'
+  const [small, setSmall] = useState(() => !!window.matchMedia?.(q).matches)
+  useEffect(() => { const mq = window.matchMedia?.(q); if (!mq) return; const f = () => setSmall(mq.matches); mq.addEventListener?.('change', f); return () => mq.removeEventListener?.('change', f) }, [])
+  return small ? { w: 120, h: 90, scale: 1, rw: 120, rh: 22 } : { w: 134, h: 100, scale: 1.5, rw: 120, rh: 22 }
 }

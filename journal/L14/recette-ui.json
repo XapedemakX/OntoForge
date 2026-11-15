@@ -10,57 +10,57 @@
   {
    "screen": "02-tableau",
    "ok": true,
-   "detail": "texte=1437c erreurs=0"
+   "detail": "texte=1450c erreurs=0"
   },
   {
    "screen": "03-ontologie-editeur",
    "ok": true,
-   "detail": "texte=2624c erreurs=0"
+   "detail": "texte=2637c erreurs=0"
   },
   {
    "screen": "04-ontologie-liste",
    "ok": true,
-   "detail": "texte=1113c erreurs=0"
+   "detail": "texte=1126c erreurs=0"
   },
   {
    "screen": "05-shapes",
    "ok": true,
-   "detail": "texte=2510c erreurs=0"
+   "detail": "texte=2523c erreurs=0"
   },
   {
    "screen": "06-conformite",
    "ok": true,
-   "detail": "texte=919c erreurs=0"
+   "detail": "texte=932c erreurs=0"
   },
   {
    "screen": "07-shacl",
    "ok": true,
-   "detail": "texte=834c erreurs=0"
+   "detail": "texte=847c erreurs=0"
   },
   {
    "screen": "08-analyse",
    "ok": true,
-   "detail": "texte=1922c erreurs=0"
+   "detail": "texte=1935c erreurs=0"
   },
   {
    "screen": "09-modele",
    "ok": true,
-   "detail": "texte=2194c erreurs=0"
+   "detail": "texte=2221c erreurs=0"
   },
   {
    "screen": "10-exports",
    "ok": true,
-   "detail": "texte=5089c erreurs=0"
+   "detail": "texte=5102c erreurs=0"
   },
   {
    "screen": "11-requetes",
    "ok": true,
-   "detail": "texte=2005c erreurs=0"
+   "detail": "texte=2018c erreurs=0"
   },
   {
    "screen": "12-assistant",
    "ok": true,
-   "detail": "texte=1315c erreurs=0"
+   "detail": "texte=1328c erreurs=0"
   },
   {
    "screen": "13-parametres",
@@ -95,57 +95,57 @@
   {
    "screen": "m-02-tableau",
    "ok": true,
-   "detail": "texte=1467c erreurs=0"
+   "detail": "texte=1480c erreurs=0"
   },
   {
    "screen": "m-03-ontologie-editeur",
    "ok": true,
-   "detail": "texte=862c erreurs=0"
+   "detail": "texte=875c erreurs=0"
   },
   {
    "screen": "m-04-ontologie-liste",
    "ok": true,
-   "detail": "texte=860c erreurs=0"
+   "detail": "texte=873c erreurs=0"
   },
   {
    "screen": "m-05-shapes",
    "ok": true,
-   "detail": "texte=2569c erreurs=0"
+   "detail": "texte=2582c erreurs=0"
   },
   {
    "screen": "m-06-conformite",
    "ok": true,
-   "detail": "texte=889c erreurs=0"
+   "detail": "texte=902c erreurs=0"
   },
   {
    "screen": "m-07-shacl",
    "ok": true,
-   "detail": "texte=804c erreurs=0"
+   "detail": "texte=817c erreurs=0"
   },
   {
    "screen": "m-08-analyse",
    "ok": true,
-   "detail": "texte=1892c erreurs=0"
+   "detail": "texte=1905c erreurs=0"
   },
   {
    "screen": "m-09-modele",
    "ok": true,
-   "detail": "texte=2164c erreurs=0"
+   "detail": "texte=2191c erreurs=0"
   },
   {
    "screen": "m-10-exports",
    "ok": true,
-   "detail": "texte=1552c erreurs=0"
+   "detail": "texte=1565c erreurs=0"
   },
   {
    "screen": "m-11-requetes",
    "ok": true,
-   "detail": "texte=1360c erreurs=0"
+   "detail": "texte=1373c erreurs=0"
   },
   {
    "screen": "m-12-assistant",
    "ok": true,
-   "detail": "texte=1116c erreurs=0"
+   "detail": "texte=1129c erreurs=0"
   },
   {
    "screen": "m-13-parametres",
