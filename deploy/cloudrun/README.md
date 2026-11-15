@@ -76,13 +76,13 @@ gcloud run deploy ontoforge `
   --allow-unauthenticated `
   --max-instances 1 --min-instances 0 --cpu 1 --memory 2Gi --port 8080 --timeout 300 `
   --set-secrets "ONTOFORGE_SECRET_KEY=ontoforge-secret-key:latest,ONTOFORGE_AUTH_USERS=ontoforge-auth-users:latest" `
-  --set-env-vars "^@^ONTOFORGE_AUTH_ADMINS=jerem@ONTOFORGE_EGRESS_ALLOW=api.anthropic.com@ONTOFORGE_SHACL_SLOTS=1@ONTOFORGE_HERMIT_MAX_MB=768" `
+  --env-vars-file deploy/cloudrun/env.yaml `
   --add-volume "mount-path=/data,type=cloud-storage,bucket=$BUCKET,mount-options=uid=10001;gid=10001"
 ```
 
 - `--allow-unauthenticated` : Google laisse passer tout le monde jusqu'à l'application, qui impose sa propre page de connexion.
   Si une règle d'organisation l'interdit, la commande le dira.
-- `^@^` change le séparateur des variables pour pouvoir mettre des virgules dans `ONTOFORGE_EGRESS_ALLOW`
+- `deploy/cloudrun/env.yaml` : variables non secrètes (administrateur, hôtes joignables, plafonds). Ajouter un endpoint SPARQL public à `ONTOFORGE_EGRESS_ALLOW` (séparé par une virgule). Un fichier évite les pièges de séparateurs : avec `gcloud.cmd`, cmd.exe supprime les `^` d'un `--set-env-vars "^@^…"`.
   (ajouter `@sparql.exemple.org` etc. pour un endpoint SPARQL public).
 - `mount-options=uid=10001;gid=10001` : le bucket appartient à l'utilisateur sans privilèges du conteneur (10001), sinon il appartient à root et l'application ne peut pas écrire (doc Google : « Configure Cloud Storage volume mounts for Cloud Run services »). Les montages de volume imposent l'environnement d'exécution de 2e génération, choisi automatiquement.
 
