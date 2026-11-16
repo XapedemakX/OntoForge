@@ -18,7 +18,7 @@ from ..settings.models import DEFAULT_MODELS, EndpointConfig, ProviderConfig, Se
 
 log = logging.getLogger("ontoforge.settings")
 router = APIRouter(prefix="/api/settings", tags=["settings"])
-TEST_TIMEOUT = 15.0
+TEST_TIMEOUT = 30.0   # offres gratuites et modèles qui réfléchissent : 15 s ne suffisaient pas (Gemini)
 TEST_MAX_TOKENS = 512
 _RO = ("has_key", "key_last4", "key_unreadable", "configured")  # champs de la vue publique, ignorés en entrée
 

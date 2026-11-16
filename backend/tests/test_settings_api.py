@@ -118,7 +118,7 @@ def test_provider_test_endpoint(client, monkeypatch):
         return httpx.Response(401, text="bad " + KEY, request=httpx.Request("POST", url))
     monkeypatch.setattr(httpx, "post", fake_post)
     out = client.post(f"/api/settings/providers/{r['id']}/test", json={"api_key": KEY}).json()
-    assert out["ok"] is False and "authentification" in out["message"] and KEY not in json.dumps(out) and seen["timeout"] == 15.0
+    assert out["ok"] is False and "authentification" in out["message"] and KEY not in json.dumps(out) and seen["timeout"] == __import__("ontoforge.api.settings", fromlist=["TEST_TIMEOUT"]).TEST_TIMEOUT
     monkeypatch.setattr(httpx, "post", lambda url, headers=None, json=None, timeout=None: httpx.Response(
         200, json={"content": [{"type": "text", "text": "OK"}]}, request=httpx.Request("POST", url)))
     out = client.post(f"/api/settings/providers/{r['id']}/test", json={"api_key": KEY}).json()

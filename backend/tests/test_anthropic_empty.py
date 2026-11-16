@@ -31,3 +31,19 @@ def test_stored_key_with_invisible_char_does_not_crash_headers():
     from types import SimpleNamespace
     p = anthropic.AnthropicProvider(SimpleNamespace(api_key="sk-abc​", model="m", base_url=""))
     assert p._get("api_key", "X") == "sk-abc"
+
+
+def test_gemini_openai_compat_defaults_to_low_reasoning(monkeypatch):
+    from types import SimpleNamespace
+    from ontoforge.assistant.providers import openai_compat
+    sent = {}
+    def fake(name, url, headers, payload, timeout):
+        sent.update(payload); return {"choices": [{"message": {"content": "OK"}}]}
+    monkeypatch.setattr(openai_compat, "post_json", fake)
+    p = openai_compat.OpenAICompatProvider(SimpleNamespace(api_key="k", model="gemini-3.8-flash", extra={},
+                                                           base_url="https://generativelanguage.googleapis.com/v1beta/openai"))
+    assert p.complete("s", [{"role": "user", "content": "ping"}], 16) == "OK"
+    assert sent["reasoning_effort"] == "low"
+    p2 = openai_compat.OpenAICompatProvider(SimpleNamespace(api_key="k", model="m", extra={"reasoning_effort": "high"}, base_url="https://x.example/v1"))
+    p2.complete("s", [{"role": "user", "content": "ping"}], 16)
+    assert sent["reasoning_effort"] == "high"

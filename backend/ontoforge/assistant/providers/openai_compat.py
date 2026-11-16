@@ -31,6 +31,14 @@ class OpenAICompatProvider(Configured):
                                    "messages": [{"role": "system", "content": schema_hint(system, json_schema)}, *messages]}
         if json_schema:
             payload["response_format"] = {"type": "json_object"}
+        # Réglages non secrets transmis tels quels (extra du fournisseur) ; Gemini (point d'accès compatible OpenAI) : réflexion « low »
+        # par défaut, sinon la réflexion par défaut des modèles 3.x dépasse souvent le délai du test de connexion sur l'offre gratuite.
+        extra = dict(getattr(self.cfg, "extra", None) or {}) if self.cfg is not None else {}
+        for k in ("reasoning_effort", "temperature", "top_p"):
+            if k in extra and extra[k] not in (None, ""):
+                payload[k] = extra[k]
+        if "reasoning_effort" not in payload and "generativelanguage.googleapis.com" in base:
+            payload["reasoning_effort"] = "low"
         data = post_json("OpenAI-compatible", f"{base}/chat/completions", headers, payload, self.timeout_s)
         try:
             return data["choices"][0]["message"]["content"] or ""
