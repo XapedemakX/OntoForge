@@ -19,6 +19,7 @@ from ..settings.models import DEFAULT_MODELS, EndpointConfig, ProviderConfig, Se
 log = logging.getLogger("ontoforge.settings")
 router = APIRouter(prefix="/api/settings", tags=["settings"])
 TEST_TIMEOUT = 15.0
+TEST_MAX_TOKENS = 512
 _RO = ("has_key", "key_last4", "key_unreadable", "configured")  # champs de la vue publique, ignorés en entrée
 
 
@@ -228,7 +229,8 @@ def test_provider(pid: str, body: Optional[dict[str, Any]] = Body(default=None))
         return {"ok": False, "latency_ms": 0, "model": cfg.model, "message": f"Fournisseur non configuré : {why} renseignée."}
     t0 = time.perf_counter()
     try:
-        prov.complete("Test de connexion. Réponds uniquement par : OK", [{"role": "user", "content": "ping"}], 16)
+        # 512 jetons : les modèles récents peuvent réfléchir avant de répondre ; 16 jetons donnaient « réponse vide » (claude-sonnet-5-5)
+        prov.complete("Test de connexion. Réponds uniquement par : OK", [{"role": "user", "content": "ping"}], TEST_MAX_TOKENS)
     except LLMError as exc:
         ms = int((time.perf_counter() - t0) * 1000)
         return {"ok": False, "latency_ms": ms, "model": cfg.model, "message": str(exc)}

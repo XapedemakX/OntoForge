@@ -31,5 +31,8 @@ class AnthropicProvider(Configured):
                           "system": schema_hint(system, json_schema), "messages": messages}, self.timeout_s)
         parts = [b.get("text", "") for b in data.get("content", []) if isinstance(b, dict) and b.get("type") == "text"]
         if not parts:
-            raise LLMError("Anthropic : réponse vide.")
+            # Modèles récents : un bloc de réflexion peut précéder le texte et épuiser un max_tokens très court.
+            stop = data.get("stop_reason") or "?"
+            raise LLMError(f"Anthropic : réponse sans texte (stop_reason={stop}"
+                           + ("; augmenter max_tokens" if stop == "max_tokens" else "") + ").")
         return "".join(parts)
