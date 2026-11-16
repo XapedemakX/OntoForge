@@ -24,3 +24,4 @@ frontend/dist
 *.tar.gz
 /data/
 backend/data/
+deploy-demo.log
