@@ -96,7 +96,14 @@
 .ag-sheet .ag-hint { display: none; }
 .ag-sheet .ag-box textarea { font-size: 16px; font-family: var(--sans); min-height: var(--tap); }
 .ag-sheet .ag-box .btn { min-height: var(--tap); }
-.ag-sheet .ag-pill { min-height: 36px; display: inline-flex; align-items: center; }
+.ag-sheet .ag-pill { min-height: var(--tap); display: inline-flex; align-items: center; }
 .ag-mh { display: flex; align-items: center; gap: 10px; } .ag-mh span { display: flex; flex-direction: column; line-height: 1.15; } .ag-mh small { font-size: 12px; font-weight: 400; }
 .ag-mact { display: flex; justify-content: flex-end; padding: 4px 8px 0; }
 .ag-sheet .ag-chip button { width: 32px; height: 32px; }
+
+/* L45 : choix du fournisseur dans Krakie (téléphone). Même mécanisme que l'en-tête du panneau d'ordinateur (état, liste et choix partagés). */
+.ag-llm { margin-bottom: 8px; }
+.ag-llm label { display: flex; align-items: center; gap: 10px; }
+.ag-llm label > span { flex: none; font-size: 13px; color: var(--muted); }
+.ag-llm select { flex: 1; min-width: 0; width: 100%; max-width: none; min-height: var(--tap); font-size: 16px; text-overflow: ellipsis; }
+.ag-llm-one { display: flex; align-items: center; gap: 8px; min-height: 32px; font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }

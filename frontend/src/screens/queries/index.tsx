@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ScreenProps } from '../../shell/types'
-import { Icon, Button, Segmented } from '../../kit'
+import { Icon, Button, Fold, Segmented } from '../../kit'
 import { useT, useI18n } from '../../i18n'
 import { useToast } from '../../ui'
 import { announceActiveEndpoint, useActiveEndpoint } from '../settings/activeEndpoint'
@@ -149,8 +149,10 @@ export function Queries({ p, target }: ScreenProps) {
         </div>
         <aside className="qright">
           {mode === 'guided' && <div className="desk"><CodePanel build={build} error={buildErr} building={building} /></div>}
-          <Library pid={p.id} lang={lang} target={target} reloadKey={libKey} activeId={activeSaved} canSave={mode === 'guided' ? !!guided : !!free.trim()}
+          <Fold screen="requetes" id="saved" bare title={t('q.lib.saved')} desc={t('fold.requetes.saved')}>
+            <Library pid={p.id} lang={lang} target={target} reloadKey={libKey} activeId={activeSaved} canSave={mode === 'guided' ? !!guided : !!free.trim()}
             onSave={save} onOpen={q => load(q, false)} onRun={q => load(q, true)} onFree={s => { setMode('free'); setFree(s) }} />
+          </Fold>
         </aside>
       </div>
     </div>

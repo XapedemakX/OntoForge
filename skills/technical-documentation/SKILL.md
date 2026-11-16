@@ -50,6 +50,9 @@ Méthode éprouvée sur OntoForge (documentaliste, agent `doc`, lot L12). Géné
 - Questions déguisées en affirmations : « il semble que… » dans un guide = une question non posée.
 - Parallélisme : d'autres agents modifient code et décisions pendant la rédaction ; reprendre la liste des routes / fichiers juste avant de finir.
 
+- Doc bilingue : ancres `{#id}` identiques en fr et en, captures générées par script dans les deux langues, scan OCR du français dans les captures anglaises : voir `doc-bilingue-captures`.
+- Pluriels « (s) » dans l'interface : dette à traiter dans un lot dédié ; voir `i18n-ecriture-sure`.
+
 ## 5. Gabarits
 
 Question : `| ID | Destinataire | Question | Contexte (source) | Pages concernées | Réponse |`.

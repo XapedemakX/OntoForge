@@ -16,3 +16,4 @@ backend/build/
 
 # Journal local du script de déploiement
 deploy-demo.log
+journal/L45/recette/

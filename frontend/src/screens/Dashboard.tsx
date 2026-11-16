@@ -1,6 +1,6 @@
 import { api, type GenerationRecord, type PGModel, type Target } from '../api'
 import type { ScreenProps } from '../shell/types'
-import { Button, Card, EmptyState, Icon, Krakie, SeverityBadge } from '../kit'
+import { Button, Card, EmptyState, Fold, Icon, Krakie, SeverityBadge } from '../kit'
 import type { Pose } from '../krakie/Krakie'
 import { useT } from '../i18n'
 import { useAssistantContext } from '../lib/assistantContext'
@@ -111,9 +111,8 @@ export function Dashboard({ p, target }: ScreenProps) {
       </div>
 
       {mob && <section className="dash-act"><ActivityCard pid={p.id} rev={p.updated_at} /></section>}
-      <Fold mob={mob} label={t('mob.dash.more')}>
       <div className="dash-grid">
-        <Card title={t('dash.findings')}>
+        <Fold screen="tableau" id="findings" title={t('dash.findings')} desc={t('fold.tableau.findings')}>
           {(['curiosity', 'neo4j'] as Target[]).map(x => {
             const c = counts[x]; const tot = c.auto + c.review + c.lost || 1
             return (
@@ -126,9 +125,9 @@ export function Dashboard({ p, target }: ScreenProps) {
               </div>)
           })}
           {!loaded && <div className="muted">{t('dash.loading')}</div>}
-        </Card>
+        </Fold>
 
-        <Card title={t('dash.gen.title')} tone={loaded && cc.review + cc.lost === 0 ? 'auto' : undefined}>
+        <Fold screen="tableau" id="generate" title={t('dash.gen.title')} desc={t('fold.tableau.generate')} tone={loaded && cc.review + cc.lost === 0 ? 'auto' : undefined}>
           <p className="muted" style={{ margin: '0 0 10px' }}>{loaded ? (cc.review + cc.lost === 0 ? t('dash.gen.ready', tp) : t('dash.gen.blocked', { n: cc.review + cc.lost, ...tp })) : t('dash.loading')}</p>
           <div className="row" style={{ marginBottom: 12 }}>
             <Button variant={loaded && cc.review + cc.lost === 0 ? 'primary' : 'default'} icon="bolt" data-write data-testid="gen-btn" title={roHint} disabled={genBusy || nCls === 0 || ro} onClick={generate}>{genBusy ? t('dash.gen.busy') : t('dash.gen.btn', tp)}</Button>
@@ -139,31 +138,25 @@ export function Dashboard({ p, target }: ScreenProps) {
             <ul className="gens">{history.slice(0, 5).map(g => (
               <li key={g.at + g.target}><b>{tn(g.target)}</b><span className="muted">{fmt(g.at)}</span><span className="muted">{t('dash.gen.row', { files: g.files.length, pending: g.findings_summary.pending ?? 0 })}</span><span className="grow" />
                 {g === gens[g.target] && (g.project_updated_at !== curUpd ? <span title={t('dash.stale.hint')}><SeverityBadge severity="review" label={t('dash.stale')} /></span> : <SeverityBadge severity="auto" label={t('dash.upToDate')} />)}</li>))}</ul>}
-        </Card>
+        </Fold>
 
-        <Card title={t('dash.perimeters')}>
+        <Fold screen="tableau" id="scopes" title={t('dash.perimeters')} desc={t('fold.tableau.scopes')}>
           {peri.data && peri.data.length ? <ul className="gens">{peri.data.map(x => <li key={x.id}><b>{x.name}</b><span className="muted">{t('dash.stat.classes', { n: x.classes.length })}</span></li>)}</ul> : <EmptyState pose="loupe" title={t('dash.perimeters.none')} action={<Button size="sm" icon="plus" onClick={() => go(p.id, 'ontologie')}>{t('dash.perimeters.create')}</Button>}>{t('dash.perimeters.hint')}</EmptyState>}
-        </Card>
+        </Fold>
 
         {!mob && <ActivityCard pid={p.id} rev={p.updated_at} />}
 
         {!mob && <TourCard />}
 
-        <Card title={t('dash.shortcuts')}>
+        {!mob && <Card title={t('dash.shortcuts')}>
           <div className="row">
             <Button icon="sitemap" onClick={() => go(p.id, 'ontologie')}>{t('nav.ontologie')}</Button>
             <Button icon="wand-magic-sparkles" onClick={() => go(p.id, 'assistant')}>{t('nav.assistant')}</Button>
             <Button icon="file-export" onClick={() => go(p.id, 'exports')}>{t('nav.exports')}</Button>
             <Button icon="magnifying-glass-chart" onClick={() => go(p.id, 'requetes')}>{t('nav.requetes')}</Button>
           </div>
-        </Card>
+        </Card>}
       </div>
-      </Fold>
     </div>
   )
-}
-
-/** Sur téléphone, le détail du tableau de bord se replie (information progressive, L44). */
-function Fold({ mob, label, children }: { mob: boolean; label: string; children: React.ReactNode }) {
-  return mob ? <details className="dash-more"><summary>{label}</summary>{children}</details> : <>{children}</>
 }

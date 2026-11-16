@@ -10,14 +10,14 @@
 | query | Expert requêtage | .claude/agents/expert-requetage.md | skills/graph-query-translation |
 | curiosity | Expert Curiosity | .claude/agents/expert-curiosity.md | skills/curiosity-schema-design |
 | neo4j | Expert Neo4j | .claude/agents/expert-neo4j.md | skills/neo4j-schema-design |
-| doc | Documentaliste | .claude/agents/documentaliste.md | skills/technical-documentation |
+| doc | Documentaliste | .claude/agents/documentaliste.md | skills/technical-documentation, skills/doc-bilingue-captures, skills/i18n-ecriture-sure |
 | scout | Éclaireur produit | .claude/agents/eclaireur-produit.md | skills/product-discovery |
 | veille | Veille technologique et normative | .claude/agents/veille-techno.md | skills/tech-watch |
 | humain | Humaniseur (dernière passe de rédaction) | .claude/agents/humaniseur.md | skills/humanizer |
-| git | Versionnage, CI, livraisons | .claude/agents/git-release.md | — |
-| deploy | Déploiement (Cloud Run, ontoforge.ajlx.fr) | .claude/agents/deploiement.md | — |
-| secu | Cybersécurité (vulnérabilités, OWASP, secrets, dépendances) | .claude/agents/cybersecurite.md | — |
-| mobile | Application mobile (téléphone et tablette : navigation, information progressive, graphe au doigt) — modèle Opus | .claude/agents/appli-mobile.md | — |
+| git | Versionnage, CI, livraisons | .claude/agents/git-release.md | skills/publication-github-securisee |
+| deploy | Déploiement (Cloud Run, ontoforge.ajlx.fr) | .claude/agents/deploiement.md | skills/deploiement-cloud-run-powershell |
+| secu | Cybersécurité (vulnérabilités, OWASP, secrets, dépendances) | .claude/agents/cybersecurite.md | skills/audit-securite-cve-cwe |
+| mobile | Application mobile (téléphone et tablette : navigation, information progressive, graphe au doigt) — modèle Opus | .claude/agents/appli-mobile.md | skills/audit-mobile-refonte |
 
 ## Cycle d'un lot
 1. **Contrat** — `lots/Lx.md` (chef) : objectif, livrables, fichiers possédés par agent, critères d'acceptation vérifiables (commandes de test, entrées → sorties attendues), relecteurs.

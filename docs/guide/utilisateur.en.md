@@ -627,7 +627,7 @@ OntoForge can be read and corrected with your fingers. On a phone (a screen 700 
 
 ### The five tabs {#telephone-onglets}
 
-- **Home**: what to do now, the journey in four lines (Design, Check, Transpose, Generate) and recent activity. The rest of the dashboard is folded under "More details".
+- **Home**: what to do now, the journey in four lines (Design, Check, Transpose, Generate) and recent activity. The rest of the dashboard is kept in collapsible panels (see below). There are no shortcuts: the tab bar is enough.
 - **Ontology**: the graph, or the list ("List" / "Graph" button at the top). Your last choice is remembered.
 - **Queries**: a sentence in natural language, the guided sentence, and results as cards rather than tables.
 - **Arbitrate**: one card per point to decide; the badge tells how many are left.
@@ -659,7 +659,15 @@ Each point to decide is a card: the recommendation is preselected, "Validate thi
 
 ### Krakie on a phone {#telephone-krakie}
 
-A 56 px round button stays above the tab bar (the aquarium is reserved for computers). It opens a full-screen panel with nothing cut off; the phone keyboard does not hide the input area. The guided tour is not offered on a phone: it targets the side bar, which does not exist at that screen size.
+A 56 px round button stays above the tab bar (the aquarium is reserved for computers). It opens a full-screen panel with nothing cut off; the phone keyboard does not hide the input area. **The language model is chosen just above the input area**: the list shows the providers configured in Settings (for example Claude, Gemini or Mock), as on a computer, and the choice is remembered in this browser. With a single provider, its name is shown without a list. No key or address appears, for anyone, even a project reader. The guided tour is not offered on a phone: it targets the side bar, which does not exist at that screen size.
+
+![Phone: Krakie panel with the model choice above the input area](img/en/mobile-krakie.png "Krakie on a phone: 1 the model in use, one tap to change it, 2 the input area.")
+
+### Collapsible panels {#telephone-panneaux}
+
+On a phone, settings and information blocks (home, versions, saved queries) are panels you open with a tap. **Collapsed**, a panel shows its title followed by a short grey description ("Scopes — define the perimeters of your ontology"); **open**, it shows only its title and its content. Everything is collapsed by default, except the main panel of the screen (for example "Versions targeted by this project"). Each panel's state is remembered per screen, in this browser; the keyboard works (Enter or Space).
+
+![Phone: home with one panel open and the others collapsed](img/en/mobile-panneaux.png "The panels: 1 one open panel (title only), 2 the others, collapsed with their description.")
 
 ### Reading comfort {#telephone-confort}
 

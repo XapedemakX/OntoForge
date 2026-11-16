@@ -2,6 +2,7 @@
 import { useId, useState, type ButtonHTMLAttributes, type ReactNode, type SelectHTMLAttributes } from 'react'
 import { Krakie, type Pose } from '../krakie/Krakie'
 import { useT } from '../i18n'
+import { useMobile } from '../shell/sidePref'
 export { ToastHost, useToast } from '../ui'
 
 /** Icône Font Awesome gratuite : name = 'diagram-project' (solid) ou 'regular:bell'. Ne porte aucun sens seule : ajouter un libellé. */
@@ -43,6 +44,37 @@ export function Panel({ title, children, defaultOpen = true, actions, side }: { 
         {actions}
       </header>
       {open && <div id={id} className="kpanel-body">{children}</div>}
+    </section>
+  )
+}
+
+/* Panneau repliable du téléphone (L45). Sous 700 px : en-tête-bouton (aria-expanded) ; replié = titre + description courte en gris, ouvert = titre seul.
+   Au-delà : rendu inchangé (une carte, ou le contenu tel quel avec `bare`). État mémorisé par écran dans localStorage (try/catch, repli en mémoire). */
+const FOLD_KEY = 'ontoforge.fold.v1'
+const foldMem: Record<string, boolean> = {}
+function readFold(key: string, def: boolean): boolean {
+  try { const v = JSON.parse(localStorage.getItem(FOLD_KEY) || '{}')[key]; if (typeof v === 'boolean') return v } catch { /* stockage indisponible */ }
+  return key in foldMem ? foldMem[key] : def
+}
+function writeFold(key: string, v: boolean) {
+  foldMem[key] = v
+  try { const o = JSON.parse(localStorage.getItem(FOLD_KEY) || '{}'); o[key] = v; localStorage.setItem(FOLD_KEY, JSON.stringify(o)) } catch { /* ignoré */ }
+}
+export function Fold({ screen, id, title, desc, defaultOpen = false, tone, className = '', bare = false, children }:
+  { screen: string; id: string; title: ReactNode; desc: string; defaultOpen?: boolean; tone?: Severity; className?: string; bare?: boolean; children: ReactNode }) {
+  const mob = useMobile(); const bodyId = useId(); const key = `${screen}/${id}`
+  const [open, setOpen] = useState(() => readFold(key, defaultOpen))
+  if (!mob) return bare ? <>{children}</> : <Card title={title} tone={tone} className={className}>{children}</Card>
+  const toggle = () => setOpen(o => { writeFold(key, !o); return !o })
+  return (
+    <section className={`fold card ${open ? 'open' : 'shut'} ${tone ? 'tone-' + tone : ''} ${className}`} data-fold={key}>
+      <h2 className="fold-h">
+        <button type="button" className="fold-btn" aria-expanded={open} aria-controls={bodyId} onClick={toggle}>
+          <span className="fold-tx"><b className="fold-t">{title}</b>{!open && <><span className="fold-sep" aria-hidden="true"> — </span><span className="fold-d">{desc}</span></>}</span>
+          <Icon name={open ? 'chevron-up' : 'chevron-down'} className="fold-chev" />
+        </button>
+      </h2>
+      <div id={bodyId} className="bd fold-bd" hidden={!open}>{children}</div>
     </section>
   )
 }

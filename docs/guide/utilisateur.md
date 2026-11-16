@@ -627,7 +627,7 @@ OntoForge se consulte et se corrige du bout des doigts. Sur un téléphone (écr
 
 ### Les cinq onglets {#telephone-onglets}
 
-- **Accueil** : ce qu'il faut faire maintenant, le parcours en quatre lignes (Concevoir, Vérifier, Transposer, Générer) et l'activité récente. Le reste du tableau de bord est replié sous « Plus de détails ».
+- **Accueil** : ce qu'il faut faire maintenant, le parcours en quatre lignes (Concevoir, Vérifier, Transposer, Générer) et l'activité récente. Le reste du tableau de bord est rangé dans des panneaux repliables (voir plus bas). Il n'y a pas de raccourcis : la barre d'onglets suffit.
 - **Ontologie** : le graphe, ou la liste (bouton « Liste » / « Graphe » en haut de l'écran). Le dernier choix est mémorisé.
 - **Requêtes** : une phrase en langage naturel, la phrase guidée, et les résultats en cartes plutôt qu'en tableaux.
 - **Arbitrer** : une carte par point à décider ; le badge indique combien il en reste.
@@ -659,7 +659,15 @@ Chaque point à décider est une carte : la recommandation est présélectionné
 
 ### Krakie sur téléphone {#telephone-krakie}
 
-Un bouton rond de 56 px reste posé au-dessus de la barre d'onglets (l'aquarium reste réservé à l'ordinateur). Il ouvre un panneau plein écran, sans rien de coupé ; le clavier du téléphone ne cache pas la zone de saisie. La visite guidée n'est pas proposée sur téléphone : elle vise le bandeau latéral, qui n'existe pas sur cette taille d'écran.
+Un bouton rond de 56 px reste posé au-dessus de la barre d'onglets (l'aquarium reste réservé à l'ordinateur). Il ouvre un panneau plein écran, sans rien de coupé ; le clavier du téléphone ne cache pas la zone de saisie. **Le modèle de langage se choisit juste au-dessus de la zone de saisie** : la liste reprend les fournisseurs configurés dans Paramètres (par exemple Claude, Gemini ou Mock), comme sur ordinateur, et le choix est mémorisé dans ce navigateur. Avec un seul fournisseur, son nom s'affiche sans liste. Aucune clé ni adresse n'apparaît, pour personne, même pour un lecteur du projet. La visite guidée n'est pas proposée sur téléphone : elle vise le bandeau latéral, qui n'existe pas sur cette taille d'écran.
+
+![Téléphone : panneau Krakie avec le choix du modèle au-dessus de la zone de saisie](img/fr/mobile-krakie.png "Krakie sur téléphone : 1 le modèle utilisé, à changer d'un toucher, 2 la zone de saisie.")
+
+### Panneaux repliables {#telephone-panneaux}
+
+Sur téléphone, les blocs de réglage et d'information (accueil, versions, requêtes sauvegardées) sont des panneaux qu'on déplie d'un toucher. **Replié**, un panneau affiche son titre suivi d'une courte description en gris (« Périmètres — définir les périmètres de votre ontologie ») ; **ouvert**, il n'affiche plus que son titre et son contenu. Tout est replié par défaut, sauf le panneau principal de l'écran (par exemple « Versions visées par ce projet »). L'état de chaque panneau est mémorisé par écran, sur ce navigateur ; le clavier fonctionne (Entrée ou Espace).
+
+![Téléphone : accueil avec un panneau ouvert et les autres repliés](img/fr/mobile-panneaux.png "Les panneaux : 1 un panneau ouvert (titre seul), 2 les autres, repliés avec leur description.")
 
 ### Confort de lecture {#telephone-confort}
 

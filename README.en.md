@@ -43,7 +43,7 @@ The trap sample is the test "trap" ontology. It exercises the 66 transposition r
 | `frontend/` | React + TypeScript application |
 | `samples/` | Sample ontologies (automaint, trap) |
 | `docs/` | Plan, architecture, interface contracts, catalog of the 66 rules (`RULES.md`) |
-| `skills/` | 10 reusable Claude skills (OWL → LPG transposition, SHACL, W3C conformance, Curiosity, Neo4j, queries, fast design, agent team management, product scoping, technical documentation) |
+| `skills/` | 20 reusable Claude skills (OWL → LPG transposition, SHACL, W3C conformance, Curiosity, Neo4j, queries, fast design, agent team management, product scoping, tech watch, documentation, Playwright acceptance runs, security audit, Cloud Run deployment, publication, mobile, i18n; inventory: `docs/skills-inventaire.md`) |
 | `.claude/agents/` | Expert agent sheets (W3C, SHACL, querying, Curiosity, Neo4j, project lead) |
 | `journal/`, `lots/` | Work package contracts, cross reviews, fixes, decisions |
 

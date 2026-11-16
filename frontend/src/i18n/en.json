@@ -1969,7 +1969,6 @@
   "mob.ctx.title": "Target and scope",
   "mob.ctx.target.hint": "The target decides the proposed model and the decision recommendations.",
   "mob.ctx.peri.hint": "The scope narrows the ontology on display. You create one on a computer.",
-  "mob.dash.more": "More details",
   "mob.more.account": "Account and settings",
   "mob.more.account.hint": "Language and password",
   "mob.more.theme": "Appearance",
@@ -2038,5 +2037,16 @@
   "bm.search": "Find a type",
   "sheet.grow": "Expand the sheet",
   "sheet.shrink": "Collapse the sheet",
-  "mob.arb.ofwhich": "{n} of them lost"
+  "mob.arb.ofwhich": "{n} of them lost",
+  "fold.tableau.findings": "what is left to decide, target by target",
+  "fold.tableau.generate": "download the target model files",
+  "fold.tableau.scopes": "define the perimeters of your ontology",
+  "fold.tableau.activity": "who changed what, and when",
+  "fold.versions.gaps": "what differs from the recommended versions",
+  "fold.versions.targets": "choose the versions of the standards and targets",
+  "fold.versions.shacl": "features available per SHACL version",
+  "fold.versions.libs": "versions of the bundled libraries",
+  "fold.requetes.saved": "find, replay and save your queries",
+  "ag.llm.label": "Krakie's model",
+  "ag.llm.one": "Model in use: {name}"
 }

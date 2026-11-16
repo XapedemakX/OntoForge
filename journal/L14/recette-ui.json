@@ -95,7 +95,7 @@
   {
    "screen": "m-02-tableau",
    "ok": true,
-   "detail": "texte=396c erreurs=0"
+   "detail": "texte=566c erreurs=0"
   },
   {
    "screen": "m-03-ontologie-editeur",
@@ -140,7 +140,7 @@
   {
    "screen": "m-11-requetes",
    "ok": true,
-   "detail": "texte=1532c erreurs=0"
+   "detail": "texte=801c erreurs=0"
   },
   {
    "screen": "m-12-assistant",

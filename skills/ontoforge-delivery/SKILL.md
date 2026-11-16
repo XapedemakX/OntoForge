@@ -1,5 +1,5 @@
 ---
-name: agent-team-delivery
+name: ontoforge-delivery
 description: Piloter une équipe d'agents Claude qui s'auto-valident pour livrer un logiciel dans un délai court. Couvre le découpage en lots, les contrats de lot à critères exécutables, l'attribution de fichiers sans recouvrement, les revues croisées à verdict OK/KO, l'escalade, la clôture et le suivi en direct. À utiliser quand on orchestre plusieurs agents spécialisés (chef de projet, lead dev, experts) sur un même dépôt, qu'on rédige un contrat de lot, qu'on relit le livrable d'un autre agent ou qu'on doit replanifier sous contrainte de délai.
 ---
 
@@ -126,3 +126,9 @@ Au minimum : démarrage, chaque verdict (to = pilote), chaque correction (to = r
 - Repérer le chemin critique par l'absence de fichiers, pas par les déclarations : `ls` du moteur, du rapport, du service d'assistant, des scripts front. Une liste de fichiers attendus par lot, avec heure de jalon et seuil de coupe, remplace le « ça avance ».
 - Les environnements de livraison cassent en silence : une image de base qui change de distribution (paquet Java disparu), une fixture ajoutée à un dossier d'exemples qui change ce que charge l'exemple, des paquets de test absents du manifeste. Les critères « statiques » (`grep` sur le Dockerfile, test de listing des exemples) les attrapent ; les rejouer à chaque tour.
 - Repli sans canal de suivi : `journal/events.jsonl` quand l'outil de suivi n'est pas chargé ; le lead (ou le chef) republie en lot.
+
+## 11. Matrice de relectures et skills voisins (ajout du 16/11)
+- La matrice « type de livrable → relecteurs obligatoires → dernière passe » vit dans `docs/TEAM.md` (source unique, à citer). Rôles ajoutés depuis : sécurité (tout lot touchant entrées, fichiers, appels sortants, secrets, authentification, assistant), mobile (tout changement d'interface), déploiement. Un lot n'est clos qu'avec tests verts, verdicts OK, `doc-ok.md`, passe de l'humaniseur, puis publication par l'agent git.
+- Procédures de clôture et de recette : `ontoforge-cloture-lot`, `recette-playwright-par-lot`, `doc-bilingue-captures`, `audit-securite-cve-cwe`, `publication-github-securisee`, `deploiement-cloud-run-powershell`, `audit-mobile-refonte`, `i18n-ecriture-sure`.
+- Règle de coût des modèles (8/11) et limite d'usage (4/11) : voir `docs/TEAM.md` ; reprise par `send_later` programmée dans la même réponse que l'échec 429.
+- Règle fichiers commune : lire avant d'écrire ; JSON et i18n par fichier temporaire puis `os.replace` ; `git add` ciblé, jamais `git add -A` en parallèle.

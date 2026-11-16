@@ -2,6 +2,15 @@
 
 Format : par version, ce qui change pour l'utilisateur, puis le détail par lot. Sources : rapports `journal/L*/rapport*.md`, revues, `journal/decisions.md`. Les lots sont décrits dans `lots/`.
 
+## L45 : téléphone, choix du modèle de Krakie, panneaux repliables (16 nov. 2026) {#l45-telephone-modele-panneaux-16-nov-2026}
+
+Retour de Jerem du 16/11 sur la version mobile.
+
+- **Choix du modèle de langage dans Krakie.** Un sélecteur au-dessus de la zone de saisie liste les fournisseurs configurés dans Paramètres (Claude, Gemini, Mock…), avec le même mécanisme que le panneau d'ordinateur. Un seul fournisseur : son nom est affiché sans liste. Aucune clé ni adresse n'est exposée ; un lecteur du projet a le même choix que sur ordinateur.
+- **Panneaux repliables.** Sous 700 px, les blocs de l'accueil, des versions et des requêtes sauvegardées sont repliés par défaut (sauf le panneau principal), avec le titre et une courte description (« Périmètres — définir les périmètres de votre ontologie ») ; ouverts, seul le titre reste. État mémorisé par écran, clavier et lecteur d'écran pris en charge.
+- **Raccourcis retirés.** La carte « Raccourcis » de l'accueil et l'indication « Ctrl+K » du bouton Krakie disparaissent sous 700 px ; la barre d'onglets suffit. Rien ne change sur ordinateur et sur tablette.
+- Les suggestions de Krakie ont des cibles de 44 px.
+
 ## L44 : l'application sur téléphone (16 nov. 2026) {#l44-application-telephone-16-nov-2026}
 
 Maquette et réponses de Jerem du 16/11 (D-L44-01).

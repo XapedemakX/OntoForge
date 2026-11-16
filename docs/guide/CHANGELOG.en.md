@@ -2,6 +2,15 @@
 
 Format: by version, what changes for the user, then the detail per work package. Sources: reports `journal/L*/rapport*.md`, reviews, `journal/decisions.md`. Work packages are described in `lots/`.
 
+## L45: phone, Krakie model choice, collapsible panels (16 Nov 2026) {#l45-telephone-modele-panneaux-16-nov-2026}
+
+Jerem's feedback of 16/11 on the mobile version.
+
+- **Language model choice in Krakie.** A selector above the input area lists the providers configured in Settings (Claude, Gemini, Mock...), using the same mechanism as the computer panel. With a single provider, its name is shown without a list. No key or address is exposed; a project reader gets the same choice as on a computer.
+- **Collapsible panels.** Under 700 px, the blocks of the home, versions and saved queries screens are collapsed by default (except the main panel), with the title and a short description ("Scopes — define the perimeters of your ontology"); once open, only the title remains. State remembered per screen, keyboard and screen reader supported.
+- **Shortcuts removed.** The home "Shortcuts" card and the "Ctrl+K" hint on the Krakie button disappear under 700 px; the tab bar is enough. Nothing changes on computers and tablets.
+- Krakie's suggestions now have 44 px targets.
+
 ## L44: the application on a phone (16 Nov 2026) {#l44-application-telephone-16-nov-2026}
 
 Mock-up and answers from Jerem on 16/11 (D-L44-01).

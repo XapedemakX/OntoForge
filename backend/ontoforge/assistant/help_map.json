@@ -333,8 +333,8 @@
     "en": "On phone and tablet"
    },
    "summary": {
-    "fr": "Sur téléphone : cinq onglets en bas (Accueil, Ontologie, Requêtes, Arbitrer, Plus), fiches qui montent du bas, graphe au doigt. Vous pouvez ajouter une sous-classe ou une propriété et renommer depuis la fiche ; le reste se fait sur ordinateur.",
-    "en": "On a phone: five tabs at the bottom (Home, Ontology, Queries, Arbitrate, More), sheets rising from the bottom, a graph you use with your fingers. You can add a subclass or a property and rename from the sheet; the rest is done on a computer."
+    "fr": "Sur téléphone : cinq onglets en bas (Accueil, Ontologie, Requêtes, Arbitrer, Plus), fiches qui montent du bas, graphe au doigt. Vous pouvez ajouter une sous-classe ou une propriété et renommer depuis la fiche ; le reste se fait sur ordinateur. Dans Krakie, le modèle de langage se choisit au-dessus de la zone de saisie ; les blocs de réglage sont des panneaux repliables.",
+    "en": "On a phone: five tabs at the bottom (Home, Ontology, Queries, Arbitrate, More), sheets rising from the bottom, a graph you use with your fingers. You can add a subclass or a property and rename from the sheet; the rest is done on a computer. In Krakie, the language model is chosen above the input area; settings blocks are collapsible panels."
    }
   },
   "default": {

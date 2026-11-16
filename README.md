@@ -43,7 +43,7 @@ L'exemple trap est l'ontologie « piège » de test. Elle exerce les 66 règles 
 | `frontend/` | Application React + TypeScript |
 | `samples/` | Ontologies d'exemple (automaint, trap) |
 | `docs/` | Plan, architecture, contrats d'interface, catalogue des 66 règles (`RULES.md`) |
-| `skills/` | 10 skills Claude réutilisables (transposition OWL → LPG, SHACL, conformité W3C, Curiosity, Neo4j, requêtes, conception rapide, pilotage d'équipe d'agents, cadrage produit, documentation technique) |
+| `skills/` | 20 skills Claude réutilisables (transposition OWL → LPG, SHACL, conformité W3C, Curiosity, Neo4j, requêtes, conception rapide, pilotage d'équipe d'agents, cadrage produit, veille, documentation, recette Playwright, audit de sécurité, déploiement Cloud Run, publication, mobile, i18n ; inventaire : `docs/skills-inventaire.md`) |
 | `.claude/agents/` | Fiches des agents experts (W3C, SHACL, requêtage, Curiosity, Neo4j, chef de projet) |
 | `journal/`, `lots/` | Contrats de lot, revues croisées, corrections, décisions |
 

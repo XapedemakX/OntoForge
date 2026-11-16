@@ -1969,7 +1969,6 @@
   "mob.ctx.title": "Cible et périmètre",
   "mob.ctx.target.hint": "La cible décide du modèle proposé et des recommandations d'arbitrage.",
   "mob.ctx.peri.hint": "Le périmètre restreint l'ontologie affichée. Il se crée sur ordinateur.",
-  "mob.dash.more": "Plus de détails",
   "mob.more.account": "Compte et réglages",
   "mob.more.account.hint": "Langue et mot de passe",
   "mob.more.theme": "Apparence",
@@ -2038,5 +2037,16 @@
   "bm.search": "Chercher un type",
   "sheet.grow": "Agrandir la feuille",
   "sheet.shrink": "Réduire la feuille",
-  "mob.arb.ofwhich": "dont {n} perdu(s)"
+  "mob.arb.ofwhich": "dont {n} perdu(s)",
+  "fold.tableau.findings": "ce qu'il reste à arbitrer, cible par cible",
+  "fold.tableau.generate": "télécharger les fichiers du modèle cible",
+  "fold.tableau.scopes": "définir les périmètres de votre ontologie",
+  "fold.tableau.activity": "qui a modifié quoi, et quand",
+  "fold.versions.gaps": "ce qui diffère des versions recommandées",
+  "fold.versions.targets": "choisir les versions des normes et des cibles",
+  "fold.versions.shacl": "fonctions disponibles selon la version de SHACL",
+  "fold.versions.libs": "versions des bibliothèques embarquées",
+  "fold.requetes.saved": "retrouver, rejouer et enregistrer vos requêtes",
+  "ag.llm.label": "Modèle de Krakie",
+  "ag.llm.one": "Modèle utilisé : {name}"
 }

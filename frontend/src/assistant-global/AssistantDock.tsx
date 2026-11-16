@@ -47,6 +47,7 @@ export function AssistantDock({ p, setP, target, screen, perimeter }: { p: Proje
   useEffect(() => { setDeclared(getAssistantContext()); return onAssistantContext(setDeclared) }, [])  // l'écran a pu publier son contexte avant l'abonnement du panneau (Paramètres, L38)
   useEffect(() => { setMode('full'); setOneShot(null) }, [screen, cid])
   useEffect(() => { aapi.status().then(s => { setStatus(s); if (!getUi().provider) setUi({ provider: s.default_provider_id || s.providers?.find(x => x.default)?.id || s.providers?.[0]?.id || '' }) }).catch(() => {}) }, [])
+  useEffect(() => { if (mobile && status?.providers?.length && !status.providers.some(x => x.id === getUi().provider)) setUi({ provider: curProvId(status) }) }, [mobile, status])
   useEffect(() => { endRef.current?.scrollIntoView({ block: 'end' }) }, [msgs, busy, ui.open])
 
   const ctx = useMemo(() => {
@@ -93,6 +94,8 @@ export function AssistantDock({ p, setP, target, screen, perimeter }: { p: Proje
   const lastMsg = msgs[msgs.length - 1]
   const pose: Pose = busy ? 'reflechit' : lastMsg?.error ? 'inquiete' : happy ? 'contente' : 'accueil'
   const providers = status?.providers ?? []
+  const provLabel = (x: (typeof providers)[number]) => `${x.name}${x.model && x.model.toLowerCase() !== x.name.toLowerCase() ? ' · ' + x.model : ''}${x.configured ? '' : ' ' + t('asst.notConfigured')}`
+  const curProv = providers.find(x => x.id === ui.provider) ?? providers.find(x => x.id === status?.default_provider_id) ?? providers.find(x => x.default) ?? providers[0]
   const section = !p && typeof ctx.extra?.section === 'string' ? ctx.extra.section : ''
   const screenLabel = t('ag.screen.' + (ROUTE_SCREEN[screen]?.name ?? screen)) + (section ? ' · ' + t('settings.tab.' + section) : '')
   const sel = ctx.selection
@@ -139,6 +142,13 @@ export function AssistantDock({ p, setP, target, screen, perimeter }: { p: Proje
     {suggestions.length > 0 && !text && <div className="ag-sugg" role="group" aria-label={t('ag.suggestions')}>
       {suggestions.map(s => <button key={s} className="ag-pill" disabled={busy} onClick={() => setText(s)}>{s}</button>)}</div>}
     {p && docOpen && <DocImport compact p={p} setP={setP} provider={ui.provider || undefined} onBusy={setBusy} onClose={() => setDocOpen(false)} />}
+    {mobile && curProv && (
+      <div className="ag-llm" data-testid="ag-llm">
+        {providers.length > 1
+          ? <label><span>{t('ag.llm.label')}</span>
+              <Select data-testid="ag-llm-select" value={curProv.id} onChange={e => setUi({ provider: e.target.value })} options={providers.map(x => ({ value: x.id, label: provLabel(x) }))} /></label>
+          : <span className="ag-llm-one" data-testid="ag-llm-one"><Icon name="robot" />{t('ag.llm.one', { name: provLabel(curProv) })}</span>}
+      </div>)}
     <div className="ag-box">
       <textarea ref={taRef} rows={2} value={text} placeholder={t(p ? 'ag.placeholder' : 'ag.placeholder.settings')} aria-label={t(p ? 'ag.placeholder' : 'ag.placeholder.settings')} onChange={e => setText(e.target.value)}
         onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void send(text) } }} />
@@ -152,7 +162,7 @@ export function AssistantDock({ p, setP, target, screen, perimeter }: { p: Proje
   return (
     <>
       {!ui.open && mobile && (
-        <button className={'ag-fab mob' + (busy ? ' busy' : '')} data-tour="krakie-fab" data-testid="krakie-fab" onClick={() => open()} aria-label={t('ag.open.label')} title={t('ag.open.title')}>
+        <button className={'ag-fab mob' + (busy ? ' busy' : '')} data-tour="krakie-fab" data-testid="krakie-fab" onClick={() => open()} aria-label={t('ag.open.label')}>
           <Krakie pose={pose} size={44} float={false} />
           {pendingActions > 0 && <b className="ag-badge">{pendingActions}</b>}
         </button>
@@ -197,6 +207,8 @@ export function AssistantDock({ p, setP, target, screen, perimeter }: { p: Proje
     </>
   )
 }
+
+const curProvId = (s: AStatus) => s.default_provider_id || s.providers?.find(x => x.default)?.id || s.providers?.[0]?.id || ''
 
 function defaultSuggestions(screen: string, t: (k: string) => string): string[] {
   const k = ROUTE_SCREEN[screen]?.name ?? screen
