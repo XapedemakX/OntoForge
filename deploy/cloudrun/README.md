@@ -101,6 +101,9 @@ Le certificat HTTPS est émis automatiquement, en 15 min à quelques heures.
 
 ## 7. Mettre à jour
 
+En une commande, depuis la racine du dépôt : `.\deploy\cloudrun\deploy-demo.ps1` (git pull, construction d'une image étiquetée à la date, mise à jour du service). Sinon, à la main :
+
+
 Nouvelle étiquette d'image (`demo-2`…), puis étapes 4 et 5 avec `$IMAGE` mis à jour. Les projets et comptes restent dans le bucket.
 
 ## Coûts et arrêt
