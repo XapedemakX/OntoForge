@@ -162,3 +162,6 @@ Précisions prises à l'implémentation :
 - **Krakie** : bouton fixe de 56 px au-dessus de la barre d'onglets et panneau plein écran ; l'aquarium reste sur ordinateur et tablette.
 - **Arbitrage** : une carte par point, recommandation présélectionnée, un toucher pour valider ; « Appliquer la recommandation aux N de la règle » avec cinq secondes pour annuler.
 - **Pas de montée de version** (D-L21-02) : @xyflow/react 12.8.4, feuille du bas écrite à la main, aucune dépendance ajoutée.
+
+## D-L44-02 (16/11, Jerem) : tablettes en version ordinateur
+- Seuil de l'interface mobile confirmé à 700 px de large : téléphones en mode mobile (onglets, fiches du bas) ; iPad et tablettes gardent pour le moment la version ordinateur, avec cibles tactiles de 44 px.
