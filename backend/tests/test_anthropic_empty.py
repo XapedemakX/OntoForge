@@ -15,3 +15,19 @@ def test_thinking_only_response_gives_explicit_error(monkeypatch):
 def test_connection_test_uses_enough_tokens():
     from ontoforge.api import settings as api_settings
     assert api_settings.TEST_MAX_TOKENS >= 256
+
+
+def test_pasted_key_with_invisible_chars_is_cleaned_and_bad_chars_refused():
+    from fastapi import HTTPException
+    from ontoforge.api.settings import clean_secret
+    raw = "﻿ sk-" + "abc123" + " ​\n"
+    assert clean_secret(raw) == "sk-abc123"
+    with pytest.raises(HTTPException) as ei:
+        clean_secret("sk-abc•••")
+    assert ei.value.status_code == 422 and "U+2022" in ei.value.detail
+
+
+def test_stored_key_with_invisible_char_does_not_crash_headers():
+    from types import SimpleNamespace
+    p = anthropic.AnthropicProvider(SimpleNamespace(api_key="sk-abc​", model="m", base_url=""))
+    assert p._get("api_key", "X") == "sk-abc"

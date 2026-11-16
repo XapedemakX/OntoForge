@@ -32,7 +32,11 @@ class Configured:
 
     def _get(self, field: str, env: str, default: str = "") -> str:
         if self.cfg is not None:
-            return (getattr(self.cfg, field, None) or "").strip() if field != "model" else (self.cfg.model or default)
+            v = (getattr(self.cfg, field, None) or "").strip() if field != "model" else (self.cfg.model or default)
+            if field == "api_key" and v and not v.isascii():
+                # clé déjà enregistrée avec un caractère invisible (avant le nettoyage à la saisie) : message clair plutôt qu'UnicodeEncodeError
+                v = "".join(c for c in v if c.isascii() and not c.isspace())
+            return v
         return os.environ.get(env, "") or default
 
 

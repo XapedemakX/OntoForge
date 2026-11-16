@@ -32,7 +32,25 @@ def _secret_patch(current: Optional[str], patch: dict[str, Any], key: str) -> Op
     """Absent ou chaîne vide = inchangé ; null explicite = supprimé ; chaîne = remplacé."""
     if key not in patch or patch[key] == "":
         return current
-    return patch[key] if patch[key] is None else str(patch[key])
+    if patch[key] is None:
+        return None
+    return clean_secret(str(patch[key]))
+
+
+_INVISIBLE = dict.fromkeys(map(ord, "\u200b\u200c\u200d\u2060\ufeff\u00a0\u202f\u2007"), None)
+
+
+def clean_secret(value: str) -> str:
+    """Clé collée depuis une page web ou un gestionnaire : espaces et caractères invisibles retirés (espace insécable, largeur nulle,
+    BOM). Un autre caractère non ASCII (puce « • », guillemet typographique, « … ») est refusé avec un message clair : sinon l'en-tête
+    HTTP échoue (« UnicodeEncodeError ») avant même l'appel."""
+    v = value.translate(_INVISIBLE).strip()
+    bad = sorted({c for c in v if ord(c) > 126 or ord(c) < 33})
+    if bad:
+        raise HTTPException(status_code=422, detail="La clé contient un caractère inattendu ("
+                            + ", ".join(f"U+{ord(c):04X}" for c in bad[:3])
+                            + ") : recopiez-la depuis la console du fournisseur, sans espace ni caractère masqué (•, …).")
+    return v
 
 
 def _patch_provider(cur: Optional[ProviderConfig], patch: dict[str, Any], taken: set[str]) -> ProviderConfig:
@@ -234,6 +252,10 @@ def test_provider(pid: str, body: Optional[dict[str, Any]] = Body(default=None))
     except LLMError as exc:
         ms = int((time.perf_counter() - t0) * 1000)
         return {"ok": False, "latency_ms": ms, "model": cfg.model, "message": str(exc)}
+    except UnicodeError:
+        return {"ok": False, "latency_ms": int((time.perf_counter() - t0) * 1000), "model": cfg.model,
+                "message": "La clé ou l'adresse contient un caractère non ASCII (souvent un espace insécable ou un caractère invisible "
+                           "collé avec la clé) : ressaisissez la clé depuis la console du fournisseur."}
     except Exception as exc:  # défensif : jamais de fuite de clé dans le message
         log.warning("test fournisseur %s : %s", pid, type(exc).__name__)
         return {"ok": False, "latency_ms": int((time.perf_counter() - t0) * 1000), "model": cfg.model,
