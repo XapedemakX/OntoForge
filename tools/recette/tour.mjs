@@ -88,8 +88,12 @@ await n.page.getByRole('button', { name: /Créer le projet de démo/ }).click()
 s = await ready(n.page, 0)
 log('N-démo créée puis visite lancée', s.active && /#\/projet\/.+\/tableau/.test(await n.page.evaluate(() => location.hash)), await n.page.evaluate(() => location.hash))
 
-// ---------------- mobile 390 px
-const m = await session({ width: 390, height: 844 })
+// ---------------- petit écran 800 px (tablette portrait, < 900 px) : bulle pleine largeur. Sur téléphone (≤ 700 px, L44) la visite n'est ni proposée ni lancée.
+const ph = await session({ width: 390, height: 844 })
+await ph.page.goto(`${base}/#/projet/${pid}/tableau?tour=1`, { waitUntil: 'load' }); await sleep(3500)
+log('P-téléphone : visite ni lancée ni proposée', !(await st(ph.page)).active && (await ph.page.locator('[data-tour-bubble]').count()) === 0)
+await ph.ctx.close()
+const m = await session({ width: 800, height: 1000 })
 await m.page.goto(`${base}/#/projet/${pid}/tableau?tour=1`, { waitUntil: 'load' })
 s = await ready(m.page, 0)
 for (let i = 0; i < total; i++) {

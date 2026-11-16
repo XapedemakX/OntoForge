@@ -17,10 +17,12 @@ import { tempStore, useTempEndpoint } from './tempEndpoint'
 import { qapi, type BuildResult, type Endpoint, type Guided, type RootClass, type RunResult, type SavedQuery } from './qapi'
 import { EMPTY, allNodes, fromGuided, localName, toGuided, type QState } from './model'
 import { useAssistantContext } from '../../lib/assistantContext'
+import { useMobile } from '../../shell/sidePref'
 import './queries.css'
 
 export function Queries({ p, target }: ScreenProps) {
   const t = useT(); const { lang } = useI18n(); const toast = useToast()
+  const mob = useMobile()   // L44 : question en langage naturel, phrase guidée, résultats en cartes ; l'éditeur SPARQL libre reste sur ordinateur
   const savedActive = useActiveEndpoint()
   const { temp, using } = useTempEndpoint()
   const { local } = useLocalMode()
@@ -128,15 +130,16 @@ export function Queries({ p, target }: ScreenProps) {
       </div>
       {local && <LocalStorePanel pid={p.id} version={p.updated_at} />}
       {tmpOpen && <TempEndpointForm pid={p.id} initial={temp} onClose={() => setTmpOpen(false)} onSaved={id => void savedAsActive(id)} />}
-      <div className="desk"><NlBox pid={p.id} onResult={r => { if (r.guided) { setMode('guided'); setActiveSaved(null); setState(fromGuided(r.guided, labelOf)); setRes(null) } }}
+      <div className={mob ? 'qnl-wrap' : 'desk'}><NlBox pid={p.id} onResult={r => { if (r.guided) { setMode('guided'); setActiveSaved(null); setState(fromGuided(r.guided, labelOf)); setRes(null) } }}
         onTerm={w => { setMode('guided'); setSeed(w); setOpenAdd(state.root?.id ?? null); if (!state.root) setState(EMPTY) }} /></div>
       <div className="qmain">
         <div className="qleft">
           <div className="qmode desk"><Segmented label={t('q.mode')} value={mode} onChange={setMode} items={[['guided', t('q.mode.guided')], ['free', t('q.mode.free')]]} /></div>
-          <div className="qbuilder desk" data-tour="q-builder">
+          {mob && mode === 'free' && <pre className="q-ro mono" aria-label={t('q.mode.free')}>{free}</pre>}
+          <div className={'qbuilder' + (mob ? (mode === 'free' ? ' mob-off' : '') : ' desk')} data-tour="q-builder">
             {mode === 'guided' ? <Builder ctx={ctx} /> : <FreeSparql pid={p.id} target={target} sparql={free} setSparql={setFree} onRun={() => void exec({ sparql: free })} busy={busy} />}
           </div>
-          <div className="qrun desk">
+          <div className={'qrun' + (mob ? ' mob' : ' desk')} data-ag-lift={mob ? '' : undefined}>
             {mode === 'guided' && state.root && <Button size="sm" variant="ghost" icon="rotate-left" onClick={() => { setState(EMPTY); setRes(null); setActiveSaved(null) }}>{t('q.reset')}</Button>}
             <span className="grow" />
             {!active && <span className="muted"><Icon name="plug-circle-xmark" /> {t('q.noendpoint')}</span>}

@@ -2,6 +2,18 @@
 
 Format : par version, ce qui change pour l'utilisateur, puis le détail par lot. Sources : rapports `journal/L*/rapport*.md`, revues, `journal/decisions.md`. Les lots sont décrits dans `lots/`.
 
+## L44 : l'application sur téléphone (16 nov. 2026) {#l44-application-telephone-16-nov-2026}
+
+Maquette et réponses de Jerem du 16/11 (D-L44-01).
+
+- **Cinq onglets en bas.** Accueil, Ontologie, Requêtes, Arbitrer (avec le nombre de points à décider) et Plus (la carte métier en tête). Plus de tiroir latéral : un en-tête court (retour, projet, partage). La mise en page téléphone s'applique à 700 px de large ou moins ; l'iPad en portrait garde la mise en page large avec des cibles plus grandes.
+- **Fiches du bas.** Toucher une classe ou une propriété ouvre une feuille qu'on tire pour l'agrandir ou la fermer (clavier et lecteur d'écran compris).
+- **Graphe et carte au doigt.** Pincer, glisser, toucher pour la fiche, appui long pour les actions, « Tout voir », recherche qui centre le nœud ; les nœuds ne bougent plus par accident.
+- **Corriger depuis le téléphone.** Ajouter une sous-classe ou une propriété, renommer ou décrire, depuis la fiche. L'édition lourde reste sur ordinateur (marquée « Sur ordinateur », avec « M'envoyer le lien »). Un lecteur du projet ne modifie rien ; verrou optimiste et journal d'activité inchangés.
+- **Arbitrer, interroger, demander à Krakie.** Une carte par point à arbitrer (un toucher pour valider la recommandation), résultats de requêtes en cartes, bouton Krakie fixe et panneau plein écran. La visite guidée n'est pas proposée sur téléphone.
+- **Confort.** Cibles de 44 px, champs à 16 px, clair et sombre, français et anglais, aucun défilement horizontal, animations réduites sur demande.
+- Détail : D-L44-01, `lots/L44.md`, `journal/L44/rapport.md`. Pas de montée de version (D-L21-02).
+
 ## L43b : correctif du transfert de propriété (15 nov. 2026) {#l43b-transfert-15-nov-2026}
 
 - La confirmation de transfert affiche le nom du compte choisi au lieu de « {login} ».

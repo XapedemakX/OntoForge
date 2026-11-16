@@ -14,6 +14,7 @@ const Versions = lazy(() => import('../screens/versions/Versions').then(m => ({ 
 const Dashboard = lazy(() => import('../screens/Dashboard').then(m => ({ default: m.Dashboard })))
 const Files = lazy(() => import('../screens/files').then(m => ({ default: m.Files })))
 const Documentation = lazy(() => import('../screens/documentation/Documentation').then(m => ({ default: m.Documentation })))
+const More = lazy(() => import('../screens/More').then(m => ({ default: m.More })))
 const AssistantScreen = lazy(() => import('../screens/assistant').then(m => ({ default: m.AssistantScreen })))
 
 export type StepKey = 'concevoir' | 'verifier' | 'transposer' | 'generer'
@@ -27,14 +28,16 @@ export interface ScreenDef {
   fullBleed?: boolean            // pas de padding : l'écran gère sa mise en page (éditeur, assistant)
   collapseAuto?: boolean         // écran de plein canevas : le bandeau latéral se replie en mode « automatique »
   badge?: 'pending'              // pastille du nombre de constats à arbitrer
+  desktop?: 'read' | 'full'      // L44 : l'écran se lit sur téléphone ; « read » = édition sur ordinateur, « full » = l'écran entier est plus à l'aise sur ordinateur
+  mobileOnly?: boolean           // L44 : écran du menu « Plus » (absent du bandeau latéral)
 }
 export const SCREENS: ScreenDef[] = [
   { key: 'tableau', labelKey: 'nav.tableau', icon: 'gauge-high', render: p => <Dashboard {...p} /> },
   { key: 'ontologie', collapseAuto: true, labelKey: 'nav.ontologie', icon: 'sitemap', step: 'concevoir', editing: true, fullBleed: true, render: p => <Editor {...p} /> },
   { key: 'ontologie-liste', collapseAuto: true, labelKey: 'nav.liste', icon: 'list-ul', step: 'concevoir', editing: true, fullBleed: true, render: p => <Ontology {...p} /> },
-  { key: 'carte-metier', collapseAuto: true, labelKey: 'nav.cartemetier', icon: 'map', step: 'concevoir', editing: true, fullBleed: true, render: p => <BusinessMap {...p} /> },
-  { key: 'shapes', labelKey: 'nav.shapes', icon: 'shapes', step: 'concevoir', editing: true, render: p => <Shacl {...p} initialTab="shapes" /> },
-  { key: 'fichiers', collapseAuto: true, labelKey: 'nav.fichiers', icon: 'file-code', step: 'concevoir', editing: true, fullBleed: true, render: p => <Files {...p} /> },
+  { key: 'carte-metier', collapseAuto: true, labelKey: 'nav.cartemetier', icon: 'map', step: 'concevoir', editing: true, desktop: 'read', fullBleed: true, render: p => <BusinessMap {...p} /> },
+  { key: 'shapes', labelKey: 'nav.shapes', icon: 'shapes', step: 'concevoir', editing: true, desktop: 'read', render: p => <Shacl {...p} initialTab="shapes" /> },
+  { key: 'fichiers', collapseAuto: true, labelKey: 'nav.fichiers', icon: 'file-code', step: 'concevoir', editing: true, desktop: 'full', fullBleed: true, render: p => <Files {...p} /> },
   { key: 'conformite', labelKey: 'nav.conformite', icon: 'clipboard-check', step: 'verifier', render: p => <Conformance {...p} /> },
   { key: 'shacl', labelKey: 'nav.shacl', icon: 'shield-halved', step: 'verifier', render: p => <Shacl {...p} initialTab="valid" /> },
   { key: 'analyse', labelKey: 'nav.analyse', icon: 'scale-balanced', step: 'transposer', badge: 'pending', render: p => <Analysis {...p} /> },
@@ -43,6 +46,7 @@ export const SCREENS: ScreenDef[] = [
   { key: 'versions', labelKey: 'nav.versions', icon: 'tags', step: 'generer', render: p => <Versions {...p} /> },
   { key: 'requetes', labelKey: 'nav.requetes', icon: 'magnifying-glass-chart', step: 'generer', editing: true, render: p => <Queries {...p} /> },
   { key: 'assistant', labelKey: 'nav.assistant', icon: 'wand-magic-sparkles', fullBleed: true, render: p => <AssistantScreen {...p} /> },
+  { key: 'plus', labelKey: 'nav.plus', icon: 'ellipsis', mobileOnly: true, render: p => <More {...p} /> },
   { key: 'documentation', collapseAuto: true, labelKey: 'nav.documentation', icon: 'book-open', fullBleed: true, render: p => <Documentation {...p} /> },
 ]
 export const STEPS: StepKey[] = ['concevoir', 'verifier', 'transposer', 'generer']

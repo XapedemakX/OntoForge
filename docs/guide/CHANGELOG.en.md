@@ -2,6 +2,18 @@
 
 Format: by version, what changes for the user, then the detail per work package. Sources: reports `journal/L*/rapport*.md`, reviews, `journal/decisions.md`. Work packages are described in `lots/`.
 
+## L44: the application on a phone (16 Nov 2026) {#l44-application-telephone-16-nov-2026}
+
+Mock-up and answers from Jerem on 16/11 (D-L44-01).
+
+- **Five tabs at the bottom.** Home, Ontology, Queries, Arbitrate (with the number of points to decide) and More (the business map first). No more side drawer: a short header (back, project, share). The phone layout applies at 700 px wide or less; an iPad in portrait keeps the wide layout with larger targets.
+- **Bottom sheets.** Tapping a class or a property opens a sheet you drag to expand or close (keyboard and screen reader included).
+- **Graph and map under your fingers.** Pinch, drag, tap for the sheet, long press for actions, "Fit all", search that centres the node; nodes no longer move by accident.
+- **Fixing from the phone.** Add a subclass or a property, rename or describe, from the sheet. Heavy editing stays on a computer (tagged "On a computer", with "Send me the link"). A project reader changes nothing; optimistic locking and the activity log are unchanged.
+- **Arbitrate, query, ask Krakie.** One card per point to arbitrate (one tap to validate the recommendation), query results as cards, a fixed Krakie button and a full-screen panel. The guided tour is not offered on a phone.
+- **Comfort.** 44 px targets, 16 px fields, light and dark, French and English, no horizontal scrolling, reduced animations on request.
+- Details: D-L44-01, `lots/L44.md`, `journal/L44/rapport.md`. No version bump (D-L21-02).
+
 ## L43b: ownership transfer fix (15 Nov 2026) {#l43b-transfert-15-nov-2026}
 
 - The transfer confirmation shows the chosen account name instead of "{login}".

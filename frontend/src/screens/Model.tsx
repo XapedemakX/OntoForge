@@ -20,6 +20,7 @@ function Diagram({ pg, onSel }: { pg: PGModel; onSel: (s: { kind: 'node'; n: Nod
     const names = new Set(Object.keys(pg.node_types))
     const edges = pg.edge_types.filter(e => names.has(e.from) && names.has(e.to)).map((e, i) => ({ data: { id: 'e' + i, source: e.from, target: e.to, label: e.name, derived: e.derived ? 1 : 0, idx: i } }))
     const many = edges.length > 14
+    const narrow = (host.current?.clientWidth ?? 999) < 520   // téléphone (L44) : plus d'espace entre les nœuds, texte agrandi plafonné pour qu'ils ne se recouvrent pas
     const cy = cytoscape({
       container: host.current, elements: [...nodes, ...edges], wheelSensitivity: 0.3, minZoom: 0.15, maxZoom: 3, userZoomingEnabled: true,
       style: ([
@@ -33,14 +34,14 @@ function Diagram({ pg, onSel }: { pg: PGModel; onSel: (s: { kind: 'node'; n: Nod
     })
     const iso = cy.nodes().filter(n => n.degree(false) === 0)
     const conn = cy.elements().not(iso)
-    if (conn.length) conn.layout({ name: 'cose', animate: false, nodeRepulsion: () => 60000, idealEdgeLength: () => 170, nodeOverlap: 80, gravity: 0.5, numIter: 3000, padding: 20, randomize: true } as cytoscape.LayoutOptions).run()
+    if (conn.length) conn.layout({ name: 'cose', animate: false, nodeRepulsion: () => (narrow ? 160000 : 60000), idealEdgeLength: () => (narrow ? 260 : 170), nodeOverlap: narrow ? 140 : 80, gravity: 0.5, numIter: 3000, padding: 20, randomize: true } as cytoscape.LayoutOptions).run()
     const bb = conn.length ? conn.boundingBox() : { x1: 0, x2: 0, y1: 0, y2: 0 }
     iso.forEach((n, i) => { n.position({ x: bb.x2 + 140 + (i % 2) * 190, y: bb.y1 + 30 + Math.floor(i / 2) * 50 }) })
     cy.fit(undefined, 30)
     cyRef.current = cy
     // Lisibilité : à l'écran, jamais sous 12 px (14 px pour les nœuds) quel que soit le zoom d'ajustement.
     const rescale = () => {
-      const k = Math.max(1, 1 / cy.zoom())
+      const k = Math.min(Math.max(1, 1 / cy.zoom()), narrow ? 1.8 : Infinity)
       cy.style().selector('node').style({ 'font-size': 14 * k }).selector('edge').style({ 'font-size': 12 * k }).update()
     }
     cy.on('zoom', rescale); rescale()

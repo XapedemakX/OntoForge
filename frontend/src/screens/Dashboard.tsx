@@ -9,6 +9,7 @@ import { useReadOnly } from '../collab/readonly'
 import { useState } from 'react'
 import { TourCard } from '../tour'
 import { ActivityCard } from '../collab/ActivityCard'
+import { useMobile } from '../shell/sidePref'
 
 const go = (id: string, s: string) => { location.hash = `#/projet/${encodeURIComponent(id)}/${s}` }
 const count = (m: PGModel | null | undefined) => {
@@ -19,6 +20,7 @@ const count = (m: PGModel | null | undefined) => {
 
 export function Dashboard({ p, target }: ScreenProps) {
   const t = useT()
+  const mob = useMobile()
   useAssistantContext({ screen: 'dashboard', projectId: p.id, target })
   const tn = (x: Target) => (x === 'curiosity' ? 'Curiosity' : 'Neo4j')
   const conf = useLoad(() => api.conformance(p.id), [p.id, p.updated_at])
@@ -108,6 +110,8 @@ export function Dashboard({ p, target }: ScreenProps) {
           </button>))}
       </div>
 
+      {mob && <section className="dash-act"><ActivityCard pid={p.id} rev={p.updated_at} /></section>}
+      <Fold mob={mob} label={t('mob.dash.more')}>
       <div className="dash-grid">
         <Card title={t('dash.findings')}>
           {(['curiosity', 'neo4j'] as Target[]).map(x => {
@@ -141,9 +145,9 @@ export function Dashboard({ p, target }: ScreenProps) {
           {peri.data && peri.data.length ? <ul className="gens">{peri.data.map(x => <li key={x.id}><b>{x.name}</b><span className="muted">{t('dash.stat.classes', { n: x.classes.length })}</span></li>)}</ul> : <EmptyState pose="loupe" title={t('dash.perimeters.none')} action={<Button size="sm" icon="plus" onClick={() => go(p.id, 'ontologie')}>{t('dash.perimeters.create')}</Button>}>{t('dash.perimeters.hint')}</EmptyState>}
         </Card>
 
-        <ActivityCard pid={p.id} rev={p.updated_at} />
+        {!mob && <ActivityCard pid={p.id} rev={p.updated_at} />}
 
-        <TourCard />
+        {!mob && <TourCard />}
 
         <Card title={t('dash.shortcuts')}>
           <div className="row">
@@ -154,6 +158,12 @@ export function Dashboard({ p, target }: ScreenProps) {
           </div>
         </Card>
       </div>
+      </Fold>
     </div>
   )
+}
+
+/** Sur téléphone, le détail du tableau de bord se replie (information progressive, L44). */
+function Fold({ mob, label, children }: { mob: boolean; label: string; children: React.ReactNode }) {
+  return mob ? <details className="dash-more"><summary>{label}</summary>{children}</details> : <>{children}</>
 }

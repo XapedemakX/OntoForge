@@ -619,6 +619,52 @@ Krakie peut vous faire le tour de l'outil en 21 étapes (environ 5 minutes) : l'
 - Lien direct : ajouter `?tour=1` à l'adresse, par exemple `#/projet/<id>/tableau?tour=1`.
 - Enregistrement vidéo : `window.ontoforgeTour.start()` (ou `start({ demo: true })` pour créer la démo sans demander), `goto(i)`, `next()`, `prev()`, `stop()` et `state()`.
 
+## Sur téléphone et tablette {#sur-telephone-et-tablette}
+
+OntoForge se consulte et se corrige du bout des doigts. Sur un téléphone (écran de 700 px de large ou moins, ou paysage de moins de 500 px de haut) l'application change de forme : un en-tête court (retour, nom du projet, partage), cinq onglets en bas et des fiches qui montent du bas de l'écran. Sur une tablette (iPad en portrait compris) la mise en page large est conservée, avec des cibles plus grandes pour le doigt. Rien ne change sur ordinateur.
+
+![Téléphone : tableau de bord avec « À faire maintenant », parcours en quatre lignes et barre d'onglets](img/fr/mobile-accueil.png "Le tableau de bord sur téléphone : 1 l'en-tête court, 2 ce qu'il reste à faire, 3 les cinq onglets.")
+
+### Les cinq onglets {#telephone-onglets}
+
+- **Accueil** : ce qu'il faut faire maintenant, le parcours en quatre lignes (Concevoir, Vérifier, Transposer, Générer) et l'activité récente. Le reste du tableau de bord est replié sous « Plus de détails ».
+- **Ontologie** : le graphe, ou la liste (bouton « Liste » / « Graphe » en haut de l'écran). Le dernier choix est mémorisé.
+- **Requêtes** : une phrase en langage naturel, la phrase guidée, et les résultats en cartes plutôt qu'en tableaux.
+- **Arbitrer** : une carte par point à décider ; le badge indique combien il en reste.
+- **Plus** : la carte métier en tête, puis les autres écrans (conformité, SHACL, modèle cible, exports, versions, assistant), la documentation et le compte. Il n'y a plus de tiroir latéral.
+
+![Téléphone : onglet Plus avec la carte métier, les écrans et la mention « Sur ordinateur »](img/fr/mobile-plus.png "L'onglet Plus : 1 la carte métier, 2 les écrans réservés à l'ordinateur sont signalés, 3 « M'envoyer le lien » en bas de la liste.")
+
+### Fiches, graphe et carte {#telephone-fiches-graphe}
+
+- **Fiche du bas.** Toucher une classe ou une propriété ouvre une feuille qui monte du bas : tirer la poignée pour l'agrandir ou la fermer, ou toucher la croix. Elle se manipule aussi au clavier et se lit au lecteur d'écran.
+- **Graphe.** Pincer pour zoomer, glisser pour déplacer la vue, toucher un nœud pour ouvrir sa fiche, appui long pour les actions (voir la fiche, centrer, et pour qui peut modifier le projet, ajouter une sous-classe ou une propriété). Les nœuds ne se déplacent pas par accident ; « Tout voir » ajuste la vue, la recherche centre le nœud trouvé et la légende se replie.
+- **Carte métier.** Même gestes : pincer, glisser, toucher pour la fiche. Elle est en lecture seule sur téléphone.
+
+![Téléphone : graphe de l'ontologie, étiquettes entières, bouton Tout voir](img/fr/mobile-graphe.png "Le graphe au doigt : 1 les étiquettes ne sont pas coupées, 2 le bouton Tout voir.")
+
+### Modifier depuis le téléphone {#telephone-modifier}
+
+Une petite correction se fait sur place, depuis la fiche d'une classe ou d'une propriété : **ajouter une sous-classe**, **ajouter une propriété** (attribut ou relation), **renommer** ou **décrire** (libellé et commentaire). Ces changements suivent les mêmes règles qu'ailleurs : verrou optimiste (conflit signalé si quelqu'un a modifié le projet entre-temps), journal d'activité. Un lecteur du projet ne voit aucun bouton de modification.
+
+![Téléphone : fiche d'une classe avec les boutons Sous-classe, Propriété et Renommer ou décrire](img/fr/mobile-fiche.png "La fiche d'une classe : 1 ajouter une sous-classe, 2 ajouter une propriété, 3 renommer ou décrire.")
+
+L'édition lourde reste « Sur ordinateur » : tracer dans le graphe, éditeur de fichiers Turtle, grille des shapes SHACL, carte métier en édition. Ces écrans sont marqués dans « Plus », avec le bouton « M'envoyer le lien » qui partage l'adresse (feuille de partage du téléphone, ou copie dans le presse-papiers).
+
+### Arbitrer au pouce {#telephone-arbitrer}
+
+Chaque point à décider est une carte : la recommandation est présélectionnée, « Valider ce choix » prend une décision en un toucher, « Pourquoi cette recommandation ? » explique, « Passer » garde le point pour plus tard. Si plusieurs points suivent la même règle, « Appliquer la recommandation aux N de la règle » les décide d'un coup, avec cinq secondes pour annuler. Les pastilles « À arbitrer », « Perdus » et « Faits » filtrent la liste.
+
+![Téléphone : carte d'arbitrage avec option recommandée et bouton Valider ce choix](img/fr/mobile-arbitrage.png "Une carte d'arbitrage : 1 l'option recommandée, 2 Valider ce choix.")
+
+### Krakie sur téléphone {#telephone-krakie}
+
+Un bouton rond de 56 px reste posé au-dessus de la barre d'onglets (l'aquarium reste réservé à l'ordinateur). Il ouvre un panneau plein écran, sans rien de coupé ; le clavier du téléphone ne cache pas la zone de saisie. La visite guidée n'est pas proposée sur téléphone : elle vise le bandeau latéral, qui n'existe pas sur cette taille d'écran.
+
+### Confort de lecture {#telephone-confort}
+
+Cibles de 44 px au moins, champs de saisie à 16 px (le navigateur ne zoome pas à la saisie), clair et sombre, français et anglais, aucun défilement horizontal, animations réduites si le téléphone le demande (`prefers-reduced-motion`). Les recettes `tools/recette/mobile_l44.mjs` (iPhone 15, Pixel 7, iPad mini) et `mobile_audit.mjs` le vérifient.
+
 ## 18. Easter egg {#easter-egg}
 
 OntoForge cache un petit jeu avec Krakie. Il n'a aucun lien avec le travail sur les ontologies et ne touche à aucune donnée de vos projets. Un indice discret est caché dans la page Paramètres : à vous de le trouver. Le jeu se joue au clavier ou au doigt, se met en pause tout seul quand l'onglet est masqué, respecte la préférence « réduire les animations » et se quitte avec Échap.

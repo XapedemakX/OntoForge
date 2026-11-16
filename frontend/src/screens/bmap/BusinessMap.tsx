@@ -2,8 +2,9 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { api } from '../../api'
 import type { ScreenProps } from '../../shell/types'
-import { useMedia } from '../../shell/sidePref'
-import { Button, Icon, IconButton, Segmented, useToast } from '../../kit'
+import { useMedia, useMobile } from '../../shell/sidePref'
+import { FicheSheet } from '../../mobile/Fiche'
+import { BottomSheet, Button, Icon, IconButton, Segmented, useLongPress, useToast } from '../../kit'
 import { Empty, ErrorView, Spin, Tabs } from '../../ui'
 import { useI18n } from '../../i18n'
 import { useAssistantContext } from '../../lib/assistantContext'
@@ -23,9 +24,10 @@ const lsGet = (k: string) => { try { return localStorage.getItem(k) } catch { re
 const lsSet = (k: string, v: string | null) => { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v) } catch { /* ignoré */ } }
 type View = { k: number; x: number; y: number }
 
-export function BusinessMap({ p, target }: ScreenProps) {
+export function BusinessMap({ p, setP, target }: ScreenProps) {
   const { t, lang } = useI18n(); const toast = useToast()
-  const ro = useMedia('(max-width: 760px)')
+  const mobile = useMobile()   // L44 : pincer, appui long, fiche du bas ; la carte reste en lecture (édition sur ordinateur)
+  const ro = useMedia('(max-width: 760px)') || mobile
   const [source, setSourceState] = useState<Source>(() => (lsGet(SRC_KEY) === 'target' ? 'target' : 'ontology'))
   const setSource = (s: Source) => { lsSet(SRC_KEY, s); setSourceState(s); setSel(null) }
   const { map, error, loading, saving, commit, undo, canUndo, setError } = useBMap(p.id, source, p.updated_at)
@@ -115,8 +117,22 @@ export function BusinessMap({ p, target }: ScreenProps) {
     const r = svgRef.current!.getBoundingClientRect(), v = view.current
     return { x: (cx - r.left - v.x) / v.k - parts!.origin.x, y: (cy - r.top - v.y) / v.k - parts!.origin.y }
   }
+  // pincer (L44) : table des pointeurs actifs ; à deux doigts, rapport des distances → zoomAt, déplacement du milieu → translation ; aucun rendu React par image (applyView agit sur le DOM)
+  const ptrs = useRef(new Map<number, { x: number; y: number }>())
+  const pinch = useRef<{ d: number; mx: number; my: number } | null>(null)
+  const pinched = useRef(false)
+  const pinchStep = () => {
+    const [a, b] = [...ptrs.current.values()]; const r = svgRef.current!.getBoundingClientRect()
+    const d = Math.hypot(a.x - b.x, a.y - b.y) || 1, mx = (a.x + b.x) / 2 - r.left, my = (a.y + b.y) / 2 - r.top
+    const last = pinch.current
+    if (last) { const v = view.current; view.current = { ...v, x: v.x + (mx - last.mx), y: v.y + (my - last.my) }; zoomAt(d / last.d, mx, my) }
+    pinch.current = { d, mx, my }
+  }
   const onDown = (e: React.PointerEvent) => {
     if (e.button !== 0 || !map || !parts) return
+    ptrs.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+    if (ptrs.current.size >= 2) { gesture.current = null; setDraft(null); pinched.current = true; pinch.current = null; try { svgRef.current!.setPointerCapture(e.pointerId) } catch { /* ignoré */ } pinchStep(); return }
+    pinched.current = false
     const tgt = e.target as Element
     const n = tgt.closest('[data-n]'), ed = tgt.closest('[data-e]')
     const base = { sx: e.clientX, sy: e.clientY, moved: false }
@@ -126,6 +142,8 @@ export function BusinessMap({ p, target }: ScreenProps) {
     svgRef.current!.setPointerCapture(e.pointerId)
   }
   const onMove = (e: React.PointerEvent) => {
+    if (ptrs.current.has(e.pointerId)) ptrs.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+    if (ptrs.current.size >= 2) { pinchStep(); return }
     const g = gesture.current
     if (!g) {
       const tgt = e.target as Element, n = tgt.closest('[data-n]'), ed = tgt.closest('[data-e]')
@@ -139,9 +157,16 @@ export function BusinessMap({ p, target }: ScreenProps) {
     else if (g.kind === 'node' && !ro) { const k = view.current.k; setDraft({ [g.id!]: { x: g.ox! + dx / k, y: g.oy! + dy / k } }) }
   }
   const onUp = (e: React.PointerEvent) => {
+    ptrs.current.delete(e.pointerId)
+    try { svgRef.current!.releasePointerCapture(e.pointerId) } catch { /* ignoré */ }
+    if (pinched.current) {   // fin d'un pincement : jamais de sélection ; le doigt restant continue en déplacement de la vue
+      pinch.current = null
+      const left = [...ptrs.current.entries()][0]
+      if (left) gesture.current = { kind: 'pan', sx: left[1].x, sy: left[1].y, moved: true, vx: view.current.x, vy: view.current.y }; else { gesture.current = null; pinched.current = false }
+      return
+    }
     const g = gesture.current; gesture.current = null
     if (!g || !map) return
-    try { svgRef.current!.releasePointerCapture(e.pointerId) } catch { /* ignoré */ }
     if (g.kind === 'node') {
       if (g.moved && !ro && draft?.[g.id!]) {
         const d = draft[g.id!]
@@ -198,12 +223,30 @@ export function BusinessMap({ p, target }: ScreenProps) {
   }, [undo, ro])
 
   const ctx = { map: map as BMap, ro, sel, setSel, scenario, edit: (f: (m: BMap) => BMap) => commit(f), setActive }
+  // ---------- téléphone : recherche qui centre le type, appui long, fiche du bas
+  const [q, setQ] = useState(''); const [qOpen, setQOpen] = useState(false); const [longId, setLongId] = useState<string | null>(null)
+  const reduced = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches
+  const centerOn = useCallback((id: string) => {
+    const el = svgRef.current, nd = map?.nodes.find(n => n.id === id); if (!el || !nd || !parts) return
+    const r = el.getBoundingClientRect(), k = Math.max(view.current.k, 0.9)
+    view.current = { k, x: r.width / 2 - (parts.origin.x + nd.x) * k, y: r.height * 0.3 - (parts.origin.y + nd.y) * k }
+    if (!reduced) { const g = vpRef.current; g?.animate?.([{ opacity: 0.6 }, { opacity: 1 }], { duration: 160 }) }
+    applyView()
+  }, [map, parts, reduced, applyView])
+  const hits = useMemo(() => (q.trim() ? (map?.nodes ?? []).filter(n => n.label.toLowerCase().includes(q.trim().toLowerCase())).slice(0, 8) : []), [q, map])
+  const pickHit = (id: string) => { setQ(''); setQOpen(false); setSel({ kind: 'node', id }); centerOn(id) }
+  const canvasRef = useRef<HTMLDivElement>(null)
+  useLongPress(canvasRef, tgt => { const id = tgt.closest('[data-n]')?.getAttribute('data-n'); if (id) { gesture.current = null; setDraft(null); setLongId(id); setSel({ kind: 'node', id }) } }, { enabled: mobile })
   const empty = map && map.nodes.length === 0
   return (
     <div className="bm" data-testid="bmap" data-readonly={ro ? '1' : '0'}>
       <div className="bm-bar" role="toolbar" aria-label={t('bm.toolbar')}>
         <h1 className="bm-h"><Icon name="map" />{t('bm.title')}</h1>
         <Segmented<Source> label={t('bm.source')} value={source} onChange={setSource} items={[['ontology', t('bm.src.ontology')], ['target', t('bm.src.target')]]} />
+        {mobile && <div className="msearch bm-search"><Icon name="magnifying-glass" />
+          <input type="text" role="combobox" aria-expanded={qOpen && !!hits.length} aria-label={t('bm.search')} placeholder={t('bm.search')} value={q} data-testid="bm-search" enterKeyHint="search"
+            onChange={e => { setQ(e.target.value); setQOpen(true) }} onFocus={() => setQOpen(true)} onBlur={() => setTimeout(() => setQOpen(false), 150)} onKeyDown={e => { if (e.key === 'Enter' && hits[0]) pickHit(hits[0].id) }} />
+          {qOpen && hits.length > 0 && <ul className="of-hits" role="listbox">{hits.map(h => <li key={h.id}><button type="button" role="option" aria-selected={false} onMouseDown={e => e.preventDefault()} onClick={() => pickHit(h.id)}><Icon name="circle-nodes" />{h.label}</button></li>)}</ul>}</div>}
         <select className="bm-scsel" value={scenario?.id ?? ''} onChange={e => setActive(e.target.value || null)} aria-label={t('bm.sc.active')} data-testid="bm-active">
           <option value="">{t('bm.sc.none')}</option>{map?.scenarios.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select>
         <span className="grow" />
@@ -233,7 +276,7 @@ export function BusinessMap({ p, target }: ScreenProps) {
       {loading && !map && <Spin />}
       {empty && <Empty title={t('bm.empty.t')}>{t('bm.empty.b')}</Empty>}
       {map && !empty && <div className="bm-body">
-        <div className="bm-canvas" data-tour="bmap-canvas">
+        <div className="bm-canvas" data-tour="bmap-canvas" ref={canvasRef}>
           {preview && <div className="bm-preview" role="dialog" aria-label={t('bm.prev.title')} data-testid="bm-preview">
             <b>{t(preview.kind === 'zones' ? 'bm.prev.zones' : 'bm.prev.frames', { n: preview.lines.length })}</b>
             <ul>{preview.lines.slice(0, 12).map((l, i) => <li key={i}>{l}</li>)}</ul>
@@ -242,7 +285,7 @@ export function BusinessMap({ p, target }: ScreenProps) {
             <div className="bm-prev-btns"><Button size="sm" variant="primary" disabled={preview.lines.length === 0} onClick={applyPreview} data-testid="bm-preview-apply">{t('common.apply')}</Button><Button size="sm" onClick={() => setPreview(null)}>{t('bm.prev.ignore')}</Button></div>
           </div>}
           <svg ref={svgRef} className="bm-svg" data-testid="bm-svg" role="img" aria-label={t('bm.aria', { n: map.nodes.length })} style={{ background: pal.bg }}
-            onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerLeave={() => { if (!gesture.current) hover(null) }}>
+            onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} onPointerLeave={() => { if (!gesture.current) hover(null) }}>
             <g ref={vpRef}><g dangerouslySetInnerHTML={{ __html: parts?.inner ?? '' }} transform={`translate(0 0)`} /></g>
           </svg>
           <div className="bm-zoom" role="group" aria-label={t('mo.zoom.group')}>
@@ -252,7 +295,7 @@ export function BusinessMap({ p, target }: ScreenProps) {
             <span className="bm-pct" aria-live="off">{zoomPct}%</span>
           </div>
         </div>
-        <aside className="bm-side" aria-label={t('bm.side')}>
+        {!mobile && <aside className="bm-side" aria-label={t('bm.side')}>
           <Tabs value={tab} onChange={setTab} items={ro ? [['insp', t('bm.tab.insp')]] : [['insp', t('bm.tab.insp')], ['zones', t('bm.tab.zones', { n: map.zones.length })], ['scen', t('bm.tab.scen', { n: map.scenarios.length })]]} />
           <div className="bm-pane">
             {tab === 'insp' && <Inspector c={ctx} />}
@@ -260,8 +303,12 @@ export function BusinessMap({ p, target }: ScreenProps) {
             {tab === 'scen' && <ScenariosPanel c={ctx} />}
           </div>
           {ro && <p className="muted bm-ro"><IconButton icon="eye" label={t('head.mobileReadOnly')} />{t('head.mobileReadOnly')}</p>}
-        </aside>
+        </aside>}
       </div>}
+      {mobile && sel && (sel.kind === 'node' && p.onto.classes[sel.id]
+        ? <FicheSheet p={p} setP={setP} iri={sel.id} lang={lang} initial={longId === sel.id ? 'half' : 'peek'} onClose={() => { setSel(null); setLongId(null) }}
+            onOpen={i => { if (map?.nodes.some(n => n.id === i)) { setSel({ kind: 'node', id: i }); centerOn(i) } }} />
+        : <BottomSheet open onClose={() => setSel(null)} title={t('bm.tab.insp')} heading={sel.kind === 'node' ? (selNode?.label ?? '') : (map?.edges.find(e => e.id === sel.id)?.label ?? '')} icon="circle-nodes" initial="half" testid="bm-sheet"><Inspector c={ctx} /></BottomSheet>)}
     </div>
   )
 }

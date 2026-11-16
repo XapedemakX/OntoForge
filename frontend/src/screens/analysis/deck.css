@@ -1,0 +1,39 @@
+/* Arbitrage sur téléphone (L44) : Deck.tsx */
+.deck { display: flex; flex-direction: column; gap: 12px; min-height: 100%; }
+.deck-top { display: flex; flex-direction: column; gap: 8px; }
+.deck-prog { height: 6px; border-radius: 3px; background: var(--panel2); overflow: hidden; }
+.deck-prog .d { height: 100%; background: var(--accent); transition: width .2s; }
+.deck-sub { margin: 0; font-size: 14px; }
+.deck-pills { display: flex; gap: 8px; align-items: center; overflow-x: auto; scrollbar-width: none; }
+.dpill { flex: none; min-height: var(--tap); padding: 0 16px; border-radius: 22px; border: 1px solid var(--line-strong); background: var(--panel); color: var(--ink); font-size: 15px; cursor: pointer; }
+.dpill b { font-family: var(--mono); margin-left: 4px; color: var(--muted); }
+.dpill[aria-selected="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); } .dpill[aria-selected="true"] b { color: inherit; }
+.dpill.lost { color: var(--lost); } .dpill.lost[aria-selected="true"] { background: var(--lost); border-color: var(--lost); color: #fff; }
+.dsearch { flex: none; margin-left: auto; width: var(--tap); height: var(--tap); border: 0; background: none; border-radius: 50%; cursor: pointer; font-size: 17px; color: var(--ink); }
+.dsearch[aria-pressed="true"] { background: var(--accent-soft); }
+.deck-q { width: 100%; }
+.dcard { display: flex; flex-direction: column; gap: 10px; padding: 16px; background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--review-edge); border-radius: var(--r-lg); touch-action: pan-y; }
+.dcard.lost { border-left-color: var(--lost); } .dcard.done { border-left-color: var(--auto); }
+.dcard header { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.dcard .dpos { font-family: var(--mono); color: var(--muted); }
+.dcard h2 { font-size: 19px; line-height: 1.25; } .dcard h2 .subj { display: inline-block; font-size: 15px; color: var(--accent); overflow-wrap: anywhere; }
+.dcard .det { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.45; }
+.dopts { display: flex; flex-direction: column; gap: 8px; }
+.dopt { display: flex; gap: 12px; align-items: flex-start; min-height: 56px; padding: 12px; border: 1.5px solid var(--line-strong); border-radius: var(--r-lg); cursor: pointer; background: var(--panel); }
+.dopt.on { border-color: var(--accent); background: var(--accent-soft); }
+.dopt input { flex: none; width: 24px; height: 24px; margin: 2px 0 0; accent-color: var(--accent); }
+.dopt .ot { display: flex; flex-direction: column; gap: 3px; min-width: 0; } .dopt .ot b { font-size: 16px; overflow-wrap: anywhere; } .dopt .ot small { color: var(--muted); font-size: 14px; line-height: 1.4; }
+.dopt .reco { align-self: flex-start; font-size: 12px; padding: 1px 8px; border-radius: 10px; background: var(--auto-soft); color: var(--auto); font-weight: 500; }
+.why, .rulebtn { display: flex; align-items: center; gap: 8px; min-height: var(--tap); padding: 0 4px; border: 0; background: none; color: var(--accent); font-size: 15px; font-weight: 500; cursor: pointer; text-align: left; }
+.rulebtn { border: 1px dashed var(--accent); border-radius: var(--r-lg); padding: 0 14px; justify-content: center; }
+.whybox { padding: 10px 12px; border-radius: var(--r-md); background: var(--code-bg); display: flex; flex-direction: column; gap: 8px; font-size: 14px; } .whybox p { margin: 0; } .whybox .err { color: var(--lost); }
+.deck-bar { position: sticky; bottom: 0; z-index: 3; display: flex; gap: 10px; padding: 10px 0 8px; margin-top: auto; background: linear-gradient(to top, var(--bg) 70%, transparent); }
+.deck-bar .btn { min-height: 52px; font-size: 16px; justify-content: center; } .deck-bar .btn:first-child { flex: 0 0 30%; } .deck-bar .btn.primary { flex: 1; }
+.deck-bar .btn i { margin: 0 6px; }
+.deck-empty { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 40px 16px; text-align: center; } .deck-empty i { font-size: 32px; color: var(--auto); } .deck-empty p { margin: 0; }
+.deck-undo { position: fixed; left: 12px; right: 12px; bottom: calc(var(--tabbar-h) + var(--safe-bottom) + 76px); z-index: 40; display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 16px; border-radius: var(--r-lg); background: var(--ink); color: var(--bg); box-shadow: var(--shadow-pop); }
+.deck-undo span { flex: 1; } .deck-undo button { min-height: var(--tap); padding: 0 14px; border: 0; border-radius: var(--r-md); background: none; color: var(--lanterne); font-weight: 600; cursor: pointer; }
+
+/* le bouton Krakie (56 px, à droite) ne doit rien recouvrir : le texte des options garde 64 px libres à droite */
+.dopt { padding-right: 64px; position: relative; }
+.dcard code { font-family: var(--mono); font-size: .92em; padding: 0 4px; border-radius: 4px; background: var(--panel2); }

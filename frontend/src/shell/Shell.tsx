@@ -12,6 +12,7 @@ import { AssistantDock } from '../assistant-global'
 import { VersionsNudge } from '../screens/versions/VersionsNudge'
 import { TourHost, tour } from '../tour'
 import { helpFor, openDoc } from '../lib/docs'
+import { pendingCount } from '../screens/analysis/pending'
 import { getAssistantContext } from '../lib/assistantContext'
 import { ROUTE_SCREEN } from '../assistant-global/context'
 import { SCREENS, STEPS } from './registry'
@@ -22,7 +23,11 @@ import { useCollab } from '../collab/useCollab'
 import { useReadOnlyGuard } from '../collab/readonly'
 import { useTheme } from './theme'
 import { Logo } from './Logo'
-import { useMedia, useSidePref } from './sidePref'
+import { useMedia, useMobile, useSidePref } from './sidePref'
+import { MobileTabBar } from './MobileTabBar'
+import { MobileHeader } from './MobileHeader'
+import { DesktopHint } from './DesktopHint'
+import { ContextSheet } from './ContextSheet'
 import type { ScreenProps } from './types'
 
 const Documentation = lazy(() => import('../screens/documentation/Documentation').then(m => ({ default: m.Documentation })))
@@ -46,6 +51,8 @@ export function Shell() {
   const [target, setTargetState] = useState<Target>('curiosity')
   const [pending, setPending] = useState(0)
   const [menu, setMenu] = useState(false)
+  const mobile = useMobile()
+  const [ctxOpen, setCtxOpen] = useState(false)
   const [themePref, cycleTheme] = useTheme()
   const auth = useAuth()
   const [reloadKey, setReloadKey] = useState(0)
@@ -68,7 +75,7 @@ export function Shell() {
   useEffect(() => { if (!pid) { setPeris(null); return } api.perimeters(pid).then(setPeris).catch(() => setPeris(null)) }, [pid, screen])
   useEffect(() => {
     if (!p) { setPending(0); return }
-    api.analyze(p.id, target).then(pg => setPending(pg.findings.filter(f => f.severity !== 'auto' && !f.chosen).length)).catch(() => setPending(0))
+    api.analyze(p.id, target).then(pg => setPending(pendingCount(pg.findings))).catch(() => setPending(0))
   }, [p?.id, p?.updated_at, target, screen])
 
   const setTarget = useCallback((x: Target) => {
@@ -86,7 +93,9 @@ export function Shell() {
 
   // collaboration (L40) : présence, version, lecture seule, rechargement après un conflit ou une modification d'un autre compte
   const collab = useCollab(pid)
-  useReadOnlyGuard(collab.readOnly, t('collab.ro.hint'), () => mainRef.current, [screen, pid, p?.id])
+  const def0 = SCREENS.find(x => x.key === screen)
+  const mobileRead = mobile && !!def0?.desktop   // L44 : édition lourde réservée à l'ordinateur
+  useReadOnlyGuard(collab.readOnly || mobileRead, collab.readOnly ? t('collab.ro.hint') : t('mob.hint.read'), () => mainRef.current, [screen, pid, p?.id, mobile])
   const reload = useCallback(async () => {
     if (!pid) return
     const x = await api.loadProject(pid)
@@ -143,8 +152,8 @@ export function Shell() {
   }
 
   return (
-    <div className={'shell' + (menu ? ' menu-open' : '') + (collapsed ? ' collapsed' : '')}>
-      <aside className="side" aria-label={t('nav.menu')} onMouseOver={showTip} onMouseOut={hideTip} onFocus={showTip} onBlur={hideTip} data-collapsed={collapsed ? '1' : '0'}>
+    <div className={'shell' + (menu ? ' menu-open' : '') + (collapsed ? ' collapsed' : '') + (mobile ? ' mobile' : '')}>
+      {!mobile && <aside className="side" aria-label={t('nav.menu')} onMouseOver={showTip} onMouseOut={hideTip} onFocus={showTip} onBlur={hideTip} data-collapsed={collapsed ? '1' : '0'}>
         <div className="brand"><Logo variant={collapsed ? 'mark' : 'full'} /></div>
         <nav className="nav" aria-label={t('nav.projectScreens')} data-tour="nav">
           {navItem('projects', 'nav.projets', 'folder-open', route.kind === 'projects', () => { location.hash = '#/' })}
@@ -158,7 +167,7 @@ export function Shell() {
               </div>))}
             <div className="step-group tools">
               <div className="step-title"><span className="lbl">{t('step.autres')}</span></div>
-              {SCREENS.filter(s => !s.step && s.key !== 'tableau').map(s => navItem(s.key, s.labelKey, s.icon, screen === s.key, () => go(s.key)))}
+              {SCREENS.filter(s => !s.step && s.key !== 'tableau' && !s.mobileOnly).map(s => navItem(s.key, s.labelKey, s.icon, screen === s.key, () => go(s.key)))}
             </div>
           </>}
         </nav>
@@ -170,10 +179,11 @@ export function Shell() {
             <Icon name={collapsed ? 'angles-right' : 'angles-left'} /><span className="grow lbl">{t(collapsed ? 'nav.expand' : 'nav.collapse')}</span></button>}
         </div>
         {tip && <div className="side-tip" role="tooltip" style={{ top: tip.top, left: tip.left }}>{tip.text}</div>}
-      </aside>
-      {menu && <button className="scrim" aria-label={t('common.close')} onClick={() => setMenu(false)} />}
+      </aside>}
+      {menu && !mobile && <button className="scrim" aria-label={t('common.close')} onClick={() => setMenu(false)} />}
       <div className="main" ref={mainRef}>
-        <header className="topbar">
+        {mobile && <MobileHeader kind={route.kind} p={p} pid={pid} screen={screen} labelKey={def?.labelKey} target={target} peris={peris} activePeri={activePeri} collab={collab} onContext={() => setCtxOpen(true)} />}
+        {!mobile && <header className="topbar">
           <IconButton className="menu-btn" icon="bars" label={t('nav.menu')} onClick={() => setMenu(m => !m)} />
           <Logo variant="mark" className="logo-top" />
           <div className="crumb">{p && pid ? <><b title={p.name}>{p.name}</b>{def && <span className="muted"> / {t(def.labelKey)}</span>}</> : <b>{route.kind === 'settings' ? t('nav.parametres') : route.kind === 'admin' ? t('nav.admin') : route.kind === 'help' ? t('nav.documentation') : t('common.projects')}</b>}</div>
@@ -196,10 +206,9 @@ export function Shell() {
           <IconButton icon={themeIcon} label={t('head.theme.' + themePref)} onClick={cycleTheme} />
           {auth.enabled && <AccountMenu />}
           {auth.enabled && <button type="button" className="btn sm ghost logout" data-testid="logout" title={auth.user ?? ''} onClick={() => void auth.logout()}><Icon name="right-from-bracket" /><span>{t('auth.logout')}</span></button>}
-        </header>
+        </header>}
         {p && pid && <StaleBanner collab={collab} />}
         <main className={'content' + (def?.fullBleed || route.kind === 'help' ? ' bleed' : '')}>
-          {def?.editing && <div className="notice soon mobile-only">{t('head.mobileReadOnly')}</div>}
           {route.kind === 'projects' && <Projects />}
           {route.kind === 'settings' && <Settings />}
           {route.kind === 'admin' && (auth.admin ? <Admin /> : <div className="page"><div className="notice error" role="alert" data-testid="admin-denied"><div>{t('adm.denied')}</div></div></div>)}
@@ -207,7 +216,10 @@ export function Shell() {
           {route.kind === 'project' && err != null && <div className="page"><ErrorView error={err} what={t('common.projects')} /></div>}
           {sp && (def ? <Suspense key={def.key + ':' + reloadKey} fallback={<div className="page muted">…</div>}>{def.render(sp)}</Suspense> : <div className="page"><ErrorView error={new Error('?')} /></div>)}
         </main>
+        {mobile && route.kind === 'project' && def?.desktop && <DesktopHint key={screen} screen={screen} kind={def.desktop} />}
+        {mobile && route.kind === 'project' && pid && <MobileTabBar pid={pid} screen={screen} pending={pending} />}
       </div>
+      {mobile && p && <ContextSheet open={ctxOpen} onClose={() => setCtxOpen(false)} target={target} setTarget={setTarget} peris={peris} active={activePeri} pick={pickPeri} />}
       <ConflictDialog reload={reload} />
       <TourHost />
       {p && pid && <VersionsNudge p={p} setP={setP} screen={screen} />}

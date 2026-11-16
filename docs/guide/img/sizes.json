@@ -7,6 +7,10 @@
 1280,
 772
 ],
+"en/admin-mot-de-passe-config.png": [
+1360,
+820
+],
 "en/analyse-constat.png": [
 1188,
 341
@@ -50,6 +54,10 @@
 "en/carte-metier.png": [
 1280,
 800
+],
+"en/changer-mot-de-passe.png": [
+1360,
+820
 ],
 "en/compte-langue.png": [
 1280,
@@ -187,6 +195,26 @@
 1280,
 800
 ],
+"en/mobile-accueil.png": [
+480,
+805
+],
+"en/mobile-arbitrage.png": [
+480,
+805
+],
+"en/mobile-fiche.png": [
+480,
+805
+],
+"en/mobile-graphe.png": [
+480,
+805
+],
+"en/mobile-plus.png": [
+480,
+805
+],
 "en/modele-curiosity.png": [
 1280,
 800
@@ -291,6 +319,10 @@
 1280,
 772
 ],
+"fr/admin-mot-de-passe-config.png": [
+1360,
+820
+],
 "fr/analyse-constat.png": [
 1188,
 341
@@ -334,6 +366,10 @@
 "fr/carte-metier.png": [
 1280,
 800
+],
+"fr/changer-mot-de-passe.png": [
+1360,
+820
 ],
 "fr/compte-langue.png": [
 1280,
@@ -471,6 +507,26 @@
 1280,
 800
 ],
+"fr/mobile-accueil.png": [
+480,
+805
+],
+"fr/mobile-arbitrage.png": [
+480,
+805
+],
+"fr/mobile-fiche.png": [
+480,
+805
+],
+"fr/mobile-graphe.png": [
+480,
+805
+],
+"fr/mobile-plus.png": [
+480,
+805
+],
 "fr/modele-curiosity.png": [
 1280,
 800
@@ -566,21 +622,5 @@
 "fr/visite-guidee.png": [
 1280,
 800
-],
-"fr/changer-mot-de-passe.png": [
-1360,
-820
-],
-"fr/admin-mot-de-passe-config.png": [
-1360,
-820
-],
-"en/changer-mot-de-passe.png": [
-1360,
-820
-],
-"en/admin-mot-de-passe-config.png": [
-1360,
-820
 ]
 }

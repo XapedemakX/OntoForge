@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { api } from '../api'
 import { Button, Krakie } from '../kit'
 import { useI18n } from '../i18n'
+import { isMobileNow } from '../shell/sidePref'
 import { Overlay } from './Overlay'
 import { buildSteps } from './steps'
 import { currentProjectId, getState, isDone, markDone, registerHost, subscribe, tour } from './controller'
@@ -38,7 +39,7 @@ function Proposal() {
   const st = useSyncExternalStore(subscribe, getState)
   const [show, setShow] = useState(false)
   useEffect(() => {
-    const check = () => { if (!proposed && currentProjectId() && !isDone()) { proposed = true; setTimeout(() => { if (!getState().active && !isDone()) setShow(true) }, 2500) } }
+    const check = () => { if (!proposed && currentProjectId() && !isDone() && !isMobileNow()) { proposed = true; setTimeout(() => { if (!getState().active && !isDone()) setShow(true) }, 2500) } }
     check(); addEventListener('hashchange', check); return () => removeEventListener('hashchange', check)
   }, [])
   useEffect(() => { if (!show) return; const h = setTimeout(() => setShow(false), 25000); return () => clearTimeout(h) }, [show])

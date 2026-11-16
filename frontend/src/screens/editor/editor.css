@@ -70,7 +70,7 @@
 .of-handle { width: 12px !important; height: 12px !important; background: var(--accent) !important; border: 2px solid var(--panel) !important; opacity: 0; transition: opacity .12s; bottom: -7px !important; }
 .of-node:hover .of-handle, .of-node.sel .of-handle { opacity: 1; }
 .of-handle-in { opacity: 0 !important; pointer-events: none !important; }
-.ro .of-handle { display: none; }
+.ro .of-handle, .of-handle.ro { opacity: 0 !important; pointer-events: none !important; }   /* lecture seule : poignée inerte mais présente (React Flow en a besoin pour tracer les arêtes) */
 @keyframes of-shake { 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
 
 /* arêtes */
@@ -294,3 +294,37 @@ label.f.lang input { flex: 1; }
 .of-vn.vk-class.compact.external .vt b { color: var(--ink); }
 .of-vn.tiny .vt { visibility: hidden; }
 
+
+/* ---------- téléphone (L44) ---------- */
+.mgbar { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--panel); border-bottom: 1px solid var(--line); }
+.mgbar .seg { flex: none; }
+.mgbar .seg button { min-height: var(--tap); padding: 0 12px; }
+.msearch { position: relative; flex: 1; min-width: 0; display: flex; align-items: center; }
+.msearch > i { position: absolute; left: 12px; color: var(--muted); pointer-events: none; }
+.msearch input { width: 100%; padding-left: 36px; min-height: var(--tap); font-size: 16px; }
+.msearch .of-hits { left: 0; right: 0; min-width: 0; max-height: 50vh; overflow: auto; }
+.of-hits button { min-height: var(--tap); }
+.mgbar .btn.on { border-color: var(--accent); color: var(--accent); }
+.mcv-btns { position: absolute; left: 12px; bottom: 14px; z-index: 5; display: flex; flex-direction: column; gap: 10px; }
+.mfab { width: 48px; height: 48px; border-radius: 50%; border: 1px solid var(--line-strong); background: var(--panel); box-shadow: var(--shadow-pop); color: var(--ink); cursor: pointer; font-size: 18px; }
+.mfab:disabled { opacity: .45; }
+.mfilters { display: flex; flex-direction: column; gap: 14px; padding-top: 4px; }
+.mfilters .grp { display: flex; flex-direction: column; gap: 6px; }
+.mfilters .gl { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.mfilters .seg { display: flex; } .mfilters .seg button { flex: 1; min-height: var(--tap); }
+.mfilters .checks { display: grid; grid-template-columns: 1fr 1fr; gap: 0 8px; }
+.mfilters .chk { display: flex; align-items: center; gap: 4px; min-height: var(--tap); } .mfilters .chk.off { opacity: .5; }
+.mfilters p { margin: 0; } .mfilters .small { font-size: 13px; }
+.is-mobile .ed .of-cvtools { top: 8px; right: 8px; left: auto; }
+.is-mobile .ed .of-cvtools .of-popwrap { display: none; }
+.is-mobile .ed .of-legend { left: 10px; right: 10px; width: auto; top: 56px; max-height: 55%; overflow: auto; }
+.is-mobile .ed .of-txt small { display: none; }
+.is-mobile .ed .of-txt b { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: break-word; line-height: 1.2; }
+.is-mobile .ed .of-node.compact .of-txt b { font-size: min(var(--of-fs, 22px), 19px); }
+.is-mobile .ed .of-vl > span { max-width: 160px; overflow: visible; white-space: normal; }
+.is-mobile .ed .react-flow__pane { touch-action: none; }
+.sheet.short { height: auto !important; max-height: 70dvh; }
+
+/* téléphone : un nœud est sélectionné, son voisinage ressort et le reste s'estompe */
+.is-mobile .ed .of-edge.near { stroke-width: 3; }
+.is-mobile .ed .of-edge.dim, .is-mobile .ed .of-elabel.dim, .is-mobile .ed .of-vl.dim { opacity: .18; }

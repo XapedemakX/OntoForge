@@ -265,18 +265,6 @@
     "en": "The owner shares the project by entering another account's identifier, as editor (changes) or reader (views and exports). A banner and a dialog protect you from crossed changes."
    }
   },
-  "default": {
-   "page": "utilisateur",
-   "anchor": "le-parcours-en-un-coup-d-oeil",
-   "title": {
-    "fr": "Le parcours en un coup d'œil",
-    "en": "The workflow at a glance"
-   },
-   "summary": {
-    "fr": "OntoForge suit quatre étapes : concevoir, vérifier, transposer, générer. Le guide présente chaque écran du parcours.",
-    "en": "OntoForge follows four steps: design, check, transpose, generate. The guide describes each screen of the workflow."
-   }
-  },
   "versions": {
    "page": "utilisateur",
    "anchor": "versions-des-normes-et-des-cibles",
@@ -335,6 +323,30 @@
    "summary": {
     "fr": "Tout compte connecté change son mot de passe depuis le menu du compte (en haut à droite) : ancien mot de passe, nouveau (10 caractères au moins), confirmation. Vos autres sessions sont fermées, celle-ci reste ouverte. Pour un compte déclaré dans la configuration, le nouveau mot de passe remplace celui de la configuration.",
     "en": "Any signed-in account changes its password from the account menu (top right): current password, new one (at least 10 characters), confirmation. Your other sessions are closed, this one stays open. For an account declared in the configuration, the new password replaces the configuration one."
+   }
+  },
+  "mobile": {
+   "page": "utilisateur",
+   "anchor": "sur-telephone-et-tablette",
+   "title": {
+    "fr": "Sur téléphone et tablette",
+    "en": "On phone and tablet"
+   },
+   "summary": {
+    "fr": "Sur téléphone : cinq onglets en bas (Accueil, Ontologie, Requêtes, Arbitrer, Plus), fiches qui montent du bas, graphe au doigt. Vous pouvez ajouter une sous-classe ou une propriété et renommer depuis la fiche ; le reste se fait sur ordinateur.",
+    "en": "On a phone: five tabs at the bottom (Home, Ontology, Queries, Arbitrate, More), sheets rising from the bottom, a graph you use with your fingers. You can add a subclass or a property and rename from the sheet; the rest is done on a computer."
+   }
+  },
+  "default": {
+   "page": "utilisateur",
+   "anchor": "le-parcours-en-un-coup-d-oeil",
+   "title": {
+    "fr": "Le parcours en un coup d'œil",
+    "en": "The workflow at a glance"
+   },
+   "summary": {
+    "fr": "OntoForge suit quatre étapes : concevoir, vérifier, transposer, générer. Le guide présente chaque écran du parcours.",
+    "en": "OntoForge follows four steps: design, check, transpose, generate. The guide describes each screen of the workflow."
    }
   }
  }

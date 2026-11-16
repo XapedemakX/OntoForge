@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { api, type ProjectSummary } from '../api'
-import { Button, Card, EmptyState, Icon, IconButton, Segmented } from '../kit'
+import { BottomSheet, Button, Card, EmptyState, Icon, IconButton, Segmented } from '../kit'
+import { useMobile } from '../shell/sidePref'
 import { useI18n } from '../i18n'
 import { ErrorView, Spin, useLoad, useToast } from '../ui'
 import { useAuth } from '../auth/AuthGate'
@@ -20,6 +21,8 @@ export function Projects() {
   const [err, setErr] = useState<unknown>(null)
   const [busy, setBusy] = useState(false)
   const auth = useAuth()
+  const mob = useMobile()   // L44 : la liste d'abord ; la création passe dans une feuille du bas
+  const [newOpen, setNewOpen] = useState(false)
   const [scope, setScope] = useState<'all' | 'mine' | 'shared'>('all')   // L42 : filtre de l'administrateur
   const [staged, setStaged] = useState<File | null>(null)
   const open = (id: string, screen = 'tableau') => { location.hash = `#/projet/${id}/${screen}` }
@@ -59,8 +62,38 @@ export function Projects() {
 
   return (
     <div className="page">
-      <div className="page-head"><h1>{t('proj.title')}</h1><span className="sub">{t('proj.sub')}</span></div>
+      <div className="page-head"><h1>{t('proj.title')}</h1><span className="sub">{t('proj.sub')}</span>{mob && <><span className="grow" /><Button variant="primary" icon="plus" data-testid="new-project-btn" onClick={() => setNewOpen(true)}>{t('mob.proj.new')}</Button></>}</div>
       <ErrorView error={err} what={t('proj.op')} />
+      {mob ? <BottomSheet open={newOpen} onClose={() => setNewOpen(false)} title={t('proj.new')} icon="plus" initial="full" snaps={['half', 'full']} testid="new-project-sheet"><div className="col">
+      <Card title={t('proj.new')}>
+          <div className="row">
+            <label className="f">{t('proj.name')}<input type="text" value={name} onChange={e => setName(e.target.value)} placeholder={t('proj.name.ph')} style={{ width: 240 }} /></label>
+            <label className="f">{t('proj.start')}
+              <select value={sample} onChange={e => setSample(e.target.value)} style={{ width: 280 }}>
+                <option value="">{t('proj.empty')}</option>
+                {samples.data?.map(s => <option key={s.name} value={s.name}>{t('proj.sample', { title: s.title, name: s.name })}</option>)}
+              </select></label>
+            <Button variant="primary" disabled={busy} onClick={create} style={{ alignSelf: 'flex-end' }}>{t('proj.create')}</Button>
+          </div>
+        </Card>
+        {staged ? (
+          <Card tone="info" title={t('proj.staged.t', { name: staged.name })}>
+            <p className="muted" style={{ margin: '0 0 10px' }}>{t('proj.staged.d')}</p>
+            <div className="row">
+              <Button variant="primary" icon="wand-magic-sparkles" disabled={busy} onClick={withAssistant}>{t('proj.staged.go')}</Button>
+              <Button variant="ghost" disabled={busy} onClick={() => setStaged(null)}>{t('proj.staged.cancel')}</Button>
+            </div>
+          </Card>
+        ) : (
+          <div className={'drop' + (over ? ' over' : '')} onDragOver={e => { e.preventDefault(); setOver(true) }} onDragLeave={() => setOver(false)}
+            onDrop={e => { e.preventDefault(); setOver(false); void drop(e.dataTransfer.files) }}>
+            <b>{t('proj.drop.title')}</b>
+            <div>{t('proj.drop.body')}</div>
+            <label className="btn" style={{ display: 'inline-block', marginTop: 8 }}>{t('proj.drop.pick')}
+              <input type="file" hidden onChange={e => { if (e.target.files) void drop(e.target.files); e.target.value = '' }} /></label>
+          </div>
+        )}
+      </div></BottomSheet> : <>
       <Card title={t('proj.new')}>
         <div className="row">
           <label className="f">{t('proj.name')}<input type="text" value={name} onChange={e => setName(e.target.value)} placeholder={t('proj.name.ph')} style={{ width: 240 }} /></label>
@@ -89,6 +122,7 @@ export function Projects() {
             <input type="file" hidden onChange={e => { if (e.target.files) void drop(e.target.files); e.target.value = '' }} /></label>
         </div>
       )}
+      </>}
       {list.loading && <Spin />}
       <ErrorView error={list.error} what={t('proj.list')} />
       {list.data && list.data.length === 0 && <EmptyState title={t('proj.none.t')} pose="accueil">{t('proj.none.d')}</EmptyState>}

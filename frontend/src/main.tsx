@@ -7,4 +7,8 @@ import './styles.css'
 import './shell/kit.css'
 import './shell/shell.css'
 import { App } from './App'
+import { initMobileClass } from './shell/sidePref'
+import './kit/sheet.css'
+import './shell/mobile.css'
+initMobileClass()
 createRoot(document.getElementById('root')!).render(<React.StrictMode><App /></React.StrictMode>)

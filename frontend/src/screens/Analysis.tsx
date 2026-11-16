@@ -6,11 +6,14 @@ import { Button, Card, Icon } from '../kit'
 import { useT } from '../i18n'
 import { KrakieStatus, useResultFlash } from '../krakie/Krakie'
 import { Empty, ErrorView, useLoad, useToast } from '../ui'
+import { useMobile } from '../shell/sidePref'
+import { Deck } from './analysis/Deck'
 
 
 export function Analysis({ p, target }: ScreenProps) {
   const toast = useToast()
   const t = useT()
+  const mob = useMobile()
   const [confirm, setConfirm] = useState(false)
   const [onlyReview, setOnlyReview] = useState(true)
   const { data: pg, error, loading, setData, reload } = useLoad(() => api.analyze(p.id, target), [p.id, target, p.updated_at])
@@ -49,6 +52,12 @@ export function Analysis({ p, target }: ScreenProps) {
   const match = (f: Finding) => (!onlyPending || ((f.severity === 'review' || f.severity === 'lost') && !f.chosen)) && (!q || (f.title + f.rule + f.subject + f.detail).toLowerCase().includes(q.toLowerCase()))
   const group = (s: FindingSeverity) => (pg?.findings ?? []).filter(f => f.severity === s && match(f)).sort((a, b) => Number(!!a.chosen) - Number(!!b.chosen))
 
+  if (mob) return (   // L44 : une carte par point à arbitrer
+    <div className="page deck-page">
+      <ErrorView error={error} what={t('an.what')} /><ErrorView error={err} what={t('an.what.decide')} />
+      {loading && !pg && <div className="muted">{t('common.loading')}</div>}
+      {pg && sum && <Deck pid={p.id} target={target} findings={pg.findings} pf={pf} summary={sum} decide={decide} decideMany={decideMany} busy={busy} />}
+    </div>)
   return (
     <div className="page">
       <div className="page-head">

@@ -1,8 +1,8 @@
 // L44 (phase 1) : audit mobile — parcours réels sur appareils émulés, mesures et captures. N'échoue pas : il mesure.
-// Usage : BACKEND_PORT=9021 FRONT_PORT=5021 node tools/recette/mobile_audit.mjs [--local] [--devices=iphone15,pixel7,ipadmini] [--dark]
+// Usage : BACKEND_PORT=9021 FRONT_PORT=5021 node tools/recette/mobile_audit.mjs [--local] [--devices=iphone15,pixel7,ipadmini] [--dark] [--out=avant|apres]
 // Front buildé avant (cd frontend && npm run build). Version web par défaut (tools/recette/web_server.mjs : authentification, CSP, HTTPS),
 // --local pour la version docker compose. Comptes et secrets tirés au hasard à l'exécution. Projet « Automaint » créé depuis samples/automaint.
-// Sorties : journal/L44/avant/<appareil>-<thème>-<écran>.png et journal/L44/avant/mesures-<mode>.json
+// Sorties : journal/L44/<out>/<appareil>-<thème>-<écran>.png et journal/L44/avant/mesures-<mode>.json
 // Mesures par écran : éléments interactifs visibles, cibles < 44 px, débordement horizontal, textes coupés, champs < 16 px,
 // éléments masqués par Krakie (bouton flottant / aquarium), erreurs de console et violations de CSP.
 // Les captures sont écrites en pleine résolution (DPR de l'appareil) ; pour le journal, elles ont été réduites à 480 px (640 px iPad)
@@ -19,7 +19,7 @@ const { chromium, devices } = pw
 const sleep = ms => new Promise(r => setTimeout(r, ms))
 const arg = (k, d) => (process.argv.find(a => a.startsWith(`--${k}=`)) || '').split('=')[1] || d
 const MODE = process.argv.includes('--local') ? 'local' : 'web'
-const OUT = path.join(ROOT, 'journal/L44/avant'); mkdirSync(OUT, { recursive: true })
+const OUT = path.join(ROOT, 'journal/L44', arg('out', 'avant')); mkdirSync(OUT, { recursive: true })
 const DEV = {
   iphone15: devices['iPhone 15'], pixel7: devices['Pixel 7'], ipadmini: devices['iPad Mini'],
 }
@@ -75,7 +75,7 @@ const measure = () => {
     vw: W, vh: H, pageW: document.documentElement.scrollWidth, hOverflow: document.documentElement.scrollWidth > W + 1,
     interactive: shown.length, small: small.length, smallList: small.slice(0, 30), tinyFont, cut: cut.slice(0, 20), offRight,
     krakieHides: hidden.slice(0, 15), textBlocks: visText, words,
-    headerH: Math.round(document.querySelector('.topbar')?.getBoundingClientRect().height || 0),
+    headerH: Math.round((document.querySelector('.mhead') || document.querySelector('.topbar'))?.getBoundingClientRect().height || 0),
   }
 }
 
@@ -171,7 +171,7 @@ for (const key of want) {
       }
       if (s === 'ontologie-liste') {
         // fiche d'une classe : premier élément de la liste
-        const item = page.locator('.ol-tree .row', { hasText: 'Garantie' }).first()
+        const item = page.locator('.ol-tree .row, .ol-m [data-id], .ol-m li', { hasText: 'Garantie' }).first()
         if (await item.count()) { await item.click().catch(() => {}); await snap('05b-fiche-classe') }
       }
     }

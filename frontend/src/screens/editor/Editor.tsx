@@ -6,7 +6,11 @@ import {
 import '@xyflow/react/dist/style.css'
 import { api, curie, labelOf, localName, type Project } from '../../api'
 import type { ScreenProps } from '../../shell/types'
-import { Button, EmptyState, Icon, IconButton, Segmented, useToast } from '../../kit'
+import { Button, EmptyState, Icon, IconButton, Segmented, useLongPress, useToast } from '../../kit'
+import { useMobile } from '../../shell/sidePref'
+import { FicheSheet } from '../../mobile/Fiche'
+import { FilterSheet, MobileGraphBar, NodeActions } from './MobileGraphBar'
+import { useReadOnly } from '../../collab/readonly'
 import { useI18n, tr } from '../../i18n'
 import { autoLayout, NODE_H, NODE_W, toLocalName } from './layout'
 import { ClassNode, EdgeDefs, OfEdge, type ClassNodeData, type OfEdgeData } from './parts'
@@ -57,7 +61,10 @@ function Inner({ p, setP }: EditorProps) {
   const { t, lang: uiLang } = useI18n()
   const toast = useToast()
   const rf = useReactFlow()
-  const readOnly = useMedia('(max-width: 767px)')
+  const mobile = useMobile()   // L44 : téléphone — fiche du bas, gestes au doigt, modification limitée
+  const roUser = useReadOnly()
+  const readOnly = useMedia('(max-width: 767px)') || mobile
+  const reduced = typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches
   const wrap = useRef<HTMLDivElement>(null)
 
   const [lang, setLang] = useState(uiLang)
@@ -66,7 +73,7 @@ function Inner({ p, setP }: EditorProps) {
   const [graph, setGraph] = useState<GraphData | null>(null)
   const [mode, setMode] = useStored<Mode>(KEYS.mode, () => (lsGet(KEYS.mode) === 'vowl' ? 'vowl' : 'classic'), serMode)
   // légende ouverte au premier usage (Jerem ne la trouvait pas) ; repliée sur écran étroit pour ne pas couvrir le graphe ; ensuite, le dernier choix est mémorisé
-  const [legend, setLegend] = useStored<LegendState>(KEYS.legend, () => { const v = lsGet(KEYS.legend); return v === 'open' || v === 'folded' || v === 'closed' ? v : (typeof window !== 'undefined' && window.innerWidth < 900 ? 'folded' : 'open') }, serLegend)
+  const [legend, setLegend] = useStored<LegendState>(KEYS.legend, () => { const v = lsGet(KEYS.legend); return v === 'open' || v === 'folded' || v === 'closed' ? v : (mobile ? 'closed' : typeof window !== 'undefined' && window.innerWidth < 900 ? 'folded' : 'open') }, serLegend)
   // cadrage : la légende ouverte (330 px, en surimpression à droite) ne doit pas masquer de nœud après « ajuster la vue »
   const fitPad = legend === 'open' && typeof window !== 'undefined' && window.innerWidth >= 768 ? { top: '6%', bottom: '6%', left: '4%', right: '350px' } as const : 0.12
   const [showStored, setShowStored] = useStored<ShowPrefs>(KEYS.show, readShow, serShow)
@@ -128,7 +135,7 @@ function Inner({ p, setP }: EditorProps) {
   useEffect(() => { fitted.current = false }, [mode])
   // le bandeau latéral a fini de se replier / déplier (L35) : si le cadrage initial date de moins de 2 s, on le refait à la bonne largeur ; sinon le zoom de l'utilisateur est respecté
   const fitAt = useRef(0)
-  useEffect(() => { const f = () => { if (Date.now() - fitAt.current < 2000) { fitAt.current = 0; rf.fitView({ padding: fitPad, maxZoom: 1, minZoom: 0.3, duration: 200 }) } }; addEventListener('of:side-settled', f); return () => removeEventListener('of:side-settled', f) })
+  useEffect(() => { const f = () => { if (!mobile && Date.now() - fitAt.current < 2000) { fitAt.current = 0; rf.fitView({ padding: fitPad, maxZoom: 1, minZoom: 0.3, duration: 200 }) } }; addEventListener('of:side-settled', f); return () => removeEventListener('of:side-settled', f) })
 
   // proposition de l'assistant : éléments du store convertis (+ arêtes des sous-classes portées par l'ajout d'une classe)
   useEffect(() => { bindProjectSetter(setP); return () => bindProjectSetter(null) }, [setP])
@@ -232,12 +239,21 @@ function Inner({ p, setP }: EditorProps) {
         id: e.id, source: e.source, target: e.target, type: 'of', selected: sel?.kind === 'prop' && e.iri === sel.iri, deletable: false, selectable: !own,
         markerEnd: e.kind === 'subClassOf' ? hollow : e.kind === 'objectProperty' || e.kind === 'datatypeProperty' ? solid : undefined,
         markerStart: vowl && e.inverse ? solid : undefined,
-        data: { kind: e.kind, label: e.label, inverse: e.inverse, offset: e.offset, status: e.status, iri: e.iri, err: !!(e.iri && errIris.has(e.iri)), vowl, chars: e.chars, deprecated: e.deprecated } satisfies OfEdgeData & { iri: string | null },
+        data: { kind: e.kind, label: e.label, inverse: e.inverse, offset: e.offset, status: e.status, iri: e.iri, err: !!(e.iri && errIris.has(e.iri)), vowl, chars: e.chars, deprecated: e.deprecated,
+          near: mobile && selIds.size > 0 && (selIds.has(e.source) || selIds.has(e.target)), dim: mobile && selIds.size > 0 && !(selIds.has(e.source) || selIds.has(e.target)) } satisfies OfEdgeData & { iri: string | null },
       }
     })
     setShown({ vm, total: { n: all.nodes.length, m: all.edges.length } })
     setNodes(ns); setEdges(es)
-    if (!fitted.current && ns.length) { fitted.current = true; fitAt.current = Date.now(); setTimeout(() => rf.fitView({ padding: fitPad, maxZoom: 1, minZoom: 0.3 }), 50) }
+    if (!fitted.current && ns.length) {
+      fitted.current = true; fitAt.current = Date.now()
+      if (mobile) {
+        // téléphone : cadrage lisible (zoom 0,7 au moins) centré sur la classe la plus connectée ; « Tout voir » montre l'ensemble
+        const deg = new Map<string, number>(); for (const e of vm.edges) if (e.kind === 'subClassOf' || e.kind === 'objectProperty') { deg.set(e.source, (deg.get(e.source) ?? 0) + 1); deg.set(e.target, (deg.get(e.target) ?? 0) + 1) }
+        const hub = ns.filter(n => n.type === 'cls' || n.selectable).sort((x, y) => (deg.get(y.id) ?? 0) - (deg.get(x.id) ?? 0))[0] ?? ns[0]
+        setTimeout(() => rf.setCenter(hub.position.x + (hub.width ?? NODE_W) / 2, hub.position.y + (hub.height ?? NODE_H) / 2, { zoom: 0.7 }), 50)
+      } else setTimeout(() => rf.fitView({ padding: fitPad, maxZoom: 1, minZoom: 0.3 }), 50)
+    }
     if (pendingSel.current) { const f = ns.find(n => localName(n.id) === pendingSel.current); if (f) { pendingSel.current = null; setTimeout(() => selectClass(f.id, false), 0) } }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [graph, mode, show, visibleItems, readOnly, errIris, renaming, lang])
@@ -268,13 +284,26 @@ function Inner({ p, setP }: EditorProps) {
   }, [pid, setP, p.onto.classes])
   useEffect(() => () => flushMoves(), [flushMoves])
 
+  // téléphone : voisinage du nœud sélectionné en évidence (arêtes et libellés), le reste estompé
+  useEffect(() => {
+    if (!mobile) return
+    setEdges(es => es.map(e => {
+      const d = e.data as OfEdgeData, has = selIds.size > 0, near = has && (selIds.has(e.source) || selIds.has(e.target)), dim = has && !near
+      return d.near === near && d.dim === dim ? e : { ...e, data: { ...d, near, dim } }
+    }))
+  }, [selIds, mobile, edges.length])
   // ---------- sélection ----------
   const selectClass = useCallback((iri: string, additive: boolean) => {
     setNodes(ns => ns.map(n => ({ ...n, selected: n.id === iri ? true : additive ? n.selected : false })))
     setEdges(es => es.map(e => ({ ...e, selected: false })))
     const n = rf.getNode(iri)
-    if (n) rf.setCenter(n.position.x + NODE_W / 2, n.position.y + NODE_H / 2, { zoom: Math.max(rf.getZoom(), 0.9), duration: 350 })
-  }, [rf])
+    if (n) {
+      const z = Math.max(rf.getZoom(), mobile ? 0.8 : 0.9)
+      // téléphone : la feuille d'aperçu couvre le bas de l'écran, on place le nœud dans le tiers haut
+      const dy = mobile && wrap.current ? (wrap.current.clientHeight * 0.2) / z : 0
+      rf.setCenter(n.position.x + NODE_W / 2, n.position.y + NODE_H / 2 + dy, { zoom: z, duration: reduced ? 0 : 350 })
+    }
+  }, [rf, mobile, reduced])
   const selectProp = useCallback((iri: string) => {
     setSel({ kind: 'prop', iri }); setInspPref(null)
     setNodes(ns => ns.map(n => ({ ...n, selected: false })))
@@ -397,6 +426,13 @@ function Inner({ p, setP }: EditorProps) {
   const onNodesChange = useCallback((c: NodeChange[]) => setNodes(ns => applyNodeChanges(c, ns)), [])
   const onEdgesChange = useCallback((c: EdgeChange[]) => setEdges(es => applyEdgeChanges(c, es)), [])
   const inspOpen = inspPref ?? !!sel
+  // ---------- téléphone ----------
+  const [filtersOpen, setFiltersOpen] = useState(false)
+  const [actionsFor, setActionsFor] = useState<string | null>(null)
+  const [startMode, setStartMode] = useState<null | 'sub' | 'prop'>(null)
+  const deselect = useCallback(() => { setSel(null); setStartMode(null); setNodes(ns => ns.map(n => ({ ...n, selected: false }))); setEdges(es => es.map(e => ({ ...e, selected: false }))) }, [])
+  const fitAll = useCallback(() => rf.fitView({ padding: 0.12, maxZoom: 1, minZoom: 0.15, duration: reduced ? 0 : 250 }), [rf, reduced])
+  useLongPress(wrap, tgt => { const id = (tgt.closest('.react-flow__node') as HTMLElement | null)?.dataset.id; if (id && p.onto.classes[id]) setActionsFor(id) }, { enabled: mobile })
   const classNodes = graph?.nodes.filter(n => n.kind === 'class') ?? []
   const empty = !!graph && !classNodes.length && !listed.length
   const hint = sel?.kind === 'class' ? localName(sel.iri) : null
@@ -416,7 +452,8 @@ function Inner({ p, setP }: EditorProps) {
 
   return (
     <div className={'ed' + (readOnly ? ' ro' : '') + (vowl ? ' vowl' : '')}>
-      <div className="of-bar" role="toolbar" aria-label={t('ed.toolbar')}>
+      {mobile && <MobileGraphBar pid={pid} q={q} setQ={setQ} qOpen={qOpen} setQOpen={setQOpen} hits={hits} goTo={goTo} onFilters={() => setFiltersOpen(true)} active={!!filter && filter !== 'all' || mode === 'vowl'} />}
+      {!mobile && <div className="of-bar" role="toolbar" aria-label={t('ed.toolbar')}>
         {!treeOpen && <IconButton icon="angles-right" label={t('ed.tree.show')} onClick={() => setTreeOpen(true)} />}
         <div className="of-search">
           <Icon name="magnifying-glass" />
@@ -439,7 +476,7 @@ function Inner({ p, setP }: EditorProps) {
           <Button size="sm" icon="crop-simple" disabled={!selIds.size} onClick={() => setPeriForm({ name: '', desc: false })} title={t('ed.peri.fromsel')}>{t('ed.peri.fromsel')}</Button>
         </>}
         {sel === null && !readOnly && <IconButton icon={inspOpen ? 'angles-right' : 'sliders'} label={t(inspOpen ? 'ed.insp.close' : 'ed.insp.open')} onClick={() => setInspPref(inspOpen ? false : true)} aria-pressed={inspOpen} />}
-      </div>
+      </div>}
 
       <div className="of-body">
         {treeOpen && <Tree nodes={graph?.nodes ?? []} edges={graph?.edges ?? []} selected={selIds} props={propsList}
@@ -455,7 +492,7 @@ function Inner({ p, setP }: EditorProps) {
           <ReactFlow
             nodes={nodes} edges={edges} nodeTypes={nodeTypes} edgeTypes={edgeTypes}
             onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} onSelectionChange={onSelectionChange}
-            nodesDraggable={!readOnly} nodesConnectable={!readOnly} elementsSelectable
+            nodesDraggable={!readOnly} nodesConnectable={!readOnly} elementsSelectable selectNodesOnDrag={!mobile} onlyRenderVisibleElements={mobile && nodes.length > 80}
             deleteKeyCode={null} zoomOnDoubleClick={false} minZoom={0.15} maxZoom={2.2}
             multiSelectionKeyCode={['Control', 'Meta']} selectionKeyCode="Shift"
             onNodeDrag={(_, __, dragged) => { if (vowl) followSats(dragged) }}
@@ -463,13 +500,16 @@ function Inner({ p, setP }: EditorProps) {
             onConnectEnd={onConnectEnd}
             onNodeDoubleClick={(_, n) => { if (!readOnly && p.onto.classes[n.id]) setRenaming(n.id) }}
             onDoubleClick={e => { if (!readOnly && (e.target as HTMLElement).classList.contains('react-flow__pane')) startCreate(e.clientX, e.clientY) }}
-            onPaneClick={() => { setMenu(null); setCreating(null); wrap.current?.focus() }}
+            onPaneClick={() => { setMenu(null); setCreating(null); if (mobile) deselect(); else wrap.current?.focus() }}
             proOptions={{ hideAttribution: true }} fitViewOptions={{ padding: fitPad === 0.12 ? 0.2 : fitPad, maxZoom: 1 }}
           >
             <Background variant={BackgroundVariant.Dots} gap={22} size={1.4} />
-            <Controls showInteractive={false} position="bottom-left" />
-            <MiniMap pannable zoomable position="bottom-right" ariaLabel={t('ed.minimap')} nodeStrokeWidth={4} nodeColor={n => ((n.data as ClassNodeData)?.status === 'add' ? 'var(--ed-add)' : 'var(--accent)')} maskColor="var(--ed-mask)" />
+            {!mobile && <Controls showInteractive={false} position="bottom-left" />}
+            {!mobile && <MiniMap pannable zoomable position="bottom-right" ariaLabel={t('ed.minimap')} nodeStrokeWidth={4} nodeColor={n => ((n.data as ClassNodeData)?.status === 'add' ? 'var(--ed-add)' : 'var(--accent)')} maskColor="var(--ed-mask)" />}
           </ReactFlow>
+          {mobile && !sel && <div className="mcv-btns">
+            <button type="button" className="mfab" aria-label={t('mob.onto.fit')} title={t('mob.onto.fit')} data-testid="fit-all" onClick={fitAll}><Icon name="expand" /></button>
+          </div>}
 
           {rz.unsat.length > 0 && <div className="of-errors" role="status" data-testid="unsat-banner"><Icon name="triangle-exclamation" /><div className="grow"><b>{t('rz.banner', { n: rz.unsat.length })}</b></div><IconButton icon="xmark" label={t('ed.close')} onClick={clearReasonerFlags} /></div>}
           {errors.length > 0 && <div className="of-errors" role="alert"><Icon name="triangle-exclamation" /><div className="grow"><b>{t('ed.err.title')}</b><ul>{errors.slice(0, 4).map((m, i) => <li key={i}>{m}</li>)}</ul></div><IconButton icon="xmark" label={t('ed.close')} onClick={() => setErrors([])} /></div>}
@@ -516,13 +556,20 @@ function Inner({ p, setP }: EditorProps) {
           </aside>}
         </div>
 
-        {(inspOpen || (readOnly && sel)) && <aside className="of-insp-wrap" aria-label={t('ed.insp')} data-tour="ed-inspector">
+        {!mobile && (inspOpen || (readOnly && sel)) && <aside className="of-insp-wrap" aria-label={t('ed.insp')} data-tour="ed-inspector">
           {sel
             ? <Inspector onto={p.onto} sel={sel} lang={lang} readOnly={readOnly} icon={graph?.nodes.find(n => n.id === sel.iri)?.icon ?? null} apply={apply} select={s => (s?.kind === 'class' ? selectClass(s.iri, false) : s ? selectProp(s.iri) : setSel(null))} close={() => { setInspPref(false); setSel(null); setNodes(ns => ns.map(n => ({ ...n, selected: false }))); setEdges(es => es.map(e => ({ ...e, selected: false }))) }} />
             : <div className="of-insp-empty"><Icon name="hand-pointer" /><p>{selIds.size > 1 ? t('ed.insp.multi', { n: selIds.size }) : t('ed.insp.none')}</p></div>}
         </aside>}
       </div>
 
+      {mobile && sel && <FicheSheet p={p} setP={setP} iri={sel.iri} lang={lang} initial={startMode ? 'half' : 'peek'} startMode={startMode} onClose={deselect}
+        onOpen={i => (p.onto.classes[i] ? selectClass(i, false) : selectProp(i))} />}
+      {mobile && actionsFor && <NodeActions label={labelOf(p.onto.classes[actionsFor], actionsFor, lang)} canEdit={!roUser} onClose={() => setActionsFor(null)}
+        onView={() => selectClass(actionsFor, false)} onSub={() => { setStartMode('sub'); selectClass(actionsFor, false) }} onProp={() => { setStartMode('prop'); selectClass(actionsFor, false) }}
+        onCenter={() => { const n = rf.getNode(actionsFor); if (n) rf.setCenter(n.position.x + NODE_W / 2, n.position.y + NODE_H / 2, { zoom: Math.max(rf.getZoom(), 0.9), duration: reduced ? 0 : 300 }) }} />}
+      {mobile && <FilterSheet open={filtersOpen} onClose={() => setFiltersOpen(false)} filter={filter} setFilter={setFilter} mode={mode} setMode={setMode} show={show} setShow={setShow} legend={legend !== 'closed'} setLegend={b => setLegend(b ? 'open' : 'closed')}
+        count={shown ? t('ed.count', { n: shown.vm.nodes.length, m: shown.vm.edges.length, tn: shown.total.n, tm: shown.total.m }) : undefined} />}
       {!readOnly && <section className={'of-dslwrap' + (dslOpen ? ' open' : '')} data-tour="ed-quick">
         <button type="button" className="of-dslhead" aria-expanded={dslOpen} onClick={() => setDslOpen(o => !o)}><Icon name={dslOpen ? 'chevron-down' : 'chevron-up'} /><Icon name="bolt" /><b>{t('ed.dsl.title')}</b><small className="muted">{t('ed.dsl.sub')}</small></button>
         {dslOpen && <QuickInput pid={pid} hint={hint} onApplied={setP} onToast={toast} />}

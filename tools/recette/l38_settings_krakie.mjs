@@ -54,7 +54,9 @@ const ask = async (page, text, { wait = '.ag-msg.assistant .ag-bubble:not(.ag-do
 }
 // clic de souris sur le récif (seuls Krakie et le récif captent le clic), sinon Ctrl+K
 const openKrakie = async page => {
-  const vp = page.viewportSize(); await page.mouse.move(vp.width - 70, vp.height - 6); await sleep(150); await page.mouse.click(vp.width - 70, vp.height - 6)
+  const vp = page.viewportSize()
+  if (vp.width <= 700) { await page.locator('[data-testid=krakie-fab]').click(); await page.waitForSelector('.ag-sheet', { timeout: 5000 }); await sleep(500); return }   // L44 : sur téléphone, bouton fixe + feuille plein écran (plus d'aquarium)
+  await page.mouse.move(vp.width - 70, vp.height - 6); await sleep(150); await page.mouse.click(vp.width - 70, vp.height - 6)
   try { await page.waitForSelector('.ag-panel', { timeout: 2500 }) } catch { console.log('   (clic récif sans effet : repli Ctrl+K)'); await page.keyboard.press('Control+k'); await page.waitForSelector('.ag-panel', { timeout: 5000 }) }
   await sleep(400)
 }
@@ -80,7 +82,7 @@ const overlaps = async (pg, tag) => {
   const bad = await pg.evaluate(async () => {
     const sc = document.querySelector('main.content') ?? document.scrollingElement
     const out = []
-    for (const where of ['top', 'bottom']) {
+    for (const where of (innerWidth <= 700 ? ['bottom'] : ['top', 'bottom'])) {   // téléphone (L44) : le bouton fixe flotte, le contenu doit rester atteignable en fin de défilement
       sc.scrollTo({ top: where === 'top' ? 0 : 1e6 }); await new Promise(r => setTimeout(r, 200))
       const f = document.querySelector('.ag-fab')?.getBoundingClientRect(); if (!f) continue
       for (const el of document.querySelectorAll('.set-page button, .set-page a, .set-page input, .set-page select, .set-page th, .set-page td, .set-page p, .set-page h1, .set-page h2, .set-page h3')) {

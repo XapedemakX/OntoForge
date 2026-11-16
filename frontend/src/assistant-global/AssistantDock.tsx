@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { localName, type Project, type Target } from '../api'
-import { Button, Icon, IconButton, Krakie, Select } from '../kit'
+import { BottomSheet, Button, Icon, IconButton, Krakie, Select } from '../kit'
+import { useMobile } from '../shell/sidePref'
 import type { Pose } from '../krakie/Krakie'
 import { useI18n } from '../i18n'
 import { getAssistantContext, onAssistantContext, onAssistantOpen, type AssistantContext, type OpenAssistantOptions } from '../lib/assistantContext'
@@ -39,7 +40,9 @@ export function AssistantDock({ p, setP, target, screen, perimeter }: { p: Proje
   const [hover, setHover] = useState(false)
   const cursor = useRef<{ x: number; y: number } | null>(null)
   const aq = useAquariumSize()
+  const mobile = useMobile()   // L44 : bouton fixe de 56 px et feuille plein écran (pas d'aquarium)
   useAquariumFloor(screen)
+  useMobileLift(mobile, screen)
 
   useEffect(() => { setDeclared(getAssistantContext()); return onAssistantContext(setDeclared) }, [])  // l'écran a pu publier son contexte avant l'abonnement du panneau (Paramètres, L38)
   useEffect(() => { setMode('full'); setOneShot(null) }, [screen, cid])
@@ -97,9 +100,64 @@ export function AssistantDock({ p, setP, target, screen, perimeter }: { p: Proje
   const suggestions = (mode === 'none' ? [] : ctx.suggestions?.length ? ctx.suggestions : defaultSuggestions(screen, t)).slice(0, 4)
   const pendingActions = msgs.reduce((n, m) => n + (m.actions?.filter(a => (a.kind === 'ops' || a.kind === 'shapes') && (a.status ?? 'idle') === 'idle').length ?? 0), 0)
 
+  const ctxEl = (
+  <div className="ag-ctx" role="group" aria-label={t('ag.ctx')}>
+    <span className="muted">{t('ag.ctx')}</span>
+    {mode === 'none'
+      ? <button className="ag-chip off" onClick={() => setMode('full')}><Icon name="rotate-left" />{t('ag.ctx.restore')}</button>
+      : <>
+        <span className="ag-chip"><Icon name="location-dot" />{screenLabel}<button aria-label={t('ag.ctx.drop')} title={t('ag.ctx.drop')} onClick={() => setMode('none')}><Icon name="xmark" /></button></span>
+        {sel && (mode === 'full'
+          ? <span className="ag-chip sel"><Icon name="arrow-pointer" />{selText}<button aria-label={t('ag.ctx.dropSel')} title={t('ag.ctx.dropSel')} onClick={() => setMode('screen')}><Icon name="xmark" /></button></span>
+          : <button className="ag-chip off" onClick={() => setMode('full')}><Icon name="plus" />{t('ag.ctx.addSel', { label: sel.label || localName(sel.id) })}</button>)}
+      </>}
+  </div>
+  )
+  const logEl = (
+  <div className="ag-log" role="log" aria-live="polite">
+    {msgs.length === 0 && (
+      <div className="ag-hello"><Krakie pose="accueil" size={72} /><b>{t(p ? 'ag.hello' : 'ag.hello.settings')}</b><p className="muted">{t(p ? 'ag.hello.d' : 'ag.hello.settings.d')}</p></div>
+    )}
+    {msgs.map(m => (
+      <div key={m.id} className={'ag-msg ' + m.role + (m.error ? ' err' : '')}>
+        <div className="ag-bubble">
+          {m.content && <p>{m.content}</p>}
+          {m.warnings?.map((w, i) => <p key={i} className="ag-warn"><Icon name="circle-info" />{w}</p>)}
+          {m.doc && <DocResult doc={m.doc} />}
+          {p && m.doc && prop && prop.projectId === p.id && prop.doc?.id === m.doc.id && prop.items.length > 0 &&
+            <ProposalCards compact mine={prop} prefixes={p.onto.meta.prefixes} onEditor={() => go(p.id, 'ontologie')} />}
+          {m.actions && m.actions.length > 0 && <ActionCards pid={p?.id ?? ''} msgId={m.id} actions={m.actions} setP={setP} />}
+        </div>
+      </div>
+    ))}
+    {busy && <div className="ag-msg assistant"><div className="ag-bubble ag-dots" aria-label={t('asst.thinking')}><i /><i /><i /></div></div>}
+    <div ref={endRef} />
+  </div>
+  )
+  const composeEl = (
+  <div className="ag-compose">
+    {suggestions.length > 0 && !text && <div className="ag-sugg" role="group" aria-label={t('ag.suggestions')}>
+      {suggestions.map(s => <button key={s} className="ag-pill" disabled={busy} onClick={() => setText(s)}>{s}</button>)}</div>}
+    {p && docOpen && <DocImport compact p={p} setP={setP} provider={ui.provider || undefined} onBusy={setBusy} onClose={() => setDocOpen(false)} />}
+    <div className="ag-box">
+      <textarea ref={taRef} rows={2} value={text} placeholder={t(p ? 'ag.placeholder' : 'ag.placeholder.settings')} aria-label={t(p ? 'ag.placeholder' : 'ag.placeholder.settings')} onChange={e => setText(e.target.value)}
+        onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void send(text) } }} />
+      {p && <IconButton icon="file-import" label={t('doc.open')} aria-expanded={docOpen} disabled={busy} onClick={() => setDocOpen(o => !o)} />}
+      <Button variant="primary" icon="paper-plane" disabled={busy || !text.trim()} onClick={() => void send(text)}>{t('asst.send')}</Button>
+    </div>
+    <span className="muted ag-hint">{t('ag.hint')}</span>
+  </div>
+  )
+
   return (
     <>
-      {!ui.open && (
+      {!ui.open && mobile && (
+        <button className={'ag-fab mob' + (busy ? ' busy' : '')} data-tour="krakie-fab" data-testid="krakie-fab" onClick={() => open()} aria-label={t('ag.open.label')} title={t('ag.open.title')}>
+          <Krakie pose={pose} size={44} float={false} />
+          {pendingActions > 0 && <b className="ag-badge">{pendingActions}</b>}
+        </button>
+      )}
+      {!ui.open && !mobile && (
         <button className={'ag-fab' + (busy ? ' busy' : '')} data-tour="krakie-fab" onClick={() => open()} aria-label={t('ag.open.label')} title={t('ag.open.title')}
           onPointerEnter={() => setHover(true)} onPointerLeave={() => { setHover(false); cursor.current = null }}
           onPointerMove={e => { const r = e.currentTarget.getBoundingClientRect(); cursor.current = { x: (e.clientX - r.left) / aq.scale, y: (e.clientY - r.top) / aq.scale } }}>
@@ -107,7 +165,16 @@ export function AssistantDock({ p, setP, target, screen, perimeter }: { p: Proje
           {pendingActions > 0 && <b className="ag-badge">{pendingActions}</b>}
         </button>
       )}
-      {ui.open && (
+      {ui.open && mobile && (
+        <BottomSheet open onClose={() => setUi({ open: false })} title={t('ag.title')} initial="full" snaps={['full']} className="ag-sheet" testid="krakie-sheet"
+          heading={<span className="ag-mh"><Krakie pose={pose} size={32} float={busy} /><span><b>{t('ag.title')}</b><small className="muted">{busy ? t('asst.thinking') : t(p ? 'ag.sub' : 'ag.sub.settings')}</small></span></span>}
+          footer={composeEl}>
+          {ctxEl}
+          {msgs.length > 0 && <div className="ag-mact"><button type="button" className="btn sm ghost" onClick={() => setMsgs(cid, [])}><Icon name="eraser" />{t('asst.clear')}</button></div>}
+          {logEl}
+        </BottomSheet>
+      )}
+      {ui.open && !mobile && (
         <aside className="ag-panel" style={{ ['--ag-w' as string]: ui.width + 'px' }} role="dialog" aria-label={t('ag.title')}>
           <div className="ag-handle" role="separator" aria-orientation="vertical" aria-label={t('ag.resize')} tabIndex={0}
             onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onKeyDown={onHandleKey} />
@@ -122,50 +189,9 @@ export function AssistantDock({ p, setP, target, screen, perimeter }: { p: Proje
             <IconButton icon="xmark" label={t('common.close')} onClick={() => setUi({ open: false })} />
           </header>
 
-          <div className="ag-ctx" role="group" aria-label={t('ag.ctx')}>
-            <span className="muted">{t('ag.ctx')}</span>
-            {mode === 'none'
-              ? <button className="ag-chip off" onClick={() => setMode('full')}><Icon name="rotate-left" />{t('ag.ctx.restore')}</button>
-              : <>
-                <span className="ag-chip"><Icon name="location-dot" />{screenLabel}<button aria-label={t('ag.ctx.drop')} title={t('ag.ctx.drop')} onClick={() => setMode('none')}><Icon name="xmark" /></button></span>
-                {sel && (mode === 'full'
-                  ? <span className="ag-chip sel"><Icon name="arrow-pointer" />{selText}<button aria-label={t('ag.ctx.dropSel')} title={t('ag.ctx.dropSel')} onClick={() => setMode('screen')}><Icon name="xmark" /></button></span>
-                  : <button className="ag-chip off" onClick={() => setMode('full')}><Icon name="plus" />{t('ag.ctx.addSel', { label: sel.label || localName(sel.id) })}</button>)}
-              </>}
-          </div>
-
-          <div className="ag-log" role="log" aria-live="polite">
-            {msgs.length === 0 && (
-              <div className="ag-hello"><Krakie pose="accueil" size={72} /><b>{t(p ? 'ag.hello' : 'ag.hello.settings')}</b><p className="muted">{t(p ? 'ag.hello.d' : 'ag.hello.settings.d')}</p></div>
-            )}
-            {msgs.map(m => (
-              <div key={m.id} className={'ag-msg ' + m.role + (m.error ? ' err' : '')}>
-                <div className="ag-bubble">
-                  {m.content && <p>{m.content}</p>}
-                  {m.warnings?.map((w, i) => <p key={i} className="ag-warn"><Icon name="circle-info" />{w}</p>)}
-                  {m.doc && <DocResult doc={m.doc} />}
-                  {p && m.doc && prop && prop.projectId === p.id && prop.doc?.id === m.doc.id && prop.items.length > 0 &&
-                    <ProposalCards compact mine={prop} prefixes={p.onto.meta.prefixes} onEditor={() => go(p.id, 'ontologie')} />}
-                  {m.actions && m.actions.length > 0 && <ActionCards pid={p?.id ?? ''} msgId={m.id} actions={m.actions} setP={setP} />}
-                </div>
-              </div>
-            ))}
-            {busy && <div className="ag-msg assistant"><div className="ag-bubble ag-dots" aria-label={t('asst.thinking')}><i /><i /><i /></div></div>}
-            <div ref={endRef} />
-          </div>
-
-          <div className="ag-compose">
-            {suggestions.length > 0 && !text && <div className="ag-sugg" role="group" aria-label={t('ag.suggestions')}>
-              {suggestions.map(s => <button key={s} className="ag-pill" disabled={busy} onClick={() => setText(s)}>{s}</button>)}</div>}
-            {p && docOpen && <DocImport compact p={p} setP={setP} provider={ui.provider || undefined} onBusy={setBusy} onClose={() => setDocOpen(false)} />}
-            <div className="ag-box">
-              <textarea ref={taRef} rows={2} value={text} placeholder={t(p ? 'ag.placeholder' : 'ag.placeholder.settings')} aria-label={t(p ? 'ag.placeholder' : 'ag.placeholder.settings')} onChange={e => setText(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void send(text) } }} />
-              {p && <IconButton icon="file-import" label={t('doc.open')} aria-expanded={docOpen} disabled={busy} onClick={() => setDocOpen(o => !o)} />}
-              <Button variant="primary" icon="paper-plane" disabled={busy || !text.trim()} onClick={() => void send(text)}>{t('asst.send')}</Button>
-            </div>
-            <span className="muted ag-hint">{t('ag.hint')}</span>
-          </div>
+          {ctxEl}
+          {logEl}
+          {composeEl}
         </aside>
       )}
     </>
@@ -208,4 +234,19 @@ function useAquariumSize() {
   const [small, setSmall] = useState(() => !!window.matchMedia?.(q).matches)
   useEffect(() => { const mq = window.matchMedia?.(q); if (!mq) return; const f = () => setSmall(mq.matches); mq.addEventListener?.('change', f); return () => mq.removeEventListener?.('change', f) }, [])
   return small ? { w: 120, h: 90, scale: 1, rw: 120, rh: 22 } : { w: 134, h: 100, scale: 1.5, rw: 120, rh: 22 }
+}
+
+/** Téléphone (L44) : le bouton Krakie se range au-dessus d'une barre collée en bas (data-ag-lift : décision d'arbitrage, « Exécuter », mention « Sur ordinateur »). `--ag-lift` = distance du haut de la barre au bas de l'écran. */
+function useMobileLift(mobile: boolean, screen: string) {
+  useEffect(() => {
+    const root = document.documentElement
+    if (!mobile) { root.style.removeProperty('--ag-lift'); return }
+    const measure = () => {
+      let lift = 0
+      document.querySelectorAll<HTMLElement>('[data-ag-lift]').forEach(el => { const r = el.getBoundingClientRect(); if (r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < innerHeight) lift = Math.max(lift, innerHeight - r.top) })
+      root.style.setProperty('--ag-lift', `${Math.round(lift)}px`)
+    }
+    measure(); const id = setInterval(measure, 350); addEventListener('resize', measure)
+    return () => { clearInterval(id); removeEventListener('resize', measure); root.style.removeProperty('--ag-lift') }
+  }, [mobile, screen])
 }

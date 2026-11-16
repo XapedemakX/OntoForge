@@ -155,16 +155,15 @@ await r.page.getByTestId('side-toggle').click(); await sleep(150)
 log('5 reduced-motion : aucune transition, replié aussitôt', (await r.page.evaluate(() => getComputedStyle(document.querySelector('.shell')).transitionDuration)) === '0s' && (await w(r.page)) <= 58)
 await r.ctx.close()
 
-// ---------------- 6. mobile inchangé
+// ---------------- 6. téléphone (L44, D-L44-01) : plus de tiroir latéral, barre d'onglets en bas ; le détail est dans mobile_l44.mjs
 const m = await session({ width: 390, height: 844 })
 await m.page.addInitScript(() => { try { localStorage.setItem('ontoforge.side', 'closed') } catch {} })
-await goto(m.page, T, '.menu-btn')
-const mob = await m.page.evaluate(() => ({ toggle: !!document.querySelector('.side-toggle'), side: document.querySelector('.side').getBoundingClientRect(), h: document.documentElement.scrollWidth > innerWidth + 2, cls: document.querySelector('.shell').className }))
-log('6a mobile : pas de bouton de repli, tiroir hors écran, pas de classe collapsed', !mob.toggle && mob.side.right <= 1 && !mob.h && !/collapsed/.test(mob.cls), JSON.stringify(mob))
-await m.page.locator('.menu-btn').click(); await sleep(400)
-log('6b mobile : tiroir ouvert avec libellés et logo complet', await m.page.evaluate(() => { const s = document.querySelector('.side').getBoundingClientRect(); const l = document.querySelector('.side .lbl'); return s.left >= -1 && s.width > 240 && getComputedStyle(l).opacity === '1' && !!document.querySelector('.side .logo-word') }))
-await shot(m.page, '11-mobile-tiroir')
-log('6c mobile : pas d\'infobulle', (await m.page.locator('.side-tip').count()) === 0)
+await goto(m.page, T, '[data-testid=tabbar]')
+const mob = await m.page.evaluate(() => ({ toggle: !!document.querySelector('.side-toggle'), side: !!document.querySelector('.side'), menu: !!document.querySelector('.menu-btn'), h: document.documentElement.scrollWidth > innerWidth + 2, cls: document.querySelector('.shell').className }))
+log('6a téléphone : ni bouton de repli, ni tiroir, ni bouton menu, pas de classe collapsed, pas de débordement', !mob.toggle && !mob.side && !mob.menu && !mob.h && !/collapsed/.test(mob.cls), JSON.stringify(mob))
+log('6b téléphone : barre d\'onglets de 5 entrées en bas', (await m.page.locator('[data-testid=tabbar] [data-tab]').count()) === 5)
+await shot(m.page, '11-mobile-onglets')
+log('6c téléphone : pas d\'infobulle', (await m.page.locator('.side-tip').count()) === 0)
 await m.ctx.close()
 
 // ---------------- 7. anglais

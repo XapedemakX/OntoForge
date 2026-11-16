@@ -192,3 +192,21 @@ textarea.ol-inline { font-family: var(--sans); font-size: var(--fs-md); line-hei
   .ol-head-a { width: 100%; }
   .ol-usage { grid-template-columns: 1fr; gap: 4px; }
 }
+
+/* ---------- téléphone (L44) ---------- */
+.ol-m { display: flex; flex-direction: column; grid-template-columns: none; }
+.ol-m .mgbar { flex: none; }
+.ol-m .ol-left { flex: 1; width: 100%; border-right: 0; }
+.ol-m .ol-search { min-height: var(--tap); }
+.ol-m .ol-search input { padding: 0; font-size: 16px; min-height: var(--tap); }
+.ol-m .ol-tabs { grid-template-columns: 1fr 1fr; }
+.ol-m .ol-tabs button { min-height: var(--tap); }
+.ol-m .ol-trow { min-height: 52px; padding-right: 10px; }
+.ol-m .ol-trow .tg { width: 40px; height: 44px; font-size: 13px; }
+.ol-m .ol-trow .nm { min-height: 52px; font-size: 16px; }
+.ol-m .ol-trow .nm span { white-space: normal; overflow: visible; }
+.ol-m .ol-trow .cnt { min-height: 28px; font-size: 12px; }
+.ol-m .ol-flat button { min-height: 56px; }
+.ol-m .ol-flat .t b { white-space: normal; }
+.ol-m .ol-new { position: sticky; bottom: 0; background: var(--panel); }
+.ol-m .ol-new .btn { min-height: var(--tap); }

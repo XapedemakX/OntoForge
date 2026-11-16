@@ -18,6 +18,7 @@ export const ROUTE_SCREEN: Record<string, { name: string; aliases: string[] }> =
   assistant: { name: 'assistant', aliases: ['assistant'] },
   documentation: { name: 'documentation', aliases: ['documentation'] },
   parametres: { name: 'settings', aliases: ['settings'] },
+  plus: { name: 'mobile', aliases: ['mobile'] },
 }
 
 export type CtxMode = 'full' | 'screen' | 'none'

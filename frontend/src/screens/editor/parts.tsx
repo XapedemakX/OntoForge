@@ -41,7 +41,8 @@ export const ClassNode = memo(function ClassNode({ id, data, selected }: NodePro
       {d.status && d.pkey && d.onProposal && <span className="of-pbtn nodrag nopan">
         <button type="button" className="ok" aria-label={t('ed.prop.accept')} title={t('ed.prop.accept')} onClick={e => { e.stopPropagation(); d.onProposal!(d.pkey!, true) }}><Icon name="check" /></button>
         <button type="button" className="no" aria-label={t('ed.prop.reject')} title={t('ed.prop.reject')} onClick={e => { e.stopPropagation(); d.onProposal!(d.pkey!, false) }}><Icon name="xmark" /></button></span>}
-      {!d.readOnly && <Handle type="source" position={Position.Bottom} className="of-handle" title={t('ed.drag')} />}
+      {/* toujours rendue : React Flow ne trace une arête que si le nœud source a une poignée mesurée ; en lecture seule elle est inerte et invisible (CSS) */}
+      <Handle type="source" position={Position.Bottom} className={'of-handle' + (d.readOnly ? ' ro' : '')} title={d.readOnly ? undefined : t('ed.drag')} isConnectable={!d.readOnly} />
       <Handle type="target" position={Position.Top} className="of-handle-in" isConnectable={false} />
     </div>
   )
@@ -55,6 +56,7 @@ const boxOf = (n: InternalNode): Box => {
 export interface OfEdgeData extends Record<string, unknown> {
   kind: string; label: string; inverse?: string; offset: number; status?: 'add' | 'modify'; err?: boolean
   vowl?: boolean; chars?: string[]; deprecated?: boolean
+  near?: boolean; dim?: boolean   // téléphone : voisinage du nœud sélectionné en évidence, le reste estompé
 }
 export const OfEdge = memo(function OfEdge({ id, source, target, data, selected, markerEnd, markerStart }: EdgeProps) {
   const d = data as OfEdgeData
@@ -65,7 +67,7 @@ export const OfEdge = memo(function OfEdge({ id, source, target, data, selected,
   const g = edgeGeom(boxOf(s), boxOf(tg), d.offset, source === target)
   const { lx, ly } = g
   const pos = { transform: `translate(-50%,-50%) translate(${lx}px,${ly}px)` }
-  const cls = `of-edge ${d.kind} ${selected ? 'sel' : ''} ${d.status ?? ''} ${d.err ? 'err' : ''} ${d.deprecated ? 'dep' : ''}`
+  const cls = `of-edge ${d.kind} ${selected ? 'sel' : ''} ${d.status ?? ''} ${d.err ? 'err' : ''} ${d.deprecated ? 'dep' : ''} ${d.near ? 'near' : ''} ${d.dim ? 'dim' : ''}`
   if (d.vowl) {
     const prop = d.kind === 'objectProperty' || d.kind === 'datatypeProperty'
     const chars = (d.chars ?? []).map(c => t('ed.char.' + c).toLowerCase())
@@ -88,7 +90,7 @@ export const OfEdge = memo(function OfEdge({ id, source, target, data, selected,
     <>
       <BaseEdge id={id} path={g.path} markerEnd={markerEnd} className={cls} interactionWidth={16} />
       <EdgeLabelRenderer>
-        {showLabel && <div className={`of-elabel ${d.kind} ${selected ? 'sel' : ''} ${d.status ?? ''}`} style={pos}>
+        {showLabel && <div className={`of-elabel ${d.kind} ${selected ? 'sel' : ''} ${d.status ?? ''} ${d.near ? 'near' : ''} ${d.dim ? 'dim' : ''}`} style={pos}>
           {d.label}{d.inverse && <small> ⇄ {d.inverse}</small>}</div>}
         {d.kind === 'disjointWith' && <div className="of-disj" title="disjointWith" style={pos}>⟂</div>}
         {d.kind === 'equivalentClass' && !d.label && <div className="of-elabel equivalentClass" style={pos}>≡</div>}

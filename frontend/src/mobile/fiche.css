@@ -1,0 +1,30 @@
+/* Fiche du bas (L44) : mobile/Fiche.tsx */
+.fiche { display: flex; flex-direction: column; gap: 10px; }
+.fiche .iri { color: var(--muted); font-size: 12.5px; overflow-wrap: anywhere; }
+.fiche .desc { margin: 0; font-size: 15px; line-height: 1.45; }
+.fiche .desc.clamp { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.fiche .counts { display: flex; gap: 14px; flex-wrap: wrap; color: var(--muted); font-size: 14px; }
+.fiche .counts b { color: var(--ink); font-family: var(--mono); }
+.fiche .acts { display: flex; gap: 8px; flex-wrap: wrap; }
+.fiche .acts .btn { min-height: var(--tap); flex: 1 1 auto; justify-content: center; }
+.fiche .btn i { margin-right: 6px; } .fiche .btn i.fa-chevron-up { margin: 0 0 0 6px; }
+.fiche .fh { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 8px 0 0; }
+.fiche .fh .cnt { font-family: var(--mono); color: var(--ink); margin-left: 4px; }
+.fiche .cards { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: var(--r-md); overflow: hidden; }
+.fiche .cards li + li { border-top: 1px solid var(--line); }
+.fiche .card-row { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 52px; padding: 6px 12px; border: 0; background: none; text-align: left; cursor: pointer; color: var(--ink); }
+.fiche .card-row:active { background: var(--panel2); }
+.fiche .card-row .ci { color: var(--accent); width: 18px; text-align: center; }
+.fiche .card-row .tx { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.fiche .card-row .tx small { color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
+.fiche .card-row .chev { color: var(--muted); font-size: 12px; }
+.fiche .chiprow { display: flex; flex-direction: column; gap: 4px; }
+.fiche .chips { gap: 6px; }
+.mchip { min-height: 36px; padding: 4px 12px; border-radius: 18px; border: 1px solid var(--line-strong); background: var(--panel2); color: var(--ink); cursor: pointer; font-size: 14px; }
+.mchip.static { cursor: default; }
+.fiche .rules { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+.fiche .rules li { display: flex; gap: 8px; } .fiche .rules i { color: var(--muted); margin-top: 4px; }
+.fiche .small { font-size: 13px; margin: 0; }
+.addform { display: flex; flex-direction: column; gap: 10px; padding: 10px; border: 1px solid var(--accent); border-radius: var(--r-md); background: var(--accent-soft); }
+.addform .f { color: var(--ink); } .addform .seg button { min-height: var(--tap); flex: 1; }
+.addform .seg { display: flex; }

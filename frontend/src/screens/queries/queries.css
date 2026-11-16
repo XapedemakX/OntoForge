@@ -191,3 +191,19 @@ button.qc:hover, .qc.on { border-color: var(--accent); background: var(--accent-
 .qlocal-shacl { display: flex; flex-direction: column; gap: 4px; }
 .qlocal-res { margin: 0; padding-left: 18px; font-size: var(--fs-sm); }
 .qlocal .qt { display: inline-flex; align-items: center; gap: 6px; }
+
+/* ---------- téléphone (L44) ---------- */
+.is-mobile .qpage .page-head h1 { display: none; }
+.is-mobile .qpage .page-head { margin: 0; }
+.is-mobile .qep { flex: 1; } .is-mobile .qep select { width: 100%; }
+.is-mobile .qnl-form { flex-wrap: wrap; } .is-mobile .qnl-form input { flex: 1 1 100%; order: 3; } .is-mobile .qnl-form .btn { flex: 1; order: 4; justify-content: center; }
+.is-mobile .qbuilder.mob-off { display: none; }
+.is-mobile .qrun.mob { display: flex; position: sticky; bottom: 0; z-index: 3; padding: 8px 0; background: linear-gradient(to top, var(--bg) 70%, transparent); }
+.is-mobile .qrun.mob .btn.primary { flex: 1; min-height: 52px; justify-content: center; font-size: 16px; }
+.q-ro { margin: 0; padding: 10px; max-height: 180px; overflow: auto; background: var(--code-bg); border: 1px solid var(--line); border-radius: var(--r-md); white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12.5px; }
+.qcards { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.qcard { padding: 10px 12px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r-md); }
+.qcard dl { margin: 0; display: flex; flex-direction: column; gap: 4px; }
+.qcard dl > div { display: flex; flex-direction: column; } .qcard dt { font-size: 11.5px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.qcard dd { margin: 0; font-size: 15px; overflow-wrap: anywhere; } .qcard dd.uri { color: var(--accent); }
+.is-mobile .qright { order: 2; }

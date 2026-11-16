@@ -58,6 +58,7 @@ export const getState = () => state
 export const subscribe = (f: () => void) => { subs.add(f); return () => { subs.delete(f) } }
 
 const sleep = (ms: number) => new Promise<void>(r => setTimeout(r, ms))
+import { isMobileNow } from '../shell/sidePref'
 export const isMobile = () => window.matchMedia('(max-width: 900px)').matches
 
 export function markDone() { try { localStorage.setItem(DONE_KEY, '1') } catch { /* stockage indisponible */ } }
@@ -180,6 +181,7 @@ async function createDemo() {
 }
 
 function start(opts: StartOptions = {}) {
+  if (isMobileNow()) return Promise.resolve()   // L44 : la visite guidée vise le bandeau latéral, absent sur téléphone (elle reste sur ordinateur et tablette)
   if (!host) { pendingStart = opts; return Promise.resolve() }
   const steps = host.buildSteps()
   set({ ...IDLE, active: true, phase: 'running', steps, error: null })

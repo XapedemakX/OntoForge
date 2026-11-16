@@ -24,3 +24,19 @@ export function useMedia(q: string): boolean {
   useEffect(() => { const mq = matchMedia(q); const f = () => setM(mq.matches); f(); mq.addEventListener('change', f); return () => mq.removeEventListener('change', f) }, [q])
   return m
 }
+
+/** Mise en page « téléphone » (L44) : moins de 700 px de large, ou paysage de moins de 500 px de haut. L'iPad en portrait (768 px) garde la mise en page large avec des cibles tactiles. */
+export const MOBILE_Q = '(max-width: 700px), (max-height: 500px) and (orientation: landscape)'
+export const isMobileNow = () => typeof matchMedia !== 'undefined' && matchMedia(MOBILE_Q).matches
+export const useMobile = () => useMedia(MOBILE_Q)
+/** Pointeur grossier (doigt) : indépendant de la largeur. */
+export const useCoarse = () => useMedia('(pointer: coarse)')
+/** Pose la classe `is-mobile` sur <html> (les feuilles de style s'y accrochent) et la tient à jour. */
+export function initMobileClass() {
+  const mq = matchMedia(MOBILE_Q)
+  const f = () => document.documentElement.classList.toggle('is-mobile', mq.matches)
+  f(); mq.addEventListener('change', f)
+  // clavier virtuel ouvert : la barre d'onglets et le bouton Krakie s'effacent (classe `kb-open`)
+  const v = window.visualViewport
+  if (v) { const k = () => document.documentElement.classList.toggle('kb-open', mq.matches && v.height < innerHeight * 0.78); v.addEventListener('resize', k); k() }
+}

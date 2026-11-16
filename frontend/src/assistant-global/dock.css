@@ -85,3 +85,18 @@
   .ag-handle { display: none; }
   .ag-head select { max-width: 110px; }
 }
+
+/* ---------- téléphone (L44) : bouton fixe de 56 px, feuille plein écran ---------- */
+.ag-fab.mob { display: grid; place-items: center; }
+.ag-sheet .sheet-body { padding: 0; display: flex; flex-direction: column; }
+.ag-sheet .sheet-foot { display: block; padding: 8px 12px 10px; }
+.ag-sheet .ag-compose { padding: 0; border: 0; }
+.ag-sheet .ag-ctx { border-top: 1px solid var(--line); }
+.ag-sheet .ag-log { flex: none; overflow: visible; min-height: 0; padding: 12px; }
+.ag-sheet .ag-hint { display: none; }
+.ag-sheet .ag-box textarea { font-size: 16px; font-family: var(--sans); min-height: var(--tap); }
+.ag-sheet .ag-box .btn { min-height: var(--tap); }
+.ag-sheet .ag-pill { min-height: 36px; display: inline-flex; align-items: center; }
+.ag-mh { display: flex; align-items: center; gap: 10px; } .ag-mh span { display: flex; flex-direction: column; line-height: 1.15; } .ag-mh small { font-size: 12px; font-weight: 400; }
+.ag-mact { display: flex; justify-content: flex-end; padding: 4px 8px 0; }
+.ag-sheet .ag-chip button { width: 32px; height: 32px; }

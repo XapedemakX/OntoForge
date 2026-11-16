@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { api, localName } from '../../api'
-import { Button, EmptyState, Icon, useToast } from '../../kit'
+import { BottomSheet, Button, EmptyState, Icon, useToast } from '../../kit'
+import { useMobile } from '../../shell/sidePref'
+import { FicheSheet } from '../../mobile/Fiche'
 import { useT, useI18n, tr } from '../../i18n'
 import { openAssistant, useAssistantContext } from '../../lib/assistantContext'
 import type { ScreenProps } from '../../shell/types'
@@ -79,6 +81,16 @@ export function OntologyList({ p, setP }: ScreenProps) {
   useAssistantContext({ screen: 'ontology-list', projectId: p.id, target: p.target, selection: cur ? { kind: cur.kind, id: cur.iri, label } : null, suggestions, extra: { tab } }, [label, suggestions.join('|'), tab])
 
   const empty = Object.keys(onto.classes).length === 0 && Object.keys(onto.object_properties).length === 0
+  const mobile = useMobile()
+  if (mobile) return (   // L44 : liste pleine largeur, fiche dans une feuille du bas (modification limitée), bascule Graphe / Liste
+    <div className="ol ol-m" data-tour="ol">
+      <div className="mgbar"><div className="seg" role="group" aria-label={t('mob.onto.view')}>
+        <button type="button" aria-pressed="false" data-testid="view-graph" onClick={() => { location.hash = `#/projet/${encodeURIComponent(p.id)}/ontologie` }}>{t('mob.onto.graph')}</button>
+        <button type="button" aria-pressed="true" data-testid="view-list">{t('mob.onto.list')}</button></div></div>
+      <ListPane onto={onto} lang={lang} tab={tab} setTab={setTab} sel={cur?.iri ?? null} onSelect={select} icons={icons} onCreate={create} />
+      {cur && cur.kind !== 'individual' && <FicheSheet p={p} setP={setP} iri={cur.iri} lang={lang} initial="half" onClose={() => setSel(null)} onOpen={go} />}
+      {cur?.kind === 'individual' && <BottomSheet open onClose={() => setSel(null)} title={label} heading={label} icon="cube" initial="half" snaps={['half', 'full']}><IndividualSheet c={c} iri={cur.iri} /></BottomSheet>}
+    </div>)
   return (
     <div className={'ol' + (cur ? ' has-sel' : '')} data-tour="ol">
       <ListPane onto={onto} lang={lang} tab={tab} setTab={setTab} sel={cur?.iri ?? null} onSelect={select} icons={icons} onCreate={create} />

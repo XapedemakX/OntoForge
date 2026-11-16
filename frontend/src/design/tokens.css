@@ -31,6 +31,8 @@
   --r-sm: 4px; --r-md: 6px; --r-lg: 10px;
   --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px;
   --side-w: 236px; --head-h: 52px;
+  /* mobile (L44) */
+  --tap: 44px; --tabbar-h: 56px; --mhead-h: 52px; --r-sheet: 18px; --safe-top: env(safe-area-inset-top, 0px); --safe-bottom: env(safe-area-inset-bottom, 0px);
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {

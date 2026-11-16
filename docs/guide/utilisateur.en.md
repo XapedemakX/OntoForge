@@ -619,6 +619,52 @@ Krakie can show you around the tool in 21 steps (about 5 minutes). The screen di
 - Direct link: add `?tour=1` to the address, for example `#/projet/<id>/tableau?tour=1`.
 - Video recording: `window.ontoforgeTour.start()` (or `start({ demo: true })` to create the demo without asking), `goto(i)`, `next()`, `prev()`, `stop()` and `state()`.
 
+## On phone and tablet {#sur-telephone-et-tablette}
+
+OntoForge can be read and corrected with your fingers. On a phone (a screen 700 px wide or less, or landscape and under 500 px high) the application changes shape: a short header (back, project name, share), five tabs at the bottom and sheets that rise from the bottom of the screen. On a tablet (iPad in portrait included) the wide layout is kept, with larger touch targets. Nothing changes on a computer.
+
+![Phone: dashboard with "To do now", the four-line journey and the tab bar](img/en/mobile-accueil.png "The dashboard on a phone: 1 the short header, 2 what is left to do, 3 the five tabs.")
+
+### The five tabs {#telephone-onglets}
+
+- **Home**: what to do now, the journey in four lines (Design, Check, Transpose, Generate) and recent activity. The rest of the dashboard is folded under "More details".
+- **Ontology**: the graph, or the list ("List" / "Graph" button at the top). Your last choice is remembered.
+- **Queries**: a sentence in natural language, the guided sentence, and results as cards rather than tables.
+- **Arbitrate**: one card per point to decide; the badge tells how many are left.
+- **More**: the business map first, then the other screens (conformance, SHACL, target model, exports, versions, assistant), the documentation and the account. There is no side drawer any more.
+
+![Phone: More tab with the business map, the screens and the "On a computer" tag](img/en/mobile-plus.png "The More tab: 1 the business map, 2 screens reserved for a computer are tagged, 3 'Send me the link' at the bottom of the list.")
+
+### Sheets, graph and map {#telephone-fiches-graphe}
+
+- **Bottom sheet.** Tapping a class or a property opens a sheet that rises from the bottom: drag the handle to expand or close it, or tap the cross. It also works with a keyboard and a screen reader.
+- **Graph.** Pinch to zoom, drag to move the view, tap a node to open its sheet, long press for actions (view, centre, and for anyone who can edit the project, add a subclass or a property). Nodes do not move by accident; "Fit all" adjusts the view, search centres the node it finds and the legend folds away.
+- **Business map.** Same gestures: pinch, drag, tap for the sheet. It is read-only on a phone.
+
+![Phone: ontology graph, full labels, Fit all button](img/en/mobile-graphe.png "The graph under your fingers: 1 labels are not cut off, 2 the Fit all button.")
+
+### Editing from the phone {#telephone-modifier}
+
+A small fix can be made on the spot, from the sheet of a class or a property: **add a subclass**, **add a property** (attribute or relation), **rename** or **describe** (label and comment). These changes follow the same rules as elsewhere: optimistic locking (a conflict is reported if someone changed the project meanwhile), activity log. A project reader sees no editing button.
+
+![Phone: class sheet with the Subclass, Property and Rename or describe buttons](img/en/mobile-fiche.png "A class sheet: 1 add a subclass, 2 add a property, 3 rename or describe.")
+
+Heavy editing stays "On a computer": drawing in the graph, the Turtle file editor, the SHACL shapes grid, the business map in edit mode. These screens are tagged in "More", with a "Send me the link" button that shares the address (the phone's share sheet, or a copy to the clipboard).
+
+### Arbitrating with your thumb {#telephone-arbitrer}
+
+Each point to decide is a card: the recommendation is preselected, "Validate this choice" takes a decision with one tap, "Why this recommendation?" explains, "Skip" keeps the point for later. When several points follow the same rule, "Apply the recommendation to all N in the rule" decides them at once, with five seconds to undo. The "To arbitrate", "Lost" and "Done" pills filter the list.
+
+![Phone: arbitration card with the recommended option and the Validate this choice button](img/en/mobile-arbitrage.png "An arbitration card: 1 the recommended option, 2 Validate this choice.")
+
+### Krakie on a phone {#telephone-krakie}
+
+A 56 px round button stays above the tab bar (the aquarium is reserved for computers). It opens a full-screen panel with nothing cut off; the phone keyboard does not hide the input area. The guided tour is not offered on a phone: it targets the side bar, which does not exist at that screen size.
+
+### Reading comfort {#telephone-confort}
+
+Targets of at least 44 px, input fields at 16 px (the browser does not zoom on focus), light and dark, French and English, no horizontal scrolling, reduced animations when the phone asks for it (`prefers-reduced-motion`). The `tools/recette/mobile_l44.mjs` (iPhone 15, Pixel 7, iPad mini) and `mobile_audit.mjs` recipes check it.
+
 ## 18. Easter egg {#easter-egg}
 
 OntoForge hides a small game with Krakie. It has nothing to do with ontology work and touches none of your project data. A discreet hint is hidden in the Settings page: finding it is up to you. The game is played with the keyboard or a finger, pauses by itself when the tab is hidden, respects the "reduce motion" preference and quits with Esc.

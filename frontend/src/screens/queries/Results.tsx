@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import cytoscape from 'cytoscape'
 import { Button, EmptyState, Icon, SeverityBadge, Tabs } from '../../kit'
 import { useT, tr } from '../../i18n'
+import { useMobile } from '../../shell/sidePref'
 import { download } from '../../ui'
 import type { Cell, RunResult } from './qapi'
 
@@ -13,6 +14,7 @@ function csvOf(r: RunResult): string {
 
 export function Results({ res, busy, error, ranOnce }: { res: RunResult | null; busy: boolean; error: string | null; ranOnce: boolean }) {
   const t = useT()
+  const mob = useMobile()
   const [view, setView] = useState<'table' | 'graph'>('table')
   const [sort, setSort] = useState<{ col: string; desc: boolean } | null>(null)
   useEffect(() => setSort(null), [res])
@@ -42,6 +44,8 @@ export function Results({ res, busy, error, ranOnce }: { res: RunResult | null; 
       {busy && <p className="muted qres-empty"><Icon name="spinner" className="fa-spin" /> {t('q.running')}</p>}
       {!error && res && view === 'table' && (res.rows.length === 0
         ? <EmptyState pose="loupe" title={t('q.res.none.title')}>{t('q.res.none.body')}</EmptyState>
+        : mob ? <ul className="qcards" data-testid="qcards">{rows.slice(0, 200).map((r, i) => <li key={i} className="qcard"><dl>{res.columns.map(c => { const v = r[c]; return <div key={c}><dt>{c}</dt><dd className={v?.type === 'uri' ? 'uri' : ''} title={v?.value}>{short(v) || '—'}{v?.['xml:lang'] && <sup>{v['xml:lang']}</sup>}</dd></div> })}</dl></li>)}
+            {rows.length > 200 && <li className="muted">{t('mob.q.more', { n: rows.length - 200 })}</li>}</ul>
         : <div className="qtable-wrap"><table className="qtable"><thead><tr>
             {res.columns.map(c => <th key={c} aria-sort={sort?.col === c ? (sort.desc ? 'descending' : 'ascending') : 'none'}><button type="button" onClick={() => setSort(s => (s?.col === c ? { col: c, desc: !s.desc } : { col: c, desc: false }))}>{c}<Icon name={sort?.col === c ? (sort.desc ? 'sort-down' : 'sort-up') : 'sort'} /></button></th>)}
           </tr></thead><tbody>

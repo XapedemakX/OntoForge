@@ -75,3 +75,15 @@
 .bm-preview { position: absolute; left: 12px; top: 12px; z-index: 6; max-width: 360px; background: var(--panel); border: 1px solid var(--accent); border-radius: var(--r-md); box-shadow: var(--shadow-pop); padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
 .bm-preview ul { margin: 0; padding-left: 18px; max-height: 220px; overflow: auto; }
 .bm-prev-btns { display: flex; gap: 6px; }
+
+/* ---------- téléphone (L44) : la carte occupe l'écran, fiche dans une feuille du bas ---------- */
+.is-mobile .bm-bar { gap: 8px; padding: 8px 10px; }
+.is-mobile .bm-h, .is-mobile .bm-expwrap, .is-mobile .bm-state, .is-mobile .bm-gen { display: none; }
+.is-mobile .bm-bar .seg button { min-height: var(--tap); }
+.is-mobile .bm-search { flex: 1 1 100%; order: 3; }
+.is-mobile .bm-scsel { flex: 1; min-width: 0; min-height: var(--tap); }
+.is-mobile .bm-warn { font-size: 12px; padding: 3px 10px; }
+.is-mobile .bm-body { flex-direction: column; }
+.is-mobile .bm-canvas { flex: 1; height: auto; min-height: 0; }
+.is-mobile .bm-zoom { right: auto; left: 10px; bottom: 12px; }
+.is-mobile .bm-zoom button { min-width: var(--tap); min-height: var(--tap); }
