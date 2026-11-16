@@ -17,6 +17,7 @@
 | git | Versionnage, CI, livraisons | .claude/agents/git-release.md | — |
 | deploy | Déploiement (Cloud Run, ontoforge.ajlx.fr) | .claude/agents/deploiement.md | — |
 | secu | Cybersécurité (vulnérabilités, OWASP, secrets, dépendances) | .claude/agents/cybersecurite.md | — |
+| web | Application web (version déployée : écrans, tailles, thèmes, CSP, parité locale / en ligne) — modèle Opus | .claude/agents/appli-web.md | — |
 
 ## Cycle d'un lot
 1. **Contrat** — `lots/Lx.md` (chef) : objectif, livrables, fichiers possédés par agent, critères d'acceptation vérifiables (commandes de test, entrées → sorties attendues), relecteurs.
@@ -74,6 +75,7 @@ Au minimum : au démarrage, à chaque verdict de revue (avec `to` = pilote), à 
 | Documentation | doc (exactitude) | humain (style), puis doc vérifie que le sens n'a pas bougé |
 | Livraison | chef + git (CI verte, tag) | — |
 | Déploiement / sécurité réseau | deploy + secu + query (SSRF) + scout (connexion) | doc |
+| Front, écrans, CSS, CSP, Dockerfile Cloud Run (tout ce qui change l'interface en ligne) | web + scout (UX) + secu si CSP/cookies/auth | doc, humain |
 | Tout lot qui touche aux entrées utilisateur, fichiers, appels sortants, secrets, authentification ou à l'assistant LLM | secu (revue-securite.md) + expert du domaine | doc |
 
 Un lot n'est clos qu'avec : tests verts, verdicts OK des relecteurs, `journal/<lot>/doc-ok.md`, passage de l'humaniseur sur la doc du lot, puis push par l'agent git.
