@@ -7,3 +7,4 @@ Outil de conception d'ontologies OWL 2 / SHACL et de transposition vers des prop
 - Contrats de lot : lots/ — Journal (revues, corrections, décisions, questions à Jerem) : journal/
 - Lancer : `docker compose up --build` puis http://localhost:8088 — Tests backend : `cd backend && pytest -q`
 - Doc et messages en français, code en anglais. Toute API externe non confirmée est marquée `À VÉRIFIER`.
+- Mémoire long terme : coffre Obsidian de Jerem géré par claude-obsidian (`wiki/hot.md` puis `wiki/index.md` en début de session quand le PC est relié ; écrire seulement par transaction claude-obsidian, jamais d'édition directe ; rien de sensible ni de détail d'audit).
