@@ -1,0 +1,2670 @@
+{
+ "mode": "web",
+ "at": "2026-11-16T00:54:19.603Z",
+ "devices": {
+  "iphone15-clair": {
+   "viewport": {
+    "width": 393,
+    "height": 659
+   },
+   "screens": {
+    "00-connexion": {
+     "vw": 393,
+     "vh": 659,
+     "pageW": 393,
+     "hOverflow": false,
+     "interactive": 5,
+     "small": 5,
+     "smallList": [
+      "FR 39×32",
+      "EN 40×32",
+      "INPUT 325×42",
+      "INPUT 325×42",
+      "Afficher le mot de passe 42×42"
+     ],
+     "tinyFont": [],
+     "cut": [],
+     "offRight": [],
+     "krakieHides": [],
+     "textBlocks": 6,
+     "words": 27,
+     "headerH": 0,
+     "errors": []
+    },
+    "01-projets": {
+     "vw": 393,
+     "vh": 659,
+     "pageW": 393,
+     "hOverflow": false,
+     "interactive": 16,
+     "small": 15,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Aucun endpoint SPARQL 32×22",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Ex. Maintenance flotte 240×27",
+      "Projet vide Exemple : Automaint (automai 280×27",
+      "Créer le projet 113×30",
+      "Mes projets 96×28",
+      "Partagés avec moi 135×28",
+      "Tous 53×28",
+      "Renommer 35×30",
+      "Ajouter une description 145×22"
+     ],
+     "tinyFont": [
+      "Ex. Maintenance flotte 11.5px",
+      "Projet vide Exemple : Automaint (automai 11.5px"
+     ],
+     "cut": [],
+     "offRight": [],
+     "krakieHides": [],
+     "textBlocks": 11,
+     "words": 113,
+     "headerH": 52,
+     "errors": []
+    },
+    "02-menu-tiroir": {
+     "vw": 393,
+     "vh": 659,
+     "pageW": 393,
+     "hOverflow": false,
+     "interactive": 34,
+     "small": 29,
+     "smallList": [
+      "OntoForge 140×30",
+      "Tous les projets 263×32",
+      "Tableau de bord 263×32",
+      "Ontologie 263×32",
+      "Vue liste 263×32",
+      "Carte métier 263×32",
+      "Shapes 263×32",
+      "Fichiers 263×32",
+      "Conformité 263×32",
+      "SHACL 263×32",
+      "Analyse & arbitrage 263×32",
+      "Modèle cible 263×32",
+      "Exports 263×32",
+      "Versions 263×32",
+      "Administration 263×32",
+      "Paramètres 263×32",
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Arbitrer 73×30"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px"
+     ],
+     "cut": [
+      "Périmètre"
+     ],
+     "offRight": [],
+     "krakieHides": [
+      "Fermer (4 %)",
+      "2 Vérifier OWL 2 DL : conforme · 11 shap (20 %)",
+      "3 Transposer 42 à arbitrer ou perdus (Cu (14 %)"
+     ],
+     "textBlocks": 36,
+     "words": 229,
+     "headerH": 115,
+     "errors": []
+    },
+    "03-tableau": {
+     "vw": 393,
+     "vh": 659,
+     "pageW": 393,
+     "hOverflow": false,
+     "interactive": 17,
+     "small": 13,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Arbitrer 73×30"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px"
+     ],
+     "cut": [
+      "Périmètre"
+     ],
+     "offRight": [],
+     "krakieHides": [
+      "2 Vérifier OWL 2 DL : conforme · 11 shap (20 %)",
+      "3 Transposer 42 à arbitrer ou perdus (Cu (14 %)"
+     ],
+     "textBlocks": 13,
+     "words": 229,
+     "headerH": 115,
+     "errors": []
+    },
+    "04-ontologie": {
+     "vw": 393,
+     "vh": 659,
+     "pageW": 393,
+     "hOverflow": false,
+     "interactive": 47,
+     "small": 46,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Afficher l'arbre des classes 35×30",
+      "Chercher une classe 130×30",
+      "Hiérarchie 88×28",
+      "Relations 82×28",
+      "Tout 52×28",
+      "Classique 86×28",
+      "Notation VOWL 116×28",
+      "Afficher 81×22",
+      "Légende 83×22",
+      "Exporter 85×22",
+      "Déplier la légende 35×30",
+      "Fermer la légende 35×30",
+      "Client 59×18",
+      "Code défaut 59×18",
+      "Véhicule électrique 59×18",
+      "Moteur 59×18",
+      "Carburant 59×18",
+      "Garage 59×18"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px",
+      "Chercher une classe 13.5px"
+     ],
+     "cut": [
+      "Périmètre",
+      "Code défaut",
+      "Carburant",
+      "Moteur thermique",
+      "Plan d'entretien",
+      "Relevé kilométrique",
+      "Organisation",
+      "Personne",
+      "Ordre de réparation",
+      "Opération de service",
+      "Technicien"
+     ],
+     "offRight": [
+      "Plan d'entretien (x 362→420)",
+      "Pièce (x 361→419)",
+      "Référence de pièce (x 392→451)"
+     ],
+     "krakieHides": [
+      "Garage (56 %)"
+     ],
+     "textBlocks": 24,
+     "words": 119,
+     "headerH": 115,
+     "errors": [],
+     "gestures": {
+      "pan": true,
+      "panTf": [
+       "translate(-133.8px, 57.7px) scale(0.3)",
+       "translate(-53.8px, 117.7px) scale(0.3)"
+      ],
+      "pinch": true,
+      "pinchTf": [
+       "translate(-53.8px, 117.7px) scale(0.3)",
+       "translate(-554.4px, 26.85px) scale(0.9)"
+      ],
+      "nodeBox": {
+       "w": 176,
+       "h": 47
+      },
+      "tapSelected": true,
+      "tapTextDelta": 1435,
+      "longPressMenu": false
+     }
+    },
+    "05-ontologie-liste": {
+     "vw": 393,
+     "vh": 659,
+     "pageW": 393,
+     "hOverflow": false,
+     "interactive": 33,
+     "small": 30,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Rechercher par nom ou IRI 324×35",
+      "Classes 24 183×31",
+      "Propriétés objet 25 183×31",
+      "https://w3id.org/ontoforge/automaint#Fue 359×28",
+      "https://w3id.org/ontoforge/automaint#Dia 324×28",
+      "https://w3id.org/ontoforge/automaint#War 324×28",
+      "https://w3id.org/ontoforge/automaint#Veh 324×28",
+      "Replier 18×15",
+      "https://w3id.org/ontoforge/automaint#Eng 290×28",
+      "https://w3id.org/ontoforge/automaint#Ele 345×28",
+      "https://w3id.org/ontoforge/automaint#Int 345×28",
+      "https://w3id.org/ontoforge/automaint#Ser 324×28",
+      "https://w3id.org/ontoforge/automaint#Rep 324×28",
+      "Replier 18×15",
+      "https://w3id.org/ontoforge/automaint#Par 290×28",
+      "Replier 18×15",
+      "https://w3id.org/ontoforge/automaint#Org 310×28",
+      "Nouvelle classe 369×30"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px",
+      "Rechercher par nom ou IRI 14px"
+     ],
+     "cut": [
+      "Périmètre"
+     ],
+     "offRight": [],
+     "krakieHides": [
+      "https://w3id.org/ontoforge/automaint#Ser (4 %)",
+      "https://w3id.org/ontoforge/automaint#Rep (24 %)",
+      "https://w3id.org/ontoforge/automaint#Par (15 %)",
+      "https://w3id.org/ontoforge/automaint#Org (21 %)",
+      "Nouvelle classe (29 %)"
+     ],
+     "textBlocks": 23,
+     "words": 138,
+     "headerH": 115,
+     "errors": []
+    },
+    "06-carte-metier": {
+     "vw": 393,
+     "vh": 659,
+     "pageW": 393,
+     "hOverflow": false,
+     "interactive": 17,
+     "small": 16,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Ontologie 85×28",
+      "Modèle cible 101×28",
+      "Scénario actif 130×30",
+      "Exporter 85×22"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px",
+      "Scénario actif 13.5px"
+     ],
+     "cut": [
+      "Périmètre"
+     ],
+     "offRight": [],
+     "krakieHides": [],
+     "textBlocks": 7,
+     "words": 401,
+     "headerH": 115,
+     "errors": [],
+     "gestures": {
+      "pan": true,
+      "panTf": [
+       "translate(-31.857142857142854 -79.21428571428572) scale(0.45)",
+       "translate(48.14286095755441 -19.214285714285722) scale(0.45)"
+      ],
+      "pinch": false,
+      "pinchTf": [
+       "translate(48.14286095755441 -19.214285714285722) scale(0.45)",
+       "translate(-111.8571390424456 -19.214285714285722) scale(0.45)"
+      ],
+      "nodeBox": {
+       "w": 32,
+       "h": 32
+      },
+      "tapSelected": true,
+      "tapTextDelta": 226,
+      "longPressMenu": false,
+      "note": "échelle inchangée (0,45) : le second doigt déplace la vue"
+     }
+    },
+    "07-analyse": {
+     "vw": 393,
+     "vh": 659,
+     "pageW": 393,
+     "hOverflow": false,
+     "interactive": 19,
+     "small": 17,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Réanalyser 116×30",
+      "Accepter toutes les recommandations 258×30",
+      "INPUT 13×13",
+      "Filtrer (règle, sujet, texte)… 260×30",
+      "Appliquer la recommandation à toute la r 286×22"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px",
+      "Filtrer (règle, sujet, texte)… 13.5px"
+     ],
+     "cut": [
+      "Périmètre"
+     ],
+     "offRight": [],
+     "krakieHides": [
+      "▸ O06 Propriété transitive 1 constat(s)  (22 %)",
+      "Appliquer la recommandation à toute la r (19 %)"
+     ],
+     "textBlocks": 24,
+     "words": 318,
+     "headerH": 115,
+     "errors": []
+    },
+    "08-modele": {
+     "vw": 393,
+     "vh": 659,
+     "pageW": 393,
+     "hOverflow": false,
+     "interactive": 17,
+     "small": 16,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Carte métier 109×22",
+      "Zoom avant 30×28",
+      "Zoom arrière 30×28",
+      "Ajuster 59×28"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px"
+     ],
+     "cut": [
+      "Périmètre"
+     ],
+     "offRight": [],
+     "krakieHides": [],
+     "textBlocks": 7,
+     "words": 267,
+     "headerH": 115,
+     "errors": []
+    },
+    "09-exports": {
+     "vw": 393,
+     "vh": 659,
+     "pageW": 393,
+     "hOverflow": false,
+     "interactive": 25,
+     "small": 24,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Régénérer 88×30",
+      "Télécharger le zip 132×30",
+      "Connector.cs 367×28",
+      "Edges.cs 367×28",
+      "README-curiosity.md 367×28",
+      "README-graphql.md 367×28",
+      "RegisterSchema.cs 367×28",
+      "Schema.cs 367×28",
+      "rapport-transposition.md 367×28",
+      "schema.graphql 367×28",
+      "Copier 52×22",
+      "Télécharger 81×22"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px"
+     ],
+     "cut": [
+      "Périmètre"
+     ],
+     "offRight": [],
+     "krakieHides": [],
+     "textBlocks": 12,
+     "words": 188,
+     "headerH": 120,
+     "errors": []
+    },
+    "10-requetes": {
+     "vw": 393,
+     "vh": 659,
+     "pageW": 393,
+     "hOverflow": false,
+     "interactive": 21,
+     "small": 15,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Endpoint SPARQL 184×30",
+      "Tableau 74×34",
+      "Graphe 68×34"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px",
+      "Endpoint SPARQL 13.5px"
+     ],
+     "cut": [
+      "Périmètre",
+      "Endpoint SPARQL"
+     ],
+     "offRight": [],
+     "krakieHides": [
+      "Pas de version guidée (prédicat « iri »  (16 %)",
+      "Pas de version guidée (opérateur « Exten (22 %)"
+     ],
+     "textBlocks": 16,
+     "words": 208,
+     "headerH": 115,
+     "errors": []
+    },
+    "11-assistant": {
+     "vw": 393,
+     "vh": 659,
+     "pageW": 393,
+     "hOverflow": false,
+     "interactive": 25,
+     "small": 20,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Fournisseur 150×28",
+      "Configurer un fournisseur dans Paramètre 290×35",
+      "Quelles propriétés manquent à mes classe 361×37",
+      "Amorcer depuis un document 199×22",
+      "Générer les shapes 142×22",
+      "Expliquer un constat 150×22",
+      "Proposer des alignements SKOS / schema.o 288×22",
+      "Joindre un fichier 133×22"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px",
+      "Fournisseur 12.5px",
+      "Décris le domaine ou pose une question… 13.5px"
+     ],
+     "cut": [
+      "Périmètre"
+     ],
+     "offRight": [],
+     "krakieHides": [],
+     "textBlocks": 9,
+     "words": 163,
+     "headerH": 115,
+     "errors": []
+    },
+    "12-versions": {
+     "vw": 393,
+     "vh": 659,
+     "pageW": 393,
+     "hOverflow": false,
+     "interactive": 15,
+     "small": 14,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Version de Neo4j 190×30",
+      "Version de Cypher 190×30"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px",
+      "Version de Neo4j 13.5px",
+      "Version de Cypher 13.5px"
+     ],
+     "cut": [
+      "Périmètre"
+     ],
+     "offRight": [],
+     "krakieHides": [],
+     "textBlocks": 18,
+     "words": 412,
+     "headerH": 115,
+     "errors": []
+    },
+    "13-shacl": {
+     "vw": 393,
+     "vh": 659,
+     "pageW": 393,
+     "hOverflow": false,
+     "interactive": 18,
+     "small": 17,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Générer depuis l'ontologie 212×30",
+      "Voir en Turtle 129×30",
+      "Shapes (11) 97×34",
+      "Validation de données 163×34",
+      "Turtle 60×34"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px"
+     ],
+     "cut": [
+      "Périmètre"
+     ],
+     "offRight": [],
+     "krakieHides": [],
+     "textBlocks": 11,
+     "words": 123,
+     "headerH": 120,
+     "errors": []
+    },
+    "14-fichiers": {
+     "vw": 393,
+     "vh": 659,
+     "pageW": 393,
+     "hOverflow": false,
+     "interactive": 22,
+     "small": 20,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "onto.ttl 82×30",
+      "shapes.ttl 96×30",
+      "decisions.json 121×30",
+      "generated/Connector.cs 134×30",
+      "onto.ttl 62×38",
+      "Fermer onto.ttl 26×21",
+      "Demander à Krakie 142×22",
+      "PROBLÈMES 0 1 393×30"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px"
+     ],
+     "cut": [
+      "Périmètre"
+     ],
+     "offRight": [
+      "generated/Connector.cs (x 305→439)"
+     ],
+     "krakieHides": [
+      "PROBLÈMES 0 1 (22 %)",
+      "Propriété objet hasMileageReading : labe (31 %)"
+     ],
+     "textBlocks": 73,
+     "words": 275,
+     "headerH": 120,
+     "errors": []
+    },
+    "20-krakie-ouvert": {
+     "vw": 393,
+     "vh": 659,
+     "pageW": 393,
+     "hOverflow": false,
+     "interactive": 24,
+     "small": 20,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Arbitrer 73×30",
+      "Fournisseur 108×30",
+      "Ouvrir en plein écran 35×30",
+      "Fermer 35×30",
+      "Retirer le contexte 20×20",
+      "Que dois-je faire ensuite ? 168×29",
+      "Ajoute la classe Pneu sous Pièce 204×29",
+      "Amorcer depuis un document 35×30"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px",
+      "Fournisseur 13.5px",
+      "Ex. ajoute la classe Pneu sous Pièce ave 12px"
+     ],
+     "cut": [
+      "Périmètre"
+     ],
+     "offRight": [],
+     "krakieHides": [],
+     "textBlocks": 20,
+     "words": 312,
+     "headerH": 115,
+     "fabBlocked": "<button role=\"listitem\" class=\"step ok\">…</button> from",
+     "errors": []
+    },
+    "21-partage": {
+     "vw": 393,
+     "vh": 659,
+     "pageW": 393,
+     "hOverflow": false,
+     "interactive": 21,
+     "small": 17,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Fermer 35×30",
+      "identifiant de l'autre utilisateur 182×27",
+      "Lecteur Éditeur 75×27",
+      "Aide : partager un projet 170×22",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Arbitrer 73×30"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px",
+      "identifiant de l'autre utilisateur 11.5px",
+      "Lecteur Éditeur 11.5px"
+     ],
+     "cut": [
+      "Périmètre"
+     ],
+     "offRight": [],
+     "krakieHides": [
+      "2 Vérifier OWL 2 DL : conforme · 11 shap (20 %)",
+      "3 Transposer 42 à arbitrer ou perdus (Cu (14 %)"
+     ],
+     "textBlocks": 23,
+     "words": 312,
+     "headerH": 115,
+     "errors": []
+    },
+    "22-parametres": {
+     "vw": 393,
+     "vh": 659,
+     "pageW": 393,
+     "hOverflow": false,
+     "interactive": 17,
+     "small": 11,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Ajouter un fournisseur 185×30",
+      "Tester la connexion 143×22",
+      "Modifier le fournisseur Mock (démonstrat 82×22"
+     ],
+     "tinyFont": [],
+     "cut": [],
+     "offRight": [
+      "Affichage (x 344→425)"
+     ],
+     "krakieHides": [],
+     "textBlocks": 9,
+     "words": 67,
+     "headerH": 73,
+     "errors": []
+    },
+    "23-administration": {
+     "vw": 393,
+     "vh": 659,
+     "pageW": 393,
+     "hOverflow": false,
+     "interactive": 14,
+     "small": 14,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Comptes 80×34",
+      "Journal d'administration 172×34",
+      "prenom.nom 343×27",
+      "Laisser vide pour en générer un 343×23",
+      "Afficher la saisie 13×13",
+      "INPUT 13×13"
+     ],
+     "tinyFont": [
+      "prenom.nom 11.5px",
+      "Laisser vide pour en générer un 11.5px"
+     ],
+     "cut": [],
+     "offRight": [],
+     "krakieHides": [],
+     "textBlocks": 12,
+     "words": 186,
+     "headerH": 73,
+     "errors": []
+    }
+   }
+  },
+  "pixel7-clair": {
+   "viewport": {
+    "width": 412,
+    "height": 839
+   },
+   "screens": {
+    "00-connexion": {
+     "vw": 412,
+     "vh": 839,
+     "pageW": 412,
+     "hOverflow": false,
+     "interactive": 5,
+     "small": 5,
+     "smallList": [
+      "FR 39×32",
+      "EN 40×32",
+      "INPUT 344×42",
+      "INPUT 344×42",
+      "Afficher le mot de passe 42×42"
+     ],
+     "tinyFont": [],
+     "cut": [],
+     "offRight": [],
+     "krakieHides": [],
+     "textBlocks": 6,
+     "words": 27,
+     "headerH": 0,
+     "errors": []
+    },
+    "01-projets": {
+     "vw": 412,
+     "vh": 839,
+     "pageW": 412,
+     "hOverflow": false,
+     "interactive": 17,
+     "small": 16,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Aucun endpoint SPARQL 32×22",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Ex. Maintenance flotte 240×27",
+      "Projet vide Exemple : Automaint (automai 280×27",
+      "Créer le projet 113×30",
+      "Mes projets 96×28",
+      "Partagés avec moi 135×28",
+      "Tous 53×28",
+      "Renommer 35×30",
+      "Ajouter une description 145×22",
+      "Supprimer 95×22"
+     ],
+     "tinyFont": [
+      "Ex. Maintenance flotte 11.5px",
+      "Projet vide Exemple : Automaint (automai 11.5px"
+     ],
+     "cut": [],
+     "offRight": [],
+     "krakieHides": [],
+     "textBlocks": 22,
+     "words": 113,
+     "headerH": 52,
+     "errors": []
+    },
+    "02-menu-tiroir": {
+     "vw": 412,
+     "vh": 839,
+     "pageW": 412,
+     "hOverflow": false,
+     "interactive": 38,
+     "small": 32,
+     "smallList": [
+      "OntoForge 140×30",
+      "Tous les projets 263×32",
+      "Tableau de bord 263×32",
+      "Ontologie 263×32",
+      "Vue liste 263×32",
+      "Carte métier 263×32",
+      "Shapes 263×32",
+      "Fichiers 263×32",
+      "Conformité 263×32",
+      "SHACL 263×32",
+      "Analyse & arbitrage 263×32",
+      "Modèle cible 263×32",
+      "Exports 263×32",
+      "Versions 263×32",
+      "Requêtes 263×32",
+      "Assistant 263×32",
+      "Documentation 263×32",
+      "Administration 263×32",
+      "Paramètres 263×32",
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px"
+     ],
+     "cut": [
+      "Périmètre"
+     ],
+     "offRight": [],
+     "krakieHides": [
+      "Fermer (3 %)",
+      "4 Générer Dernière : Curiosity (10 %)"
+     ],
+     "textBlocks": 44,
+     "words": 249,
+     "headerH": 115,
+     "errors": []
+    },
+    "03-tableau": {
+     "vw": 412,
+     "vh": 839,
+     "pageW": 412,
+     "hOverflow": false,
+     "interactive": 18,
+     "small": 13,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Arbitrer 73×30"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px"
+     ],
+     "cut": [
+      "Périmètre"
+     ],
+     "offRight": [],
+     "krakieHides": [
+      "4 Générer Dernière : Curiosity (10 %)"
+     ],
+     "textBlocks": 17,
+     "words": 249,
+     "headerH": 115,
+     "errors": []
+    },
+    "04-ontologie": {
+     "vw": 412,
+     "vh": 839,
+     "pageW": 412,
+     "hOverflow": false,
+     "interactive": 47,
+     "small": 46,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Afficher l'arbre des classes 35×30",
+      "Chercher une classe 130×30",
+      "Hiérarchie 88×28",
+      "Relations 82×28",
+      "Tout 52×28",
+      "Classique 86×28",
+      "Notation VOWL 116×28",
+      "Afficher 81×22",
+      "Légende 83×22",
+      "Exporter 85×22",
+      "Déplier la légende 35×30",
+      "Fermer la légende 35×30",
+      "Client 59×18",
+      "Code défaut 59×18",
+      "Véhicule électrique 59×18",
+      "Moteur 59×18",
+      "Carburant 59×18",
+      "Garage 59×18"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px",
+      "Chercher une classe 13.5px"
+     ],
+     "cut": [
+      "Périmètre",
+      "Code défaut",
+      "Véhicule électrique",
+      "Carburant",
+      "Moteur thermique",
+      "Plan d'entretien",
+      "Relevé kilométrique",
+      "Organisation",
+      "Personne",
+      "Ordre de réparation",
+      "Opération de service",
+      "Technicien"
+     ],
+     "offRight": [
+      "Plan d'entretien (x 371→430)",
+      "Pièce (x 370→429)",
+      "Référence de pièce (x 402→461)"
+     ],
+     "krakieHides": [],
+     "textBlocks": 25,
+     "words": 119,
+     "headerH": 120,
+     "errors": [],
+     "gestures": {
+      "pan": true,
+      "panTf": [
+       "translate(-124.3px, 145.2px) scale(0.3)",
+       "translate(-44.3px, 205.2px) scale(0.3)"
+      ],
+      "pinch": true,
+      "pinchTf": [
+       "translate(-44.3px, 205.2px) scale(0.3)",
+       "translate(-544.9px, 114.6px) scale(0.9)"
+      ],
+      "nodeBox": {
+       "w": 176,
+       "h": 47
+      },
+      "tapSelected": true,
+      "tapTextDelta": 1435,
+      "longPressMenu": false
+     }
+    },
+    "05-ontologie-liste": {
+     "vw": 412,
+     "vh": 839,
+     "pageW": 412,
+     "hOverflow": false,
+     "interactive": 40,
+     "small": 37,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Rechercher par nom ou IRI 343×35",
+      "Classes 24 192×31",
+      "Propriétés objet 25 192×31",
+      "https://w3id.org/ontoforge/automaint#Fue 378×28",
+      "https://w3id.org/ontoforge/automaint#Dia 343×28",
+      "https://w3id.org/ontoforge/automaint#War 343×28",
+      "https://w3id.org/ontoforge/automaint#Veh 343×28",
+      "Replier 18×15",
+      "https://w3id.org/ontoforge/automaint#Eng 309×28",
+      "https://w3id.org/ontoforge/automaint#Ele 364×28",
+      "https://w3id.org/ontoforge/automaint#Int 364×28",
+      "https://w3id.org/ontoforge/automaint#Ser 343×28",
+      "https://w3id.org/ontoforge/automaint#Rep 343×28",
+      "Replier 18×15",
+      "https://w3id.org/ontoforge/automaint#Par 309×28",
+      "Replier 18×15",
+      "https://w3id.org/ontoforge/automaint#Org 329×28",
+      "https://w3id.org/ontoforge/automaint#Gar 350×28"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px",
+      "Rechercher par nom ou IRI 14px"
+     ],
+     "cut": [
+      "Périmètre"
+     ],
+     "offRight": [],
+     "krakieHides": [
+      "https://w3id.org/ontoforge/automaint#Per (8 %)",
+      "https://w3id.org/ontoforge/automaint#Cus (32 %)",
+      "https://w3id.org/ontoforge/automaint#Tec (25 %)",
+      "https://w3id.org/ontoforge/automaint#Par (15 %)",
+      "Nouvelle classe (28 %)"
+     ],
+     "textBlocks": 29,
+     "words": 138,
+     "headerH": 120,
+     "errors": []
+    },
+    "06-carte-metier": {
+     "vw": 412,
+     "vh": 839,
+     "pageW": 412,
+     "hOverflow": false,
+     "interactive": 21,
+     "small": 20,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Ontologie 85×28",
+      "Modèle cible 101×28",
+      "Scénario actif 130×30",
+      "Exporter 85×22",
+      "Zoom avant 28×28",
+      "Zoom arrière 28×28",
+      "Ajuster 80×28",
+      "Inspecteur 93×34"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px",
+      "Scénario actif 13.5px"
+     ],
+     "cut": [
+      "Périmètre"
+     ],
+     "offRight": [],
+     "krakieHides": [
+      "Ajuster (81 %)"
+     ],
+     "textBlocks": 8,
+     "words": 401,
+     "headerH": 115,
+     "errors": [],
+     "gestures": {
+      "pan": true,
+      "panTf": [
+       "translate(-31.857142857142854 -79.21428571428572) scale(0.45)",
+       "translate(48.14285332815988 -19.214285714285722) scale(0.45)"
+      ],
+      "pinch": false,
+      "pinchTf": [
+       "translate(48.14285332815988 -19.214285714285722) scale(0.45)",
+       "translate(-111.85714667184013 -19.214285714285722) scale(0.45)"
+      ],
+      "nodeBox": {
+       "w": 32,
+       "h": 32
+      },
+      "tapSelected": true,
+      "tapTextDelta": 240,
+      "longPressMenu": false,
+      "note": "échelle inchangée (0,45) : le second doigt déplace la vue"
+     }
+    },
+    "07-analyse": {
+     "vw": 412,
+     "vh": 839,
+     "pageW": 412,
+     "hOverflow": false,
+     "interactive": 28,
+     "small": 25,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Réanalyser 116×30",
+      "Accepter toutes les recommandations 258×30",
+      "INPUT 13×13",
+      "Filtrer (règle, sujet, texte)… 260×30",
+      "▸ O06 Propriété transitive 1 constat(s)  359×29",
+      "Appliquer la recommandation à toute la r 286×22",
+      "Appliquer la recommandation à toute la r 293×22",
+      "Fournisseur 110×30",
+      "Ouvrir en plein écran 35×30",
+      "Fermer 35×30",
+      "Retirer le contexte 20×20",
+      "Explique le constat sélectionné 197×29",
+      "Amorcer depuis un document 35×30"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px",
+      "Filtrer (règle, sujet, texte)… 13.5px",
+      "Fournisseur 13.5px",
+      "Ex. ajoute la classe Pneu sous Pièce ave 12px"
+     ],
+     "cut": [
+      "Périmètre"
+     ],
+     "offRight": [],
+     "krakieHides": [],
+     "textBlocks": 41,
+     "words": 372,
+     "headerH": 115,
+     "errors": []
+    },
+    "08-modele": {
+     "vw": 412,
+     "vh": 839,
+     "pageW": 412,
+     "hOverflow": false,
+     "interactive": 23,
+     "small": 22,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Carte métier 109×22",
+      "Zoom avant 30×28",
+      "Zoom arrière 30×28",
+      "Ajuster 59×28",
+      "Fournisseur 110×30",
+      "Ouvrir en plein écran 35×30",
+      "Fermer 35×30",
+      "Retirer le contexte 20×20",
+      "Que peux-tu faire ici ? 144×29",
+      "Amorcer depuis un document 35×30"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px",
+      "Fournisseur 13.5px",
+      "Ex. ajoute la classe Pneu sous Pièce ave 12px"
+     ],
+     "cut": [
+      "Périmètre"
+     ],
+     "offRight": [],
+     "krakieHides": [],
+     "textBlocks": 16,
+     "words": 322,
+     "headerH": 115,
+     "errors": []
+    },
+    "09-exports": {
+     "vw": 412,
+     "vh": 839,
+     "pageW": 412,
+     "hOverflow": false,
+     "interactive": 31,
+     "small": 30,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Régénérer 88×30",
+      "Télécharger le zip 132×30",
+      "Connector.cs 386×28",
+      "Edges.cs 386×28",
+      "README-curiosity.md 386×28",
+      "README-graphql.md 386×28",
+      "RegisterSchema.cs 386×28",
+      "Schema.cs 386×28",
+      "rapport-transposition.md 386×28",
+      "schema.graphql 386×28",
+      "Copier 52×22",
+      "Télécharger 81×22",
+      "Fournisseur 110×30",
+      "Ouvrir en plein écran 35×30",
+      "Fermer 35×30",
+      "Retirer le contexte 20×20",
+      "Que perd-on dans cet export ? 192×29",
+      "Amorcer depuis un document 35×30"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px",
+      "Fournisseur 13.5px",
+      "Ex. ajoute la classe Pneu sous Pièce ave 12px"
+     ],
+     "cut": [
+      "Périmètre"
+     ],
+     "offRight": [],
+     "krakieHides": [],
+     "textBlocks": 27,
+     "words": 244,
+     "headerH": 120,
+     "errors": []
+    },
+    "10-requetes": {
+     "vw": 412,
+     "vh": 839,
+     "pageW": 412,
+     "hOverflow": false,
+     "interactive": 32,
+     "small": 23,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Endpoint SPARQL 184×30",
+      "Tableau 74×34",
+      "Graphe 68×34",
+      "Fournisseur 110×30",
+      "Ouvrir en plein écran 35×30",
+      "Fermer 35×30",
+      "Retirer le contexte 20×20",
+      "Cherche les véhicules diesel 180×29",
+      "Ajoute un filtre sur la date 167×29",
+      "Explique cette requête 149×29",
+      "Amorcer depuis un document 35×30"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px",
+      "Endpoint SPARQL 13.5px",
+      "Fournisseur 13.5px",
+      "Ex. ajoute la classe Pneu sous Pièce ave 12px"
+     ],
+     "cut": [
+      "Périmètre",
+      "Endpoint SPARQL"
+     ],
+     "offRight": [],
+     "krakieHides": [],
+     "textBlocks": 27,
+     "words": 271,
+     "headerH": 120,
+     "errors": []
+    },
+    "11-assistant": {
+     "vw": 412,
+     "vh": 839,
+     "pageW": 412,
+     "hOverflow": false,
+     "interactive": 25,
+     "small": 20,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Fournisseur 150×28",
+      "Configurer un fournisseur dans Paramètre 249×16",
+      "Quelles propriétés manquent à mes classe 380×37",
+      "Amorcer depuis un document 199×22",
+      "Générer les shapes 142×22",
+      "Expliquer un constat 150×22",
+      "Proposer des alignements SKOS / schema.o 288×22",
+      "Joindre un fichier 133×22"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px",
+      "Fournisseur 12.5px",
+      "Décris le domaine ou pose une question… 13.5px"
+     ],
+     "cut": [
+      "Périmètre"
+     ],
+     "offRight": [],
+     "krakieHides": [],
+     "textBlocks": 9,
+     "words": 163,
+     "headerH": 120,
+     "errors": []
+    },
+    "12-versions": {
+     "vw": 412,
+     "vh": 839,
+     "pageW": 412,
+     "hOverflow": false,
+     "interactive": 24,
+     "small": 23,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Version de Neo4j 190×30",
+      "Version de Cypher 190×30",
+      "Version de Curiosity.Library 202×30",
+      "Version de SHACL 190×30",
+      "Fournisseur 110×30",
+      "Ouvrir en plein écran 35×30",
+      "Fermer 35×30",
+      "Retirer le contexte 20×20",
+      "Quelles versions ? 123×29",
+      "Mets à jour les versions 153×29",
+      "Amorcer depuis un document 35×30"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px",
+      "Version de Neo4j 13.5px",
+      "Version de Cypher 13.5px",
+      "Version de Curiosity.Library 13.5px",
+      "Version de SHACL 13.5px",
+      "Fournisseur 13.5px",
+      "Ex. ajoute la classe Pneu sous Pièce ave 12px"
+     ],
+     "cut": [
+      "Périmètre"
+     ],
+     "offRight": [],
+     "krakieHides": [],
+     "textBlocks": 29,
+     "words": 470,
+     "headerH": 120,
+     "errors": []
+    },
+    "13-shacl": {
+     "vw": 412,
+     "vh": 839,
+     "pageW": 412,
+     "hOverflow": false,
+     "interactive": 26,
+     "small": 25,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Générer depuis l'ontologie 212×30",
+      "Voir en Turtle 129×30",
+      "Shapes (11) 97×34",
+      "Validation de données 163×34",
+      "Turtle 60×34",
+      "Fournisseur 110×30",
+      "Ouvrir en plein écran 35×30",
+      "Fermer 35×30",
+      "Retirer le contexte 20×20",
+      "Retirer la sélection du contexte 20×20",
+      "Ajoute une contrainte à Marque 198×29",
+      "Explique cette shape (Marque) 193×29",
+      "Amorcer depuis un document 35×30"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px",
+      "Fournisseur 13.5px",
+      "Ex. ajoute la classe Pneu sous Pièce ave 12px"
+     ],
+     "cut": [
+      "Périmètre"
+     ],
+     "offRight": [],
+     "krakieHides": [],
+     "textBlocks": 20,
+     "words": 186,
+     "headerH": 120,
+     "errors": []
+    },
+    "14-fichiers": {
+     "vw": 412,
+     "vh": 839,
+     "pageW": 412,
+     "hOverflow": false,
+     "interactive": 29,
+     "small": 27,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "onto.ttl 82×30",
+      "shapes.ttl 96×30",
+      "decisions.json 121×30",
+      "generated/Connector.cs 134×30",
+      "onto.ttl 62×38",
+      "Fermer onto.ttl 26×21",
+      "Demander à Krakie 142×22",
+      "PROBLÈMES 0 1 412×30",
+      "Fournisseur 110×30",
+      "Ouvrir en plein écran 35×30",
+      "Fermer 35×30",
+      "Retirer le contexte 20×20",
+      "Retirer la sélection du contexte 20×20",
+      "Que peux-tu faire ici ? 144×29",
+      "Amorcer depuis un document 35×30"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px",
+      "Fournisseur 13.5px",
+      "Ex. ajoute la classe Pneu sous Pièce ave 12px"
+     ],
+     "cut": [
+      "Périmètre"
+     ],
+     "offRight": [
+      "generated/Connector.cs (x 305→439)"
+     ],
+     "krakieHides": [],
+     "textBlocks": 119,
+     "words": 332,
+     "headerH": 120,
+     "errors": []
+    },
+    "21-partage": {
+     "vw": 412,
+     "vh": 839,
+     "pageW": 412,
+     "hOverflow": false,
+     "interactive": 25,
+     "small": 20,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Arbitrer 73×30",
+      "Fournisseur 110×30",
+      "Ouvrir en plein écran 35×30",
+      "Fermer 35×30",
+      "Retirer le contexte 20×20",
+      "Que dois-je faire ensuite ? 168×29",
+      "Ajoute la classe Pneu sous Pièce 204×29",
+      "Amorcer depuis un document 35×30"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px",
+      "Fournisseur 13.5px",
+      "Ex. ajoute la classe Pneu sous Pièce ave 12px"
+     ],
+     "cut": [
+      "Périmètre"
+     ],
+     "offRight": [],
+     "krakieHides": [],
+     "textBlocks": 24,
+     "words": 330,
+     "headerH": 115,
+     "errors": []
+    },
+    "22-parametres": {
+     "vw": 412,
+     "vh": 839,
+     "pageW": 412,
+     "hOverflow": false,
+     "interactive": 22,
+     "small": 16,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Ajouter un fournisseur 185×30",
+      "Tester la connexion 143×22",
+      "Modifier le fournisseur Mock (démonstrat 82×22",
+      "Fournisseur 110×30",
+      "Fermer 35×30",
+      "Retirer le contexte 20×20",
+      "Comment configurer un LLM ? 189×29",
+      "Où en est ma configuration ? 181×29"
+     ],
+     "tinyFont": [
+      "Fournisseur 13.5px",
+      "Ex. comment brancher Ollama en local ? 12px"
+     ],
+     "cut": [],
+     "offRight": [
+      "Affichage (x 344→425)"
+     ],
+     "krakieHides": [],
+     "textBlocks": 16,
+     "words": 144,
+     "headerH": 73,
+     "errors": []
+    },
+    "23-administration": {
+     "vw": 412,
+     "vh": 839,
+     "pageW": 412,
+     "hOverflow": false,
+     "interactive": 15,
+     "small": 15,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Comptes 80×34",
+      "Journal d'administration 172×34",
+      "prenom.nom 362×27",
+      "Laisser vide pour en générer un 362×23",
+      "Afficher la saisie 13×13",
+      "INPUT 13×13",
+      "Réinitialiser 103×22"
+     ],
+     "tinyFont": [
+      "prenom.nom 11.5px",
+      "Laisser vide pour en générer un 11.5px"
+     ],
+     "cut": [],
+     "offRight": [],
+     "krakieHides": [],
+     "textBlocks": 17,
+     "words": 186,
+     "headerH": 73,
+     "errors": []
+    }
+   }
+  },
+  "ipadmini-clair": {
+   "viewport": {
+    "width": 768,
+    "height": 1024
+   },
+   "screens": {
+    "00-connexion": {
+     "vw": 768,
+     "vh": 1024,
+     "pageW": 768,
+     "hOverflow": false,
+     "interactive": 5,
+     "small": 5,
+     "smallList": [
+      "FR 39×32",
+      "EN 40×32",
+      "INPUT 332×42",
+      "INPUT 332×42",
+      "Afficher le mot de passe 42×42"
+     ],
+     "tinyFont": [],
+     "cut": [],
+     "offRight": [],
+     "krakieHides": [],
+     "textBlocks": 6,
+     "words": 27,
+     "headerH": 0,
+     "errors": []
+    },
+    "01-projets": {
+     "vw": 768,
+     "vh": 1024,
+     "pageW": 768,
+     "hOverflow": false,
+     "interactive": 17,
+     "small": 16,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Aucun endpoint SPARQL 32×22",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Ex. Maintenance flotte 240×27",
+      "Projet vide Exemple : Automaint (automai 280×27",
+      "Créer le projet 113×30",
+      "Mes projets 96×28",
+      "Partagés avec moi 135×28",
+      "Tous 53×28",
+      "Renommer 35×30",
+      "Ajouter une description 145×22",
+      "Supprimer 95×22"
+     ],
+     "tinyFont": [
+      "Ex. Maintenance flotte 11.5px",
+      "Projet vide Exemple : Automaint (automai 11.5px"
+     ],
+     "cut": [],
+     "offRight": [],
+     "krakieHides": [],
+     "textBlocks": 22,
+     "words": 113,
+     "headerH": 52,
+     "errors": []
+    },
+    "02-menu-tiroir": {
+     "vw": 768,
+     "vh": 1024,
+     "pageW": 768,
+     "hOverflow": false,
+     "interactive": 40,
+     "small": 34,
+     "smallList": [
+      "OntoForge 140×30",
+      "Tous les projets 263×32",
+      "Tableau de bord 263×32",
+      "Ontologie 263×32",
+      "Vue liste 263×32",
+      "Carte métier 263×32",
+      "Shapes 263×32",
+      "Fichiers 263×32",
+      "Conformité 263×32",
+      "SHACL 263×32",
+      "Analyse & arbitrage 263×32",
+      "Modèle cible 263×32",
+      "Exports 263×32",
+      "Versions 263×32",
+      "Requêtes 263×32",
+      "Assistant 263×32",
+      "Documentation 263×32",
+      "Administration 263×32",
+      "Paramètres 263×32",
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px"
+     ],
+     "cut": [
+      "Périmètre"
+     ],
+     "offRight": [],
+     "krakieHides": [
+      "Fermer (1 %)"
+     ],
+     "textBlocks": 68,
+     "words": 267,
+     "headerH": 82,
+     "errors": []
+    },
+    "03-tableau": {
+     "vw": 768,
+     "vh": 1024,
+     "pageW": 768,
+     "hOverflow": false,
+     "interactive": 23,
+     "small": 18,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Arbitrer 73×30",
+      "Générer pour Curiosity 187×30",
+      "Télécharger le zip 155×30",
+      "Faire la visite 111×22",
+      "Pas maintenant 102×22",
+      "Ne plus proposer 110×22"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px"
+     ],
+     "cut": [
+      "Périmètre"
+     ],
+     "offRight": [],
+     "krakieHides": [
+      "Pas maintenant (61 %)"
+     ],
+     "textBlocks": 43,
+     "words": 288,
+     "headerH": 82,
+     "errors": []
+    },
+    "04-ontologie": {
+     "vw": 768,
+     "vh": 1024,
+     "pageW": 768,
+     "hOverflow": false,
+     "interactive": 93,
+     "small": 90,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Afficher l'arbre des classes 35×30",
+      "Chercher une classe 190×30",
+      "Hiérarchie 88×28",
+      "Relations 82×28",
+      "Tout 52×28",
+      "Classique 86×28",
+      "Notation VOWL 116×28",
+      "Afficher 81×22",
+      "Réorganiser 103×22",
+      "Nouvelle classe 124×22",
+      "Ouvrir l'inspecteur 35×30",
+      "Légende 83×22",
+      "Exporter 85×22",
+      "Déplier la légende 35×30",
+      "Fermer la légende 35×30",
+      "Edge from https://w3id.org/ontoforge/aut 56×23",
+      "Edge from https://w3id.org/ontoforge/aut 218×32",
+      "Edge from https://w3id.org/ontoforge/aut 101×26"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px",
+      "Chercher une classe 13.5px"
+     ],
+     "cut": [
+      "Périmètre",
+      "Véhicule thermique",
+      "Code défaut",
+      "Moteur électrique",
+      "Véhicule électrique",
+      "Carburant",
+      "Moteur thermique",
+      "Plan d'entretien",
+      "Relevé kilométrique",
+      "Organisation",
+      "Référence de pièce",
+      "Personne",
+      "Rappel constructeur",
+      "Ordre de réparation",
+      "Opération de service",
+      "Technicien",
+      "Modèle de véhicule"
+     ],
+     "offRight": [],
+     "krakieHides": [
+      "Saisie rapide Une ligne = un axiome, app (16 %)",
+      "Pas maintenant (61 %)"
+     ],
+     "textBlocks": 36,
+     "words": 171,
+     "headerH": 82,
+     "errors": [],
+     "gestures": {
+      "pan": true,
+      "panTf": [
+       "translate(34.654px, 258.128px) scale(0.317299)",
+       "translate(114.654px, 318.128px) scale(0.317299)"
+      ],
+      "pinch": true,
+      "pinchTf": [
+       "translate(114.654px, 318.128px) scale(0.317299)",
+       "translate(-424.038px, 215.134px) scale(0.951896)"
+      ],
+      "nodeBox": {
+       "w": 187,
+       "h": 49
+      },
+      "tapSelected": true,
+      "tapTextDelta": 2418,
+      "longPressMenu": false
+     }
+    },
+    "05-ontologie-liste": {
+     "vw": 768,
+     "vh": 1024,
+     "pageW": 768,
+     "hOverflow": false,
+     "interactive": 51,
+     "small": 50,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Rechercher par nom ou IRI 699×35",
+      "Classes 24 370×31",
+      "Propriétés objet 25 370×31",
+      "Propriétés de données 25 370×31",
+      "Individus 4 370×31",
+      "https://w3id.org/ontoforge/automaint#Fue 734×28",
+      "https://w3id.org/ontoforge/automaint#Dia 699×28",
+      "https://w3id.org/ontoforge/automaint#War 699×28",
+      "https://w3id.org/ontoforge/automaint#Veh 699×28",
+      "Replier 18×15",
+      "https://w3id.org/ontoforge/automaint#Eng 665×28",
+      "https://w3id.org/ontoforge/automaint#Ele 720×28",
+      "https://w3id.org/ontoforge/automaint#Int 720×28",
+      "https://w3id.org/ontoforge/automaint#Ser 699×28",
+      "https://w3id.org/ontoforge/automaint#Rep 699×28",
+      "Replier 18×15",
+      "https://w3id.org/ontoforge/automaint#Par 665×28",
+      "Replier 18×15"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px",
+      "Rechercher par nom ou IRI 14px"
+     ],
+     "cut": [
+      "Périmètre"
+     ],
+     "offRight": [],
+     "krakieHides": [
+      "https://w3id.org/ontoforge/automaint#Ele (13 %)",
+      "https://w3id.org/ontoforge/automaint#Com (16 %)",
+      "Nouvelle classe (15 %)",
+      "Pas maintenant (61 %)"
+     ],
+     "textBlocks": 38,
+     "words": 159,
+     "headerH": 82,
+     "errors": []
+    },
+    "06-carte-metier": {
+     "vw": 768,
+     "vh": 1024,
+     "pageW": 768,
+     "hOverflow": false,
+     "interactive": 28,
+     "small": 27,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Ontologie 85×28",
+      "Modèle cible 101×28",
+      "Scénario actif 130×30",
+      "Proposer des cadres 149×22",
+      "Recalcule la disposition de la carte 103×22",
+      "Exporter 85×22",
+      "Zoom avant 28×28",
+      "Zoom arrière 28×28",
+      "Ajuster 80×28",
+      "Inspecteur 93×34",
+      "Zones (4) 81×34",
+      "Scénarios (0) 104×34",
+      "Faire la visite 111×22",
+      "Pas maintenant 102×22",
+      "Ne plus proposer 110×22"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px",
+      "Scénario actif 13.5px"
+     ],
+     "cut": [
+      "Périmètre"
+     ],
+     "offRight": [],
+     "krakieHides": [
+      "Pas maintenant (61 %)"
+     ],
+     "textBlocks": 11,
+     "words": 416,
+     "headerH": 82,
+     "errors": [],
+     "gestures": {
+      "pan": true,
+      "panTf": [
+       "translate(-31.857142857142854 -79.21428571428572) scale(0.45)",
+       "translate(48.14286095755441 -19.214285714285722) scale(0.45)"
+      ],
+      "pinch": false,
+      "pinchTf": [
+       "translate(48.14286095755441 -19.214285714285722) scale(0.45)",
+       "translate(-111.8571390424456 -19.214285714285722) scale(0.45)"
+      ],
+      "nodeBox": {
+       "w": 32,
+       "h": 32
+      },
+      "tapSelected": true,
+      "tapTextDelta": 204,
+      "longPressMenu": false,
+      "note": "échelle inchangée (0,45) : le second doigt déplace la vue"
+     }
+    },
+    "07-analyse": {
+     "vw": 768,
+     "vh": 1024,
+     "pageW": 768,
+     "hOverflow": false,
+     "interactive": 37,
+     "small": 36,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Réanalyser 116×30",
+      "Accepter toutes les recommandations 258×30",
+      "INPUT 13×13",
+      "Filtrer (règle, sujet, texte)… 260×30",
+      "▸ O06 Propriété transitive 1 constat(s)  715×21",
+      "Appliquer la recommandation à toute la r 286×22",
+      "▸ D13 Restriction sur propriété de donné 715×21",
+      "Appliquer la recommandation à toute la r 293×22",
+      "▸ O09 Cardinalité ≤ 1 d'une relation (ma 715×21",
+      "Appliquer la recommandation à toute la r 293×22",
+      "▸ K02 Clé OWL (hasKey) 6 constat(s) 0/6  715×21",
+      "Appliquer la recommandation à toute la r 286×22",
+      "▸ O10 Existence d'une relation 5 constat 715×21",
+      "Appliquer la recommandation à toute la r 286×22",
+      "▸ C02 Héritage simple 3 constat(s) 0/3 a 715×21",
+      "Appliquer la recommandation à toute la r 286×22",
+      "▸ C04 Classe probablement abstraite 2 co 715×21",
+      "Appliquer la recommandation à toute la r 286×22"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px",
+      "Filtrer (règle, sujet, texte)… 13.5px"
+     ],
+     "cut": [
+      "Périmètre"
+     ],
+     "offRight": [],
+     "krakieHides": [
+      "▸ C08 Classe énumérée 1 constat(s) 0/1 a (6 %)",
+      "Appliquer la recommandation à toute la r (33 %)",
+      "▸ D09 Datatype à facettes 1 constat(s) 0 (13 %)",
+      "Pas maintenant (61 %)"
+     ],
+     "textBlocks": 74,
+     "words": 339,
+     "headerH": 82,
+     "errors": []
+    },
+    "08-modele": {
+     "vw": 768,
+     "vh": 1024,
+     "pageW": 768,
+     "hOverflow": false,
+     "interactive": 24,
+     "small": 23,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Carte métier 109×22",
+      "Zoom avant 30×28",
+      "Zoom arrière 30×28",
+      "Ajuster 59×28",
+      "Types de nœuds 18 145×34",
+      "Relations 24 100×34",
+      "Validations 88 110×34",
+      "Matérialisations 1 132×34",
+      "Faire la visite 111×22",
+      "Pas maintenant 102×22",
+      "Ne plus proposer 110×22"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px"
+     ],
+     "cut": [
+      "Périmètre"
+     ],
+     "offRight": [],
+     "krakieHides": [
+      "Pas maintenant (61 %)"
+     ],
+     "textBlocks": 32,
+     "words": 288,
+     "headerH": 82,
+     "errors": []
+    },
+    "09-exports": {
+     "vw": 768,
+     "vh": 1024,
+     "pageW": 768,
+     "hOverflow": false,
+     "interactive": 25,
+     "small": 24,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Régénérer 88×30",
+      "Télécharger le zip 132×30",
+      "Connector.cs 238×28",
+      "Edges.cs 238×28",
+      "README-curiosity.md 238×28",
+      "README-graphql.md 238×28",
+      "RegisterSchema.cs 238×28",
+      "Schema.cs 238×28",
+      "rapport-transposition.md 238×28",
+      "schema.graphql 238×28",
+      "Copier 52×22",
+      "Télécharger 81×22"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px"
+     ],
+     "cut": [
+      "Périmètre"
+     ],
+     "offRight": [],
+     "krakieHides": [],
+     "textBlocks": 143,
+     "words": 430,
+     "headerH": 82,
+     "errors": []
+    },
+    "10-requetes": {
+     "vw": 768,
+     "vh": 1024,
+     "pageW": 768,
+     "hOverflow": false,
+     "interactive": 26,
+     "small": 15,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Endpoint SPARQL 184×30",
+      "Tableau 74×34",
+      "Graphe 68×34"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px",
+      "Endpoint SPARQL 13.5px"
+     ],
+     "cut": [
+      "Périmètre",
+      "Endpoint SPARQL"
+     ],
+     "offRight": [],
+     "krakieHides": [],
+     "textBlocks": 22,
+     "words": 208,
+     "headerH": 82,
+     "errors": []
+    },
+    "11-assistant": {
+     "vw": 768,
+     "vh": 1024,
+     "pageW": 768,
+     "hOverflow": false,
+     "interactive": 25,
+     "small": 21,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Fournisseur 150×28",
+      "Configurer un fournisseur dans Paramètre 249×16",
+      "Propose les classes principales d'un sys 520×37",
+      "Quelles propriétés manquent à mes classe 520×37",
+      "Amorcer depuis un document 199×22",
+      "Générer les shapes 142×22",
+      "Expliquer un constat 150×22",
+      "Proposer des alignements SKOS / schema.o 288×22",
+      "Joindre un fichier 133×22"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px",
+      "Fournisseur 12.5px",
+      "Décris le domaine ou pose une question… 13.5px"
+     ],
+     "cut": [
+      "Périmètre"
+     ],
+     "offRight": [],
+     "krakieHides": [],
+     "textBlocks": 9,
+     "words": 163,
+     "headerH": 82,
+     "errors": []
+    },
+    "12-versions": {
+     "vw": 768,
+     "vh": 1024,
+     "pageW": 768,
+     "hOverflow": false,
+     "interactive": 20,
+     "small": 19,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Version de Neo4j 190×30",
+      "Version de Cypher 190×30",
+      "Version de Curiosity.Library 202×30",
+      "Version de SHACL 190×30",
+      "Version de SPARQL 190×30",
+      "Version de RDF 190×30",
+      "Paramètres, onglet Versions. 161×16"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px",
+      "Version de Neo4j 13.5px",
+      "Version de Cypher 13.5px",
+      "Version de Curiosity.Library 13.5px",
+      "Version de SHACL 13.5px",
+      "Version de SPARQL 13.5px",
+      "Version de RDF 13.5px"
+     ],
+     "cut": [
+      "Périmètre"
+     ],
+     "offRight": [],
+     "krakieHides": [],
+     "textBlocks": 64,
+     "words": 423,
+     "headerH": 82,
+     "errors": []
+    },
+    "13-shacl": {
+     "vw": 768,
+     "vh": 1024,
+     "pageW": 768,
+     "hOverflow": false,
+     "interactive": 18,
+     "small": 17,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Générer depuis l'ontologie 212×30",
+      "Voir en Turtle 129×30",
+      "Shapes (11) 97×34",
+      "Validation de données 163×34",
+      "Turtle 60×34"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px"
+     ],
+     "cut": [
+      "Périmètre",
+      "Contraintes de validation des données ; "
+     ],
+     "offRight": [],
+     "krakieHides": [],
+     "textBlocks": 12,
+     "words": 123,
+     "headerH": 82,
+     "errors": []
+    },
+    "14-fichiers": {
+     "vw": 768,
+     "vh": 1024,
+     "pageW": 768,
+     "hOverflow": false,
+     "interactive": 25,
+     "small": 24,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "onto.ttl 82×30",
+      "shapes.ttl 96×30",
+      "decisions.json 121×30",
+      "generated/Connector.cs 134×30",
+      "generated/Edges.cs 110×30",
+      "generated/README-curiosity.md 186×30",
+      "generated/README-graphql.md 182×30",
+      "onto.ttl 62×38",
+      "Fermer onto.ttl 26×21",
+      "Demander à Krakie 142×22",
+      "PROBLÈMES 0 1 768×30",
+      "Propriété objet hasMileageReading : labe 768×30"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px"
+     ],
+     "cut": [
+      "Périmètre"
+     ],
+     "offRight": [
+      "generated/README-graphql.md (x 739→921)"
+     ],
+     "krakieHides": [
+      "PROBLÈMES 0 1 (16 %)",
+      "Propriété objet hasMileageReading : labe (16 %)"
+     ],
+     "textBlocks": 170,
+     "words": 386,
+     "headerH": 82,
+     "errors": []
+    },
+    "20-krakie-ouvert": {
+     "vw": 768,
+     "vh": 1024,
+     "pageW": 768,
+     "hOverflow": false,
+     "interactive": 27,
+     "small": 22,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Arbitrer 73×30",
+      "Générer pour Curiosity 187×30",
+      "Télécharger le zip 155×30",
+      "Fournisseur 110×30",
+      "Ouvrir en plein écran 35×30",
+      "Fermer 35×30",
+      "Retirer le contexte 20×20",
+      "Que dois-je faire ensuite ? 168×29",
+      "Ajoute la classe Pneu sous Pièce 204×29",
+      "Amorcer depuis un document 35×30"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px",
+      "Fournisseur 13.5px",
+      "Ex. ajoute la classe Pneu sous Pièce ave 12px"
+     ],
+     "cut": [
+      "Périmètre"
+     ],
+     "offRight": [],
+     "krakieHides": [],
+     "textBlocks": 50,
+     "words": 348,
+     "headerH": 82,
+     "fabBlocked": "<div class=\"empty empty-state\">…</div> from",
+     "errors": []
+    },
+    "21-partage": {
+     "vw": 768,
+     "vh": 1024,
+     "pageW": 768,
+     "hOverflow": false,
+     "interactive": 24,
+     "small": 19,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Curiosity 81×28",
+      "Neo4j 60×28",
+      "Toute l'ontologie 137×30",
+      "BUTTON 31×16",
+      "Fermer 35×30",
+      "identifiant de l'autre utilisateur 325×27",
+      "Lecteur Éditeur 75×27",
+      "Aide : partager un projet 170×22",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Arbitrer 73×30",
+      "Générer pour Curiosity 187×30",
+      "Télécharger le zip 155×30"
+     ],
+     "tinyFont": [
+      "Toute l'ontologie 13.5px",
+      "identifiant de l'autre utilisateur 11.5px",
+      "Lecteur Éditeur 11.5px"
+     ],
+     "cut": [
+      "Périmètre"
+     ],
+     "offRight": [],
+     "krakieHides": [],
+     "textBlocks": 53,
+     "words": 348,
+     "headerH": 82,
+     "errors": []
+    },
+    "22-parametres": {
+     "vw": 768,
+     "vh": 1024,
+     "pageW": 768,
+     "hOverflow": false,
+     "interactive": 18,
+     "small": 17,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Fournisseurs LLM 133×34",
+      "Langues 74×34",
+      "Valeurs par défaut 135×34",
+      "Versions 76×34",
+      "Affichage 81×34",
+      "Endpoints SPARQL 137×34",
+      "Ajouter un fournisseur 185×30",
+      "Tester la connexion 143×22",
+      "Modifier le fournisseur Mock (démonstrat 82×22"
+     ],
+     "tinyFont": [],
+     "cut": [],
+     "offRight": [],
+     "krakieHides": [],
+     "textBlocks": 15,
+     "words": 77,
+     "headerH": 52,
+     "errors": []
+    },
+    "23-administration": {
+     "vw": 768,
+     "vh": 1024,
+     "pageW": 768,
+     "hOverflow": false,
+     "interactive": 16,
+     "small": 16,
+     "smallList": [
+      "Menu 35×24",
+      "OntoForge 30×25",
+      "Aucun endpoint SPARQL 32×22",
+      "Aide sur cet écran 35×30",
+      "Visite guidée 35×30",
+      "Thème : système 35×30",
+      "Mon compte 37×16",
+      "jerem 39×22",
+      "Comptes 80×34",
+      "Journal d'administration 172×34",
+      "prenom.nom 231×27",
+      "Laisser vide pour en générer un 231×23",
+      "Afficher la saisie 13×13",
+      "INPUT 13×13",
+      "Réinitialiser 103×22",
+      "Réinitialiser 103×22"
+     ],
+     "tinyFont": [
+      "prenom.nom 11.5px",
+      "Laisser vide pour en générer un 11.5px"
+     ],
+     "cut": [],
+     "offRight": [],
+     "krakieHides": [],
+     "textBlocks": 28,
+     "words": 186,
+     "headerH": 52,
+     "errors": []
+    }
+   }
+  }
+ }
+}
