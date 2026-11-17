@@ -46,7 +46,7 @@ description: Concevoir rapidement une ontologie OWL 2 (ou un modèle de données
 - Justifier chaque caractéristique (fonctionnelle, transitive, symétrique…) par une `skos:editorialNote` : c'est elle qu'on relit quand un arbitrage de transposition dépend de la caractéristique.
 - Ne pas supprimer un terme publié : le **déprécier** (`owl:deprecated true` + `dcterms:isReplacedBy`). Il n'est plus généré par défaut, les données existantes gardent leur IRI, la note de version le signale.
 - En-tête : titre, objectif, auteurs, licence, dates, mots-clés, vocabulaires réutilisés (`dcterms:references`).
-- Versionner à chaque livraison : « Enregistrer la version » propose majeure (ajout ou retrait de classe, relation, attribut ; changement de domaine, portée, cardinalité…), mineure (libellés, définitions, dépréciations) ou correctif (autres annotations), et rédige la note de version. L'espace de noms des termes ne porte jamais de numéro de version.
+- Versionner à chaque livraison : « Enregistrer la version » propose majeure (retrait de classe, relation, attribut ; changement de domaine, portée, cardinalité…), mineure (ajouts, libellés, définitions, dépréciations) ou correctif (autres annotations), et rédige la note de version. L'espace de noms des termes ne porte jamais de numéro de version.
 
 ## Checklist avant de passer au graphe
 - [ ] Chaque classe/propriété sert une CQ ; aucune classe orpheline sans raison.

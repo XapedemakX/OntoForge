@@ -5,10 +5,10 @@ instantané de l'ontologie pour calculer le diff suivant. ``project.json`` n'est
 ``owl:versionInfo``, ``owl:versionIRI``, ``owl:priorVersion`` et ``dcterms:modified`` (journalisée, annulable).
 
 Règles du contrat L49 (D-L49-02) :
-- **majeure** : classe, relation (propriété objet), attribut (propriété de données) ou datatype ajouté ou retiré ; tout
+- **majeure** : classe, relation (propriété objet), attribut (propriété de données) ou datatype retiré ; tout
   changement d'axiome qui les définit (hiérarchie, domaine, portée, caractéristiques, restrictions, clés, disjonctions,
   équivalences, inverses, chaînes) ; imports ; axiomes conservés hors modèle (``unmapped``) ;
-- **mineure** : libellés, définitions et commentaires ; dépréciation (Semantic Versioning 2.0.0 §7) ; individus (données de
+- **mineure** : ajout d'une entité (compatible, Q-L49-1) ; libellés, définitions et commentaires ; dépréciation (Semantic Versioning 2.0.0 §7) ; individus (données de
   référence) ;
 - **correctif** : autres annotations (auteur, source, statut, notes) et en-tête de l'ontologie.
 Le niveau proposé est le plus fort des changements ; aucun changement → correctif (republication).
@@ -133,7 +133,8 @@ def diff(old: OntoModel, new: OntoModel) -> list[dict[str, Any]]:
             if coll == "annotation_properties" and iri in _RELEASE_PROPS | _DEPRECATION_PROPS:
                 continue  # déclarations posées par l'enregistrement d'une version ou par une dépréciation
             if iri not in a:
-                out.append({"level": _PRESENCE[coll], "change": "added", "collection": coll, "iri": iri})
+                # Q-L49-1 (Jerem, 17/11) : un ajout est compatible, donc mineur (SemVer) ; le retrait reste majeur
+                out.append({"level": "patch" if coll == "annotation_properties" else "minor", "change": "added", "collection": coll, "iri": iri})
                 continue
             if iri not in b:
                 out.append({"level": _PRESENCE[coll], "change": "removed", "collection": coll, "iri": iri})

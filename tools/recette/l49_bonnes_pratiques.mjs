@@ -141,12 +141,12 @@ await step('R9 version 1.1.0 proposée (mineure) avec note, enregistrée', s, as
   if (!p.onto.meta.annotations.some(a => a.property.endsWith('#priorVersion') && /\/1\.0\.0$/.test(a.value))) throw new Error('priorVersion')
   return sum
 })
-await step('R10 ajout d\'une classe : version majeure 2.0.0 proposée', s, async () => {
+await step('R10 ajout d\'une classe : version mineure 1.2.0 proposée (Q-L49-1)', s, async () => {
   const r = await api('POST', `/projects/${pid}/ops`, { ops: [{ op: 'add_class', iri: NS + 'HydrogenVehicle', label: 'Véhicule à hydrogène', parent: NS + 'Vehicle' }] })
   if (!r.ok) throw new Error('ops : ' + JSON.stringify(r.errors).slice(0, 300))
   const pv = await api('GET', `/projects/${pid}/releases/preview`)
-  if (pv.level !== 'major' || pv.proposed !== '2.0.0') throw new Error(JSON.stringify({ l: pv.level, p: pv.proposed }))
-  return `${pv.counts.major} changement(s) majeur(s)`
+  if (pv.level !== 'minor' || pv.proposed !== '1.2.0') throw new Error(JSON.stringify({ l: pv.level, p: pv.proposed }))
+  return `${pv.counts.minor} changement(s) mineur(s)`
 })
 await step('R11 export Turtle : en-tête, dépréciation et version conservés', s, async () => {
   const ttl = await api('GET', `/projects/${pid}/export/ontology?format=turtle`)

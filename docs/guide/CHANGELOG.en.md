@@ -6,6 +6,7 @@ Format: by version, what changes for the user, then the detail per work package.
 
 Follow-up to the L45 closing notes.
 
+- Q-L49-1 settled by Jerem: adding a class, relationship, attribute or datatype now proposes a **minor** version (SemVer); removal stays major (D-L49-03).
 - Krakie: the demo provider is shown as "Mock (demo)" once, without the repeated "· mock".
 - Settings on a phone: the language model provider and SPARQL endpoint lists become cards, with a label before each value (Name, Type, Model...). Empty cells are hidden. Before, the values were stacked with no titles.
 - 16 px fields in Shapes and in the guide search: no more automatic zoom on input on iPhone.

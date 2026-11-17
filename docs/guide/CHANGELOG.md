@@ -6,6 +6,7 @@ Format : par version, ce qui change pour l'utilisateur, puis le détail par lot.
 
 Suite des notes de clôture de L45.
 
+- Q-L49-1 tranchée par Jerem : l'ajout d'une classe, d'une relation, d'un attribut ou d'un datatype propose désormais une version **mineure** (SemVer) ; le retrait reste majeur (D-L49-03).
 - Krakie : le fournisseur de démonstration s'affiche « Mock (démonstration) » une seule fois, sans le « · mock » répété.
 - Paramètres sur téléphone : les listes de fournisseurs de langage et d'endpoints SPARQL deviennent des cartes, avec un libellé devant chaque valeur (Nom, Type, Modèle…). Les cellules vides sont masquées. Avant, les valeurs s'empilaient sans titre.
 - Champs à 16 px dans Shapes et dans la recherche du guide : plus de zoom automatique à la saisie sur iPhone.

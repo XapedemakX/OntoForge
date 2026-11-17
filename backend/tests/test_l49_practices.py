@@ -253,7 +253,7 @@ def test_diff_levels_follow_contract():
     c, _ = _ops(a, [{"op": "set_annotations", "iri": NS + "Car", "property": DCT + "creator", "values": ["x"]}])
     assert releases.level_of(releases.diff(a, c)) == "patch"
     d, _ = _ops(a, [{"op": "add_class", "iri": NS + "Truck", "label": "Camion"}])
-    assert releases.level_of(releases.diff(a, d)) == "major"
+    assert releases.level_of(releases.diff(a, d)) == "minor"  # Q-L49-1 : ajout = mineure (SemVer)
     e, _ = _ops(a, [{"op": "set_domain_range", "iri": NS + "servicedBy", "range": [NS + "Vehicle"]}])
     assert [x["field"] for x in releases.diff(a, e)] == ["range"] and releases.level_of(releases.diff(a, e)) == "major"
     f, _ = _ops(a, [{"op": "set_deprecated", "iri": NS + "Garage"}])
@@ -282,11 +282,14 @@ def test_bump_and_check():
 def test_release_note_lists_changes_by_level():
     a = _onto()
     b, _ = _ops(a, [{"op": "add_class", "iri": NS + "Truck", "label": "Camion"},
-                    {"op": "set_deprecated", "iri": NS + "Garage", "replaced_by": [NS + "Vehicle"]}])
+                    {"op": "set_deprecated", "iri": NS + "Garage", "replaced_by": [NS + "Vehicle"]},
+                    {"op": "delete_entity", "iri": NS + "vin"}])
     ch = releases.diff(a, b)
     note = releases.release_note("2.0.0", ch, previous="1.0.0", proposed="2.0.0", level="major", onto=b, date="2026-11-17")
     assert note.startswith("# Version 2.0.0 (2026-11-17)")
-    assert "## Changements majeurs (incompatibles) (1)" in note and "Classe Camion" in note
+    major = note.split("## Changements majeurs (incompatibles)")[1].split("## ")[0]
+    minor = note.split("## Changements mineurs")[1].split("## ")[0]
+    assert "vin" in major and "Classe Camion" in minor  # Q-L49-1 : ajout = mineure, retrait = majeure
     assert "dépréciée, remplacée par" in note
     en = releases.release_note("2.0.0", ch, previous="1.0.0", proposed="2.0.0", level="major", onto=b, lang="en")
     assert "## Major changes (breaking) (1)" in en and "Class" in en

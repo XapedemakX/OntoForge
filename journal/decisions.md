@@ -208,3 +208,9 @@ Alternatives écartées : reclasser aussi K02 (refusé, D-031bis) ; garder D13/O
 
 ## D-L47-03 (16/11, lead) : dossier de justification
 `GET /projects/{pid}/justification/{cible}?format=html|md&lang=` : lecture (droits lecteur), sans écriture ni historique de génération. HTML autonome sans script ni ressource distante, `default-src 'none'` en `<meta>` et en en-tête ; `SecurityHeaders` conserve une politique qui commence par `default-src 'none'` au lieu d'imposer celle de l'application. Markdown : mise en forme, HTML et liens neutralisés. Textes fixes dans la langue demandée (`lang`, sinon interface) ; textes du moteur traduits comme pour les exports ; libellés d'ontologie, noms de compte et raisons restent tels que saisis. Contrat : CONTRACTS §20. Pas de montée de version (D-L21-02).
+
+## D-L49-03 (17/11, Jerem) : un ajout est une version mineure (Q-L49-1)
+Réponse de Jerem à Q-L49-1 : l'ajout d'une classe, d'une relation, d'un attribut ou d'un datatype passe en **mineure** (SemVer : ajout compatible). Le retrait et le changement d'un axiome restent majeurs. Remplace la règle d'ajout de D-L49-02. Code : `projects/releases.py` ; doc : guide fr/en, CONTRACTS §19, skills w3c-ontology-conformance et ontology-rapid-design.
+
+## D-L47-04 (17/11, Jerem) : Q-L47-1 close en l'état
+Réponse de Jerem : OntoForge est une démo, la question de la mesure (constats ou décisions groupées) est close sans changement. Mesure automaint conservée telle quelle : Neo4j 19 constats (8 décisions groupées), Curiosity 41 (9).
