@@ -9,5 +9,5 @@ non-bloquants:
   - Guide : la carte Complétude barre les critères incomplets, et le texte ne le dit pas. Si le visuel change (revue scout), rien à faire ; sinon, une phrase.
   - Guide : rien sur les shapes d'une classe ou d'une propriété dépréciée (désactivation `sh:deactivated` des shapes de classe, et propriétés à traiter selon la revue shacl).
   - Vérifié sans écart : liste BP08–BP16 du guide, du CONTRACTS et de `practices.py` ; routes `/releases`, `/releases/preview`, `/releases/{version}`, `/metadata` (`api.md` ↔ `api/releases.py`, 201, 404, 422) ; opérations `set_deprecated`, `set_annotations`, `set_version_iri` ; A03 `review` dans `RULES.md`, `regles.md` et `expected-findings.yaml`.
-  - Grep `airbus`, `cogsonomy` (insensible à la casse) : aucune occurrence ; aucun nom d'auteur ni titre du guide source dans le dépôt.
+  - Recherche des noms propres au document source (insensible à la casse) : aucune occurrence ; aucun nom d'auteur ni titre du guide source dans le dépôt.
 skill: technical-documentation : une phrase qui promet un comportement (« s'annule », « est marquée ») est vérifiée sur le résultat final (fichier généré, état après annulation), pas sur la structure intermédiaire.
