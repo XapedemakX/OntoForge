@@ -32,6 +32,9 @@ Les exemples ci-dessous sont des réponses réelles (backend lancé avec `ONTOFO
 | POST | `/api/projects/{pid}/analyze` | analyser (cible) |
 | PUT | `/api/projects/{pid}/decisions/{target}` | enregistrer des décisions |
 | POST | `/api/projects/{pid}/decisions/{target}/accept-recommended` | accepter les recommandations des constats à arbitrer (`?include_lost=true` : aussi les perdus) |
+| POST | `/api/projects/{pid}/decisions/{target}/branch` | décider une branche de hiérarchie (L47) |
+| GET | `/api/projects/{pid}/justification/{target}` | dossier de justification, HTML ou Markdown (L47) |
+| POST | `/api/import/schema/preview` · `/api/projects/{pid}/import/schema/preview` · `/api/projects/{pid}/import/schema/apply` | importer un schéma SQL, CSV ou JSON Schema : aperçu, application (L48) |
 | GET | `/api/projects/{pid}/generate/{target}` | fichiers générés |
 | GET | `/api/projects/{pid}/generate/{target}/zip` | archive zip |
 | POST | `/api/projects/{pid}/queries/translate` | traduire du SPARQL |
@@ -1137,3 +1140,15 @@ Compte courant, pour tout compte connecté (routes sous `/api/auth`, qui contrô
 | GET | `/metadata` | en-tête de l'ontologie `{header, card, fields}` (lecteur) ; la modification passe par `POST /ops` (`set_annotations`, `set_version_iri`) |
 
 Nouvelles opérations de `POST /ops` : `set_deprecated {iri, value, replaced_by?}`, `set_annotations {iri, property, values, lang?}` (liste fermée de propriétés : SKOS, DCMI, `vs:term_status`, `owl:versionInfo`, `owl:priorVersion`), `set_version_iri {version_iri}`. `GET /conformance` ajoute `completeness` (score par entité et pour l'ontologie) et les constats BP08–BP16. Détail : `docs/CONTRACTS.md` §19.
+
+### Arbitrage par branche et dossier de justification (L47) {#arbitrage-justification-api}
+
+`PUT /decisions/{cible}` accepte toujours `{constat: option}`. Il accepte aussi `{decisions: {…}, reason?, reasons?: {constat: raison}, via?}` : la raison tient sur une ligne, 280 caractères au plus (422 au-delà). Le compte et la date de chaque décision sont enregistrés dans `Project.decision_notes`.
+
+`POST /decisions/{cible}/branch` prend `{root, rule?, option?, reason?, overwrite?}` (éditeur) et renvoie `{model, applied, skipped}`. Sans `option`, il applique la recommandation à chaque constat non décidé de la branche, sauf les constats perdus. Avec `option`, `rule` est obligatoire (422 sinon) ; une décision d'un autre compte n'est remplacée qu'avec `overwrite: true`. 404 si la racine n'a aucun constat d'héritage.
+
+`GET /projects/{pid}/justification/{cible}?format=html|md&lang=fr|en` (lecteur compris) renvoie le dossier en pièce jointe `justification-<id>-<cible>.<ext>`. Le HTML est autonome, sans script, et tout texte y est échappé. Détail : `docs/CONTRACTS.md` §20.
+
+### Import de schéma — `/api/import/schema`, `/api/projects/{pid}/import/schema` (L48) {#import-schema-api}
+
+Formulaire multipart : `files[]`, `kind` (`auto|sql|csv|json-schema`), `options` (JSON), `base_iri` et, pour l'application, `expect_digest`. L'aperçu hors projet est ouvert à tout compte connecté ; l'aperçu et l'application dans un projet demandent le droit d'écriture. L'aperçu renvoie classes, décisions, avis, éléments ignorés et une empreinte (`digest`). `apply` exige `expect_digest` (422 `missing_digest` sinon) et répond 409 `stale_preview` si le projet ou les fichiers ont changé depuis l'aperçu ; l'import s'annule avec `POST /ops/undo`. Plafonds : 2 Mo par fichier, 10 Mo par requête (413), 50 fichiers, 400 tables. Détail : `docs/CONTRACTS.md` §18.

@@ -112,7 +112,7 @@ gcloud run services update ontoforge --region $REGION --image $IMAGE
 
 Objectif : dès qu'un commit arrive sur la branche `main` de GitHub, Cloud Build construit l'image et met le service à jour, sans lancer `deploy-demo.ps1`.
 Le fichier de construction est `deploy/cloudrun/cloudbuild-trigger.yaml` (construire, envoyer dans Artifact Registry, `gcloud run services update --image`,
-comme `deploy-demo.ps1`). Il ne contient **aucun secret** : les secrets restent attachés au service (étape 3) et ne passent jamais par Cloud Build.
+comme `deploy-demo.ps1`). Il ne contient aucun secret : les secrets restent attachés au service (étape 3) et ne passent jamais par Cloud Build.
 `deploy-demo.ps1` continue de marcher : les deux chemins peuvent coexister.
 
 > Ce que cette section ne fait pas : elle ne crée ni le service, ni le bucket, ni les secrets (étapes 1 à 5, à faire avant, une fois). Elle ne change pas
@@ -130,7 +130,7 @@ $BUILD_SA = "ontoforge-build@$PROJECT.iam.gserviceaccount.com"   # compte de ser
 
 ### 8.2 Compte de service de construction, avec les rôles minimaux
 
-Un compte dédié, qui ne sert qu'à cela (on évite le compte de service par défaut de Cloud Build, plus large). Quatre droits, chacun posé sur la ressource concernée
+Un compte dédié, qui ne sert qu'à cela (on évite le compte de service par défaut de Cloud Build, plus large). Il reçoit quatre droits, chacun posé sur la ressource concernée
 quand c'est possible :
 
 ```powershell
@@ -153,7 +153,7 @@ gcloud projects add-iam-policy-binding $PROJECT --member "serviceAccount:$BUILD_
 | `roles/iam.serviceAccountUser` | compte `ontoforge-run` | autoriser la nouvelle révision à tourner sous ce compte |
 | `roles/logging.logWriter` | projet | journaux de construction (le YAML demande `CLOUD_LOGGING_ONLY`) |
 
-Ne donne ni `roles/editor`, ni `roles/owner`, ni `roles/run.admin` à ce compte. Il n'a pas d'accès direct aux secrets, au bucket de données ni à tes comptes, mais il peut déployer une image sous `ontoforge-run`, qui les lit : **le vrai périmètre de confiance est « qui peut pousser sur `main` et approuver une construction »**. Garde donc `main` protégée (relecture, CI verte avant fusion) ; la protection de la branche et l'approbation manuelle (8.4) sont des contrôles de sécurité, pas du confort. Ne donne le rôle `roles/cloudbuild.builds.approver` qu'à toi.
+Ne donne ni `roles/editor`, ni `roles/owner`, ni `roles/run.admin` à ce compte. Il n'a pas d'accès direct aux secrets, au bucket de données ni à tes comptes, mais il peut déployer une image sous `ontoforge-run`, qui les lit : **le vrai périmètre de confiance est « qui peut pousser sur `main` et approuver une construction »**. Garde donc `main` protégée (relecture, CI verte avant fusion). La protection de la branche et l'approbation manuelle (8.4) sont des contrôles de sécurité, pas du confort. Ne donne le rôle `roles/cloudbuild.builds.approver` qu'à toi.
 Si une étape échoue avec « permission denied », le message nomme la permission manquante : ajoute le rôle le plus étroit qui la contient, jamais un rôle large.
 Pour créer le déclencheur avec ce compte (8.4), la personne qui lance la commande doit avoir `roles/iam.serviceAccountUser` sur `ontoforge-build` (acquis pour le propriétaire du projet).
 À VÉRIFIER au premier essai : si la mise à jour réclame un droit sur un secret, lis le message : si c'est le compte d'exécution qui est nommé, c'est `ontoforge-run` qui manque de droit sur le secret (étape 3), pas `ontoforge-build`.
@@ -164,7 +164,7 @@ Pour créer le déclencheur avec ce compte (8.4), la personne qui lance la comma
 gcloud builds connections create github ontoforge-github --region=$REGION
 ```
 
-La commande affiche **un lien** à ouvrir dans le navigateur : connecte-toi à GitHub, autorise l'application « Google Cloud Build » et ne lui donne accès qu'au dépôt `ontoforge`
+La commande affiche un lien à ouvrir dans le navigateur. Connecte-toi à GitHub, autorise l'application « Google Cloud Build » et ne lui donne accès qu'au dépôt `ontoforge`
 (« Only select repositories »). Reviens ensuite au terminal, puis :
 
 ```powershell
@@ -176,7 +176,7 @@ Si `describe` indique que l'installation n'est pas terminée, le lien qu'il affi
 
 ### 8.4 Créer le déclencheur
 
-On crée le déclencheur **à partir d'un fichier**, parce que le motif de branche `^main$` perd son `^` en ligne de commande : `gcloud` est un script `.cmd` et cmd.exe retire le `^` (le motif deviendrait `main$`, qui accepterait aussi `feature/main`).
+On crée le déclencheur à partir d'un fichier, parce que le motif de branche `^main$` perd son `^` en ligne de commande : `gcloud` est un script `.cmd` et cmd.exe retire le `^` (le motif deviendrait `main$`, qui accepterait aussi `feature/main`).
 Le fichier `deploy/cloudrun/trigger-main.yaml` ne contient aucun secret, seulement des noms de ressources et `<PROJET>` à remplacer :
 
 ```powershell
@@ -199,7 +199,7 @@ gcloud builds list --region=$REGION --limit=3                                   
 gcloud run services describe ontoforge --region=$REGION --format="value(spec.template.spec.containers[0].image)"
 ```
 
-Avec l'approbation requise (8.4), la construction **reste en attente (PENDING)** jusqu'à ton accord : approuve-la dans la console (Cloud Build > Historique > « Approuver »)
+Avec l'approbation requise (8.4), la construction reste en attente (PENDING) jusqu'à ton accord. Approuve-la dans la console (Cloud Build > Historique > « Approuver »)
 ou en ligne de commande, avec l'identifiant lu dans `gcloud builds list --region=$REGION --filter="status=PENDING"` (filtre à confirmer) :
 
 ```powershell

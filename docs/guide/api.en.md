@@ -32,6 +32,9 @@ The examples below are real responses (backend started with `ONTOFORGE_LLM_PROVI
 | POST | `/api/projects/{pid}/analyze` | analyse (target) |
 | PUT | `/api/projects/{pid}/decisions/{target}` | save decisions |
 | POST | `/api/projects/{pid}/decisions/{target}/accept-recommended` | accept the recommendations of the findings to decide (`?include_lost=true`: the lost ones too) |
+| POST | `/api/projects/{pid}/decisions/{target}/branch` | decide a hierarchy branch (L47) |
+| GET | `/api/projects/{pid}/justification/{target}` | justification file, HTML or Markdown (L47) |
+| POST | `/api/import/schema/preview` · `/api/projects/{pid}/import/schema/preview` · `/api/projects/{pid}/import/schema/apply` | import an SQL, CSV or JSON Schema: preview, apply (L48) |
 | GET | `/api/projects/{pid}/generate/{target}` | generated files |
 | GET | `/api/projects/{pid}/generate/{target}/zip` | zip archive |
 | POST | `/api/projects/{pid}/queries/translate` | translate SPARQL |
@@ -1137,3 +1140,15 @@ Current account, for any signed-in account (routes under `/api/auth`, which chec
 | GET | `/metadata` | ontology header `{header, card, fields}` (reader); changes go through `POST /ops` (`set_annotations`, `set_version_iri`) |
 
 New `POST /ops` operations: `set_deprecated {iri, value, replaced_by?}`, `set_annotations {iri, property, values, lang?}` (closed list of properties: SKOS, DCMI, `vs:term_status`, `owl:versionInfo`, `owl:priorVersion`), `set_version_iri {version_iri}`. `GET /conformance` adds `completeness` (score per entity and for the ontology) and findings BP08–BP16. Details: `docs/CONTRACTS.md` §19.
+
+### Branch arbitration and justification file (L47) {#arbitrage-justification-api}
+
+`PUT /decisions/{target}` still accepts `{finding: option}`. It also accepts `{decisions: {…}, reason?, reasons?: {finding: reason}, via?}`: the reason is one line, at most 280 characters (422 beyond that). The account and date of each decision are stored in `Project.decision_notes`.
+
+`POST /decisions/{target}/branch` takes `{root, rule?, option?, reason?, overwrite?}` (editor) and returns `{model, applied, skipped}`. Without `option`, it applies the recommendation to every undecided finding of the branch, except lost findings. With `option`, `rule` is required (422 otherwise); a decision made by another account is replaced only with `overwrite: true`. 404 if the root has no inheritance finding.
+
+`GET /projects/{pid}/justification/{target}?format=html|md&lang=fr|en` (readers included) returns the file as an attachment named `justification-<id>-<target>.<ext>`. The HTML is self-contained, has no script, and all text in it is escaped. Details: `docs/CONTRACTS.md` §20.
+
+### Schema import — `/api/import/schema`, `/api/projects/{pid}/import/schema` (L48) {#import-schema-api}
+
+Multipart form: `files[]`, `kind` (`auto|sql|csv|json-schema`), `options` (JSON), `base_iri` and, for apply, `expect_digest`. The preview outside a project is open to any signed-in account; preview and apply inside a project need write access. The preview returns classes, decisions, notices, ignored items and a `digest`. `apply` requires `expect_digest` (422 `missing_digest` otherwise) and answers 409 `stale_preview` if the project or files changed since the preview; the import can be undone with `POST /ops/undo`. Limits: 2 MB per file, 10 MB per request (413), 50 files, 400 tables. Details: `docs/CONTRACTS.md` §18.
