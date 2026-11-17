@@ -121,7 +121,7 @@ def detect_o15(ctx):
 
 def detect_o18(ctx):
     return [finding(ctx, "O18", p, f"{ctx.short(p)} ⊑ owl:topObjectProperty (sans effet).")
-            for p, v in sorted(list(ctx.onto.object_properties.items()) + list(ctx.onto.datatype_properties.items()))
+            for p, v in sorted(list(ctx.onto.object_properties.items()) + list(ctx.onto.datatype_properties.items()), key=lambda kv: kv[0])
             if TOP_OBJ in v.sub_property_of or "http://www.w3.org/2002/07/owl#topDataProperty" in v.sub_property_of]
 
 

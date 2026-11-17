@@ -6,8 +6,11 @@ import { useI18n } from '../i18n'
 import { ErrorView, Spin, useLoad, useToast } from '../ui'
 import { useAuth } from '../auth/AuthGate'
 import { aapi, type UploadedFile } from './assistant/aapi'
+import { SchemaImport } from './import/SchemaImport'
 
 const ASSISTANT_EXT = /\.(csv|tsv|sql|txt|md|markdown)$/i
+const SCHEMA_EXT = /\.(sql|ddl|csv|tsv)$/i   // L48 : import déterministe ; les .json passent d'abord un essai (JSON Schema ou JSON-LD ?)
+const DEFAULT_OPTS = { singularize: true, required_from_sample: false, dialect: 'auto', exclude: [] as string[], choices: {} as Record<string, string> }
 export const HANDOFF_KEY = 'of-handoff-'   // sessionStorage : fichier à joindre à l'assistant du projet <id>
 
 export function Projects() {
@@ -24,7 +27,8 @@ export function Projects() {
   const mob = useMobile()   // L44 : la liste d'abord ; la création passe dans une feuille du bas
   const [newOpen, setNewOpen] = useState(false)
   const [scope, setScope] = useState<'all' | 'mine' | 'shared'>('all')   // L42 : filtre de l'administrateur
-  const [staged, setStaged] = useState<File | null>(null)
+  const [staged, setStaged] = useState<File[] | null>(null)
+  const [schemaFiles, setSchemaFiles] = useState<File[] | null>(null)   // L48 : fichiers en cours d'aperçu d'import déterministe
   const open = (id: string, screen = 'tableau') => { location.hash = `#/projet/${id}/${screen}` }
   const date = (iso: string) => new Date(iso).toLocaleDateString(lang, { dateStyle: 'medium' })
 
@@ -37,8 +41,14 @@ export function Projects() {
     } catch (e) { setErr(e) } finally { setBusy(false) }
   }
   const drop = async (files: FileList | File[]) => {
-    const f = Array.from(files)[0]; if (!f) return
-    if (ASSISTANT_EXT.test(f.name)) { setStaged(f); return }   // CSV / SQL / texte : on propose l'assistant
+    const fs = Array.from(files); const f = fs[0]; if (!f) return
+    if (fs.every(x => SCHEMA_EXT.test(x.name))) { setStaged(fs); return }   // SQL / CSV : import déterministe, ou assistant s'il n'y a qu'un fichier
+    if (fs.length === 1 && /\.json$/i.test(f.name)) {   // JSON Schema ? l'aperçu répond 422 si ce n'en est pas un : on retombe sur l'import d'ontologie (JSON-LD)
+      setBusy(true); setErr(null)
+      try { await api.schemaPreview([f], DEFAULT_OPTS); setSchemaFiles([f]); setBusy(false); return } catch { /* pas un JSON Schema */ }
+      setBusy(false)
+    }
+    if (ASSISTANT_EXT.test(f.name)) { setStaged([f]); return }   // texte : on propose l'assistant
     setBusy(true); setErr(null)
     try {
       const pr = await api.createProject({ name: f.name.replace(/\.[^.]+$/, '') })
@@ -50,15 +60,36 @@ export function Projects() {
     } catch (e) { setErr(e) } finally { setBusy(false) }
   }
   const withAssistant = async () => {
-    if (!staged) return
+    if (!staged || staged.length !== 1) return
     setBusy(true); setErr(null)
     try {
-      const up: UploadedFile = await aapi.upload(staged)
-      const pr = await api.createProject({ name: staged.name.replace(/\.[^.]+$/, '') })
+      const up: UploadedFile = await aapi.upload(staged[0])
+      const pr = await api.createProject({ name: staged[0].name.replace(/\.[^.]+$/, '') })
       try { sessionStorage.setItem(HANDOFF_KEY + pr.id, JSON.stringify(up)) } catch { /* stockage indisponible : le fichier se joint à la main */ }
       setStaged(null); open(pr.id, 'assistant')
     } catch (e) { setErr(e) } finally { setBusy(false) }
   }
+
+  const zone = schemaFiles ? (
+    <SchemaImport files={schemaFiles} name={name.trim() || undefined} onCancel={() => setSchemaFiles(null)} onDone={id => { setSchemaFiles(null); open(id) }} />
+  ) : staged ? (
+    <Card tone="info" title={staged.length === 1 ? t('proj.staged.t', { name: staged[0].name }) : t('proj.staged.n', { n: staged.length })}>
+      <p className="muted" style={{ margin: '0 0 10px' }}>{t('proj.staged.d2')}</p>
+      <div className="row">
+        <Button variant="primary" icon="list-check" disabled={busy} data-testid="staged-schema" onClick={() => { setSchemaFiles(staged); setStaged(null) }}>{t('proj.staged.schema')}</Button>
+        {staged.length === 1 && ASSISTANT_EXT.test(staged[0].name) && <Button icon="wand-magic-sparkles" disabled={busy} data-testid="staged-assistant" onClick={withAssistant}>{t('proj.staged.go')}</Button>}
+        <Button variant="ghost" disabled={busy} onClick={() => setStaged(null)}>{t('proj.staged.cancel')}</Button>
+      </div>
+    </Card>
+  ) : (
+    <div className={'drop' + (over ? ' over' : '')} onDragOver={e => { e.preventDefault(); setOver(true) }} onDragLeave={() => setOver(false)}
+      onDrop={e => { e.preventDefault(); setOver(false); void drop(e.dataTransfer.files) }}>
+      <b>{t('proj.drop.title')}</b>
+      <div>{t('proj.drop.body')}</div>
+      <label className="btn" style={{ display: 'inline-block', marginTop: 8 }}>{t('proj.drop.pick')}
+        <input type="file" hidden multiple onChange={e => { if (e.target.files) void drop(e.target.files); e.target.value = '' }} /></label>
+    </div>
+  )
 
   return (
     <div className="page">
@@ -76,23 +107,7 @@ export function Projects() {
             <Button variant="primary" disabled={busy} onClick={create} style={{ alignSelf: 'flex-end' }}>{t('proj.create')}</Button>
           </div>
         </Card>
-        {staged ? (
-          <Card tone="info" title={t('proj.staged.t', { name: staged.name })}>
-            <p className="muted" style={{ margin: '0 0 10px' }}>{t('proj.staged.d')}</p>
-            <div className="row">
-              <Button variant="primary" icon="wand-magic-sparkles" disabled={busy} onClick={withAssistant}>{t('proj.staged.go')}</Button>
-              <Button variant="ghost" disabled={busy} onClick={() => setStaged(null)}>{t('proj.staged.cancel')}</Button>
-            </div>
-          </Card>
-        ) : (
-          <div className={'drop' + (over ? ' over' : '')} onDragOver={e => { e.preventDefault(); setOver(true) }} onDragLeave={() => setOver(false)}
-            onDrop={e => { e.preventDefault(); setOver(false); void drop(e.dataTransfer.files) }}>
-            <b>{t('proj.drop.title')}</b>
-            <div>{t('proj.drop.body')}</div>
-            <label className="btn" style={{ display: 'inline-block', marginTop: 8 }}>{t('proj.drop.pick')}
-              <input type="file" hidden onChange={e => { if (e.target.files) void drop(e.target.files); e.target.value = '' }} /></label>
-          </div>
-        )}
+        {zone}
       </div></BottomSheet> : <>
       <Card title={t('proj.new')}>
         <div className="row">
@@ -105,23 +120,7 @@ export function Projects() {
           <Button variant="primary" disabled={busy} onClick={create} style={{ alignSelf: 'flex-end' }}>{t('proj.create')}</Button>
         </div>
       </Card>
-      {staged ? (
-        <Card tone="info" title={t('proj.staged.t', { name: staged.name })}>
-          <p className="muted" style={{ margin: '0 0 10px' }}>{t('proj.staged.d')}</p>
-          <div className="row">
-            <Button variant="primary" icon="wand-magic-sparkles" disabled={busy} onClick={withAssistant}>{t('proj.staged.go')}</Button>
-            <Button variant="ghost" disabled={busy} onClick={() => setStaged(null)}>{t('proj.staged.cancel')}</Button>
-          </div>
-        </Card>
-      ) : (
-        <div className={'drop' + (over ? ' over' : '')} onDragOver={e => { e.preventDefault(); setOver(true) }} onDragLeave={() => setOver(false)}
-          onDrop={e => { e.preventDefault(); setOver(false); void drop(e.dataTransfer.files) }}>
-          <b>{t('proj.drop.title')}</b>
-          <div>{t('proj.drop.body')}</div>
-          <label className="btn" style={{ display: 'inline-block', marginTop: 8 }}>{t('proj.drop.pick')}
-            <input type="file" hidden onChange={e => { if (e.target.files) void drop(e.target.files); e.target.value = '' }} /></label>
-        </div>
-      )}
+      {zone}
       </>}
       {list.loading && <Spin />}
       <ErrorView error={list.error} what={t('proj.list')} />

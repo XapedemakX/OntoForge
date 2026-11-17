@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/schemas/shop.json",
+  "title": "Shop",
+  "type": "object",
+  "required": ["id", "name"],
+  "properties": {
+    "id": {"type": "string", "format": "uuid"},
+    "name": {"type": "string", "minLength": 1, "maxLength": 80},
+    "opened": {"type": "string", "format": "date"},
+    "status": {"enum": ["open", "closed"]},
+    "owner": {"$ref": "#/$defs/Person"},
+    "staff": {"type": "array", "items": {"$ref": "#/$defs/Person"}, "minItems": 1},
+    "tags": {"type": "array", "items": {"type": "string"}, "maxItems": 5},
+    "address": {"type": "object", "required": ["city"], "properties": {"city": {"type": "string"}, "zip": {"type": "string", "pattern": "^[0-9]{5}$"}}},
+    "rating": {"type": ["number", "null"], "minimum": 0, "maximum": 5},
+    "ext": {"$ref": "https://example.org/other.json#/$defs/Thing"},
+    "free": {"type": "object"}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "Person": {"type": "object", "required": ["email"], "properties": {"email": {"type": "string", "format": "email"}, "age": {"type": "integer", "minimum": 0, "exclusiveMaximum": 150}}},
+    "Employee": {"allOf": [{"$ref": "#/$defs/Person"}, {"properties": {"salary": {"type": "number"}}}]},
+    "Email": {"type": "string", "format": "email"}
+  }
+}

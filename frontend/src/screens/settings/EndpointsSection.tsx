@@ -95,14 +95,14 @@ export function EndpointsSection() {
             {data.endpoints.map(e => (
               <Fragment key={e.id}>
                 <tr>
-                  <td><label className="set-row" style={{ gap: 6 }}>
+                  <td data-l={data.active === e.id ? undefined : t('settings.ep.active')}><label className="set-row" style={{ gap: 6 }}>
                     <input type="radio" name="active-endpoint" checked={data.active === e.id} onChange={() => act(async () => { await settingsApi.setActiveEndpoint(e.id) })} aria-label={t('settings.ep.makeActive', { name: e.name })} />
                     {data.active === e.id && <span className="set-chip on">{t('settings.ep.activeBadge')}</span>}</label></td>
-                  <td><b>{e.name}</b></td>
-                  <td className="mono">{e.url}</td>
-                  <td>{e.auth === 'none' ? t('settings.ep.auth.none') : <>{e.auth === 'basic' ? 'Basic' : 'Bearer'} <span className="set-key">{e.secret_unreadable ? t('settings.secret.unreadable') : e.has_secret ? '••••' : t('settings.secret.none')}</span></>}</td>
-                  <td className="mono">{e.default_graph || '—'}</td>
-                  <td>{e.timeout_s} s</td>
+                  <td data-l={t('settings.ep.name')}><b>{e.name}</b></td>
+                  <td className="mono" data-l="URL">{e.url}</td>
+                  <td data-l={t('settings.ep.auth')}>{e.auth === 'none' ? t('settings.ep.auth.none') : <>{e.auth === 'basic' ? 'Basic' : 'Bearer'} <span className="set-key">{e.secret_unreadable ? t('settings.secret.unreadable') : e.has_secret ? '••••' : t('settings.secret.none')}</span></>}</td>
+                  <td className={'mono' + (e.default_graph ? '' : ' empty')} data-l={t('settings.ep.graph')}>{e.default_graph || '—'}</td>
+                  <td data-l={t('settings.ep.timeout').replace(/\s*\(s\)\s*$/, '')}>{e.timeout_s} s</td>
                   <td className="acts">
                     <Button size="sm" icon="plug" onClick={() => test(e)}>{t('settings.ep.test')}</Button>{' '}
                     <Button size="sm" icon="pen" onClick={() => setForm(e.id)} aria-label={t('settings.ep.edit') + ' ' + e.name}>{t('common.edit')}</Button>{' '}

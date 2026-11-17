@@ -132,7 +132,7 @@ def test_every_route_with_project_in_body_checks_access(app):
     assert src.count("load_project(body.project_id") >= 5
 
 
-FILL = {"pid": "P", "target": "curiosity", "perimeter_id": "x", "qid": "q1", "login": "bob", "path": "a.ttl"}
+FILL = {"pid": "P", "target": "curiosity", "perimeter_id": "x", "qid": "q1", "login": "bob", "path": "a.ttl", "version": "1.0.0"}
 
 
 def _fill(template, pid):

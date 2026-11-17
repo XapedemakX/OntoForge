@@ -35,6 +35,31 @@ DOC = o("Documenter seulement", "Rien n'est généré : la sémantique est perdu
 IGNORE = o("Ignorer", "Aucune génération ni contrôle ; l'axiome est seulement listé au rapport.")
 REPORT = o("Lister au rapport", "Information conservée dans le rapport de transposition uniquement.")
 
+# L47 (D-L47-01, P-01) : constats « review » sans vrai choix. Quand l'option recommandée pour la cible ne bloque rien et que l'alternative
+# n'est qu'un abandon de la contrainte, le moteur reclasse le constat en `auto` (trace : `Finding.auto_reason`, rapport, dossier de
+# justification). Jamais une règle `lost` (D-L14-02) : une perte reste toujours arbitrée par l'humain. Un constat à une seule option
+# est reclassé de la même façon (voir `engine._reclassify`). Forme : règle -> {cible: (option recommandée sans perte, motif)}.
+NO_CHOICE: dict[str, dict[str, tuple[str, str]]] = {
+    "D13": {N: ("validation", "La restriction est conservée comme requête Cypher de détection (IS NOT NULL en Enterprise, à décommenter) ; elle ne bloque pas le chargement. L'alternative (ignorer) ne fait que perdre la contrainte.")},
+    "O09": {C: ("validation", "Borne maximale (ou propriété fonctionnelle) conservée comme validation du connecteur Curiosity : un 'au plus n' ne demande aucune donnée de plus, il signale seulement un excès de liens (code de sortie 2 si violé) ; l'alternative (ignorer) ne fait que perdre la contrainte."),
+            N: ("validation", "La cardinalité est conservée comme requête Cypher de détection ; elle ne bloque pas le chargement. L'alternative (ignorer) ne fait que perdre la contrainte.")},
+    "O10": {N: ("validation", "L'existence est conservée comme requête Cypher de détection ; elle ne bloque pas le chargement. L'alternative (ignorer) ne fait que perdre la contrainte.")},
+    "D09": {C: ("validation", "Les facettes (bornes, motif) deviennent des validations du connecteur ; une valeur absente n'est pas une violation (garde de présence : un scalaire non nullable absent, soit 0, n'est pas contrôlé) ; l'alternative les perdrait."),
+            N: ("validation", "Les facettes (bornes, motif) deviennent des requêtes Cypher de détection, non bloquantes ; une valeur absente n'est pas une violation ; l'alternative les perdrait.")},
+}
+# Curiosity, O09 (L47 it2) : seul un « au plus n » / une propriété fonctionnelle reste en auto ; `exactly n` (n >= 1) contient un minimum, donc exige la donnée
+# et fait sortir le connecteur en code 2 : renforcement, il revient à arbitrer (voir `engine._tightens_curiosity`).
+# Curiosity : D13 (some / min / exactly) et O10 restent à arbitrer (L47 it1, revue curiosity). Sous OWA, `some` / `min 1` n'obligent pas à connaître
+# la valeur ; le connecteur Curiosity généré sort en code 2 sur violation : exiger la donnée est un renforcement, donc un vrai choix
+# (rigueur du chargement ou tolérance aux jeux incomplets). Neo4j : les validations sont des requêtes de détection qui ne bloquent rien.
+# Règles dont un constat à UNE SEULE option passe en `auto`. Vide à dessein (D-L47-01) : D10 « typage d'origine perdu », D03, O03, R01, R02 et A02
+# n'ont qu'une option mais signalent un risque que l'oracle (samples/trap) veut visible ; K02 reste à arbitrer (D-031bis : hasKey infère
+# sameAs, l'unicité des valeurs est un renforcement). Une règle s'ajoute ici après relecture de l'expert de la cible.
+SINGLE_OPTION_AUTO: set[str] = set()
+SINGLE_OPTION_REASON = "Une seule option possible : aucun choix à faire."
+# Règles d'héritage : leurs constats se regroupent par racine de hiérarchie (arbitrage « par branche », P-02).
+HIERARCHY_RULES = ("C02", "C03", "C04", "C10")
+
 RULES: dict[str, dict] = {
     # =========================================================================================== CLASSES
     "C01": r("classes", "owl:Class nommée", "Toute classe nommée déclarée.", "auto", "Classe → type de nœud",
@@ -370,7 +395,7 @@ RULES: dict[str, dict] = {
              {"report": REPORT, "provenance_property": o("Propriété de provenance", "Sur la relation correspondante "
                                                          "(Neo4j) ; sinon rapport.", [N])},
              "report", "Les méta-données d'axiome n'ont pas d'équivalent de schéma.", "documentation"),
-    "A03": r("annotations", "owl:deprecated true", "Entité dépréciée.", "auto", "Entité dépréciée",
+    "A03": r("annotations", "owl:deprecated true", "Entité dépréciée.", "review", "Entité dépréciée",
              {"exclude": o("Exclure", "Non générée."), "flag_deprecated": o("Garder avec drapeau", "Générée, marquée dépréciée.")},
              "exclude", "Une entité dépréciée ne doit pas entrer dans un nouveau schéma.", "none"),
     "M01": r("meta", "En-tête d'ontologie", "owl:Ontology (IRI, versionIRI, versionInfo, dcterms).", "auto",

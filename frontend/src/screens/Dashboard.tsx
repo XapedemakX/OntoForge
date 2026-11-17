@@ -6,7 +6,8 @@ import { useT } from '../i18n'
 import { useAssistantContext } from '../lib/assistantContext'
 import { useLoad, useToast } from '../ui'
 import { useReadOnly } from '../collab/readonly'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import { SchemaImport, SCHEMA_EXT } from './import/SchemaImport'
 import { TourCard } from '../tour'
 import { ActivityCard } from '../collab/ActivityCard'
 import { useMobile } from '../shell/sidePref'
@@ -18,8 +19,10 @@ const count = (m: PGModel | null | undefined) => {
   return c
 }
 
-export function Dashboard({ p, target }: ScreenProps) {
+export function Dashboard({ p, setP, target }: ScreenProps) {
   const t = useT()
+  const [impFiles, setImpFiles] = useState<File[] | null>(null)   // L48 : import déterministe SQL / CSV / JSON Schema dans ce projet
+  const impIn = useRef<HTMLInputElement>(null)
   const mob = useMobile()
   useAssistantContext({ screen: 'dashboard', projectId: p.id, target })
   const tn = (x: Target) => (x === 'curiosity' ? 'Curiosity' : 'Neo4j')
@@ -142,6 +145,14 @@ export function Dashboard({ p, target }: ScreenProps) {
 
         <Fold screen="tableau" id="scopes" title={t('dash.perimeters')} desc={t('fold.tableau.scopes')}>
           {peri.data && peri.data.length ? <ul className="gens">{peri.data.map(x => <li key={x.id}><b>{x.name}</b><span className="muted">{t('dash.stat.classes', { n: x.classes.length })}</span></li>)}</ul> : <EmptyState pose="loupe" title={t('dash.perimeters.none')} action={<Button size="sm" icon="plus" onClick={() => go(p.id, 'ontologie')}>{t('dash.perimeters.create')}</Button>}>{t('dash.perimeters.hint')}</EmptyState>}
+        </Fold>
+
+        <Fold screen="tableau" id="import" title={t('dash.import.title')} desc={t('fold.tableau.import')}>
+          {impFiles ? <SchemaImport files={impFiles} project={p} onCancel={() => setImpFiles(null)} onDone={(_id, np) => { setImpFiles(null); if (np) setP(np); toast(t('imp.done')) }} /> : <>
+            <p className="muted" style={{ margin: '0 0 10px' }}>{t('dash.import.body')}</p>
+            <input ref={impIn} type="file" hidden multiple accept=".sql,.ddl,.csv,.tsv,.json" data-testid="dash-import-input" onChange={e => { const fs = Array.from(e.target.files ?? []).filter(f => SCHEMA_EXT.test(f.name)); if (fs.length) setImpFiles(fs); e.target.value = '' }} />
+            <Button icon="file-import" data-write title={roHint} disabled={ro} data-testid="dash-import-btn" onClick={() => impIn.current?.click()}>{t('dash.import.btn')}</Button>
+          </>}
         </Fold>
 
         {!mob && <ActivityCard pid={p.id} rev={p.updated_at} />}

@@ -250,6 +250,17 @@ class _Model:
 # ---------------------------------------------------------------------------
 # schema.cypher
 # ---------------------------------------------------------------------------
+def _dep(description: Optional[str]) -> bool:
+    """Drapeau « garder avec drapeau » (A03, L49) : le moteur préfixe la description ; Neo4j n'a pas de métadonnée de schéma
+    pour la dépréciation, le drapeau passe donc par des commentaires Cypher, le README et le diagramme."""
+    d = description or ""
+    return d.startswith("[DÉPRÉCIÉ]") or d.startswith("[DEPRECATED]")
+
+
+def _dep_tag() -> str:
+    return T("[DÉPRÉCIÉ]", "[DEPRECATED]")
+
+
 def _schema(m: _Model) -> str:
     names = _Names()
     community: list[str] = []
@@ -264,6 +275,13 @@ def _schema(m: _Model) -> str:
     for nt in m.nodes:
         lab = nt.labels[0] if nt.labels else nt.name
         s, ql = _snake(lab), quote(lab)
+        if _dep(nt.description):
+            community.append(T(f"// {_dep_tag()} :{lab} — type déprécié gardé avec drapeau (A03) : ne plus y créer de données.",
+                               f"// {_dep_tag()} :{lab} — deprecated type kept with a flag (A03): do not create new data."))
+        for p in nt.properties:
+            if _dep(p.description):
+                community.append(T(f"// {_dep_tag()} {lab}.{p.name} — propriété dépréciée gardée avec drapeau (A03).",
+                                   f"// {_dep_tag()} {lab}.{p.name} — deprecated property kept with a flag (A03)."))
         pat = f"ON (n:{ql})" if legacy else f"FOR (n:{ql})"
         ipat = f"FOR (n:{ql})"  # les index gardent FOR (valable en 4.4)
         inh = m.inherited(nt)
@@ -459,6 +477,11 @@ def _ingest(m: _Model) -> str:
         props = m.all_props(nt)
         shape = ", ".join(p.name + ("[]" if p.is_list else "") for p in props)
         lines = [f"// :{':'.join(nt.labels or [nt.name])} — $rows : [{{{shape}}}]"]
+        if _dep(nt.description):
+            lines.insert(0, f"// {_dep_tag()} :{lab}")
+        deps = [p.name for p in props if _dep(p.description)]
+        if deps:
+            lines.insert(0, f"// {_dep_tag()} " + ", ".join(deps))
         if not key:
             lines.append(T("// ATTENTION : aucune clé → CREATE (non idempotent)", "// WARNING: no key → CREATE (not idempotent)"))
             lines.append("UNWIND $rows AS row")
@@ -485,6 +508,8 @@ def _ingest(m: _Model) -> str:
         props = e.properties
         shape = ", ".join([T("from{…clé ", "from{…key ") + e.from_ + "}", T("to{…clé ", "to{…key ") + e.to + "}"] + [p.name for p in props])
         lines = [f"// ({e.from_})-[:{e.name}]->({e.to}) — $rows : [{{{shape}}}]"]
+        if _dep(e.description):
+            lines.insert(0, f"// {_dep_tag()} [:{e.name}]")
         lines.append("UNWIND $rows AS row")
         pa, pb = m.node_pattern("a", e.from_, "row.from"), m.node_pattern("b", e.to, "row.to")
         if pa is None or pb is None:
@@ -752,19 +777,23 @@ def _mermaid(m: _Model) -> str:
     for nt in m.nodes:
         key = set(m.key(nt)) if nt.key else set()
         lines.append(f"  class {_mmd_id(nt.name)} {{")
-        if nt.abstract:
-            lines.append("    <<abstract>>")
+        stereo = " ".join(x for x in ("abstract" if nt.abstract else "", "deprecated" if _dep(nt.description) else "") if x)
+        if stereo:
+            lines.append(f"    <<{stereo}>>")
         for p in nt.properties:
             t = f"List~{p.type}~" if p.is_list else p.type
             lines.append(f"    +{t} {p.name}" + ("$" if p.name in key else ""))
         lines.append("  }")
         if nt.icon:
             lines.append(f'  note for {_mmd_id(nt.name)} "' + T("icône : ", "icon: ") + f'{nt.icon}"')
+        deps = [p.name for p in nt.properties if _dep(p.description)]
+        if deps:
+            lines.append(f'  note for {_mmd_id(nt.name)} "{_dep_tag()} ' + ", ".join(deps) + '"')
     for nt in m.nodes:
         for a in m.ancestors(nt):
             lines.append(f"  {_mmd_id(a.name)} <|-- {_mmd_id(nt.name)}")
     for e in m.edges:
-        label = e.name + (f" ({', '.join(p.name for p in e.properties)})" if e.properties else "")
+        label = e.name + (f" ({', '.join(p.name for p in e.properties)})" if e.properties else "") + (f" {_dep_tag()}" if _dep(e.description) else "")
         arrow = "..>" if e.derived else ("--" if (e.symmetric or not e.directed) else "-->")
         lines.append(f"  {_mmd_id(e.from_)} {arrow} {_mmd_id(e.to)} : {label}")
     return "\n".join(lines) + "\n"
@@ -782,11 +811,13 @@ def _readme(m: _Model, files: dict[str, str]) -> str:
     n_idx = sum(1 for l in sl if re.match(r"(CYPHER \d+ )?CREATE (TEXT |FULLTEXT )?INDEX", l))
     rows = [T("| Label(s) | Clé | Propriétés |", "| Label(s) | Key | Properties |"), "|---|---|---|"]
     for nt in m.nodes:
-        labels = ":" + ":".join(nt.labels or [nt.name]) + (T(" *(abstrait)*", " *(abstract)*") if nt.abstract else "")
-        rows.append(f"| `{labels}` | {', '.join(m.key(nt)) or '—'} | {', '.join(p.name for p in nt.properties)} |")
+        labels = ":" + ":".join(nt.labels or [nt.name])
+        tags = (T(" *(abstrait)*", " *(abstract)*") if nt.abstract else "") + (f" **{_dep_tag()}**" if _dep(nt.description) else "")
+        props = ", ".join(p.name + (f" {_dep_tag()}" if _dep(p.description) else "") for p in nt.properties)
+        rows.append(f"| `{labels}`{tags} | {', '.join(m.key(nt)) or '—'} | {props} |")
     rels = [T("| Relation | De → Vers | Propriétés | Remarque |", "| Relationship | From → To | Properties | Note |"), "|---|---|---|---|"]
     for e in m.edges:
-        rem = ", ".join(x for x in (T("dérivée", "derived") if e.derived else "", T("symétrique", "symmetric") if e.symmetric else "",
+        rem = ", ".join(x for x in (_dep_tag() if _dep(e.description) else "", T("dérivée", "derived") if e.derived else "", T("symétrique", "symmetric") if e.symmetric else "",
                                     f"card. {e.cardinality.out}" if e.cardinality.out != "0..*" else "") if x)
         rels.append(f"| `:{e.name}` | {e.from_} → {e.to} | {', '.join(p.name for p in e.properties) or '—'} | {rem or '—'} |")
     lost = [T(f"- `{f.id}` — {f.title} (choix : {f.chosen or f.recommended or 'non arbitré'})",

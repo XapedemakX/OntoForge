@@ -68,6 +68,8 @@ def _swap(pid: str, redo: bool) -> dict:
         except history.EmptyStack:
             raise HTTPException(status_code=409, detail="Rien à rétablir" if redo else "Rien à annuler") from None
         store.save(p)
+        from ..projects import releases  # L49 : annuler l'enregistrement d'une version retire aussi l'entrée de releases.json
+        releases.on_history(pid, label, redo)
         return _result(p, ok=True, applied=0, errors=[], warnings=[], label=label)
 
 

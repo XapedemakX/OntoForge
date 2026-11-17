@@ -36,12 +36,35 @@ jobs:
           cache: pip
           cache-dependency-path: backend/pyproject.toml
       - name: Installer le backend
-        run: pip install -e "backend[dev]"
+        run: pip install -c backend/constraints.txt -e "backend[dev]"
       - name: Tests
         working-directory: backend
         env:
           ONTOFORGE_LLM_PROVIDER: mock
         run: pytest -q
+
+  audit-dependances:
+    name: Audit des dépendances (pip-audit)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+      # Production : les versions exactes des images (backend/constraints.txt). Toute vulnérabilité connue fait échouer l'étape (L46, SEC-09).
+      # pip-audit épinglé ; sa mise à jour passe par Jerem (D-L21-02).
+      - name: Installer pip-audit
+        run: pip install pip-audit==2.10.1
+      - name: Audit de production (bloquant)
+        run: pip-audit -r backend/constraints.txt --no-deps --disable-pip
+      # Développement (extra dev : pytest, graphql-core), absent des images : signalé sans bloquer.
+      - name: Audit de développement (informatif)
+        continue-on-error: true
+        run: |
+          pip install -e "backend[dev]"
+          pip freeze --exclude-editable > /tmp/gel.txt
+          pip-audit -r /tmp/gel.txt --no-deps --disable-pip
 
   frontend:
     name: Frontend (build)

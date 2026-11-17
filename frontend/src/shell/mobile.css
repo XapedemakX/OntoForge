@@ -171,3 +171,6 @@
 .fold .qlib-hd h2 { display: none; }
 .fold .qlib { border: 0; padding: 0; }
 .is-mobile .dash > * { flex-shrink: 0; }   /* L45 : plus de panneaux, la liste des étapes ne doit pas être écrasée */
+
+/* L50 — champs des écrans secondaires : 16 px (pas de zoom automatique iOS), malgré les règles d'écran plus spécifiques */
+html.is-mobile .shacl input, html.is-mobile .shacl select, html.is-mobile .shacl .shgrid input.msg, html.is-mobile .doc-search input { font-size: 16px; min-height: var(--tap); }

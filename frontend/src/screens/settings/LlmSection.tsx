@@ -81,12 +81,12 @@ export function LlmSection({ s, reload }: { s: SettingsView; reload: () => Promi
             {s.llm_providers.map(p => (
               <Fragment key={p.id}>
                 <tr>
-                  <td><b>{p.name}</b> {!p.configured && <span className="set-chip warn">{t('settings.llm.notConfigured')}</span>}</td>
-                  <td>{t('settings.kind.' + p.kind)}</td>
-                  <td className="mono">{p.kind === 'mock' ? '—' : p.model}</td>
-                  <td className="mono">{p.base_url || '—'}</td>
-                  <td className="set-key">{p.kind === 'mock' || p.kind === 'ollama' ? '—' : p.key_unreadable ? t('settings.secret.unreadable') : p.has_key ? `•••• ${p.key_last4 || '••••'}` : t('settings.secret.none')}</td>
-                  <td>{p.id === s.default_provider_id
+                  <td data-l={t('settings.llm.name')}><b>{p.name}</b> {!p.configured && <span className="set-chip warn">{t('settings.llm.notConfigured')}</span>}</td>
+                  <td data-l={t('settings.llm.kind')}>{t('settings.kind.' + p.kind)}</td>
+                  <td className={'mono' + (p.kind === 'mock' ? ' empty' : '')} data-l={t('settings.llm.model')}>{p.kind === 'mock' ? '—' : p.model}</td>
+                  <td className={'mono' + (p.base_url ? '' : ' empty')} data-l={t('settings.llm.url')}>{p.base_url || '—'}</td>
+                  <td className={'set-key' + (p.kind === 'mock' || p.kind === 'ollama' ? ' empty' : '')} data-l={t('settings.llm.key')}>{p.kind === 'mock' || p.kind === 'ollama' ? '—' : p.key_unreadable ? t('settings.secret.unreadable') : p.has_key ? `•••• ${p.key_last4 || '••••'}` : t('settings.secret.none')}</td>
+                  <td data-l={p.id === s.default_provider_id ? undefined : t('settings.llm.default')}>{p.id === s.default_provider_id
                     ? <span className="set-chip on"><Icon name="star" /> {t('settings.llm.default')}</span>
                     : <Button size="sm" onClick={() => act(() => settingsApi.put({ default_provider_id: p.id }))}>{t('settings.llm.makeDefault')}</Button>}</td>
                   <td className="acts">

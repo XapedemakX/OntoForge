@@ -57,6 +57,16 @@ The home screen (`#/`) lists the projects with a summary: classes, properties, s
 
 ![New project form: Name field and Starting point list](img/en/projets-nouveau.png "New project: 1 the name, 2 the starting point (empty project or sample).")
 
+### Importing a SQL, CSV or JSON Schema schema {#import-schema}
+
+No language model involved: the analysis is deterministic (the same file always gives the same result) and never runs against a database. Formats: PostgreSQL, MySQL / MariaDB and SQL Server DDL (`CREATE TABLE`, `ALTER TABLE`, enumerated types, comments), CSV (one file per class, delimiter detected), JSON Schema (`$defs`, local `$ref`, `allOf`, `oneOf`, `anyOf`).
+
+- **Where**: drop the file on the Projects screen ("See the import preview (no AI)" button) or, inside a project, use the "Import from a database or schema" block of the dashboard. Importing into a project is reserved to accounts that can write to it.
+- **Mandatory preview**: nothing is written before "Apply". The preview lists the classes, properties and relations produced, the **decisions to make** (association table: relation or class; foreign key that is also the primary key: relation or subclass; CSV `xxx_id` column), the notices and the **ignored items** (triggers, indexes, complex `CHECK`s, JSON Schema keywords with no OWL equivalent). Each class can be excluded.
+- **Rules**: table → class; primary key and non-null `UNIQUE` → `owl:hasKey`; foreign key → functional object property (minimum cardinality 1 if the columns are `NOT NULL`); simple `CHECK`s (value list, bounds, length) → enumeration and SHACL facets. Types without an OWL 2 equivalent (date, time, duration, year) are degraded with a notice; dates must be completed to date-times at ingestion. Several `CHECK`s on a column are combined (intersection of values). SHACL shapes are generated at the same time.
+- **Existing ontology**: IRIs already present are never modified; if the preview is stale (the project changed), applying is refused (409) and you just rerun the preview. The import can be reverted with "Undo".
+- **Limits**: 2 MB per file (10 MB in total), 50 files, 400 tables, 1,024 columns per table, 8 seconds of computation. External JSON Schema references are never fetched.
+
 ### Sharing a project {#partager-un-projet}
 
 When authentication is on (`ONTOFORGE_AUTH=password`), projects belong to accounts.
@@ -301,11 +311,23 @@ The Business map (L36b) draws the schema in tinted business zones, to read it at
 On the OWL conformance screen (button "Check again"):
 
 - Profiles: OWL 2 DL, EL, QL, RL (and RDFS). Each is conformant or not, with the reasons for any gap.
-- Findings: `error`, `warning`, `info`, with code, message, subject and specification reference (Structural Specification, Mapping to RDF). Codes W01-W07 (OWL 2 DL rules) and BP01-BP07 (best practices: missing labels, hierarchy cycles, naming...). A text filter finds a code or a subject.
+- Findings: `error`, `warning`, `info`, with code, message, subject and specification reference (Structural Specification, Mapping to RDF). Codes W01-W07 (OWL 2 DL rules) and BP01-BP16 (best practices: missing labels, hierarchy cycles, naming...). A text filter finds a code or a subject.
 
 Example: the *trap* example is OWL 2 DL conformant "subject to closing the PROV-O import" (the import is not resolved offline, see BP05).
 
 ![OWL conformance screen: DL, EL, QL, RL and RDFS profiles and the list of findings](img/en/conformite-profils.png "The OWL 2 profiles and the findings; 1 the HermiT card.")
+
+### Best practices: entity card, deprecation, versions {#bonnes-pratiques-fiche-versions}
+
+Since L49, the Conformance screen adds three cards and nine best-practice findings (BP08 to BP16). They are warnings or information: they block neither the OWL 2 DL profile nor generation.
+
+- **Entity card completeness.** Each class and property gets a score (0 to 100 %): fr and en labels (`rdfs:label` or `skos:prefLabel`), definition (`skos:definition` or `rdfs:comment`), author (`dcterms:creator`), source (`dcterms:source`), review status (`vs:term_status`: `unstable`, `testing`, `stable`, `archaic`) and, for a functional, transitive or otherwise characterised property, a justification (`skos:editorialNote`). The ontology score is the average of the cards; the card lists the least complete ones.
+- **Card in the editor.** In the graph inspector and in the list view, the "Entity card" section shows the score and what is missing, and lets you enter the definition, authors, source, status and justification (several values separated by ";").
+- **Deprecate instead of delete.** The "Deprecate" button sets `owl:deprecated true`, the `archaic` status and, if you pick a replacement, `dcterms:isReplacedBy`. The entity stays in the ontology (existing data keep their IRI) and is struck through in the graph and lists. In the analysis, finding A03 is to be arbitrated: by default the entity is not generated. Excluding a class also removes the non-deprecated relationships and attributes that point to it, whether their endpoints are declared (domain, range) or inferred (restrictions, shapes, inverse: finding O02): A03 lists them ("Excluding also removes…") and their base finding becomes `lost`. When the exclusion removes only some endpoints (range as a union, several domains), the loss is partial: A03 notes it as "Partly", the rest is generated and the finding keeps its level. "Keep with flag" generates it marked `[DEPRECATED]`: `<summary>` comment in `Schema.cs` and edge comment in `Edges.cs` (Curiosity); `// [DEPRECATED]` comments in `schema.cypher` and `ingest.cypher`, a mention in `README-neo4j.md` and the `<<deprecated>>` stereotype in `model.mmd` (Neo4j). The transposition report has a "Deprecated entities" section (replacement, handling, losses). Generated SHACL shapes of a deprecated class or property are deactivated (`sh:deactivated true`), even when it is kept with a flag: shape generation does not depend on the target; remove `sh:deactivated` in the Files screen to validate it anyway. "Undeprecate" reverts it.
+- **Ontology header.** Title and purpose (fr, en), version (`owl:versionInfo`), version IRI (`owl:versionIRI`), creation and modification dates, authors, contributors, reused vocabularies (`dcterms:references`), keywords (`dcterms:subject`), sources and license (`dcterms:license`). Everything goes into the Turtle export.
+- **Ontology versions.** The card compares the current state with the last recorded version and proposes a SemVer number: **major** when a class, relationship, attribute or datatype is added or removed, or when an axiom defining them changes (hierarchy, domain, range, characteristics, restrictions, keys…); **minor** for labels, definitions, comments, deprecations and individuals; **patch** for other annotations and the header. "Record the version" sets `owl:versionInfo`, `owl:versionIRI` (the ontology IRI followed by `/1.2.0`), `owl:priorVersion` and `dcterms:modified`, then keeps the generated release note in the history. Undoing the recording (Ctrl+Z in the editor, or Undo) removes the annotations **and** the version from the history, so it can be recorded again; Redo puts it back. With no change since the last version, no new version is proposed. A number lower than the level of the changes is accepted but flagged in the note. The last 30 versions are kept.
+
+Findings: BP08 missing definition · BP09 missing author, source or status (a single line when no entity has any) · BP10 unknown status, or deprecated entity with a stable status · BP11 characteristic without justification · BP12 deprecated without replacement, replacement not found or deprecated too · BP13 deprecated entity still used as domain, range or restriction · BP14 `owl:versionInfo` missing or not SemVer · BP15 `owl:versionIRI` equal to the ontology IRI, or version number in the terms' namespace · BP16 incomplete header.
 
 ### Reasoning with HermiT {#raisonner-avec-hermit}
 
@@ -385,17 +407,19 @@ Shapes then enrich the transposition (required property, scalar, enumeration, pa
 
 ## 9. Analysis & arbitration {#analyse-arbitrage}
 
-![Analysis & arbitration screen for the Curiosity target: counters, progress bar and finding groups by rule](img/en/analyse-synthese.png "The analysis: 1 the Accept all recommendations button, 2 the summary, 3 one group of findings per rule.")
+![Analysis & arbitration screen for the Curiosity target: counters, progress bar, finding groups by rule and by hierarchy root](img/en/analyse-synthese.png "The analysis: 1 the Accept all recommendations button, 2 the summary, 3 one group of findings per hierarchy root.")
 
 1. Pick the target (Curiosity or Neo4j) at the top. Re-analyse reruns the engine.
 2. Summary: "mapped automatically", "to review", "lost or at risk", "decided", "pending", with a green / orange / red bar.
-3. Findings are grouped by rule (identifier `C07`, title, number of findings, progress `0/3 decided`, recommended option). The Lost groups come first, then To review. `auto` findings are collapsed. There is a text filter and a "Pending only" checkbox.
+3. Findings are grouped by rule (identifier `C07`, title, number of findings, progress `0/3 decided`, recommended option), and by hierarchy root for inheritance (see "Arbitrating by branch"). The Lost groups come first, then To review. `auto` findings are collapsed. There is a text filter and a "Pending only" checkbox.
    ![An open lost finding: its rationale, two options with their impact and the recommendation for Curiosity](img/en/analyse-constat.png "An open finding: 1 the rationale, 2 the options and their impact, 3 the recommendation.")
 4. Decide:
    - "Apply the recommendation to the whole rule": a single grouped decision (`"<règle>:*"`);
    - expand the rule to decide finding by finding: each finding shows the subject, the justification and the options with their impact;
    - "Accept all recommendations" at the top, then refine.
 5. Until you decide, the recommendation is applied. The model and exports are always complete, but the `review` and `lost` points stay flagged in the report.
+
+![A hierarchy root: the inheritance rules and their recommended option, a field for the reason and the button that decides the whole branch](img/en/analyse-branche.png "One branch: 1 the recommended option of each rule, 2 the one-line reason, 3 the button that decides the whole branch.")
 
 ![Analysis after applying the recommendation to a whole rule: the arbitrated counters have moved](img/en/analyse-regle-appliquee.png "After “Apply the recommendation to the whole rule”: 1 the counters move.")
 
@@ -406,6 +430,30 @@ The Neo4j target often offers other recommendations (for example multi-labels fo
 ![Analysis for the Neo4j target: other recommendations, for example multi-labels for inheritance](img/en/analyse-neo4j.png "The same analysis for the Neo4j target.")
 
 Each rule is explained, with an OWL example and the transposition per target, in [`regles.en.md`](regles.en.md). The Explain button on a finding asks the assistant to write an explanation (deterministic fallback without an LLM).
+
+### Findings with no choice to make {#constats-sans-choix}
+
+When there is nothing to choose, the tool does not ask: the finding becomes "automatic" and is no longer counted under "to arbitrate". This happens when the recommended option blocks nothing and the other option only drops the constraint:
+
+- datatype facets (`D09`), for both targets: an absent value is not a violation (the Curiosity connector does not check an absent numeric scalar, which reads as 0);
+- cardinality of a relationship (`O09`): for **Neo4j**, always (non-blocking Cypher detection query); for **Curiosity**, only "at most n" and the functional property, which require no extra data;
+- a restriction on a data property (`D13`) and an existence requirement on a relationship (`O10`), for **Neo4j only**: the constraint becomes a Cypher detection query that does not block loading (the Enterprise `IS NOT NULL` stays commented out until you want it).
+
+For **Curiosity**, `D13`, `O10` and the "exactly n" `O09` findings stay to arbitrate: the generated connector stops with exit code 2 when a validation fails, and in OWL `some`, `min 1` or `exactly 1` do not require the value to be known. Requiring the data is a tightening (strict loading versus tolerance for incomplete datasets), so it is a real choice. Likewise, a "validation" is still a tightening of the open world, never an equivalence: the reason says so. The Curiosity connector now reads these bounds (`exactly n` = at least n and at most n; `at most n`; `at least n`): they produce a real check, no longer a "not checked" warning.
+
+The reason shows under the finding ("No choice to make: …") and in the justification file. On the automaint sample, the findings to arbitrate drop from 48 to 19 for Neo4j and from 42 to 41 for Curiosity (the ten automaint `O09` findings are "exactly 1", so tightenings for Curiosity); counting one decision per group (one per hierarchy root, one per rule), 8 remain for Neo4j and 9 for Curiosity.
+
+**Lost** findings (`lost`) are never reclassified: a person always arbitrates a loss. Single-option rules that flag a risk (for example `D10`, original typing lost) and `K02` keys stay under review.
+
+### Arbitrating by branch and saying why {#arbitrer-par-branche}
+
+- **By hierarchy root.** Inheritance findings (`C02`, `C03`, `C04`, `C10`) are grouped by root (Party, Engine, Vehicle on automaint). "Apply the recommendation to the whole branch" (the line names the option applied to each rule) decides the undecided findings of the branch at once; opened, "Impose on the whole branch" applies the chosen option to one rule, including findings already decided, even by another account: the gesture is explicit and replaces the original author and reason. One decision per root avoids flattening one branch and keeping another.
+- **Why.** Each decision accepts a one-line reason (280 characters at most), typed before or after the choice (Enter or "Save reason"). It is tied to the option it justifies: when you change the option of an already decided finding, the field is cleared. The account and the date are saved with the decision. On a phone, decisions have no reason (the file shows "—"). A decision from an older project stays valid: it shows no reason, author or date.
+- **Rights.** Deciding is reserved to editors and the owner; a reader sees the decisions, their reasons and the justification file.
+
+### Justification file {#dossier-de-justification}
+
+In Exports, "Justification file" downloads, for the chosen target, a self-contained HTML document or a Markdown file: the retained model, what is lost, what is compensated (validations, materializations), the human decisions (who, when, why), the recommendations not followed, what is left to arbitrate and the findings reclassified with no choice to make. A project reader can download it. The HTML contains no script and no remote resource, and any text from the ontology or typed by a user is escaped. Fixed texts follow the interface language; ontology labels stay as they are.
 
 ## 10. Target model {#modele-cible}
 
@@ -623,7 +671,7 @@ Krakie can show you around the tool in 21 steps (about 5 minutes). The screen di
 
 OntoForge can be read and corrected with your fingers. On a phone (a screen 700 px wide or less, or landscape and under 500 px high) the application changes shape: a short header (back, project name, share), five tabs at the bottom and sheets that rise from the bottom of the screen. On a tablet (iPad in portrait included) the wide layout is kept, with larger touch targets. Nothing changes on a computer.
 
-![Phone: dashboard with "To do now", the four-line journey and the tab bar](img/en/mobile-accueil.png "The dashboard on a phone: 1 the short header, 2 what is left to do, 3 the five tabs.")
+![Phone: dashboard with "To do now", the four-line journey and the tab bar](img/en/mobile-accueil.png "The dashboard on a phone: short header at the top, 'To do now' in the middle, the five tabs at the bottom.")
 
 ### The five tabs {#telephone-onglets}
 
@@ -633,7 +681,7 @@ OntoForge can be read and corrected with your fingers. On a phone (a screen 700 
 - **Arbitrate**: one card per point to decide; the badge tells how many are left.
 - **More**: the business map first, then the other screens (conformance, SHACL, target model, exports, versions, assistant), the documentation and the account. There is no side drawer any more.
 
-![Phone: More tab with the business map, the screens and the "On a computer" tag](img/en/mobile-plus.png "The More tab: 1 the business map, 2 screens reserved for a computer are tagged, 3 'Send me the link' at the bottom of the list.")
+![Phone: More tab with the business map, the screens and the "On a computer" tag](img/en/mobile-plus.png "The More tab: the business map first, screens reserved for a computer tagged, 'Send me the link' at the bottom of the list.")
 
 ### Sheets, graph and map {#telephone-fiches-graphe}
 
@@ -641,13 +689,13 @@ OntoForge can be read and corrected with your fingers. On a phone (a screen 700 
 - **Graph.** Pinch to zoom, drag to move the view, tap a node to open its sheet, long press for actions (view, centre, and for anyone who can edit the project, add a subclass or a property). Nodes do not move by accident; "Fit all" adjusts the view, search centres the node it finds and the legend folds away.
 - **Business map.** Same gestures: pinch, drag, tap for the sheet. It is read-only on a phone.
 
-![Phone: ontology graph, full labels, Fit all button](img/en/mobile-graphe.png "The graph under your fingers: 1 labels are not cut off, 2 the Fit all button.")
+![Phone: ontology graph, full labels, Fit all button](img/en/mobile-graphe.png "The graph under your fingers: labels are not cut off, the 'Fit all' button adjusts the view.")
 
 ### Editing from the phone {#telephone-modifier}
 
 A small fix can be made on the spot, from the sheet of a class or a property: **add a subclass**, **add a property** (attribute or relation), **rename** or **describe** (label and comment). These changes follow the same rules as elsewhere: optimistic locking (a conflict is reported if someone changed the project meanwhile), activity log. A project reader sees no editing button.
 
-![Phone: class sheet with the Subclass, Property and Rename or describe buttons](img/en/mobile-fiche.png "A class sheet: 1 add a subclass, 2 add a property, 3 rename or describe.")
+![Phone: class sheet with the Subclass, Property and Rename or describe buttons](img/en/mobile-fiche.png "A class sheet: three buttons to add a subclass, add a property, rename or describe.")
 
 Heavy editing stays "On a computer": drawing in the graph, the Turtle file editor, the SHACL shapes grid, the business map in edit mode. These screens are tagged in "More", with a "Send me the link" button that shares the address (the phone's share sheet, or a copy to the clipboard).
 
@@ -655,19 +703,19 @@ Heavy editing stays "On a computer": drawing in the graph, the Turtle file edito
 
 Each point to decide is a card: the recommendation is preselected, "Validate this choice" takes a decision with one tap, "Why this recommendation?" explains, "Skip" keeps the point for later. When several points follow the same rule, "Apply the recommendation to all N in the rule" decides them at once, with five seconds to undo. The "To arbitrate", "Lost" and "Done" pills filter the list.
 
-![Phone: arbitration card with the recommended option and the Validate this choice button](img/en/mobile-arbitrage.png "An arbitration card: 1 the recommended option, 2 Validate this choice.")
+![Phone: arbitration card with the recommended option and the Validate this choice button](img/en/mobile-arbitrage.png "An arbitration card: the recommended option is preselected, 'Validate this choice' decides in one tap.")
 
 ### Krakie on a phone {#telephone-krakie}
 
 A 56 px round button stays above the tab bar (the aquarium is reserved for computers). It opens a full-screen panel with nothing cut off; the phone keyboard does not hide the input area. **The language model is chosen just above the input area**: the list shows the providers configured in Settings (for example Claude, Gemini or Mock), as on a computer, and the choice is remembered in this browser. With a single provider, its name is shown without a list. No key or address appears, for anyone, even a project reader. The guided tour is not offered on a phone: it targets the side bar, which does not exist at that screen size.
 
-![Phone: Krakie panel with the model choice above the input area](img/en/mobile-krakie.png "Krakie on a phone: 1 the model in use, one tap to change it, 2 the input area.")
+![Phone: Krakie panel with the model choice above the input area](img/en/mobile-krakie.png "Krakie on a phone: the model in use, one tap to change it, sits just above the input area.")
 
 ### Collapsible panels {#telephone-panneaux}
 
 On a phone, settings and information blocks (home, versions, saved queries) are panels you open with a tap. **Collapsed**, a panel shows its title followed by a short grey description ("Scopes — define the perimeters of your ontology"); **open**, it shows only its title and its content. Everything is collapsed by default, except the main panel of the screen (for example "Versions targeted by this project"). Each panel's state is remembered per screen, in this browser; the keyboard works (Enter or Space).
 
-![Phone: home with one panel open and the others collapsed](img/en/mobile-panneaux.png "The panels: 1 one open panel (title only), 2 the others, collapsed with their description.")
+![Phone: home with one panel open and the others collapsed](img/en/mobile-panneaux.png "The panels: one open panel (title only), the others collapsed with their description.")
 
 ### Reading comfort {#telephone-confort}
 

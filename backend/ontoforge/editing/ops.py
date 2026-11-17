@@ -860,6 +860,120 @@ def _op_set_collapsed(w: Work, op: dict) -> None:
         w.view.collapsed = [c for c in w.view.collapsed if c != iri]
 
 
+# ---- L49 : bonnes pratiques (dépréciation, annotations de fiche, en-tête, version) ------------------------
+
+def _annotated(w: Work, iri: str):
+    """Entité annotable : une entité de l'ontologie, ou l'en-tête (IRI de l'ontologie)."""
+    if iri == w.onto.meta.iri:
+        return w.onto.meta
+    e = entity(w.onto, iri)
+    if e is None:
+        raise OpError(f"Entité inconnue : {iri}")
+    return e
+
+
+def _declare_annotation_property(w: Work, prop: str) -> None:
+    """OWL 2 DL exige la déclaration des propriétés d'annotation utilisées (SS §5.8), hors propriétés prédéfinies (SS §5.5)."""
+    from ..core.onto_model import AnnotationProperty
+    from ..io.rdf_import import BUILTIN_ANNOTATION_PROPERTIES
+    if prop not in BUILTIN_ANNOTATION_PROPERTIES and prop not in w.onto.annotation_properties:
+        w.onto.annotation_properties[prop] = AnnotationProperty(iri=prop)
+
+
+def _op_set_deprecated(w: Work, op: dict) -> None:
+    """Déprécier au lieu de supprimer : owl:deprecated true (SS §5.5) + dcterms:isReplacedBy facultatif ; ``value: false`` annule."""
+    from ..conformance.practices import IS_REPLACED_BY, VS_STATUS
+    from ..core.onto_model import Annotation
+    iri = _iri(_need(op, "iri"))
+    e = entity(w.onto, iri)
+    if e is None:
+        raise OpError(f"Entité inconnue : {iri}")
+    on = op.get("value", True)
+    if not isinstance(on, bool):
+        raise OpError("« value » doit être un booléen")
+    e.deprecated = on
+    if "replaced_by" in op:
+        reps = _iri_list(op.get("replaced_by"), "replaced_by")
+        if iri in reps:
+            raise OpError("Une entité ne peut pas se remplacer elle-même")
+        for r in reps:
+            if not _exists_any(w.onto, r):
+                w.warn(f"Le remplaçant {r} n'est pas déclaré dans l'ontologie")
+        e.annotations = [a for a in e.annotations if a.property != IS_REPLACED_BY]
+        e.annotations += [Annotation(property=IS_REPLACED_BY, value=r, is_iri=True) for r in reps]
+        if reps:
+            _declare_annotation_property(w, IS_REPLACED_BY)
+    if not on:
+        e.annotations = [a for a in e.annotations if a.property != IS_REPLACED_BY]
+    elif op.get("status", True):  # statut de revue « archaic » (W3C Vocabulary Status) aligné sur la dépréciation
+        e.annotations = [a for a in e.annotations if a.property != VS_STATUS] + [Annotation(property=VS_STATUS, value="archaic")]
+        _declare_annotation_property(w, VS_STATUS)
+
+
+def _op_set_annotations(w: Work, op: dict) -> None:
+    """Remplace toutes les valeurs d'une propriété d'annotation de la fiche (liste fermée ``practices.WRITABLE``).
+
+    ``values`` : liste de chaînes ou d'objets ``{value, lang?}`` ; ``lang`` (racine de l'opération) limite le remplacement
+    aux valeurs de cette langue. Liste vide = suppression. Les propriétés à valeur IRI (``IRI_VALUED``) exigent des IRIs absolues."""
+    from ..conformance.practices import IRI_VALUED, SEMVER_RE, STATUS_VALUES, VERSION_INFO, VS_STATUS, WRITABLE
+    from ..core.onto_model import Annotation
+    iri = _iri(_need(op, "iri"))
+    prop = _iri(_need(op, "property"), "property")
+    if prop not in WRITABLE:
+        raise OpError(f"Propriété d'annotation non modifiable ici : {prop}")
+    e = _annotated(w, iri)
+    raw = op.get("values", [])
+    if not isinstance(raw, list) or len(raw) > 50:
+        raise OpError("« values » doit être une liste (50 valeurs au plus)")
+    only_lang = op.get("lang")
+    if only_lang is not None:
+        only_lang = _lang(op)
+    new: list[Annotation] = []
+    for x in raw:
+        if isinstance(x, str):
+            x = {"value": x}
+        if not isinstance(x, dict) or not isinstance(x.get("value"), str):
+            raise OpError("Chaque valeur est une chaîne ou un objet {value, lang}")
+        v = x["value"].strip()
+        if not v:
+            continue
+        if len(v) > 4000:
+            raise OpError("Valeur trop longue (4000 caractères au plus)")
+        if prop in IRI_VALUED:
+            new.append(Annotation(property=prop, value=_iri(v, prop.rsplit("/", 1)[-1]), is_iri=True))
+            continue
+        lang = x.get("lang", only_lang)
+        if lang is not None and (not isinstance(lang, str) or not LANG_RE.match(lang)):
+            raise OpError(f"Code de langue invalide : {lang!r}")
+        if prop == VS_STATUS and v not in STATUS_VALUES:
+            raise OpError(f"Statut de revue inconnu « {v} » ; valeurs : {', '.join(STATUS_VALUES)}")
+        if prop == VERSION_INFO and not SEMVER_RE.match(v):
+            w.warn(f"« {v} » n'est pas au format SemVer MAJEUR.MINEUR.CORRECTIF")
+        dt = None
+        if prop.endswith(("/created", "/modified")):
+            if re.fullmatch(r"\d{4}-\d{2}-\d{2}", v):
+                v += "T00:00:00+00:00"  # xsd:dateTime (dans la carte OWL 2, SS §4) ; xsd:date en sortirait
+            check_literal(v, XSD + "dateTime", None)
+            dt, lang = XSD + "dateTime", None
+        new.append(Annotation(property=prop, value=v, lang=lang or None, datatype=dt))
+    keep = [a for a in e.annotations if not (a.property == prop and (only_lang is None or (a.lang or "") == only_lang))]
+    e.annotations = keep + new
+    if new:
+        _declare_annotation_property(w, prop)
+
+
+def _op_set_version_iri(w: Work, op: dict) -> None:
+    """owl:versionIRI de l'ontologie (SS §3.1) ; ``null`` la retire. Elle doit différer de l'IRI de l'ontologie (SS §3.3)."""
+    v = op.get("version_iri")
+    if v in (None, ""):
+        w.onto.meta.version_iri = None
+        return
+    v = _iri(v, "version_iri")
+    if v == w.onto.meta.iri:
+        raise OpError("owl:versionIRI doit différer de l'IRI de l'ontologie (OWL 2 SS §3.3)")
+    w.onto.meta.version_iri = v
+
+
 HANDLERS: dict[str, Callable[[Work, dict], None]] = {
     "add_class": _op_add_class,
     "rename_entity": _op_rename_entity,
@@ -881,6 +995,9 @@ HANDLERS: dict[str, Callable[[Work, dict], None]] = {
     "set_icon": _op_set_icon,
     "move_node": _op_move_node,
     "set_collapsed": _op_set_collapsed,
+    "set_deprecated": _op_set_deprecated,
+    "set_annotations": _op_set_annotations,
+    "set_version_iri": _op_set_version_iri,
 }
 
 TRACKED = ("onto", "view", "perimeters", "shapes", "decisions")

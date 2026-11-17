@@ -1,0 +1,18 @@
+.bp-card h4 { display: flex; align-items: center; gap: 8px; }
+.bp-score { font-variant-numeric: tabular-nums; }
+.bp-fields { border: 0; padding: 0; margin: 0; display: grid; gap: 6px; min-width: 0; }
+.bp-f { display: grid; gap: 2px; min-width: 0; }
+.bp-f > span { font-size: 12px; color: var(--muted, #667); }
+.bp-f input, .bp-f textarea, .bp-f select, .bp-deprow select { width: 100%; min-width: 0; box-sizing: border-box; }
+.bp-deprow { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-top: 6px; }
+.bp-deprow select { flex: 1 1 140px; }
+.bp-missing, .bp-hint { font-size: 12px; margin: 4px 0; }
+.bp-dep { margin: 4px 0; }
+.bp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
+.bp-crit { display: flex; flex-wrap: wrap; gap: 6px; }
+.bp-note { white-space: pre-wrap; font-family: var(--mono, monospace); font-size: 12px; max-height: 320px; overflow: auto; background: var(--bg2, rgba(127,127,127,.08)); padding: 8px; border-radius: 6px; }
+.bp-changes { max-height: 240px; overflow: auto; }
+.dep-name { text-decoration: line-through; opacity: .75; }
+.of-tree em.dep { font-style: normal; font-size: 10px; margin-left: 4px; padding: 0 4px; border-radius: 4px; background: var(--review-soft); color: var(--review); border: 1px solid var(--review-edge); }
+.ol-left em.dep { font-style: normal; font-size: 10px; margin-left: 4px; padding: 0 4px; border-radius: 4px; background: var(--review-soft); color: var(--review); border: 1px solid var(--review-edge); }
+.bp-f textarea { font: inherit; }

@@ -2,6 +2,44 @@
 
 Format : par version, ce qui change pour l'utilisateur, puis le détail par lot. Sources : rapports `journal/L*/rapport*.md`, revues, `journal/decisions.md`. Les lots sont décrits dans `lots/`.
 
+## L50 : finitions du téléphone et déploiement automatique préparé (17 nov. 2026) {#l50-finitions-telephone-deploiement-automatique-17-nov-2026}
+
+Suite des notes de clôture de L45.
+
+- **Krakie.** Le fournisseur de démonstration s'affiche « Mock (démonstration) » une seule fois, sans le « · mock » répété.
+- **Paramètres sur téléphone.** Les listes de fournisseurs de langage et d'endpoints SPARQL deviennent des cartes avec un libellé devant chaque valeur (Nom, Type, Modèle…) ; les cellules vides sont masquées. Avant, les valeurs s'empilaient sans titre.
+- **Champs à 16 px** dans Shapes et dans la recherche du guide : plus de zoom automatique à la saisie sur iPhone.
+- **Guide.** Les légendes des captures « téléphone » ne citent plus de repères numérotés qui n'existent pas sur les images.
+- **Déploiement automatique (préparé, rien n'est lancé).** `deploy/cloudrun/cloudbuild-trigger.yaml` et la section 8 du README Cloud Run : commandes PowerShell pour connecter GitHub, créer le déclencheur sur `main` et un compte de service aux droits minimaux. À exécuter par vous.
+
+## L47 : dossier de justification et arbitrage par racine (16 nov. 2026) {#l47-justification-arbitrage-16-nov-2026}
+
+Idées P-01, P-02, P-05 du carnet, « lance le tout » de Jerem (D-L46-01, D-L47-01 à D-L47-03).
+
+- **Moins de décisions à prendre.** Les constats sans vrai choix passent en automatique, avec leur motif : facettes `D09` (deux cibles), cardinalité `O09`, restriction de données `D13` et existence `O10` (Neo4j ; sur Curiosity, seuls « au plus n » et fonctionnelle : le connecteur échoue sur violation, `exactement n`, `au moins n` et `some` sont des renforcements, donc de vrais choix). Sur automaint, les constats à arbitrer passent de 48 à 19 (Neo4j) et de 42 à 41 (Curiosity) ; en comptant une décision par groupe (racine ou règle), 8 pour Neo4j et 9 pour Curiosity. Les constats perdus restent toujours arbitrés par une personne.
+- **Arbitrer par branche.** Les constats d'héritage sont regroupés par racine de hiérarchie : « Appliquer la recommandation à toute la branche » ou « Imposer » une option à une règle de la branche.
+- **Pourquoi.** Chaque décision accepte une raison en une ligne, effacée quand l'option change ; le compte et la date sont enregistrés (pas de raison sur téléphone). Les anciens projets se chargent sans changement (décisions sans raison).
+- **Dossier de justification.** Bouton dans Exports, HTML autonome (sans script, tout échappé) ou Markdown : modèle retenu, perdu, compensé, décisions (qui, quand, pourquoi), recommandations non suivies. Un lecteur peut le télécharger.
+- Interface : `PUT /decisions/{cible}` accepte `{decisions, reason, via}` en plus de l'ancien format ; nouvelles routes `POST /decisions/{cible}/branch` et `GET /justification/{cible}`. Voir CONTRACTS §20.
+
+## L49 : bonnes pratiques d'ontologie — fiche, dépréciation, versions, en-tête (17 nov. 2026) {#l49-bonnes-pratiques-17-nov-2026}
+
+- **Fiche complète.** Chaque classe et propriété a un score de complétude (libellés fr et en, définition, auteur, source, statut de revue, justification des caractéristiques), visible dans l'inspecteur du graphe, la vue liste et l'écran Conformité. Neuf nouveaux constats de bonnes pratiques, BP08 à BP16, tous non bloquants.
+- **Déprécier au lieu de supprimer.** Bouton « Déprécier » (avec remplaçant facultatif) : l'entité est barrée dans le graphe et les listes, n'est plus générée par défaut et le rapport de transposition la liste. Le constat A03 devient à arbitrer (« Garder avec drapeau » la génère marquée).
+- **Versions de l'ontologie.** L'écran Conformité compare l'ontologie à la dernière version enregistrée, propose un numéro SemVer (majeure, mineure, correctif) et rédige la note de version ; l'enregistrement pose `owl:versionInfo`, `owl:versionIRI` et `owl:priorVersion`.
+- **En-tête éditable.** Titre, objectif, version, dates, auteurs, contributeurs, vocabulaires réutilisés, mots-clés, sources et licence, repris à l'export Turtle.
+- Détail : D-L49-01, D-L49-02, `docs/CONTRACTS.md` §19, `journal/L49/rapport.md`. Aucune dépendance ajoutée.
+
+## L48 : import déterministe de schémas SQL, CSV et JSON Schema (17 nov. 2026) {#l48-import-schema-17-nov-2026}
+
+- **Import sans IA.** Un DDL PostgreSQL, MySQL ou SQL Server, des CSV ou un JSON Schema deviennent une ontologie OWL 2 DL et ses formes SHACL, depuis l'écran Projets (zone de dépôt) ou le tableau de bord d'un projet.
+- **Aperçu obligatoire.** Classes, propriétés, décisions à arbitrer (associations, sous-classes, références CSV), avis et éléments ignorés sont affichés avant d'appliquer ; chaque classe peut être exclue. L'import est annulable et refusé si l'aperçu est périmé.
+- Réservé aux comptes qui peuvent écrire ; limites de taille, de profondeur et de durée ; aucune référence externe n'est téléchargée.
+
+## L46 : mise à jour des composants serveur (17 nov. 2026) {#l46-composants-serveur-17-nov-2026}
+
+- Mise à jour des composants du serveur web (FastAPI, Starlette, analyse des envois de fichiers) vers des versions corrigées, et contrôle automatique des dépendances à chaque intégration continue. Aucun changement de comportement pour l'utilisateur.
+
 ## L45 : téléphone, choix du modèle de Krakie, panneaux repliables (16 nov. 2026) {#l45-telephone-modele-panneaux-16-nov-2026}
 
 Retour de Jerem du 16/11 sur la version mobile.

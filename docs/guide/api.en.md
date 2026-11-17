@@ -493,7 +493,7 @@ ams:BrandShape a sh:NodeShape ;
 
 ### `GET /api/projects/{pid}/conformance` {#get-api-projects-pid-conformance}
 
-`ConformanceReport`: `profiles` (DL, EL, QL, RL, RDFS), `profile_violations` (reasons per profile), `issues` (`level` = `error` | `warning` | `info`, `code` W01–W07 / BP01–BP07, `message`, `subject`, `spec_ref`).
+`ConformanceReport`: `profiles` (DL, EL, QL, RL, RDFS), `profile_violations` (reasons per profile), `issues` (`level` = `error` | `warning` | `info`, `code` W01–W07 / BP01–BP16, `message`, `subject`, `spec_ref`), `completeness` (L49).
 
 **Response 200**
 
@@ -1125,3 +1125,15 @@ Current account, for any signed-in account (routes under `/api/auth`, which chec
 | PUT | `/auth/preferences` | `{lang: fr\|en}`: the account's language, stored on the server |
 
 `GET /api/auth/session` adds `must_change`, `source` and `lang` (the account's language). While `must_change` is true, every other `/api` route answers 403 `password_change_required`.
+
+### Released versions and header — `/api/projects/{pid}/releases`, `/metadata` (L49) {#versions-publiees-api}
+
+| Method | Path | Role |
+|---|---|---|
+| GET | `/releases` | `{releases:[{version, at, by, previous, proposed, level, counts, version_iri}]}`, newest first (reader) |
+| GET | `/releases/preview` | diff with the last version: `{previous, current, proposed, level: major\|minor\|patch\|null, unchanged, counts, changes:[{level, change, collection, iri, field?, replaced_by?}], truncated, version_iri, note}`; `level: null` and `unchanged: true` when nothing changed since the last version ; `proposed` is then the next patch, the interface disables saving until a number is typed, and `POST /releases` is still accepted (reader) |
+| GET | `/releases/{version}` | one version with `changes` and `note` (Markdown); 404 if unknown (reader) |
+| POST | `/releases` | `{version?, note?}` → 201 `{release, project}`: sets `owl:versionInfo`, `owl:versionIRI`, `owl:priorVersion`, `dcterms:modified`; `release.downgraded: true` when the number is lower than the level of the changes (accepted, flagged in the note); 422 if the version is not SemVer or not greater than the previous one (editor). Undoable: `POST /ops/undo` on the `version <x>` entry also removes the version from `GET /releases` (it can be recorded again), `POST /ops/redo` puts it back |
+| GET | `/metadata` | ontology header `{header, card, fields}` (reader); changes go through `POST /ops` (`set_annotations`, `set_version_iri`) |
+
+New `POST /ops` operations: `set_deprecated {iri, value, replaced_by?}`, `set_annotations {iri, property, values, lang?}` (closed list of properties: SKOS, DCMI, `vs:term_status`, `owl:versionInfo`, `owl:priorVersion`), `set_version_iri {version_iri}`. `GET /conformance` adds `completeness` (score per entity and for the ontology) and findings BP08–BP16. Details: `docs/CONTRACTS.md` §19.

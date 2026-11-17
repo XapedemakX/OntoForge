@@ -150,3 +150,9 @@ constat à arbitrer, priorité recommandée aux shapes.
 - Même entrée → même sortie (tri) ; accepter toutes les recommandations ne change pas le modèle.
 - Oracle de non-régression : `samples/trap/expected-findings.yaml` (79 constats + 6 `must_not`), test
   `backend/tests/test_mapping_oracle.py`.
+
+## 9. Constats sans vrai choix (L47)
+- Un constat `review` passe en `auto` (`Finding.auto_reason`) seulement si l'option recommandée ne bloque rien et que l'autre option abandonne la contrainte (`catalog.NO_CHOICE`). Jamais un `lost`.
+- Une validation applicative reste un renforcement du monde ouvert. Sous Curiosity, le connecteur sort en code 2 sur violation : `some` / `min` (D13, O10) restent un vrai choix ; sous Neo4j ce sont des requêtes de détection, non bloquantes.
+- Les règles à une seule option qui signalent un risque (D10…) et K02 restent visibles. Toute nouvelle entrée de `NO_CHOICE` passe par l'expert de la cible.
+- Décisions : une raison en une ligne, liée à l'option qu'elle justifie (vidée quand l'option change) ; l'arbitrage par racine passe par `POST /decisions/{cible}/branch`.

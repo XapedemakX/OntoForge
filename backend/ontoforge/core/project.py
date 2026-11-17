@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 
 from ..businessmap.model import BusinessMapState
 from .onto_model import OntoModel, OntologyMeta
-from .pg_model import Target
+from .pg_model import DecisionNote, Target
 from .shapes_model import ShapesModel
 
 
@@ -64,3 +64,6 @@ class Project(BaseModel):
     target_versions: dict[str, str] = Field(default_factory=dict)
     # L36a : cartes métier {ontology, target} (zones, rôles, cadres, scénarios, positions). Rétrocompatible : absent = aucune carte.
     business_maps: dict[str, BusinessMapState] = Field(default_factory=dict)
+    # L47 (D-L47-02) : trace des décisions humaines {cible: {id de constat: DecisionNote}}. Rétrocompatible : un ancien projet n'en a pas
+    # (les décisions existantes valent « choix sans raison »). N'influe jamais sur analyze : seul `decisions` pilote le moteur.
+    decision_notes: dict[str, dict[str, DecisionNote]] = Field(default_factory=dict)

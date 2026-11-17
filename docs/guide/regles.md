@@ -81,7 +81,7 @@ Les règles S01, S02 (conflits OWL/SHACL) et G02 (décision invalide) sont de l'
 | **R02** | Relation n-aire | review | `keep_node` | `keep_node` | aucune |
 | **A01** | Annotations | auto | `schema_metadata` | `schema_metadata` | Documentation |
 | **A02** | Annotation d'axiome | review | `report` | `report` | Documentation |
-| **A03** | Entité dépréciée | auto | `exclude` | `exclude` | aucune |
+| **A03** | Entité dépréciée | review | `exclude` | `exclude` | aucune |
 | **M01** | Métadonnées d'ontologie | auto | `schema_metadata` | `schema_metadata` | Documentation |
 | **M02** | Import d'ontologie | review | `external_reference` | `external_reference` | Arbitrage humain |
 | **G01** | Construct non transposé | lost | `report` | `report` | Documentation |
@@ -1580,7 +1580,7 @@ ex:Car a owl:Class . ex:Vehicle a owl:Class .
 
 - **Construct** : owl:deprecated true
 - **Détection** : Entité dépréciée.
-- **Sévérité** : auto (appliquée directement)
+- **Sévérité** : review (à arbitrer, depuis L49)
 - **Exemple dans trap** : `am:ServiceBooklet`
 
 **Exemple OWL**

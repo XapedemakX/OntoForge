@@ -57,6 +57,16 @@ L'en-tête porte, sur chaque écran de projet : le choix de la cible (Curiosity 
 
 ![Formulaire Nouveau projet : champ Nom et liste Point de départ](img/fr/projets-nouveau.png "Nouveau projet : 1 le nom, 2 le point de départ (projet vide ou exemple).")
 
+### Importer un schéma SQL, CSV ou JSON Schema {#import-schema}
+
+Sans modèle de langage : l'analyse est déterministe (le même fichier donne toujours le même résultat) et ne s'exécute jamais sur une base. Formats : DDL PostgreSQL, MySQL / MariaDB et SQL Server (`CREATE TABLE`, `ALTER TABLE`, types énumérés, commentaires), CSV (un fichier par classe, séparateur détecté), JSON Schema (`$defs`, `$ref` locaux, `allOf`, `oneOf`, `anyOf`).
+
+- **Où** : déposer le fichier sur l'écran Projets (bouton « Voir l'aperçu de l'import (sans IA) »), ou, dans un projet, le bloc « Importer depuis une base ou un schéma » du tableau de bord. L'import dans un projet est réservé aux comptes qui peuvent y écrire.
+- **Aperçu obligatoire** : rien n'est écrit avant « Appliquer ». L'aperçu liste les classes, propriétés et relations produites, les **décisions à prendre** (table d'association : relation ou classe ; clé étrangère qui est aussi clé primaire : relation ou sous-classe ; colonne `xxx_id` d'un CSV), les avis et les **éléments ignorés** (déclencheurs, index, `CHECK` complexes, mots-clés JSON Schema sans équivalent OWL). Chaque classe peut être exclue.
+- **Règles** : table → classe ; clé primaire et `UNIQUE` non nul → `owl:hasKey` ; clé étrangère → propriété objet fonctionnelle (cardinalité minimale 1 si les colonnes sont `NOT NULL`) ; `CHECK` simples (liste de valeurs, bornes, longueur) → énumération et facettes SHACL. Les types sans équivalent OWL 2 (date, heure, durée, année) sont dégradés avec un avis ; les dates devront être complétées en date-heure à l'ingestion. Plusieurs `CHECK` sur une colonne se cumulent (intersection des valeurs). Les formes SHACL sont générées en même temps.
+- **Ontologie existante** : les IRI déjà présentes ne sont jamais modifiées ; si l'aperçu devient périmé (le projet a changé), l'application est refusée (409) et il suffit de relancer l'aperçu. L'import est annulable avec « Annuler ».
+- **Limites** : 2 Mo par fichier (10 Mo au total), 50 fichiers, 400 tables, 1 024 colonnes par table, 8 secondes de calcul. Les références externes d'un JSON Schema ne sont jamais téléchargées.
+
 ### Partager un projet {#partager-un-projet}
 
 Quand l'authentification est activée (`ONTOFORGE_AUTH=password`), les projets sont nominatifs.
@@ -301,11 +311,23 @@ La Carte métier (L36b) dessine le schéma en zones métier teintées, pour le l
 Écran Conformité OWL (bouton « Revérifier ») :
 
 - Profils : OWL 2 DL, EL, QL, RL (et RDFS) : chacun est conforme ou non, avec les raisons des écarts.
-- Constats : `error`, `warning`, `info`, avec code, message, sujet et référence de spécification (Structural Specification, Mapping to RDF). Codes W01–W07 (règles OWL 2 DL) et BP01–BP07 (bonnes pratiques : labels manquants, cycles de hiérarchie, nommage…). Un filtre texte permet de retrouver un code ou un sujet.
+- Constats : `error`, `warning`, `info`, avec code, message, sujet et référence de spécification (Structural Specification, Mapping to RDF). Codes W01–W07 (règles OWL 2 DL) et BP01–BP16 (bonnes pratiques : labels manquants, cycles de hiérarchie, nommage…). Un filtre texte permet de retrouver un code ou un sujet.
 
 Exemple : l'exemple *trap* est conforme OWL 2 DL « sous réserve de la fermeture d'import PROV-O » (l'import n'est pas résolu hors ligne, voir BP05).
 
 ![Écran Conformité OWL : profils DL, EL, QL, RL, RDFS et liste des constats](img/fr/conformite-profils.png "Les profils OWL 2 et les constats ; 1 la carte HermiT.")
+
+### Bonnes pratiques : fiche, dépréciation, versions {#bonnes-pratiques-fiche-versions}
+
+Depuis L49, l'écran Conformité ajoute trois cartes et neuf constats de bonnes pratiques (BP08 à BP16). Ce sont des avertissements ou des informations : ils ne bloquent ni le profil OWL 2 DL ni la génération.
+
+- **Complétude des fiches.** Chaque classe et chaque propriété a un score (0 à 100 %) : libellés fr et en (`rdfs:label` ou `skos:prefLabel`), définition (`skos:definition` ou `rdfs:comment`), auteur (`dcterms:creator`), source (`dcterms:source`), statut de revue (`vs:term_status` : `unstable`, `testing`, `stable`, `archaic`) et, pour une propriété fonctionnelle, transitive ou autre, une justification (`skos:editorialNote`). Le score de l'ontologie est la moyenne des fiches ; la carte liste les fiches les moins complètes.
+- **Fiche dans l'éditeur.** Dans l'inspecteur du graphe et dans la vue liste, la section « Fiche » affiche le score, ce qui manque, et permet de saisir définition, auteurs, source, statut et justification (plusieurs valeurs séparées par « ; »).
+- **Déprécier au lieu de supprimer.** Le bouton « Déprécier » pose `owl:deprecated true`, le statut `archaic` et, si vous choisissez un remplaçant, `dcterms:isReplacedBy`. L'entité reste dans l'ontologie (les données existantes gardent leur IRI), barrée dans le graphe et les listes. À l'analyse, le constat A03 est à arbitrer : par défaut l'entité n'est pas générée. Exclure une classe emporte les relations et attributs non dépréciés qui la visent, que leurs extrémités soient déclarées (domaine, portée) ou déduites (restrictions, shapes, inverse : constat O02) : A03 les liste (« Exclure entraîne la perte de… ») et leur constat de base passe en `lost`. Si l'exclusion ne retire qu'une partie des extrémités (portée en union, plusieurs domaines), la perte est partielle : A03 la note « En partie », le reste est généré et le constat ne change pas de niveau. « Garder avec drapeau » la génère marquée `[DÉPRÉCIÉ]` : commentaire `<summary>` de `Schema.cs` et commentaire de l'arête dans `Edges.cs` (Curiosity) ; commentaires `// [DÉPRÉCIÉ]` de `schema.cypher` et `ingest.cypher`, mention dans `README-neo4j.md` et stéréotype `<<deprecated>>` de `model.mmd` (Neo4j). Le rapport de transposition a une section « Entités dépréciées » (remplaçant, traitement, pertes). Les shapes SHACL générées d'une classe ou d'une propriété dépréciée sont désactivées (`sh:deactivated true`), même si elle est gardée avec drapeau : la génération des shapes ne dépend pas de la cible ; retirez `sh:deactivated` dans l'écran Fichiers pour la valider quand même. « Ne plus déprécier » annule.
+- **En-tête de l'ontologie.** Titre et objectif (fr, en), version (`owl:versionInfo`), IRI de version (`owl:versionIRI`), dates de création et de modification, auteurs, contributeurs, vocabulaires réutilisés (`dcterms:references`), mots-clés (`dcterms:subject`), sources et licence (`dcterms:license`). Tout est repris à l'export Turtle.
+- **Versions de l'ontologie.** La carte compare l'état courant à la dernière version enregistrée et propose un numéro SemVer : **majeure** si une classe, une relation, un attribut ou un datatype est ajouté ou retiré, ou si un axiome qui les définit change (hiérarchie, domaine, portée, caractéristiques, restrictions, clés…) ; **mineure** pour les libellés, définitions, commentaires, dépréciations et individus ; **correctif** pour les autres annotations et l'en-tête. « Enregistrer la version » pose `owl:versionInfo`, `owl:versionIRI` (IRI de l'ontologie suivie de `/1.2.0`), `owl:priorVersion` et `dcterms:modified`, puis garde la note de version générée dans l'historique. Annuler l'enregistrement (Ctrl+Z dans l'éditeur, ou Annuler) retire les annotations **et** la version de l'historique, qui peut être réenregistrée ; Rétablir la remet. Sans aucun changement depuis la dernière version, aucune nouvelle version n'est proposée. Un numéro saisi plus faible que le niveau des changements est accepté mais signalé dans la note. Les 30 dernières versions sont gardées.
+
+Constats : BP08 définition manquante · BP09 auteur, source ou statut manquant (une seule ligne si aucune entité n'en a) · BP10 statut inconnu, ou entité dépréciée de statut stable · BP11 caractéristique sans justification · BP12 dépréciée sans remplaçant, remplaçant introuvable ou lui-même déprécié · BP13 entité dépréciée encore utilisée en domaine, portée ou restriction · BP14 `owl:versionInfo` absent ou hors SemVer · BP15 `owl:versionIRI` égale à l'IRI de l'ontologie, ou numéro de version dans l'espace de noms des termes · BP16 en-tête incomplet.
 
 ### Raisonner avec HermiT {#raisonner-avec-hermit}
 
@@ -385,17 +407,19 @@ Les shapes enrichissent ensuite la transposition (propriété obligatoire, scala
 
 ## 9. Analyse & arbitrage {#analyse-arbitrage}
 
-![Écran Analyse & arbitrage pour la cible Curiosity : compteurs, barre de progression et groupes de constats par règle](img/fr/analyse-synthese.png "L'analyse : 1 le bouton Accepter toutes les recommandations, 2 la synthèse, 3 un groupe de constats par règle.")
+![Écran Analyse & arbitrage pour la cible Curiosity : compteurs, barre de progression, groupes de constats par règle et par racine de hiérarchie](img/fr/analyse-synthese.png "L'analyse : 1 le bouton Accepter toutes les recommandations, 2 la synthèse, 3 un groupe de constats par racine de hiérarchie.")
 
 1. Choisir la cible (Curiosity ou Neo4j) en haut ; Réanalyser relance le moteur.
 2. Synthèse : « transposés automatiquement », « à arbitrer », « perdus ou à risque », « arbitrés », « restants », avec une barre verte / orange / rouge.
-3. Constats regroupés par règle (identifiant `C07`, titre, nombre de constats, progression `0/3 arbitrés`, option recommandée). Les groupes Perdus puis À arbitrer sont en tête ; les constats `auto` sont repliés. Filtre texte et case « Restants seulement ».
+3. Constats regroupés par règle (identifiant `C07`, titre, nombre de constats, progression `0/3 arbitrés`, option recommandée), et par racine de hiérarchie pour l'héritage (voir « Arbitrer par branche »). Les groupes Perdus puis À arbitrer sont en tête ; les constats `auto` sont repliés. Filtre texte et case « Restants seulement ».
    ![Un constat perdu ouvert : sa justification, deux options avec leur impact et la recommandation pour Curiosity](img/fr/analyse-constat.png "Un constat ouvert : 1 la justification, 2 les options et leur impact, 3 la recommandation.")
 4. Décider :
    - « Appliquer la recommandation à toute la règle » : une seule décision groupée (`"<règle>:*"`) ;
    - déplier la règle pour arbitrer constat par constat : chaque constat montre le sujet, la justification et les options avec leur impact ;
    - « Accepter toutes les recommandations » en haut, puis affiner.
 5. Tant que vous n'avez pas décidé, la recommandation est appliquée : le modèle et les exports sont toujours complets, mais les points `review` et `lost` restent signalés dans le rapport.
+
+![Une racine de hiérarchie : les règles d'héritage et leur option recommandée, un champ pour la raison et le bouton qui décide toute la branche](img/fr/analyse-branche.png "Une branche : 1 l'option recommandée de chaque règle, 2 la raison en une ligne, 3 le bouton qui décide toute la branche.")
 
 ![Analyse après avoir appliqué la recommandation à une règle entière : les compteurs d'arbitrés ont avancé](img/fr/analyse-regle-appliquee.png "Après « Appliquer la recommandation à toute la règle » : 1 les compteurs avancent.")
 
@@ -406,6 +430,30 @@ La cible Neo4j propose souvent d'autres recommandations (par exemple multi-label
 ![Analyse pour la cible Neo4j : d'autres recommandations, par exemple multi-labels pour l'héritage](img/fr/analyse-neo4j.png "La même analyse pour la cible Neo4j.")
 
 Chaque règle est expliquée, avec exemple OWL et transposition par cible, dans [`regles.md`](regles.md). Le bouton Expliquer d'un constat demande à l'assistant de rédiger une explication (repli déterministe sans LLM).
+
+### Constats sans choix à faire {#constats-sans-choix}
+
+Quand il n'y a rien à choisir, l'outil ne vous le demande pas : le constat passe en « automatique » et n'est plus compté dans « à arbitrer ». C'est le cas quand l'option recommandée ne bloque rien et que l'autre option consiste seulement à abandonner la contrainte :
+
+- facettes d'un datatype (`D09`), pour les deux cibles : une valeur absente n'est pas une violation (le connecteur Curiosity ne contrôle pas un scalaire numérique absent, qui vaut 0) ;
+- cardinalité d'une relation (`O09`) : pour **Neo4j**, toujours (requête Cypher de détection, non bloquante) ; pour **Curiosity**, seulement le « au plus n » et la propriété fonctionnelle, qui ne demandent aucune donnée de plus ;
+- restriction sur une propriété de données (`D13`) et existence d'une relation (`O10`), pour **Neo4j seulement** : la contrainte devient une requête Cypher de détection qui ne bloque pas le chargement (le `IS NOT NULL` Enterprise reste à décommenter si vous le voulez).
+
+Pour **Curiosity**, `D13`, `O10` et les `O09` de type « exactement n » restent à arbitrer : le connecteur généré s'arrête avec le code 2 quand une validation échoue, et en OWL `some`, `min 1` ou `exactly 1` n'obligent pas à connaître la valeur. Exiger la donnée est un renforcement (rigueur du chargement contre tolérance aux jeux incomplets), donc un vrai choix. De même, « validation » reste un renforcement du monde ouvert, jamais une équivalence : le motif le rappelle. Le connecteur Curiosity lit désormais ces bornes (`exactement n` = au moins n et au plus n ; `au plus n` ; `au moins n`) : elles produisent un contrôle réel, et non plus un « non vérifié ».
+
+Le motif s'affiche sous le constat (« Sans choix à faire : … ») et dans le dossier de justification. Sur l'exemple automaint, les constats à arbitrer passent de 48 à 19 pour Neo4j et de 42 à 41 pour Curiosity (les dix `O09` d'automaint sont des « exactement 1 », donc des renforcements pour Curiosity) ; en comptant une décision par groupe (une par racine de hiérarchie, une par règle), il en reste 8 pour Neo4j et 9 pour Curiosity.
+
+Les constats **perdus** (`lost`) ne sont jamais reclassés : une perte est toujours arbitrée par une personne. Les règles à une seule option qui signalent un risque (par exemple `D10`, typage d'origine perdu) et les clés `K02` restent à revoir.
+
+### Arbitrer par branche et dire pourquoi {#arbitrer-par-branche}
+
+- **Par racine de hiérarchie.** Les constats d'héritage (`C02`, `C03`, `C04`, `C10`) sont regroupés par racine (Party, Engine, Vehicle sur automaint). « Appliquer la recommandation à toute la branche » (la ligne indique l'option appliquée à chaque règle) décide les constats non décidés de la branche d'un coup ; déplié, « Imposer à toute la branche » applique à une règle l'option choisie, y compris sur les constats déjà décidés, même par un autre compte : le geste est explicite et remplace l'auteur et la raison d'origine. Une décision par racine évite d'aplatir une branche et d'en garder une autre.
+- **Pourquoi.** Chaque décision accepte une raison en une ligne (280 caractères au plus), saisie avant ou après le choix (Entrée ou « Enregistrer la raison »). Elle est liée à l'option qu'elle justifie : quand vous changez l'option d'un constat déjà décidé, le champ est vidé. Le compte et la date sont enregistrés avec la décision. Sur téléphone, les décisions n'ont pas de raison (le dossier affiche « — »). Une décision d'un ancien projet reste valable : elle apparaît sans raison, sans auteur ni date.
+- **Droits.** Décider est réservé aux éditeurs et au propriétaire ; un lecteur voit les décisions, leurs raisons et le dossier de justification.
+
+### Dossier de justification {#dossier-de-justification}
+
+Dans Exports, « Dossier de justification » télécharge, pour la cible choisie, un document HTML autonome ou un fichier Markdown : le modèle retenu, ce qui est perdu, ce qui est compensé (validations, matérialisations), les décisions humaines (qui, quand, pourquoi), les recommandations non suivies, ce qui reste à arbitrer et les constats reclassés sans choix à faire. Un lecteur du projet peut le télécharger. Le HTML ne contient aucun script ni aucune ressource distante, et tout texte venu de l'ontologie ou saisi est échappé. Les textes fixes suivent la langue de l'interface ; les libellés de l'ontologie restent tels qu'ils sont.
 
 ## 10. Modèle cible {#modele-cible}
 
@@ -623,7 +671,7 @@ Krakie peut vous faire le tour de l'outil en 21 étapes (environ 5 minutes) : l'
 
 OntoForge se consulte et se corrige du bout des doigts. Sur un téléphone (écran de 700 px de large ou moins, ou paysage de moins de 500 px de haut) l'application change de forme : un en-tête court (retour, nom du projet, partage), cinq onglets en bas et des fiches qui montent du bas de l'écran. Sur une tablette (iPad en portrait compris) la mise en page large est conservée, avec des cibles plus grandes pour le doigt. Rien ne change sur ordinateur.
 
-![Téléphone : tableau de bord avec « À faire maintenant », parcours en quatre lignes et barre d'onglets](img/fr/mobile-accueil.png "Le tableau de bord sur téléphone : 1 l'en-tête court, 2 ce qu'il reste à faire, 3 les cinq onglets.")
+![Téléphone : tableau de bord avec « À faire maintenant », parcours en quatre lignes et barre d'onglets](img/fr/mobile-accueil.png "Le tableau de bord sur téléphone : en-tête court en haut, « À faire maintenant » au milieu, les cinq onglets en bas.")
 
 ### Les cinq onglets {#telephone-onglets}
 
@@ -633,7 +681,7 @@ OntoForge se consulte et se corrige du bout des doigts. Sur un téléphone (écr
 - **Arbitrer** : une carte par point à décider ; le badge indique combien il en reste.
 - **Plus** : la carte métier en tête, puis les autres écrans (conformité, SHACL, modèle cible, exports, versions, assistant), la documentation et le compte. Il n'y a plus de tiroir latéral.
 
-![Téléphone : onglet Plus avec la carte métier, les écrans et la mention « Sur ordinateur »](img/fr/mobile-plus.png "L'onglet Plus : 1 la carte métier, 2 les écrans réservés à l'ordinateur sont signalés, 3 « M'envoyer le lien » en bas de la liste.")
+![Téléphone : onglet Plus avec la carte métier, les écrans et la mention « Sur ordinateur »](img/fr/mobile-plus.png "L'onglet Plus : la carte métier en tête, les écrans réservés à l'ordinateur signalés, « M'envoyer le lien » en bas de la liste.")
 
 ### Fiches, graphe et carte {#telephone-fiches-graphe}
 
@@ -641,13 +689,13 @@ OntoForge se consulte et se corrige du bout des doigts. Sur un téléphone (écr
 - **Graphe.** Pincer pour zoomer, glisser pour déplacer la vue, toucher un nœud pour ouvrir sa fiche, appui long pour les actions (voir la fiche, centrer, et pour qui peut modifier le projet, ajouter une sous-classe ou une propriété). Les nœuds ne se déplacent pas par accident ; « Tout voir » ajuste la vue, la recherche centre le nœud trouvé et la légende se replie.
 - **Carte métier.** Même gestes : pincer, glisser, toucher pour la fiche. Elle est en lecture seule sur téléphone.
 
-![Téléphone : graphe de l'ontologie, étiquettes entières, bouton Tout voir](img/fr/mobile-graphe.png "Le graphe au doigt : 1 les étiquettes ne sont pas coupées, 2 le bouton Tout voir.")
+![Téléphone : graphe de l'ontologie, étiquettes entières, bouton Tout voir](img/fr/mobile-graphe.png "Le graphe au doigt : les étiquettes ne sont pas coupées, le bouton « Tout voir » ajuste la vue.")
 
 ### Modifier depuis le téléphone {#telephone-modifier}
 
 Une petite correction se fait sur place, depuis la fiche d'une classe ou d'une propriété : **ajouter une sous-classe**, **ajouter une propriété** (attribut ou relation), **renommer** ou **décrire** (libellé et commentaire). Ces changements suivent les mêmes règles qu'ailleurs : verrou optimiste (conflit signalé si quelqu'un a modifié le projet entre-temps), journal d'activité. Un lecteur du projet ne voit aucun bouton de modification.
 
-![Téléphone : fiche d'une classe avec les boutons Sous-classe, Propriété et Renommer ou décrire](img/fr/mobile-fiche.png "La fiche d'une classe : 1 ajouter une sous-classe, 2 ajouter une propriété, 3 renommer ou décrire.")
+![Téléphone : fiche d'une classe avec les boutons Sous-classe, Propriété et Renommer ou décrire](img/fr/mobile-fiche.png "La fiche d'une classe : trois boutons pour ajouter une sous-classe, ajouter une propriété, renommer ou décrire.")
 
 L'édition lourde reste « Sur ordinateur » : tracer dans le graphe, éditeur de fichiers Turtle, grille des shapes SHACL, carte métier en édition. Ces écrans sont marqués dans « Plus », avec le bouton « M'envoyer le lien » qui partage l'adresse (feuille de partage du téléphone, ou copie dans le presse-papiers).
 
@@ -655,19 +703,19 @@ L'édition lourde reste « Sur ordinateur » : tracer dans le graphe, éditeur d
 
 Chaque point à décider est une carte : la recommandation est présélectionnée, « Valider ce choix » prend une décision en un toucher, « Pourquoi cette recommandation ? » explique, « Passer » garde le point pour plus tard. Si plusieurs points suivent la même règle, « Appliquer la recommandation aux N de la règle » les décide d'un coup, avec cinq secondes pour annuler. Les pastilles « À arbitrer », « Perdus » et « Faits » filtrent la liste.
 
-![Téléphone : carte d'arbitrage avec option recommandée et bouton Valider ce choix](img/fr/mobile-arbitrage.png "Une carte d'arbitrage : 1 l'option recommandée, 2 Valider ce choix.")
+![Téléphone : carte d'arbitrage avec option recommandée et bouton Valider ce choix](img/fr/mobile-arbitrage.png "Une carte d'arbitrage : l'option recommandée est présélectionnée, « Valider ce choix » décide en un toucher.")
 
 ### Krakie sur téléphone {#telephone-krakie}
 
 Un bouton rond de 56 px reste posé au-dessus de la barre d'onglets (l'aquarium reste réservé à l'ordinateur). Il ouvre un panneau plein écran, sans rien de coupé ; le clavier du téléphone ne cache pas la zone de saisie. **Le modèle de langage se choisit juste au-dessus de la zone de saisie** : la liste reprend les fournisseurs configurés dans Paramètres (par exemple Claude, Gemini ou Mock), comme sur ordinateur, et le choix est mémorisé dans ce navigateur. Avec un seul fournisseur, son nom s'affiche sans liste. Aucune clé ni adresse n'apparaît, pour personne, même pour un lecteur du projet. La visite guidée n'est pas proposée sur téléphone : elle vise le bandeau latéral, qui n'existe pas sur cette taille d'écran.
 
-![Téléphone : panneau Krakie avec le choix du modèle au-dessus de la zone de saisie](img/fr/mobile-krakie.png "Krakie sur téléphone : 1 le modèle utilisé, à changer d'un toucher, 2 la zone de saisie.")
+![Téléphone : panneau Krakie avec le choix du modèle au-dessus de la zone de saisie](img/fr/mobile-krakie.png "Krakie sur téléphone : le modèle utilisé, à changer d'un toucher, se trouve juste au-dessus de la zone de saisie.")
 
 ### Panneaux repliables {#telephone-panneaux}
 
 Sur téléphone, les blocs de réglage et d'information (accueil, versions, requêtes sauvegardées) sont des panneaux qu'on déplie d'un toucher. **Replié**, un panneau affiche son titre suivi d'une courte description en gris (« Périmètres — définir les périmètres de votre ontologie ») ; **ouvert**, il n'affiche plus que son titre et son contenu. Tout est replié par défaut, sauf le panneau principal de l'écran (par exemple « Versions visées par ce projet »). L'état de chaque panneau est mémorisé par écran, sur ce navigateur ; le clavier fonctionne (Entrée ou Espace).
 
-![Téléphone : accueil avec un panneau ouvert et les autres repliés](img/fr/mobile-panneaux.png "Les panneaux : 1 un panneau ouvert (titre seul), 2 les autres, repliés avec leur description.")
+![Téléphone : accueil avec un panneau ouvert et les autres repliés](img/fr/mobile-panneaux.png "Les panneaux : un panneau ouvert (titre seul), les autres repliés avec leur description.")
 
 ### Confort de lecture {#telephone-confort}
 

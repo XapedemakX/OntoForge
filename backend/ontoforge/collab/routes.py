@@ -13,11 +13,15 @@ ROUTES: dict[tuple[str, str], tuple[str, str]] = {
     ("GET", P): (R, ""), ("PUT", P): (W, "project"), ("DELETE", P): (O, "delete"),
     ("POST", P + "/import"): (W, "import"), ("PUT", P + "/onto"): (W, "ontology"), ("PUT", P + "/shapes"): (W, "shapes"),
     ("POST", P + "/dsl"): (W, "ontology"),
+    # L48 : import déterministe SQL / CSV / JSON Schema ; l'aperçu est réservé à qui peut écrire (même contrat que l'import)
+    ("POST", P + "/import/schema/preview"): (W, ""), ("POST", P + "/import/schema/apply"): (W, "import"),
     ("GET", P + "/export/ontology"): (R, ""), ("GET", P + "/export/shapes"): (R, ""),
     ("GET", P + "/conformance"): (R, ""), ("POST", P + "/reason"): (R, ""),
     ("POST", P + "/shacl/generate"): (W, "shapes"), ("POST", P + "/shacl/validate"): (R, ""),
     ("POST", P + "/analyze"): (R, ""), ("PUT", P + "/decisions/{target}"): (W, "decisions"),
     ("POST", P + "/decisions/{target}/accept-recommended"): (W, "decisions"),
+    ("POST", P + "/decisions/{target}/branch"): (W, "decisions"),   # L47 : arbitrage par racine de hiérarchie
+    ("GET", P + "/justification/{target}"): (R, ""),   # L47 : dossier de justification (lecture seule, ouvert au lecteur)
     # L42 (D-L42-01) : générer écrit l'historique (generations.json) : éditeur et propriétaire seulement ; le lecteur consulte l'historique
     ("GET", P + "/generate/{target}"): (W, "generate"), ("GET", P + "/generations"): (R, ""), ("GET", P + "/generate/{target}/zip"): (W, "generate"),
     ("POST", P + "/queries/translate"): (R, ""), ("GET", P + "/queries/competency"): (R, ""),
@@ -40,6 +44,9 @@ ROUTES: dict[tuple[str, str], tuple[str, str]] = {
     ("GET", P + "/store/stats"): (R, ""), ("POST", P + "/store/load"): (W, "store"), ("DELETE", P + "/store"): (W, "store"),
     ("POST", P + "/store/validate"): (R, ""),
     ("GET", P + "/versions"): (R, ""), ("PUT", P + "/versions"): (W, "versions"), ("GET", P + "/versions/check"): (R, ""),
+    # L49 : versions publiées de l'ontologie (diff SemVer, note de version) et en-tête
+    ("GET", P + "/releases"): (R, ""), ("GET", P + "/releases/preview"): (R, ""), ("GET", P + "/releases/{version}"): (R, ""),
+    ("POST", P + "/releases"): (W, "release"), ("GET", P + "/metadata"): (R, ""),
     # L40 : partage, présence, activité
     ("GET", P + "/access"): (R, ""), ("POST", P + "/access/members"): (O, ""), ("DELETE", P + "/access/members/{login}"): (R, ""),
     ("POST", P + "/access/transfer"): (O, ""), ("POST", P + "/presence"): (R, ""), ("GET", P + "/activity"): (R, ""),
@@ -57,6 +64,8 @@ NO_PROJECT: set[tuple[str, str]] = {
     ("GET", "/api/auth/session"), ("POST", "/api/auth/login"), ("POST", "/api/auth/logout"),
     ("POST", "/api/auth/password"), ("PUT", "/api/auth/preferences"),   # L42 : le garde d'authentification les laisse passer, ils contrôlent la session eux-mêmes
     ("GET", "/api/projects"), ("POST", "/api/projects"),
+    ("POST", "/api/import/schema/preview"),   # L48 : calcul pur, aucun projet touché ; sert l'écran Projets avant la création
+    ("POST", "/api/import/schema/preview"),   # L48 : calcul pur, aucun projet touché ; sert l'écran Projets avant la création
     ("GET", "/api/assistant/status"), ("POST", "/api/assistant/draft"), ("POST", "/api/assistant/upload"),
     ("GET", "/api/assistant/document/demo"), ("POST", "/api/assistant/document/upload"), ("POST", "/api/assistant/document/estimate"),
 }

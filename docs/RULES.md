@@ -14,10 +14,11 @@ Propriétaire : lead (L3). Source unique : `backend/ontoforge/mapping/rules/cata
 ## Pipeline du moteur (`mapping/engine.py`)
 
 1. **Détection** : chaque règle `detect(ctx) -> list[Finding]` (pure). Les constructs que l'import n'a pas structurés (`OntoModel.unmapped`) sont relus en graphe ; chaque nœud blanc expliqué est *consommé* ; les restes → G01.
-2. **Décisions** : `decisions[id]` si l'option existe pour la cible, sinon recommandation + G02.
-3. **Plan** (phase 10) : disposition des classes (own / fold / merged / abstract_label / alias / computed / union / dereified / excluded), inverses, alias de propriétés, renommages.
-4. **Construction** : types de nœuds (discriminants, labels) → propriétés → clés (`uri` source `urn:ontoforge:iri` sur chaque type, clé par défaut) → relations → compensations (validations, matérialisations) → SHACL → contrôle final (noms uniques, N01).
-5. **Invariants** : aucune relation vers un type inexistant ; Curiosity : un label, aucune propriété d'arête, `reverse` toujours renseigné, aucun nom d'arête égal à un nom de type ; Neo4j : multi-labels (ancêtres), propriétés de relation (R01). Sortie triée, déterministe.
+2. **Reclassement (L47)** : un constat `review` sans vrai choix passe en `auto` (`Finding.auto_reason`) : option recommandée qui ne bloque rien et alternative = abandonner la contrainte (`NO_CHOICE` : D09 pour les deux cibles ; O09, D13 et O10 pour Neo4j ; pour Curiosity, O09 seulement quand c'est un « au plus n » ou une fonctionnelle, car le connecteur Curiosity échoue sur violation et `exactly`/`min`/`some` exigent la donnée), jamais un constat `lost`. Les constats d'héritage reçoivent leur racine (`Finding.root`).
+3. **Décisions** : `decisions[id]` si l'option existe pour la cible, sinon recommandation + G02.
+4. **Plan** (phase 10) : disposition des classes (own / fold / merged / abstract_label / alias / computed / union / dereified / excluded), inverses, alias de propriétés, renommages.
+5. **Construction** : types de nœuds (discriminants, labels) → propriétés → clés (`uri` source `urn:ontoforge:iri` sur chaque type, clé par défaut) → relations → compensations (validations, matérialisations) → SHACL → contrôle final (noms uniques, N01).
+6. **Invariants** : aucune relation vers un type inexistant ; Curiosity : un label, aucune propriété d'arête, `reverse` toujours renseigné, aucun nom d'arête égal à un nom de type ; Neo4j : multi-labels (ancêtres), propriétés de relation (R01). Sortie triée, déterministe.
 
 ### SHACL
 
@@ -110,7 +111,7 @@ Les shapes (via `shacl/shacl_to_pg.shape_constraints`) enrichissent le modèle :
 |---|---|---|---|---|---|---|---|
 | **A01** ¹ | Annotations (rdfs:comment, skos:*, dcterms:*) | Entité portant des annotations au-delà de rdfs:label. | auto | `schema_metadata` : Commentaires de documentation du code / schéma généré. | `schema_metadata` | `schema_metadata` | documentation |
 | **A02** | Annotations d'axiome (owl:Axiom) | Réification d'axiome annotée. | review | `report` : Information conservée dans le rapport de transposition uniquement.<br>`provenance_property` *(neo4j)* : Sur la relation correspondante (Neo4j) ; sinon rapport. | `report` | `report` | documentation |
-| **A03** | owl:deprecated true | Entité dépréciée. | auto | `exclude` : Non générée.<br>`flag_deprecated` : Générée, marquée dépréciée. | `exclude` | `exclude` | aucune |
+| **A03** | owl:deprecated true | Entité dépréciée. | review | `exclude` : Non générée.<br>`flag_deprecated` : Générée, marquée dépréciée. | `exclude` | `exclude` | aucune |
 
 ### Métadonnées (M)
 

@@ -1,0 +1,12 @@
+verdict: OK
+bloquants: []
+non-bloquants:
+  - [backend/ontoforge/importers/builder.py:150] `if r.target not in ents: continue` précède le calcul des membres : quand l'exclusion retire le **premier** membre d'un `oneOf`/`anyOf` (la cible par défaut) alors qu'un autre membre reste, toute la relation est abandonnée (`relation_dropped`, avertissement) au lieu d'être réduite à la classe restante. Rejoué : `oneOf [A, B]`, `exclude` de A : relation perdue ; `exclude` de B : portée simple A + `union_reduced`. Le résultat reste de l'OWL 2 DL et l'avis est honnête, mais il est asymétrique, et la branche `union_empty` (builder.py:158) est inatteignable (la cible fait partie de l'union, donc `members` n'est jamais vide quand on y arrive). → calculer `members` avant le test de la cible, ou retirer `union_empty`.
+  - [backend/ontoforge/conformance/profiles.py:412] W02 cite `SS §8.1.1` pour `owl:unionOf` et `owl:intersectionOf` ; les unions et intersections de datatypes relèvent de SS §7.1 (déjà dans le commentaire du code). Cosmétique : citer « §8.1.1 / §7.1 ».
+  - Messages `degraded_type` (messages.py:22) : « la précision est perdue » reste inexact pour `date → dateTime` (non repris, la doc compense par la phrase sur la complétion). Idem `union_exclusive_lost`, `UNIQUE`, auto-association : non repris, à arbitrer par le lead comme annoncé dans fix-it1.
+  - Hors périmètre w3c mais relevé : voir review-shacl-it2 (borne `dateTime` impossible émise comme littéral mal typé).
+vérifié:
+  - Union à un membre : JSON Schema `one: oneOf [$ref A, $ref B]` avec `exclude` de B (par clé `0:#/definitions/B`) → `rdfs:range A` simple, avis `union_reduced`, `check_conformance` DL True sans erreur. Exclusion des deux membres : relation retirée (avertissement). Sans exclusion : `owl:unionOf` à deux membres.
+  - `profiles.py` : W02 sur toute `owl:unionOf` / `owl:intersectionOf` de moins de deux membres, code W02 déjà utilisé (même famille « graphe mal formé »), aucune collision. `test_conformance_profiles.py` vert (avec `test_l48_*.py` : 75 réussis).
+  - IRI de base : `http://ex.org/a#b#c`, `…#b`, `…a##`, `…/#a#` refusées (`bad_base_iri`) ; `http://ex.org/a#`, `…/a/`, `urn:x:y#` acceptées.
+skill: w3c-ontology-conformance : piège « union/intersection d'arité < 2 après filtrage » et « une base d'IRI n'a qu'un # en dernier caractère » (déjà demandé en it1, rien de plus) ; ajouter : le filtre doit être appliqué avant tout test sur la cible par défaut.

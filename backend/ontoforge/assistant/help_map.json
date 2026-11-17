@@ -69,8 +69,20 @@
     "en": "OWL conformance"
    },
    "summary": {
-    "fr": "La conformité vérifie l'ontologie contre les profils OWL 2 (DL, EL, QL, RL) et les bonnes pratiques. Chaque constat cite sa référence.",
-    "en": "Conformance checks the ontology against the OWL 2 profiles (DL, EL, QL, RL) and best practices. Each finding cites its reference."
+    "fr": "La conformité vérifie l'ontologie contre les profils OWL 2 (DL, EL, QL, RL) et les bonnes pratiques. Chaque constat cite sa référence. Elle montre aussi la complétude des fiches, l'en-tête de l'ontologie et ses versions.",
+    "en": "Conformance checks the ontology against the OWL 2 profiles (DL, EL, QL, RL) and best practices. Each finding cites its reference. It also shows entity card completeness, the ontology header and its versions."
+   }
+  },
+  "best-practices": {
+   "page": "utilisateur",
+   "anchor": "bonnes-pratiques-fiche-versions",
+   "title": {
+    "fr": "Bonnes pratiques : fiche, dépréciation, versions",
+    "en": "Best practices: entity card, deprecation, versions"
+   },
+   "summary": {
+    "fr": "Chaque classe et propriété a une fiche notée (libellés, définition, auteur, source, statut). « Déprécier » remplace la suppression ; « Enregistrer la version » propose un numéro SemVer d'après les changements et rédige la note de version.",
+    "en": "Each class and property has a scored entity card (labels, definition, author, source, status). “Deprecate” replaces deletion; “Record the version” proposes a SemVer number from the changes and writes the release note."
    }
   },
   "shacl": {
@@ -93,8 +105,8 @@
     "en": "Analysis and arbitration"
    },
    "summary": {
-    "fr": "L'analyse classe chaque élément de l'ontologie : transposé automatiquement, à arbitrer par vous, ou perdu. Ouvrez un constat pour choisir une option.",
-    "en": "The analysis sorts every ontology element: transposed automatically, for you to arbitrate, or lost. Open a finding to pick an option."
+    "fr": "L'analyse classe chaque élément de l'ontologie : transposé automatiquement, à arbitrer par vous, ou perdu. Les constats sans choix à faire passent seuls en automatique ; les autres se décident par règle ou par branche de hiérarchie, avec une raison en une ligne.",
+    "en": "The analysis sorts every ontology element: transposed automatically, for you to arbitrate, or lost. Findings with no choice to make become automatic on their own; the others are decided by rule or by hierarchy branch, with a one-line reason."
    }
   },
   "model": {
@@ -117,8 +129,20 @@
     "en": "Exports"
    },
    "summary": {
-    "fr": "Les exports produisent les fichiers prêts à charger dans la cible choisie. Copiez un fichier ou téléchargez l'archive complète.",
-    "en": "Exports produce the files ready to load into the chosen target. Copy a file or download the full archive."
+    "fr": "Les exports produisent les fichiers prêts à charger dans la cible choisie. Copiez un fichier ou téléchargez l'archive complète ; le dossier de justification se télécharge aussi.",
+    "en": "Exports produce the files ready to load into the chosen target. Copy a file or download the full archive; the justification file can be downloaded too."
+   }
+  },
+  "justification": {
+   "page": "utilisateur",
+   "anchor": "dossier-de-justification",
+   "title": {
+    "fr": "Dossier de justification",
+    "en": "Justification file"
+   },
+   "summary": {
+    "fr": "Un document HTML ou Markdown par cible : modèle retenu, pertes, compensations, qui a décidé quoi, quand et pourquoi, recommandations non suivies.",
+    "en": "One HTML or Markdown document per target: retained model, losses, compensations, who decided what, when and why, recommendations not followed."
    }
   },
   "queries": {
@@ -347,6 +371,18 @@
    "summary": {
     "fr": "OntoForge suit quatre étapes : concevoir, vérifier, transposer, générer. Le guide présente chaque écran du parcours.",
     "en": "OntoForge follows four steps: design, check, transpose, generate. The guide describes each screen of the workflow."
+   }
+  },
+  "schema-import": {
+   "page": "utilisateur",
+   "anchor": "import-schema",
+   "title": {
+    "fr": "Importer un schéma",
+    "en": "Importing a schema"
+   },
+   "summary": {
+    "fr": "Importez un DDL SQL, un CSV ou un JSON Schema sans IA : l'aperçu montre ce qui est transposé, les décisions à prendre et ce qui est ignoré, avant d'appliquer.",
+    "en": "Import SQL DDL, CSV or JSON Schema without AI: the preview shows what is mapped, the decisions to make and what is ignored, before you apply."
    }
   }
  }

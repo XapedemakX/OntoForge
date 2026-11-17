@@ -11,7 +11,7 @@ export function ActivityCard({ pid, rev }: { pid: string; rev: string }) {
   const log = useLoad(() => (auth.enabled ? api.activity(pid) : Promise.resolve([])), [pid, rev, auth.enabled])
   if (!auth.enabled) return null
   const fmt = (iso: string) => new Date(iso).toLocaleString(lang, { dateStyle: 'short', timeStyle: 'short' })
-  const known = new Set(['create', 'share', 'role', 'unshare', 'leave', 'transfer', 'migrate', 'project', 'ontology', 'shapes', 'import', 'decisions', 'perimeters', 'business_map', 'files', 'queries', 'store', 'versions', 'edit', 'generate'])
+  const known = new Set(['create', 'share', 'role', 'unshare', 'leave', 'transfer', 'migrate', 'project', 'ontology', 'shapes', 'import', 'decisions', 'perimeters', 'business_map', 'files', 'queries', 'store', 'versions', 'edit', 'generate', 'release'])
   return (
     <Fold screen="tableau" id="activity" title={t('collab.activity')} desc={t('fold.tableau.activity')}>
       {(log.data ?? []).length === 0 ? <p className="muted">{t('collab.activity.none')}</p> : (

@@ -484,6 +484,14 @@ def _key_part_expr(cs_type: str, var: str) -> str:
 # ---------------------------------------------------------------------------------------------
 # Edges.cs
 # ---------------------------------------------------------------------------------------------
+def _deprecated_tag(description: Optional[str]) -> str:
+    """Drapeau « garder avec drapeau » (A03, L49) porté par la description : repris en tête du commentaire de l'arête."""
+    d = description or ""
+    if d.startswith("[DÉPRÉCIÉ]") or d.startswith("[DEPRECATED]"):
+        return T("[DÉPRÉCIÉ] ", "[DEPRECATED] ")
+    return ""
+
+
 def _edges_cs(plan: _Plan) -> str:
     L = _header(plan.pg, T("Edges.cs (paires d'arêtes aller/retour)", "Edges.cs (forward/reverse edge pairs)"))
     L += [f"namespace {plan.ns}.Schema", "{",
@@ -497,7 +505,8 @@ def _edges_cs(plan: _Plan) -> str:
     for i, e in enumerate(plan.edges):
         rev = plan.edge_reverse[i]
         fwd = plan.edge_fwd[i]
-        desc = f"{e.from_} -[{fwd}]-> {e.to} ⇄ {rev}"
+        dep = _deprecated_tag(e.description)
+        desc = f"{dep}{e.from_} -[{fwd}]-> {e.to} ⇄ {rev}"
         if e.symmetric:
             desc += T(" (symétrique)", " (symmetric)")
         if e.derived:
@@ -509,7 +518,7 @@ def _edges_cs(plan: _Plan) -> str:
             usage[fwd].append(T("LOST propriétés d'arête non supportées par Curiosity : ", "LOST edge properties not supported by Curiosity: ") +
                                  ", ".join(p.name for p in e.properties) + T(" (garder un nœud, R01)", " (keep a node, R01)"))
         if rev != fwd:
-            usage.setdefault(rev, []).append(T(f"retour de {fwd} ({e.to} -> {e.from_})", f"reverse of {fwd} ({e.to} -> {e.from_})"))
+            usage.setdefault(rev, []).append(dep + T(f"retour de {fwd} ({e.to} -> {e.from_})", f"reverse of {fwd} ({e.to} -> {e.from_})"))
     first = True
     for name, ident in plan.edge_consts.items():
         if not first:
@@ -554,6 +563,26 @@ def _num(v: Any) -> Optional[str]:
     except (TypeError, ValueError):
         return None
     return repr(int(f)) if f.is_integer() else repr(f)
+
+
+def _bounds(v: Validation) -> tuple[Optional[str], Optional[str]]:
+    """Bornes (min, max) d'une validation de cardinalité.
+
+    Deux formes coexistent : `min`/`max` explicites (fonctionnelle, cardinalité de propriété) et la forme
+    restriction OWL `{kind, n}` (L47 it2 : ignorée jusque-là, d'où des NotChecked à tort).
+    exactly n = min n + max n ; max n ; min n ; some = min 1."""
+    lo, hi = _num(v.params.get("min")), _num(v.params.get("max"))
+    kind, n = v.params.get("kind"), _num(v.params.get("n"))
+    if lo is None and hi is None:
+        if kind == "exactly" and n is not None:
+            lo, hi = n, n
+        elif kind == "max" and n is not None:
+            hi = n
+        elif kind == "min" and n is not None:
+            lo = n
+        elif kind == "some":
+            lo = "1"
+    return lo, hi
 
 
 def _params_targets(v: Validation) -> list[str]:
@@ -644,14 +673,37 @@ def _validation_node_checks(plan: _Plan) -> dict[str, list[str]]:
                 lo = lo + "m" if lo is not None else None
                 hi = hi + "m" if hi is not None else None
             cond = " || ".join(([f"{f} < {lo}"] if lo is not None else []) + ([f"{f} > {hi}"] if hi is not None else []))
-        elif v.kind == "cardinality" and is_list:
-            lo, hi = _num(v.params.get("min")), _num(v.params.get("max"))
-            cnt = f"({f}?.Length ?? 0)"
-            parts = ([f"{cnt} < {lo}"] if lo is not None else []) + ([f"{cnt} > {hi}"] if hi is not None else [])
-            if not parts:
+            # garde de présence : un scalaire non nullable absent vaut 0 (Curiosity replie les nullables [S2]) ;
+            # une absence n'est pas une violation de plage, comme pour pattern (L47 it2)
+            cond = f"{f} != {'0m' if pl.cs_type == 'decimal' else '0'} && ({cond})"
+        elif v.kind == "cardinality":
+            lo, hi = _bounds(v)
+            if lo is None and hi is None:
                 nc(T("ni min ni max", "neither min nor max"))
                 continue
-            cond = " || ".join(parts)
+            if is_list:
+                cnt = f"({f}?.Length ?? 0)"
+                cond = " || ".join(([f"{cnt} < {lo}"] if lo is not None else []) + ([f"{cnt} > {hi}"] if hi is not None else []))
+            elif is_str or pl.cs_type in ("DateTime", "DateTimeOffset"):
+                # scalaire : au plus une valeur par construction ; un minimum >= 1 = présence
+                if hi is not None and float(hi) < 1:
+                    # max 0 / exactly 0 : aucune valeur permise, la présence est une violation
+                    cond = (f"!string.IsNullOrWhiteSpace({f})" if is_str else f"{f} != default({pl.cs_type})")
+                elif lo is not None and float(lo) >= 1:
+                    cond = (f"string.IsNullOrWhiteSpace({f})" if is_str else f"{f} == default({pl.cs_type})")
+                else:
+                    lines.append(f"Guaranteed({vid}, {cs_string(T('au plus une valeur : propriété scalaire', 'at most one value: scalar property'))}); // {_comment(v.description)}")
+                    continue
+            else:
+                if hi is not None and float(hi) < 1:
+                    nc(T("maximum 0 sur un scalaire numérique non nullable non vérifiable (absent = 0)",
+                         "maximum 0 on a non-nullable numeric scalar cannot be checked (absent = 0)"))
+                elif lo is not None and float(lo) >= 1:
+                    nc(T("minimum d'un scalaire numérique non nullable non vérifiable (absent = 0, Curiosity replie les nullables [S2])",
+                         "minimum on a non-nullable numeric scalar cannot be checked (absent = 0, Curiosity folds nullables [S2])"))
+                else:
+                    lines.append(f"Guaranteed({vid}, {cs_string(T('au plus une valeur : propriété scalaire', 'at most one value: scalar property'))}); // {_comment(v.description)}")
+                continue
         else:
             nc(T(f"kind « {v.kind} » non transposé en code", f"kind \"{v.kind}\" not translated to code"))
             continue
@@ -680,8 +732,7 @@ def _validation_graph_checks(plan: _Plan) -> list[str]:
             if node is None:
                 nc(T(f"type de nœud « {v.node_type or ''} » inconnu ou abstrait", f"node type \"{v.node_type or ''}\" unknown or abstract"))
                 continue
-            lo = _num(v.params.get("min"))
-            hi = _num(v.params.get("max"))
+            lo, hi = _bounds(v)
             if v.kind == "existence" and lo is None:
                 lo = "1"
             if v.kind == "functional" and hi is None:

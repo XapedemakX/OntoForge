@@ -46,6 +46,8 @@ RULES: list[tuple[re.Pattern, str]] = [
     (re.compile(_P + r"/query/nl$"), "assistant"),
     (re.compile(_P + r"/reason$"), "reason"),
     (re.compile(_P + r"/(import|dsl|analyze|shacl/generate|shacl/validate|store/load|store/validate|files/validate|files/diff|business-map/(suggest-zones|suggest-frames|layout))$"), "heavy"),
+    (re.compile(_P + r"/import/schema/(preview|apply)$"), "heavy"),   # L48
+    (re.compile(r"^/api/import/schema/preview$"), "heavy"),
     (re.compile(_P + r"/generate/[^/]+(/zip)?$"), "heavy"),
     (re.compile(_P + r"/(query/run|queries/translate)$"), "heavy"),
     # L41 (L39-04) : lectures et écritures coûteuses qui n'étaient limitées que par le plafond global

@@ -1,0 +1,13 @@
+verdict: OK
+bloquants: []
+non-bloquants:
+  - Aperçu d'un projet classé « écriture » : un aperçu prend toujours le verrou d'écriture du projet partagé (jusqu'à 8 s). Inchangé, accepté en it1.
+  - Plafond cumulé : `_read` lit au plus `2 Mo + 1` par fichier avant de tester le cumul, soit au pire 12 Mo en mémoire par requête (au lieu de ~100 Mo). Acceptable ; le test du cumul passe avant le refus par fichier (413 `too_big_total` même si chaque fichier dépasse 2 Mo) : sans conséquence.
+  - Ligne dupliquée de `NO_PROJECT` dans `collab/routes.py` : non reprise (sans effet).
+  - L'avis « non traité » d'un CHECK de 250 Ko ne retient que ses 80 premiers caractères (réponse 1 Ko) : pas d'amplification de réponse.
+vérifié (appel direct de `service.run`, puis route `/api/import/schema/preview` avec TestClient) :
+  - `sniff_kind` : `create ` ×30 000 (205 Ko, `x.txt`) → 422 `unknown_kind` en 0,01 s (109 s avant) ; variantes `create or replace ` ×12 000, `create temp ` ×17 000, `create global local temp ` ×9 000, `create` + 210 000 espaces, `create\n` ×30 000, `create create create table ` ×9 000 (0,31 s) ; `("create " + "a "*100) * 2000` (404 Ko) en 0,00 s. Par la route : 0,09 s (`x.txt`), 0,26 s (`x.sql`, refus `sql_no_table`). La regex est à liste fermée, répétition `{0,3}`, aucun quantificateur imbriqué.
+  - OR de 20 000 branches (243 Ko) : accepté en 0,59 s par la route, non traité (`> MAX_ENUM`), plus d'énumération de 20 000 valeurs ; 499 branches : 0,02 s ; 30 000 branches dupliquées (314 Ko, 400 valeurs distinctes) : 0,62 s ; `IN` de 20 000 valeurs : 0,30 s ; 40 `CHECK IN` de 400 valeurs : 0,25 s ; 20 000 `CHECK (a >= i)` : 0,93 s ; 12 000 `AND` de paires `OR` : 0,83 s ; 8 000 `AND` d'`IN` : 0,48 s ; 30 000 `AND` de comparaisons non traitées : 1,18 s. Tout reste sous le budget de 8 s.
+  - Plafond cumulé (route) : 5 fichiers de 2,17 Mo → 413 `too_big_total` (« Les fichiers dépassent 10 Mo au total. », bilingue) ; `expect_digest` absent → 422 `missing_digest` (test API vert, contrôle fait avant tout accès au projet) ; contrat, guide (« 2 Mo par fichier (10 Mo au total) ») et front (envoie toujours `pv.digest`) cohérents.
+  - Exclusion par clé : le serveur compare `e.key` / clé du brouillon exactes (plus de nom affiché, plus de `.lower()`) ; aucune régression de droits (`test_l48_collab.py` vert, y compris l'application avec empreinte).
+skill: audit-securite-cve-cwe : les trois ajouts demandés en it1 sont confirmés ; ajouter le mode opératoire de rejeu (même entrée de 200 à 400 Ko variée sur `sniff`, OR, AND, IN, CHECK successifs) comme jeu de non-régression des parseurs maison.

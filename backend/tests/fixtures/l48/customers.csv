@@ -1,0 +1,5 @@
+customer_id;name;email;age;score;active;signup
+1;Alice;a@x.fr;34;12,5;true;2024-01-02
+2;Bob;b@x.fr;41;9,0;false;2024-02-03
+3;"Caro;
+""C""";c@x.fr;29;7,25;true;2024-03-04

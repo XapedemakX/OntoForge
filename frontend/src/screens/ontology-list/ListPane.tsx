@@ -3,6 +3,7 @@ import type { OntoModel } from '../../api'
 import { Icon } from '../../kit'
 import { useT } from '../../i18n'
 import { ancestors, childrenMap, lblOf, type Kind } from './model'
+import '../practices/practices.css'
 
 export const TABS: { kind: Kind; icon: string; key: string; coll: 'classes' | 'object_properties' | 'datatype_properties' | 'individuals' }[] = [
   { kind: 'class', icon: 'circle-nodes', key: 'ol.tab.classes', coll: 'classes' },
@@ -19,6 +20,8 @@ export function ListPane({ onto, lang, tab, setTab, sel, onSelect, icons, onCrea
   const [q, setQ] = useState(''); const [shut, setShut] = useState<Set<string>>(new Set()); const [adding, setAdding] = useState(false); const [name, setName] = useState('')
   const kids = useMemo(() => childrenMap(onto, lang), [onto, lang])
   const lbl = (i: string) => lblOf(onto, i, lang)
+  const dep = (i: string) => !!(onto.classes[i] || onto.object_properties[i] || onto.datatype_properties[i] || onto.individuals[i])?.deprecated
+  const depTag = (i: string) => dep(i) ? <em className="dep" data-testid="ol-dep">{t('ed.deprecated')}</em> : null
   const roots = useMemo(() => Object.values(onto.classes).filter(c => !c.sub_class_of.some(p => onto.classes[p])).map(c => c.iri).sort((a, b) => lbl(a).localeCompare(lbl(b))),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [onto, lang])
@@ -43,7 +46,7 @@ export function ListPane({ onto, lang, tab, setTab, sel, onSelect, icons, onCrea
           <button type="button" className="tg" aria-label={isShut ? t('ol.expand') : t('ol.collapse')} tabIndex={-1} disabled={!k.length}
             onClick={() => setShut(x => { const n = new Set(x); n.has(iri) ? n.delete(iri) : n.add(iri); return n })}>{k.length ? <Icon name={isShut ? 'chevron-right' : 'chevron-down'} /> : null}</button>
           <button type="button" className="nm" onClick={() => onSelect(iri, 'class')} title={iri}>
-            <Icon name={icons[iri] || 'circle-nodes'} /><span>{lbl(iri)}</span>
+            <Icon name={icons[iri] || 'circle-nodes'} /><span className={dep(iri) ? 'dep-name' : ''}>{lbl(iri)}</span>{depTag(iri)}
           </button>
           {np > 0 && <span className="cnt" title={t('ol.tree.props', { n: np })}><Icon name="list" />{np}</span>}
           {k.length > 0 && <span className="cnt" title={t('ol.tree.subs', { n: k.length })}><Icon name="sitemap" />{k.length}</span>}
@@ -82,7 +85,7 @@ export function ListPane({ onto, lang, tab, setTab, sel, onSelect, icons, onCrea
                 <li key={i} role="option" aria-selected={sel === i}>
                   <button type="button" className={sel === i ? 'sel' : ''} onClick={() => onSelect(i, tab)} title={i}>
                     <Icon name={tab === 'class' ? icons[i] || 'circle-nodes' : cur.icon} />
-                    <span className="t"><b>{lbl(i)}</b>{tab !== 'class' && <small>{hint(i)}</small>}</span>
+                    <span className="t"><b className={dep(i) ? 'dep-name' : ''}>{lbl(i)}</b>{depTag(i)}{tab !== 'class' && <small>{hint(i)}</small>}</span>
                   </button>
                 </li>
               ))}

@@ -1,4 +1,4 @@
-"""Lint d'ontologie : règles de conformité W01–W07 et bonnes pratiques (BP01–BP07).
+"""Lint d'ontologie : règles de conformité W01–W07 et bonnes pratiques (BP01–BP16 ; BP08–BP16 dans practices.py, L49).
 
 W01–W05 sont calculées par profiles.dl_issues (contrôles structurels OWL 2 DL) ; W06 (insatisfiabilité)
 par reasoner.py ; W07 (labels fr/en, versionIRI, préfixes) est ici. Les BP sont des constats « info » ou
@@ -12,6 +12,7 @@ from typing import Optional
 import rdflib
 
 from ..core.onto_model import OWL, RDFS, OntoModel, local_name
+from . import practices as _practices
 from .report import Issue
 
 LANGS = ("fr", "en")
@@ -22,6 +23,7 @@ STANDARD_PREFIXES = {
     "http://www.w3.org/2004/02/skos/core#": "skos", "http://purl.org/dc/terms/": "dcterms",
     "http://purl.org/dc/elements/1.1/": "dc", "http://xmlns.com/foaf/0.1/": "foaf",
     "http://www.w3.org/ns/prov#": "prov", "http://www.w3.org/ns/shacl#": "sh", "https://schema.org/": "schema",
+    "http://www.w3.org/2003/06/sw-vocab-status/ns#": "vs",
 }
 
 
@@ -33,7 +35,8 @@ def _entities(o: OntoModel):
             yield kind, e
 
 
-def lint(onto: OntoModel, graph: Optional[rdflib.Graph] = None, *, include_dl: bool = True) -> list[Issue]:
+def lint(onto: OntoModel, graph: Optional[rdflib.Graph] = None, *, include_dl: bool = True, practices: bool = True) -> list[Issue]:
+    """``practices=False`` : sans BP08–BP16 (fiches, versions), inutiles sur un brouillon de l'assistant (L49)."""
     out: list[Issue] = []
     if include_dl:
         from .profiles import _graph_of, dl_issues
@@ -43,7 +46,7 @@ def lint(onto: OntoModel, graph: Optional[rdflib.Graph] = None, *, include_dl: b
     for kind, e in _entities(onto):
         if e.iri.startswith(tuple(STANDARD_PREFIXES) + ("http://purl.org/vocab/vann/",)):
             continue  # vocabulaire réutilisé, pas une entité de l'ontologie
-        miss = [lg for lg in LANGS if lg not in e.labels]
+        miss = [lg for lg in LANGS if not _practices.has_label(e, lg)]  # rdfs:label ou skos:prefLabel (SKOS §5, L49)
         if miss:
             out.append(Issue(level="warning", code="W07", subject=e.iri, spec_ref="Bonnes pratiques (rdfs:label)",
                              message=f"{kind.capitalize()} {local_name(e.iri)} : label manquant en {' et '.join(miss)}."))
@@ -119,6 +122,9 @@ def lint(onto: OntoModel, graph: Optional[rdflib.Graph] = None, *, include_dl: b
         if n and (not n[0].islower() or re.search(r"[_\s]", n)):
             out.append(Issue(level="info", code="BP07", subject=p.iri, spec_ref="Bonnes pratiques (nommage)",
                              message=f"Le nom de propriété {n} devrait être en camelCase, sans « _ »."))
+    # --- BP08–BP16 (L49) : fiche complète, dépréciation, version sémantique, en-tête
+    if practices:
+        out.extend(_practices.lint(onto))
     return out
 
 

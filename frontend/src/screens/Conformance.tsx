@@ -7,6 +7,8 @@ import type { ScreenProps } from '../shell/types'
 import { Empty, ErrorView, Spin, useLoad } from '../ui'
 import { useT } from '../i18n'
 import { KrakieStatus, useResultFlash } from '../krakie/Krakie'
+import { useReadOnly } from '../collab/readonly'
+import { CompletenessCard, HeaderCard, ReleasesCard } from './practices/ConformanceCards'
 
 const PROFILE_NAMES: Record<string, string> = { DL: 'OWL 2 DL', EL: 'OWL 2 EL', QL: 'OWL 2 QL', RL: 'OWL 2 RL', RDFS: 'RDFS' }
 
@@ -78,6 +80,7 @@ export function Conformance({ p, setP }: ScreenProps) {
   const { data, error, loading, reload } = useLoad(() => api.conformance(p.id), [p.id, p.updated_at])
   const [lv, setLv] = useState<Record<string, boolean>>({ error: true, warning: true, info: true })
   const [q, setQ] = useState('')
+  const ro = useReadOnly()
   const issues = (data?.issues ?? []).filter(i => lv[i.level] && (!q || (i.code + i.message + (i.subject ?? '')).toLowerCase().includes(q.toLowerCase())))
   const n = (l: string) => data?.issues.filter(i => i.level === l).length ?? 0
   const ref = (s?: string | null) => !s ? null : /^https?:/.test(s) ? <a href={s} target="_blank" rel="noreferrer">{s.replace(/^https?:\/\/(www\.)?/, '')}</a> : <span>{s}</span>
@@ -89,6 +92,9 @@ export function Conformance({ p, setP }: ScreenProps) {
         <div className="card" data-tour="conf-profiles"><div className="hd"><h2>{t('conf.profiles')}</h2></div><div className="bd row">
           {Object.entries(data.profiles).map(([k, ok]) => <span key={k} className={'pill ' + (ok ? 'on' : 'off')} title={ok ? t('cf.profile.ok') : t('cf.profile.ko')}>{PROFILE_NAMES[k] ?? k}</span>)}
           {Object.keys(data.profiles).length === 0 && <span className="muted">{t('cf.noprofile')}</span>}</div></div>
+        {data.completeness && <CompletenessCard p={p} c={data.completeness} />}
+        <HeaderCard p={p} setP={setP} readOnly={ro} />
+        <ReleasesCard p={p} setP={setP} readOnly={ro} />
         <ReasonerCard p={p} setP={setP} />
         <div className="row">
           {(['error', 'warning', 'info'] as const).map(l => <label key={l} className="row"><input type="checkbox" checked={lv[l]} onChange={e => setLv({ ...lv, [l]: e.target.checked })} /><span className={'badge ' + l}>{t('cf.level.' + l)} {n(l)}</span></label>)}

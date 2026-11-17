@@ -69,6 +69,17 @@ def _option(f: Finding) -> tuple[str, str]:
     return label, (opt.impact if opt else "")
 
 
+def _replacements(iri: str, onto: Optional[OntoModel], related: list[str]) -> list[str]:
+    """Remplaçants (dcterms:isReplacedBy) lus dans l'ontologie ; sans ontologie, ``related`` de A03 commence par eux."""
+    if onto is None:
+        return list(related)
+    for coll in (onto.classes, onto.object_properties, onto.datatype_properties, onto.individuals, onto.datatypes):
+        e = coll.get(iri)
+        if e is not None:
+            return [a.value for a in e.annotations if a.property == "http://purl.org/dc/terms/isReplacedBy"]
+    return []
+
+
 def _versions_section(pg: PGModel) -> list[str]:
     """Versions de normes et de cibles utilisées pour cette génération, avec leur statut et les écarts connus (contrôle local)."""
     v = {**standards.defaults(), **{k: x for k, x in (pg.meta.target_versions or {}).items() if x}}
@@ -202,8 +213,9 @@ def _generate(pg: PGModel, onto: Optional[OntoModel] = None) -> dict[str, str]:
     counts: dict[str, int] = {}
     for f in by_sev["auto"]:
         counts[f"{f.rule} — {f.title}"] = counts.get(f"{f.rule} — {f.title}", 0) + 1
+    reclass: dict[str, str] = {f"{f.rule} — {f.title}": f.auto_reason for f in by_sev["auto"] if f.auto_reason}
     for k, n in sorted(counts.items()):
-        L.append(f"- {k}{T(' : ', ': ')}{n}")
+        L.append(f"- {k}{T(' : ', ': ')}{n}" + (T(f" (reclassé sans choix à faire : {_esc(reclass[k])})", f" (reclassified, no choice to make: {_esc(reclass[k])})") if k in reclass else ""))
     L.append("")
 
     # ---------------------------------------------------------------- validations
@@ -234,6 +246,28 @@ def _generate(pg: PGModel, onto: Optional[OntoModel] = None) -> dict[str, str]:
     else:
         L.append(T("Aucune.", "None."))
     L.append("")
+
+    # ---------------------------------------------------------------- entités dépréciées (L49)
+    dep = [f for f in pg.findings if f.rule == "A03"]
+    if dep:
+        L.append(T(f"## Entités dépréciées — {len(dep)}", f"## Deprecated entities — {len(dep)}"))
+        L.append("")
+        L.append(T("| Entité | Remplacée par | Traitement | Entraîne la perte de | Arbitré |",
+                   "| Entity | Replaced by | Handling | Also removes | Arbitrated |"))
+        L.append("|---|---|---|---|---|")
+        for f in dep:
+            opt = f.chosen or f.recommended
+            how = (T("générée, marquée [DÉPRÉCIÉ]", "generated, flagged [DEPRECATED]") if opt == "flag_deprecated"
+                   else T("non générée", "not generated"))
+            reps_iri = _replacements(f.subject, onto, f.related)
+            reps = ", ".join(_short(r, onto) for r in reps_iri) or "—"
+            lost = ", ".join(_short(r, onto) for r in f.related if r not in reps_iri) if opt != "flag_deprecated" else ""
+            for mark in (" En partie : ", " Partly: "):  # perte partielle (union, plusieurs domaines) : notée dans le détail de A03
+                if opt != "flag_deprecated" and mark in f.detail:
+                    part = f.detail.split(mark, 1)[1].split(".")[0]
+                    lost = (lost + " ; " if lost else "") + T("en partie : ", "partly: ") + part
+            L.append(f"| {_short(f.subject, onto)} | {reps} | {how} | {lost or '—'} | {T('oui', 'yes') if f.chosen else T('non (recommandé)', 'no (recommended)')} |")
+        L.append("")
 
     # ---------------------------------------------------------------- décisions
     L.append(T("## Arbitrages", "## Arbitrations"))

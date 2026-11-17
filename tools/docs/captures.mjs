@@ -71,9 +71,9 @@ const unannotate = page => page.evaluate(() => document.querySelectorAll('[data-
 
 // ----------------------------------------------------------------------------- textes par langue (hors dictionnaire de l'interface)
 const TXT = {
-  fr: { proj: 'AutoMaint', projTrap: 'Piège (démonstration)', projHermit: 'Démo HermiT', providerName: 'Mon fournisseur (démo)', epName: 'Triplestore de démo', nl: 'véhicules dont le carburant est Diesel',
+  fr: { branchWhy: 'Même traitement pour toute la branche', proj: 'AutoMaint', projTrap: 'Piège (démonstration)', projHermit: 'Démo HermiT', providerName: 'Mon fournisseur (démo)', epName: 'Triplestore de démo', nl: 'véhicules dont le carburant est Diesel',
     chatAdd: 'ajoute la classe Pneu sous Pièce avec une propriété pression en bar', chatHelp: 'comment ça marche ici', chatSettings: 'Comment configurer Ollama en local ?', prose: 'Un garage répare des véhicules. Chaque véhicule a un propriétaire.' },
-  en: { proj: 'AutoMaint', projTrap: 'Trap (demo)', projHermit: 'HermiT demo', providerName: 'My provider (demo)', epName: 'Demo triplestore', nl: 'vehicles whose fuel is Diesel',
+  en: { branchWhy: 'Same treatment for the whole branch', proj: 'AutoMaint', projTrap: 'Trap (demo)', projHermit: 'HermiT demo', providerName: 'My provider (demo)', epName: 'Demo triplestore', nl: 'vehicles whose fuel is Diesel',
     chatAdd: 'add the class Tyre under Part with a property pressure in bar', chatHelp: 'how does this work', chatSettings: 'How do I set up Ollama locally?', prose: 'A garage repairs vehicles. Each vehicle has an owner.' },
 }
 const HERMIT_TTL = `@prefix : <http://example.org/reason#> .\n@prefix owl: <http://www.w3.org/2002/07/owl#> .\n@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .

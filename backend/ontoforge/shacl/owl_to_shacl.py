@@ -305,6 +305,26 @@ class _Gen:
             self.notes.append(f"[IGNORÉ] {ln} : owl:inverseOf {local_name(p.inverse_of)} — aucune contrainte "
                               "(cohérence à assurer par l'ingestion ou par inférence owlrl).")
 
+    # -- dépréciation (L49) -----------------------------------------------------------------------
+    def deactivate_deprecated_properties(self) -> None:
+        """Une property shape dont le chemin passe par une propriété dépréciée est désactivée (SHACL §2.1.5, sh:deactivated) :
+        la propriété est exclue du modèle cible par défaut (A03), une contrainte qui l'exigerait rejetterait toute donnée conforme."""
+        o = self.o
+        dep = {i for coll in (o.object_properties, o.datatype_properties) for i, p in coll.items() if p.deprecated}
+        if not dep:
+            return
+
+        def iris(path) -> set[str]:
+            return ({path.iri} if path.iri else set()) | {x for a in path.args for x in iris(a)}
+
+        shapes = list(self.m.property_shapes.values()) + [ps for ns in self.m.shapes.values() for ps in getattr(ns, "properties", [])]
+        for ps in shapes:
+            hit = iris(ps.path) & dep
+            if hit and not ps.deactivated:
+                ps.deactivated = True
+                for x in sorted(hit):
+                    self.notes.append(f"[IGNORÉ] {local_name(x)} : propriété dépréciée → property shape désactivée (sh:deactivated).")
+
     # -- classes ---------------------------------------------------------------------------------
     def gen_classes(self) -> None:
         o = self.o
@@ -429,6 +449,7 @@ class _Gen:
     def run(self) -> tuple[ShapesModel, list[str]]:
         self.gen_classes()
         self.gen_properties()
+        self.deactivate_deprecated_properties()
         # dédoublonnage des notes en gardant l'ordre
         seen, notes = set(), []
         for n in self.notes:

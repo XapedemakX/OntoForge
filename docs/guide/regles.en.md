@@ -81,7 +81,7 @@ Rules S01, S02 (OWL/SHACL conflicts) and G02 (invalid decision) are engine tooli
 | **R02** | N-ary relationship | review | `keep_node` | `keep_node` | none |
 | **A01** | Annotations | auto | `schema_metadata` | `schema_metadata` | Documentation |
 | **A02** | Axiom annotation | review | `report` | `report` | Documentation |
-| **A03** | Deprecated entity | auto | `exclude` | `exclude` | none |
+| **A03** | Deprecated entity | review | `exclude` | `exclude` | none |
 | **M01** | Ontology metadata | auto | `schema_metadata` | `schema_metadata` | Documentation |
 | **M02** | Ontology import | review | `external_reference` | `external_reference` | Human decision |
 | **G01** | Construct not transposed | lost | `report` | `report` | Documentation |
@@ -1579,7 +1579,7 @@ ex:Car a owl:Class . ex:Vehicle a owl:Class .
 
 - **Construct**: owl:deprecated true
 - **Detection**: Deprecated entity.
-- **Severity**: auto (applied directly)
+- **Severity**: review (to decide, since L49)
 - **Example in trap**: `am:ServiceBooklet`
 
 **OWL example**

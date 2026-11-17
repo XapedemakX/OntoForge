@@ -112,6 +112,7 @@ def localize_pg(pg: Any, lang: str) -> Any:
         f.title = tr(f.title, lang) or f.title
         f.detail = tr(f.detail, lang) or f.detail
         f.rationale = tr(f.rationale, lang)
+        f.auto_reason = tr(f.auto_reason, lang)
         for o in f.options:
             o.label = tr(o.label, lang) or o.label
             o.impact = tr(o.impact, lang) or o.impact
@@ -193,5 +194,5 @@ def localize_pg_for_export(pg: Any, lang: str) -> Any:
         for i, p in enumerate(nt.properties):
             p.description = _tr_framed(keep_p[(id(nt), i)])
     for e in pg.edge_types:
-        e.description = keep_e[id(e)]
+        e.description = _tr_framed(keep_e[id(e)])
     return pg

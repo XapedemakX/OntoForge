@@ -404,6 +404,15 @@ def _malformed(ctx: Ctx, out: list[Issue]):
                              message=f"Une restriction de {_anchor(g, r)} n'a pas de owl:onProperty : le graphe n'est pas un axiome OWL 2 valide."))
 
 
+    # OWL 2 SS §8.1.1 (ObjectUnionOf / ObjectIntersectionOf) et §7.1 (DataUnionOf / DataIntersectionOf) : au moins deux membres
+    for pred, nom in ((OWL.unionOf, "owl:unionOf"), (OWL.intersectionOf, "owl:intersectionOf")):
+        for s, h in g.subject_objects(pred):
+            n = len(rdf_list(g, h))
+            if n < 2:
+                out.append(Issue(level="error", code="W02", subject=_anchor(g, s), spec_ref=f"{SS} §8.1.1",
+                                 message=f"Une expression {nom} de {_anchor(g, s)} n'a que {n} membre(s) : OWL 2 DL en exige au moins deux."))
+
+
 def _ill_typed(g: rdflib.Graph, out: list[Issue]) -> None:
     """Littéral hors de l'espace lexical de son datatype : ill-typed (RDF 1.1 Concepts §3.3), ontologie incohérente."""
     for s, p, o in g:
@@ -719,6 +728,8 @@ def check_conformance(onto: OntoModel, graph: Optional[rdflib.Graph] = None, *, 
     rep.profile_violations["RDFS"] = rv
     rep.profiles["RDFS"] = not rv
     rep.issues.extend(_lint.lint(onto, g, include_dl=False))
+    from . import practices as _practices
+    rep.completeness = _practices.completeness(onto)
     if run_reasoner:
         res = _reasoner.reason(g, hermit=hermit, timeout=timeout)
         rep.reasoner = res

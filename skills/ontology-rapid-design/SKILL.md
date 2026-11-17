@@ -11,7 +11,7 @@ description: Concevoir rapidement une ontologie OWL 2 (ou un modèle de données
 4. Réutilisation avant création : `skos:Concept/ConceptScheme` (vocabulaires), `schema:Person/Organization/Place`, `prov:Activity/Agent/wasGeneratedBy` (traçabilité), `dcterms:*` (métadonnées). Exprimer par `skos:exactMatch` / `closeMatch` plutôt qu'importer tout le vocabulaire.
 5. Structure : hiérarchie, domaines/portées, cardinalités, clés (voir ci-dessous).
 6. Validation : lister les CQ couvertes, générer les shapes (patterns, plages), passer la conformité OWL 2 DL.
-7. Itérer : montrer le modèle à un expert métier, corriger, versionner (owl:versionIRI).
+7. Itérer : montrer le modèle à un expert métier, corriger, versionner (owl:versionInfo SemVer + owl:versionIRI, voir « Cycle de vie »).
 
 ## Nommage
 - Classes : PascalCase singulier (`RepairOrder`). Propriétés d'objet : verbe/relation camelCase (`ownedBy`, `hasEngine`, `concernsVehicle`) ; propriétés de données : nom camelCase (`mileage`, `orderNumber`).
@@ -41,9 +41,17 @@ description: Concevoir rapidement une ontologie OWL 2 (ou un modèle de données
 - Texte : souligner noms/verbes, en déduire CQ puis classes ; demander à l'assistant un JSON structuré et relire.
 - Dans OntoForge : `POST /api/assistant/draft` (kind `text|csv|sql`) renvoie une proposition jamais appliquée sans revue humaine + avertissements ; sans LLM configuré, CSV/SQL donnent un squelette déterministe.
 
+## Cycle de vie d'un terme et de l'ontologie (L49)
+- Fiche minimale de chaque classe et propriété : libellés fr et en, `skos:definition` d'une phrase, `dcterms:creator`, `dcterms:source` (document, norme ou IRI d'origine), `vs:term_status` (`unstable` → `testing` → `stable`, `archaic` à la dépréciation). Écran Conformité : score par fiche et pour l'ontologie, fiches les moins complètes en tête.
+- Justifier chaque caractéristique (fonctionnelle, transitive, symétrique…) par une `skos:editorialNote` : c'est elle qu'on relit quand un arbitrage de transposition dépend de la caractéristique.
+- Ne pas supprimer un terme publié : le **déprécier** (`owl:deprecated true` + `dcterms:isReplacedBy`). Il n'est plus généré par défaut, les données existantes gardent leur IRI, la note de version le signale.
+- En-tête : titre, objectif, auteurs, licence, dates, mots-clés, vocabulaires réutilisés (`dcterms:references`).
+- Versionner à chaque livraison : « Enregistrer la version » propose majeure (ajout ou retrait de classe, relation, attribut ; changement de domaine, portée, cardinalité…), mineure (libellés, définitions, dépréciations) ou correctif (autres annotations), et rédige la note de version. L'espace de noms des termes ne porte jamais de numéro de version.
+
 ## Checklist avant de passer au graphe
 - [ ] Chaque classe/propriété sert une CQ ; aucune classe orpheline sans raison.
-- [ ] Labels fr + en ; commentaire d'une phrase.
+- [ ] Labels fr + en ; définition d'une phrase ; auteur, source et statut renseignés (score de fiche proche de 100 %).
+- [ ] Termes retirés dépréciés (avec remplaçant), pas supprimés ; version SemVer enregistrée.
 - [ ] Domaine et portée sur toutes les propriétés ; inverse déclaré quand on navigue dans les deux sens.
 - [ ] Clé sur chaque classe concrète ; cardinalités min/max réfléchies.
 - [ ] Rôles, énumérations, n-aires : choix explicités.
@@ -57,3 +65,6 @@ description: Concevoir rapidement une ontologie OWL 2 (ou un modèle de données
 - « Cette table `order_parts` est-elle une relation N-N ou une classe d'association ? Justifie. »
 - « Quelles propriétés méritent un pattern ou une plage SHACL ? Ne propose que des contraintes sûres. »
 - « Explique pourquoi ce constat est risqué pour Neo4j et quelle option recommander. »
+
+## Partir d'un schéma existant (L48)
+Pour un DDL SQL (PostgreSQL, MySQL, SQL Server), des CSV ou un JSON Schema, utiliser l'import déterministe d'OntoForge (écran Projets ou tableau de bord, sans IA) : table → classe, clé primaire et `UNIQUE` non nul → `hasKey`, clé étrangère → propriété objet fonctionnelle, `CHECK` simples → énumérations et facettes SHACL. Trancher à la main les décisions de l'aperçu (table d'association : relation ou classe ; clé étrangère servant de clé primaire : relation ou sous-classe) et relire les éléments ignorés. Détail : `docs/CONTRACTS.md` §18.

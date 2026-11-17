@@ -1,8 +1,10 @@
 # Contraintes d'installation des images Docker (L39-secu, SEC-14) : versions exactes des dépendances de production et de leurs
 # dépendances transitives, relevées dans l'environnement de test (pip freeze restreint à la fermeture de `.[reasoner]`).
-# Aucune version n'a été changée : les épingles directes sont celles de pyproject.toml ; les transitives sont celles qui ont passé
-# la recette. Utilisation : pip install -c backend/constraints.txt ".[reasoner]". Test de cohérence : tests/test_sec_supply.py.
+# Montée L46 (D-L46-01) : fastapi, starlette et python-multipart montés ; annotated-doc et typing-inspection (transitives de FastAPI) ajoutées,
+# html5rdf (déjà installée) ajoutée au relevé. Les épingles directes sont celles de pyproject.toml ; les transitives sont celles qui ont passé
+# la recette. Utilisation : pip install -c backend/constraints.txt ".[reasoner]". Test de cohérence : tests/test_sec_network.py.
 # Mise à jour : décision de Jerem (D-L21-02), puis régénérer ce fichier. Hachages (--require-hashes) : non fournis ; À VÉRIFIER si exigés.
+annotated-doc==0.0.5
 annotated-types==0.8.0
 anyio==4.16.0
 argon2-cffi==25.1.0
@@ -12,10 +14,11 @@ certifi==2026.10.23
 cffi==2.1.1
 click==8.5.0
 cryptography==50.0.2
-fastapi==0.115.6
+fastapi==0.133.0
 h11==0.16.0
 httpcore==1.0.9
 httptools==0.9.0
+html5rdf==1.2.1
 httpx==0.28.1
 idna==3.20
 owlready2==0.47
@@ -30,11 +33,12 @@ pyparsing==3.3.3
 pypdf==7.0.0
 pyshacl==0.29.1
 python-dotenv==1.2.4
-python-multipart==0.0.19
+python-multipart==0.0.31
 pyyaml==6.0.2
 rdflib==7.1.1
-starlette==0.41.3
+starlette==1.3.1
 typing-extensions==4.16.0
+typing-inspection==0.4.4
 uvicorn==0.32.1
 uvloop==0.23.0
 watchfiles==1.3.0

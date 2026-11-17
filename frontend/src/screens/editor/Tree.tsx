@@ -6,7 +6,7 @@ import type { GEdge, GNode } from './types'
 /** Arbre des classes (parents -> enfants), synchronisé avec la sélection du canevas. */
 export function Tree({ nodes, edges, selected, props, onSelect, onSelectProp, onClose }: {
   nodes: GNode[]; edges: GEdge[]; selected: Set<string>
-  props: { iri: string; label: string }[]
+  props: { iri: string; label: string; deprecated?: boolean }[]
   onSelect: (iri: string, additive: boolean) => void; onSelectProp: (iri: string) => void; onClose: () => void
 }) {
   const t = useT()
@@ -34,7 +34,7 @@ export function Tree({ nodes, edges, selected, props, onSelect, onSelectProp, on
     return <li key={path.join('>') + i} role="treeitem" aria-expanded={k.length ? open : undefined} aria-selected={selected.has(i)}>
       <div className={'of-trow' + (selected.has(i) ? ' sel' : '') + (match(i) ? '' : ' dim')} style={{ paddingLeft: 6 + depth * 14 }}>
         {k.length ? <button type="button" className="tg" aria-label={open ? t('ed.tree.fold') : t('ed.tree.unfold')} onClick={() => setShut(x => { const s = new Set(x); s.has(i) ? s.delete(i) : s.add(i); return s })}><Icon name={open ? 'chevron-down' : 'chevron-right'} /></button> : <span className="tg" />}
-        <button type="button" className="nm" onClick={e => onSelect(i, e.shiftKey || e.metaKey || e.ctrlKey)}><Icon name={n.icon || 'circle-nodes'} /><span className={n.abstract ? 'abs' : ''}>{n.label}</span></button>
+        <button type="button" className="nm" onClick={e => onSelect(i, e.shiftKey || e.metaKey || e.ctrlKey)}><Icon name={n.icon || 'circle-nodes'} /><span className={[n.abstract && 'abs', n.deprecated && 'dep-name'].filter(Boolean).join(' ')}>{n.label}</span>{n.deprecated && <em className="dep" title={t('ed.deprecated')}>{t('ed.deprecated')}</em>}</button>
       </div>
       {k.length > 0 && open && <ul role="group">{k.map(c => row(c, depth + 1, [...path, i]))}</ul>}
     </li>
@@ -45,7 +45,7 @@ export function Tree({ nodes, edges, selected, props, onSelect, onSelectProp, on
       <div className="of-tsearch"><Icon name="magnifying-glass" /><input type="text" aria-label={t('ed.search')} placeholder={t('ed.tree.filter')} value={q} onChange={e => setQ(e.target.value)} /></div>
       <ul role="tree" className="of-tlist">{roots.map(r => row(r, 0, []))}</ul>
       {!!props.length && <div className="of-tprops"><h4>{t('ed.tree.props')}</h4>
-        <ul>{props.map(p => <li key={p.iri}><button type="button" onClick={() => onSelectProp(p.iri)}><Icon name="arrow-right-long" />{p.label}</button></li>)}</ul></div>}
+        <ul>{props.map(p => <li key={p.iri}><button type="button" onClick={() => onSelectProp(p.iri)}><Icon name="arrow-right-long" /><span className={p.deprecated ? 'dep-name' : ''}>{p.label}</span></button></li>)}</ul></div>}
     </aside>
   )
 }

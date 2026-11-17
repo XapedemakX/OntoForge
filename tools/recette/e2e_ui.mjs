@@ -18,7 +18,7 @@ const run = (cmd, args, opts) => { const p = spawn(cmd, args, { stdio: 'ignore',
 const report = []
 const log = (screen, ok, detail) => { report.push({ screen, ok, detail }); console.log((ok ? 'OK  ' : 'KO  ') + screen + ' :: ' + detail) }
 
-run('/home/claude/venv/bin/python', ['-m', 'uvicorn', 'ontoforge.main:app', '--port', String(BP), '--log-level', 'warning'],
+run(process.env.PYTHON || '/home/claude/venv/bin/python', ['-m', 'uvicorn', 'ontoforge.main:app', '--port', String(BP), '--log-level', 'warning'],
   { cwd: path.join(ROOT, 'backend'), env: { ...process.env, ONTOFORGE_DATA: mkdtempSync(path.join(tmpdir(), 'of-ui-')), ONTOFORGE_LLM_PROVIDER: 'mock' } })
 run('npx', ['vite', 'preview', '--port', String(FP), '--strictPort'], { cwd: path.join(ROOT, 'frontend'), env: { ...process.env, ONTOFORGE_API: `http://127.0.0.1:${BP}` } })
 const B = `http://127.0.0.1:${BP}/api`

@@ -216,12 +216,19 @@ cap('conformite', 'krakie-forgeronne', async c => {
 // ============================================================================ Analyse et arbitrage, modèle, exports, versions
 cap('analyse', 'analyse-synthese', async c => {
   await c.goTo('analyse', { wait: '.kpis' }); await c.sleep(800)
-  await c.snap('analyse-synthese', { ann: [{ at: c.btn(c.t('an.accept')), n: 1, box: true, pos: 'bl', out: true }, { at: '.kpis', n: 2, box: true, pos: 'tr' }, { at: '.group-h >> nth=0', n: 3, box: true, pos: 'tr' }] })
+  await c.snap('analyse-synthese', { ann: [{ at: c.btn(c.t('an.accept')), n: 1, box: true, pos: 'bl', out: true }, { at: '.kpis', n: 2, box: true, pos: 'tr' }, { at: '[data-testid=branch-group] >> nth=0', n: 3, box: true, pos: 'tr' }] })
 })
 cap('analyse', 'analyse-constat', async c => {
   await c.goTo('analyse', { wait: '.kpis' })
   await c.click('[data-tour=an-rule] .ttl >> nth=0'); await c.sleep(900)
   await c.snap('analyse-constat', { target: '[data-tour=an-rule] >> nth=0', pad: 12, ann: [{ at: '[data-tour=an-finding] .rationale', n: 1, box: true, pos: 'tr' }, { at: '[data-tour=an-finding] .opts', n: 2, box: true, pos: 'tr' }, { at: '[data-tour=an-finding] .reco', n: 3, box: true, pos: 'tr', out: true }] })
+})
+cap('analyse', 'analyse-branche', async c => {   // L47 : une décision par racine de hiérarchie, avec sa raison
+  await c.goTo('analyse', { wait: '.kpis' })
+  const g = c.page.locator('[data-testid=branch-group]').first()
+  await g.locator('[data-testid=why-input]').first().fill(c.X.branchWhy)
+  await c.sleep(300)
+  await c.snap('analyse-branche', { target: '[data-testid=branch-group] >> nth=0', pad: 12, ann: [{ at: '[data-testid=branch-reco]', n: 1, box: true, pos: 'tr' }, { at: '[data-testid=branch-group] >> nth=0 >> [data-testid=why-input]', n: 2, box: true, pos: 'tr' }, { at: '[data-testid=branch-apply] >> nth=0', n: 3, box: true, pos: 'tr', out: true }] })
 })
 cap('analyse', 'analyse-neo4j', async c => {
   await c.goTo('analyse', { wait: '.kpis' })
@@ -231,7 +238,7 @@ cap('analyse', 'analyse-neo4j', async c => {
 })
 cap('analyse', 'analyse-regle-appliquee', async c => {
   await c.goTo('analyse', { wait: '.kpis' })
-  const apply = c.page.locator('button', { hasText: /(Appliquer la recommandation|Apply the recommendation)/ }).nth(1)
+  const apply = c.page.locator('button', { hasText: /(Appliquer la recommandation à toute la règle|Apply the recommendation to the whole rule)/ }).nth(1)
   await c.click(apply); await c.sleep(1800)
   await c.snap('analyse-regle-appliquee', { ann: [{ at: '.kpis', n: 1, box: true, pos: 'tr' }] })
 })

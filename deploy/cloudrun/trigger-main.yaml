@@ -1,0 +1,15 @@
+# Déclencheur Cloud Build « push sur main », à importer (README, §8.4) :
+#   gcloud builds triggers import --source=<copie de ce fichier avec <PROJET> remplacé> --region=europe-west1
+# On passe par un fichier parce que le motif de branche « ^main$ » perd son « ^ » en ligne de commande (gcloud est un script .cmd).
+# AUCUN secret ici : uniquement des noms de ressources. <PROJET> est remplacé par l'identifiant du projet (README, §8.4).
+# Schéma BuildTrigger de la 2e génération : à confirmer avec « gcloud builds triggers describe <nom> --region=… --format=yaml ».
+name: ontoforge-deploy-main
+description: Construit l'image et met à jour le service Cloud Run à chaque push sur main (approbation manuelle requise).
+filename: deploy/cloudrun/cloudbuild-trigger.yaml
+repositoryEventConfig:
+  repository: projects/<PROJET>/locations/europe-west1/connections/ontoforge-github/repositories/ontoforge
+  push:
+    branch: ^main$
+serviceAccount: projects/<PROJET>/serviceAccounts/ontoforge-build@<PROJET>.iam.gserviceaccount.com
+approvalConfig:
+  approvalRequired: true

@@ -673,7 +673,6 @@ PHRASES.update({
     " » inconnue de l'ontologie.": "” unknown to the ontology.",
     "Classe « ": "Class “",
     "Constat « ": "Finding “",
-    " » introuvable": "” not found",
     " » introuvable.": "” not found.",
     "Endpoint actif inconnu « ": "Unknown active endpoint “",
     "Endpoint « ": "Endpoint “",
@@ -758,4 +757,105 @@ PHRASES.update({
         "The engine transposes each of them as a node type of its own, with no flattened inheritance between them. ",
     "Corrigez le cycle (retirez une des sous-classes) ou déclarez une équivalence explicite.":
         "Fix the cycle (remove one of the subclass links) or declare an explicit equivalence.",
+})
+
+# ---- bonnes pratiques (L49) : constats BP08–BP16, dépréciation, versions publiées, opérations de fiche
+PHRASES.update({
+    " : définition manquante (skos:definition ou rdfs:comment).": ": missing definition (skos:definition or rdfs:comment).",
+    "Aucune des ": "None of the ",
+    " entités n'a d'auteur, de source ni de statut de revue : fiches à compléter.":
+        " entities has an author, a source or a review status: entity cards to complete.",
+    " : fiche incomplète, manque ": ": incomplete entity card, missing ",
+    "auteur (dcterms:creator)": "author (dcterms:creator)",
+    "source (dcterms:source)": "source (dcterms:source)",
+    "statut (vs:term_status)": "status (vs:term_status)",
+    " : statut « ": ": status “",
+    " » inconnu ; valeurs attendues : ": "” unknown; expected values: ",
+    " : dépréciée mais de statut « ": ": deprecated but with status “",
+    " » ; statut attendu : archaic.": "”; expected status: archaic.",
+    " : caractéristiques (": ": characteristics (",
+    ") sans justification (skos:editorialNote).": ") without justification (skos:editorialNote).",
+    " : dépréciée sans remplaçant (dcterms:isReplacedBy).": ": deprecated without replacement (dcterms:isReplacedBy).",
+    " : se désigne elle-même comme remplaçante.": ": names itself as its replacement.",
+    " : remplacée par ": ": replaced by ",
+    ", elle aussi dépréciée.": ", which is deprecated too.",
+    " : remplaçant ": ": replacement ",
+    " introuvable dans l'ontologie.": " not found in the ontology.",
+    " : a un remplaçant mais n'est pas marquée owl:deprecated.": ": has a replacement but is not marked owl:deprecated.",
+    " : domaine ou portée ": ": domain or range ",
+    " : restriction sur ": ": restriction on ",
+    ", qui est dépréciée.": ", which is deprecated.",
+    "L'ontologie n'a pas d'owl:versionInfo : indiquez une version au format MAJEUR.MINEUR.CORRECTIF (ex. 1.0.0).":
+        "The ontology has no owl:versionInfo: give a version in MAJOR.MINOR.PATCH format (e.g. 1.0.0).",
+    "owl:versionInfo « ": "owl:versionInfo “",
+    " » n'est pas au format SemVer MAJEUR.MINEUR.CORRECTIF (ex. 1.2.0).": "” is not in SemVer MAJOR.MINOR.PATCH format (e.g. 1.2.0).",
+    "owl:versionIRI est égale à l'IRI de l'ontologie : elle doit désigner la version (ex. …/onto/1.2.0).":
+        "owl:versionIRI equals the ontology IRI: it must identify the version (e.g. …/onto/1.2.0).",
+    "L'espace de noms ": "The namespace ",
+    " contient un numéro de version : les IRI des termes changeraient à chaque version. ":
+        " contains a version number: term IRIs would change with every version. ",
+    "Gardez la version dans owl:versionIRI et owl:versionInfo.": "Keep the version in owl:versionIRI and owl:versionInfo.",
+    "En-tête de l'ontologie incomplet, manque : ": "Incomplete ontology header, missing: ",
+    "titre (dcterms:title)": "title (dcterms:title)",
+    "objectif (dcterms:description)": "purpose (dcterms:description)",
+    "auteurs (dcterms:creator)": "authors (dcterms:creator)",
+    "licence (dcterms:license)": "license (dcterms:license)",
+    "date de création (dcterms:created)": "creation date (dcterms:created)",
+    "date de modification (dcterms:modified)": "modification date (dcterms:modified)",
+    # spec_ref
+    "(annotations d'ontologie)": "(ontology annotations)",
+    "(versionnement)": "(versioning)",
+    # A03
+    " Remplacée par : ": " Replaced by: ",
+    # opérations et versions publiées
+    "Le remplaçant ": "The replacement ",
+    " n'est pas déclaré dans l'ontologie": " is not declared in the ontology",
+    "Une entité ne peut pas se remplacer elle-même": "An entity cannot replace itself",
+    "Propriété d'annotation non modifiable ici : ": "Annotation property not editable here: ",
+    "« values » doit être une liste (50 valeurs au plus)": "“values” must be a list (50 values at most)",
+    "Chaque valeur est une chaîne ou un objet {value, lang}": "Each value is a string or a {value, lang} object",
+    "Valeur trop longue (4000 caractères au plus)": "Value too long (4000 characters at most)",
+    "Statut de revue inconnu « ": "Unknown review status “",
+    " » ; valeurs : ": "”; values: ",
+    " » n'est pas au format SemVer MAJEUR.MINEUR.CORRECTIF": "” is not in SemVer MAJOR.MINOR.PATCH format",
+    "owl:versionIRI doit différer de l'IRI de l'ontologie (OWL 2 SS §3.3)": "owl:versionIRI must differ from the ontology IRI (OWL 2 SS §3.3)",
+    " » n'est pas une version SemVer (MAJEUR.MINEUR.CORRECTIF, ex. 1.2.0)": "” is not a SemVer version (MAJOR.MINOR.PATCH, e.g. 1.2.0)",
+    " doit être supérieure à la précédente (": " must be greater than the previous one (",
+    "La version publiée ": "The released version ",
+    "L'ontologie n'a pas d'IRI : impossible de calculer owl:versionIRI": "The ontology has no IRI: owl:versionIRI cannot be computed",
+    "Note de version trop longue (50 000 caractères au plus)": "Release note too long (50,000 characters at most)",
+})
+
+# ---- L49, revue it1 : pertes induites par l'exclusion d'une classe dépréciée, shapes désactivées
+PHRASES.update({
+    " Exclure entraîne la perte de : ": " Excluding also removes: ",
+    " Non générée : ": " Not generated: ",
+    " est dépréciée et exclue (A03:": " is deprecated and excluded (A03:",
+    " : propriété dépréciée → property shape désactivée (sh:deactivated).": ": deprecated property → property shape deactivated (sh:deactivated).",
+})
+
+# ---- L49, revue it2 : pertes partielles
+PHRASES.update({
+    " En partie : ": " Partly: ",
+    " Générée en partie : les extrémités vers ": " Partly generated: the endpoints towards ",
+    ", dépréciée et exclue, sont perdues (A03:": ", deprecated and excluded, are lost (A03:",
+})
+
+# ---- L47 : motifs de reclassement « auto » (constat sans vrai choix)
+PHRASES.update({
+    "La restriction est conservée comme requête Cypher de détection (IS NOT NULL en Enterprise, à décommenter) ; elle ne bloque pas le chargement. L'alternative (ignorer) ne fait que perdre la contrainte.":
+        "The restriction is kept as a Cypher detection query (IS NOT NULL on Enterprise, to uncomment); it does not block loading. The alternative (ignore) only loses the constraint.",
+    "Borne maximale (ou propriété fonctionnelle) conservée comme validation du connecteur Curiosity : un 'au plus n' ne demande aucune donnée de plus, il signale seulement un excès de liens (code de sortie 2 si violé) ; l'alternative (ignorer) ne fait que perdre la contrainte.":
+        "Upper bound (or functional property) kept as a validation of the Curiosity connector: an 'at most n' requires no extra data, it only reports too many links (exit code 2 if violated); the alternative (ignore) only loses the constraint.",
+    "La cardinalité est conservée comme requête Cypher de détection ; elle ne bloque pas le chargement. L'alternative (ignorer) ne fait que perdre la contrainte.":
+        "The cardinality is kept as a Cypher detection query; it does not block loading. The alternative (ignore) only loses the constraint.",
+    "L'existence est conservée comme requête Cypher de détection ; elle ne bloque pas le chargement. L'alternative (ignorer) ne fait que perdre la contrainte.":
+        "The existence requirement is kept as a Cypher detection query; it does not block loading. The alternative (ignore) only loses the constraint.",
+    "Les facettes (bornes, motif) deviennent des validations du connecteur ; une valeur absente n'est pas une violation (garde de présence : un scalaire non nullable absent, soit 0, n'est pas contrôlé) ; l'alternative les perdrait.":
+        "The facets (bounds, pattern) become connector validations; an absent value is not a violation (presence guard: an absent non-nullable scalar, i.e. 0, is not checked); the alternative would lose them.",
+    "Les facettes (bornes, motif) deviennent des requêtes Cypher de détection, non bloquantes ; une valeur absente n'est pas une violation ; l'alternative les perdrait.":
+        "The facets (bounds, pattern) become non-blocking Cypher detection queries; an absent value is not a violation; the alternative would lose them.",
+    "La clé reste l'IRI (aucun renforcement) et l'unicité des valeurs hasKey devient une validation : rien n'est perdu.":
+        "The key stays the IRI (no tightening) and uniqueness of the hasKey values becomes a validation: nothing is lost.",
+    "Une seule option possible : aucun choix à faire.": "Only one option is possible: no choice to make.",
 })

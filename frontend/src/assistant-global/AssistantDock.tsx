@@ -94,7 +94,7 @@ export function AssistantDock({ p, setP, target, screen, perimeter }: { p: Proje
   const lastMsg = msgs[msgs.length - 1]
   const pose: Pose = busy ? 'reflechit' : lastMsg?.error ? 'inquiete' : happy ? 'contente' : 'accueil'
   const providers = status?.providers ?? []
-  const provLabel = (x: (typeof providers)[number]) => `${x.name}${x.model && x.model.toLowerCase() !== x.name.toLowerCase() ? ' · ' + x.model : ''}${x.configured ? '' : ' ' + t('asst.notConfigured')}`
+  const provLabel = (x: (typeof providers)[number]) => `${x.name}${x.model && x.kind !== 'mock' && !x.name.toLowerCase().includes(x.model.toLowerCase()) ? ' · ' + x.model : ''}${x.configured ? '' : ' ' + t('asst.notConfigured')}`
   const curProv = providers.find(x => x.id === ui.provider) ?? providers.find(x => x.id === status?.default_provider_id) ?? providers.find(x => x.default) ?? providers[0]
   const section = !p && typeof ctx.extra?.section === 'string' ? ctx.extra.section : ''
   const screenLabel = t('ag.screen.' + (ROUTE_SCREEN[screen]?.name ?? screen)) + (section ? ' · ' + t('settings.tab.' + section) : '')

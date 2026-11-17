@@ -38,9 +38,21 @@ def detect_a02(ctx: Ctx):
     return out
 
 
+IS_REPLACED_BY = "http://purl.org/dc/terms/isReplacedBy"
+
+
 def detect_a03(ctx: Ctx):
-    return [finding(ctx, "A03", iri, f"{ctx.short(iri)} est dépréciée (owl:deprecated).")
-            for iri, e in sorted(_entities(ctx), key=lambda kv: kv[0]) if e.deprecated]
+    """L49 : constat à arbitrer (exclure par défaut, ou garder avec drapeau) ; remplaçant cité (dcterms:isReplacedBy)."""
+    out = []
+    for iri, e in sorted(_entities(ctx), key=lambda kv: kv[0]):
+        if not e.deprecated:
+            continue
+        reps = sorted({a.value for a in e.annotations if a.property == IS_REPLACED_BY})
+        detail = f"{ctx.short(iri)} est dépréciée (owl:deprecated)."
+        if reps:
+            detail += " Remplacée par : " + ", ".join(ctx.short(r) for r in reps) + "."
+        out.append(finding(ctx, "A03", iri, detail, related=reps))
+    return out
 
 
 def detect_m01(ctx: Ctx):
@@ -100,6 +112,74 @@ def apply_a03(ctx: Ctx, f, opt):
     ctx.plan.setdefault("deprecated", {})[f.subject] = opt
 
 
+
+
+def _endpoints(ctx: Ctx, p: str) -> list[list[str]]:
+    """Extrémités résolues comme à la construction (revue it2) : ``objects.resolve`` pour une relation (domaine, portée,
+    union, inverse, restrictions, shapes, faits : règle O02), classes porteuses de ``data.build_props`` pour un attribut."""
+    if p in ctx.onto.object_properties:
+        from .objects import resolve
+        return [resolve(ctx, p, "domain"), resolve(ctx, p, "range")]
+    from .data import _dom, _users
+    union, _ = ctx.union_of(p, "domain")
+    if union:
+        return [list(union)]
+    if _dom(ctx, p):
+        return [_dom(ctx, p)]
+    return [_users(ctx, p)] if ctx.option_of("D02", p, default="attach_to_users") == "attach_to_users" else [[]]
+
+
+def exclusion_losses(ctx: Ctx) -> dict[str, dict[str, list[str]]]:
+    """Classes dépréciées exclues → propriétés NON dépréciées qu'elles emportent : ``{classe: {"full": [...], "partial": [...]}}``.
+
+    Perte totale : d'un côté au moins, toutes les extrémités résolues sont exclues (aucune arête ou propriété générée).
+    Perte partielle : une partie seulement des extrémités d'un côté est exclue (union, plusieurs domaines) ; le reste est généré.
+    Revues L49 it1 et it2 : jamais de perte silencieuse."""
+    o, plan = ctx.onto, ctx.plan.get("deprecated", {})
+    excl = {c for c, v in o.classes.items() if v.deprecated and plan.get(c, "exclude") == "exclude"}
+    out: dict[str, dict[str, list[str]]] = {}
+    if not excl:
+        return out
+    props = [(p, v) for p, v in sorted(o.object_properties.items())] + [(p, v) for p, v in sorted(o.datatype_properties.items())]
+    for p, v in props:
+        if v.deprecated:
+            continue
+        sides = [set(x) for x in _endpoints(ctx, p)]
+        hit = set().union(*(side & excl for side in sides))
+        if not hit:
+            continue
+        full = any(side and side <= excl for side in sides)
+        for c in sorted(hit):
+            out.setdefault(c, {"full": [], "partial": []})["full" if full else "partial"].append(p)
+    return out
+
+
+def after_plan(ctx: Ctx) -> None:
+    """Après les décisions : le constat A03 d'une classe exclue liste ce qu'il emporte ; le constat de base (O01, O02, D01…)
+    d'une propriété totalement emportée passe de « auto » ou « review » à « lost » (perdu, à l'humain : D-L14-02), avec la
+    raison ; une perte partielle est seulement notée (le reste est généré)."""
+    losses = exclusion_losses(ctx)
+    for c, d in losses.items():
+        a03 = ctx.findings.get(f"A03:{c}")
+        if a03 is not None:
+            if d["full"] and "Exclure entraîne la perte de" not in a03.detail:
+                a03.detail += " Exclure entraîne la perte de : " + ", ".join(ctx.short(p) for p in d["full"]) + "."
+            if d["partial"] and " En partie : " not in a03.detail:
+                a03.detail += " En partie : " + ", ".join(ctx.short(p) for p in d["partial"]) + "."
+            a03.related = list(dict.fromkeys(a03.related + d["full"]))
+        for p, full in [(p, True) for p in d["full"]] + [(p, False) for p in d["partial"]]:
+            fs = sorted((x for x in ctx.findings.values() if x.subject == p and x.rule[:1] in ("O", "D")), key=lambda x: x.id)
+            base = next((x for x in fs if x.rule in ("O01", "O02", "D01", "D02", "O03", "D03")), fs[0] if fs else None)
+            if base is None:
+                continue
+            if full:
+                base.severity = "lost"
+                note = f" Non générée : {ctx.short(c)} est dépréciée et exclue (A03:{ctx.short(c)})."
+            else:
+                note = f" Générée en partie : les extrémités vers {ctx.short(c)}, dépréciée et exclue, sont perdues (A03:{ctx.short(c)})."
+            if note not in base.detail:
+                base.detail += note
+
 def apply_m01(ctx: Ctx, f, opt):
     m = ctx.onto.meta
     ctx.pg.meta.iri = m.iri
@@ -111,10 +191,19 @@ APPLY_PLAN = {"A03": apply_a03, "M01": apply_m01}
 
 
 def apply_a03_build(ctx: Ctx, f, opt):
-    if opt == "flag_deprecated":
-        for nt in ctx.pg.node_types.values():
-            if f.subject in nt.source:
-                nt.description = "[DÉPRÉCIÉ] " + (nt.description or "")
+    """Option « garder avec drapeau » : préfixe [DÉPRÉCIÉ] sur le type de nœud, la relation ou la propriété issus de l'entité."""
+    if opt != "flag_deprecated":
+        return
+    tag = "[DÉPRÉCIÉ] "
+    for nt in ctx.pg.node_types.values():
+        if f.subject in nt.source and not (nt.description or "").startswith(tag):
+            nt.description = tag + (nt.description or "")
+        for p in nt.properties:
+            if p.source == f.subject and not (p.description or "").startswith(tag):
+                p.description = tag + (p.description or "")
+    for e in ctx.pg.edge_types:
+        if e.source == f.subject and not (e.description or "").startswith(tag):
+            e.description = tag + (e.description or "")
 
 
 APPLY_BUILD = {"A03": apply_a03_build}

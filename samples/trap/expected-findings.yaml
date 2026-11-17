@@ -161,9 +161,9 @@ findings:
   - { id: f-D08, rule: D08, subject: am:emissionStandard, severity: review,
       curiosity: { recommended: enum_property, note: "string + validation des 4 valeurs" },
       neo4j: { recommended: enum_property, note: "propriété String + validation applicative (pas de contrainte d'énumération Cypher)" } }
-  - { id: f-D09a, rule: D09, subject: am:ModelYear, severity: review,
+  - { id: f-D09a, rule: D09, subject: am:ModelYear, severity: auto,
       curiosity: { recommended: validation, note: "int + contrôle 1886..2100" }, neo4j: { recommended: validation, note: "INTEGER + contrôle de bornes" } }
-  - { id: f-D09b, rule: D09, subject: am:VINString, severity: review,
+  - { id: f-D09b, rule: D09, subject: am:VINString, severity: auto,
       curiosity: { recommended: validation, note: "string + regex" }, neo4j: { recommended: validation } }
   - { id: f-D10, rule: D10, subject: am:legacyCode, severity: review,
       curiosity: { recommended: string_property }, neo4j: { recommended: string_property } }
@@ -174,8 +174,8 @@ findings:
   - { id: f-D12, rule: D12, subject: am:warrantyDurationMonths, severity: review,
       curiosity: { recommended: native_type, note: "int ≥ 0 (intersection nonNegativeInteger ∩ int)" },
       neo4j: { recommended: native_type, note: "INTEGER + validation ≥ 0" } }
-  - { id: f-D13, rule: D13, subject: am:RepairOrder, property: am:openedAt, severity: review,
-      curiosity: { recommended: validation, note: "propriété obligatoire" }, neo4j: { recommended: validation, note: "contrainte IS NOT NULL (édition Enterprise) sinon validation" } }
+  - { id: f-D13, rule: D13, subject: am:RepairOrder, property: am:openedAt, severity: auto,
+      curiosity: { severity: review, recommended: validation, note: "propriété obligatoire" }, neo4j: { recommended: validation, note: "contrainte IS NOT NULL (édition Enterprise) sinon validation" } }
 
   # ---------------- Propriétés objet ----------------
   - { id: f-O01, rule: O01, subject: am:worksAt, severity: auto,
@@ -196,14 +196,14 @@ findings:
       curiosity: { recommended: most_specific_type }, neo4j: { recommended: most_specific_type } }
   - { id: f-O08, rule: O08, subject: am:vehicleBrand, severity: lost,
       curiosity: { recommended: materialize_closure }, neo4j: { recommended: path_query } }
-  - { id: f-O09a, rule: O09, subject: am:ofModel, severity: review,
+  - { id: f-O09a, rule: O09, subject: am:ofModel, severity: auto,
       curiosity: { recommended: validation }, neo4j: { recommended: validation } }
-  - { id: f-O09b, rule: O09, subject: am:RepairOrder, property: am:performedAt, severity: review,
+  - { id: f-O09b, rule: O09, subject: am:RepairOrder, property: am:performedAt, severity: auto,
       curiosity: { recommended: validation }, neo4j: { recommended: validation } }
-  - { id: f-O10, rule: O10, subject: am:RepairOrder, property: am:includesOperation, severity: review,
-      curiosity: { recommended: validation }, neo4j: { recommended: validation } }
-  - { id: f-O10b, rule: O10, subject: am:ElectricVehicle, property: am:hasPart, severity: review,
-      curiosity: { recommended: validation }, neo4j: { recommended: validation } }
+  - { id: f-O10, rule: O10, subject: am:RepairOrder, property: am:includesOperation, severity: auto,
+      curiosity: { severity: review, recommended: validation }, neo4j: { recommended: validation } }
+  - { id: f-O10b, rule: O10, subject: am:ElectricVehicle, property: am:hasPart, severity: auto,
+      curiosity: { severity: review, recommended: validation }, neo4j: { recommended: validation } }
   - { id: f-O11, rule: O11, subject: am:RepairOrder, property: am:performedBy, severity: lost,
       curiosity: { recommended: validation }, neo4j: { recommended: validation } }
   - { id: f-O12, rule: O12, subject: am:ElectricVehicle, property: am:usesFuel, severity: review,
@@ -243,7 +243,7 @@ findings:
       curiosity: { recommended: schema_metadata }, neo4j: { recommended: schema_metadata } }
   - { id: f-A02, rule: A02, subject: am:Vehicle, bnode: "owl:Axiom sur SubClassOf(Vehicle MotorVehicle)", severity: review,
       curiosity: { recommended: report }, neo4j: { recommended: report } }
-  - { id: f-A03, rule: A03, subject: am:ServiceBooklet, severity: auto,
+  - { id: f-A03, rule: A03, subject: am:ServiceBooklet, severity: review,
       curiosity: { recommended: exclude }, neo4j: { recommended: exclude } }
   - { id: f-M01, rule: M01, subject: "https://w3id.org/ontoforge/automaint", severity: auto,
       curiosity: { recommended: schema_metadata }, neo4j: { recommended: schema_metadata } }

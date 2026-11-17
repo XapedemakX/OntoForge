@@ -436,7 +436,7 @@ function Inner({ p, setP }: EditorProps) {
   const classNodes = graph?.nodes.filter(n => n.kind === 'class') ?? []
   const empty = !!graph && !classNodes.length && !listed.length
   const hint = sel?.kind === 'class' ? localName(sel.iri) : null
-  const propsList = Object.values(p.onto.object_properties).map(o => ({ iri: o.iri, label: labelOf(o, o.iri, lang) })).sort((a, b) => a.label.localeCompare(b.label))
+  const propsList = Object.values(p.onto.object_properties).map(o => ({ iri: o.iri, label: labelOf(o, o.iri, lang), deprecated: o.deprecated })).sort((a, b) => a.label.localeCompare(b.label))
 
   const doExport = async (fmt: 'svg' | 'png', withLegend: boolean) => {
     if (!shown) return

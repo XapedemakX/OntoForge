@@ -424,7 +424,7 @@ def _lint(onto: OntoModel, prop: OntoModel, lang: str) -> list[dict[str, Any]]:
     mine = {i for i in prop.classes if i not in onto.classes} | {i for i in prop.object_properties if i not in onto.object_properties} \
         | {i for i in prop.datatype_properties if i not in onto.datatype_properties}
     try:
-        issues = lint(_merged_with(onto, prop))
+        issues = lint(_merged_with(onto, prop), practices=False)  # L49 : fiches et versions hors brouillon
     except Exception as exc:  # noqa: BLE001 — le lint ne doit jamais empêcher d'afficher le brouillon
         log.warning("lint du brouillon impossible : %s", exc)
         return []

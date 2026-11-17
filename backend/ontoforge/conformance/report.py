@@ -29,6 +29,8 @@ class ConformanceReport(BaseModel):
     profile_violations: dict[str, list[str]] = Field(default_factory=lambda: {k: [] for k in PROFILE_NAMES})
     issues: list[Issue] = Field(default_factory=list)
     reasoner: ReasonerInfo = Field(default_factory=ReasonerInfo)
+    # L49 : fiches (score de complétude par entité et pour l'ontologie, en-tête) ; None = non calculé
+    completeness: Optional[dict] = None
 
     def codes(self) -> set[str]:
         return {i.code for i in self.issues}

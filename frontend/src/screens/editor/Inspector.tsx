@@ -4,6 +4,7 @@ import { Button, Icon, IconButton } from '../../kit'
 import { useI18n } from '../../i18n'
 import { IconPicker } from './IconPicker'
 import { toLocalName } from './layout'
+import { EntityCard } from '../practices/EntityCard'
 import type { Op, Sel } from './types'
 
 const XSD = 'http://www.w3.org/2001/XMLSchema#'
@@ -89,7 +90,7 @@ export function Inspector({ onto, sel, lang, readOnly, icon, apply, select, clos
       </Sec>
       <Sec title={t('ed.insp.chars')}><div className="of-chars">{CHARS.map(c => <label key={c} className="chk"><input type="checkbox" checked={o.characteristics.includes(c)}
         onChange={e => apply([{ op: 'set_characteristic', iri: sel.iri, characteristic: c, value: e.target.checked }])} />{t('ed.char.' + c)}</label>)}</div></Sec>
-    </fieldset>{del && <div className="of-insp-f">{del}</div>}</div>
+    </fieldset><EntityCard onto={onto} iri={sel.iri} lang={lang} readOnly={readOnly} apply={apply} />{del && <div className="of-insp-f">{del}</div>}</div>
   }
 
   // ---- classe ----
@@ -151,7 +152,7 @@ export function Inspector({ onto, sel, lang, readOnly, icon, apply, select, clos
       <select aria-label={t('ed.insp.adddisj')} value="" onChange={e => e.target.value && apply([{ op: 'add_disjoint', iri: sel.iri, other: e.target.value }])}>
         <option value="">+ {t('ed.insp.adddisj')}</option>{clsList.filter(x => x.iri !== sel.iri && !c.disjoint_with.includes(x.iri)).map(x => <option key={x.iri} value={x.iri}>{x.label}</option>)}</select>
     </Sec>
-  </fieldset>{del && <div className="of-insp-f">{del}</div>}</div>
+  </fieldset><EntityCard onto={onto} iri={sel.iri} lang={lang} readOnly={readOnly} apply={apply} />{del && <div className="of-insp-f">{del}</div>}</div>
 }
 
 type TFn = (k: string, p?: Record<string, string | number>) => string

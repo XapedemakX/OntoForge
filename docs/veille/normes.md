@@ -97,11 +97,11 @@ Versions suivies : `backend/pyproject.toml` et `frontend/package.json`. D-L21-02
 | pyoxigraph | 0.5.13 (ajouté par L19, `backend/pyproject.toml`) | 0.5.13 (22/10/2026) | 0 | Magasin RDF en Rust, moteur du triplestore local. Le support RDF 1.2 et SPARQL 1.2 est derrière des options de compilation (`rdf-12`, `sparql-12`) d'après son journal | `localstore/*` | Rien. Voir `triplestore-embarque.md` |
 | pypdf | 7.0.0 (ajouté par L25) | Non relevée | — | Lecture des PDF du brouillon depuis un document | `assistant/document.py` | Dependabot |
 | owlready2 (extra `reasoner`) | 0.47 | 0.51 (22/06/2026) | 4 mineures | Pilote HermiT | `conformance/reasoner.py` | Tester |
-| fastapi | 0.115.6 | 0.162.2 (07/11/2026) | 47 mineures (0.x) | Écart important mais l'API publique d'OntoForge est mince | `api/*`, `main.py` | Dependabot |
+| fastapi | 0.133.0 (L46) | 0.162.2 (07/11/2026) | 47 mineures (0.x) | Écart important mais l'API publique d'OntoForge est mince | `api/*`, `main.py` | Dependabot |
 | uvicorn | 0.32.1 | 0.54.0 (25/09/2026) | — | — | — | Dependabot |
 | pydantic | 2.10.3 | 2.14.3 (05/11/2026) | 4 mineures | Même majeure | `core/*` | Dependabot |
 | httpx | 0.28.1 | 0.28.1 (06/12/2024) | 0 | À jour | `queries/endpoint.py`, `assistant/providers/*` | Rien |
-| python-multipart | 0.0.19 | 0.0.33 (31/10/2026) | — | Dépendance de téléversement de fichiers | `api/*` | Dependabot |
+| python-multipart | 0.0.31 (L46) | 0.0.33 (31/10/2026) | — | Dépendance de téléversement de fichiers | `api/*` | Dependabot |
 | pyyaml | 6.0.2 | 6.0.3 | 0 majeure | — | — | Dependabot |
 | cryptography | 50.0.2 | 50.0.2 (30/09/2026) | 0 | À jour | `settings/*` | Rien |
 | pytest (dev) | 8.3.4 | 9.2.0 (27/10/2026) | 1 majeure | — | `backend/tests/` | Dependabot |

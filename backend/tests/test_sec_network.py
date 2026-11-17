@@ -125,6 +125,21 @@ def test_sec14_constraints_match_pyproject_pins():
     assert "pytest" not in cons
 
 
+def test_sec09_server_dependencies_at_or_above_fixed_versions():
+    """SEC-09 (L46) : serveur web et analyseur multipart au moins aux versions corrigées ; CI : étape pip-audit."""
+    def ver(s):
+        return tuple(int(x) for x in s.split("."))
+    cons = {}
+    for ln in (ROOT / "backend" / "constraints.txt").read_text(encoding="utf-8").splitlines():
+        if ln and not ln.startswith("#"):
+            name, v = ln.split("==")
+            cons[name] = v
+    assert ver(cons["starlette"]) >= (1, 3, 1)
+    assert ver(cons["python-multipart"]) >= (0, 0, 31)
+    ci = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+    assert "pip-audit" in ci and "backend/constraints.txt" in ci
+
+
 # ---- SEC-16 ---------------------------------------------------------------------------------------------------------
 def test_sec16_cloudrun_draft_restricts_forwarded_ips_and_requires_egress_list():
     txt = (ROOT / "deploy" / "cloudrun" / "Dockerfile").read_text(encoding="utf-8")

@@ -8,9 +8,12 @@ import type { SheetCtx } from './ctx'
 import { Header } from './Header'
 import { CARD_PRESETS, DATATYPES, cardOps, cardText, ancestors, childrenMap, classProps, classUsage, exprText, presetOf, restrText, type PropRow } from './model'
 import { Chips, Combobox, InlineText, Section, type Item } from './parts'
+import { EntityCard } from '../practices/EntityCard'
+import { useReadOnly } from '../../collab/readonly'
 
 export function IdentityCard({ c, iri }: { c: SheetCtx; iri: string }) {
   const { t, onto } = c
+  const ro = useReadOnly()
   const e = onto.classes[iri] || onto.object_properties[iri] || onto.datatype_properties[iri] || onto.individuals[iri]
   const langs = Array.from(new Set(['fr', 'en', c.lang]))
   return (
@@ -26,6 +29,7 @@ export function IdentityCard({ c, iri }: { c: SheetCtx; iri: string }) {
           </div>
         ))}
       </div>
+      <EntityCard onto={onto} iri={iri} lang={c.lang} readOnly={ro} apply={c.apply} />
     </Section>
   )
 }

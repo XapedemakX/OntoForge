@@ -1,0 +1,40 @@
+# Déploiement automatique de la démo à chaque push sur la branche main (déclencheur Cloud Build, voir README.md,
+# section « Déploiement automatique à chaque push sur main »). Contexte = dépôt GitHub cloné à la révision poussée.
+#
+# Trois étapes, mêmes réglages que deploy/cloudrun/deploy-demo.ps1 :
+#   1. construction de l'image (deploy/cloudrun/Dockerfile) ;
+#   2. envoi dans Artifact Registry (explicite : « images: » n'envoie qu'après la dernière étape, trop tard pour la 3) ;
+#   3. mise à jour du service Cloud Run avec la nouvelle image seulement (« run services update --image ») : les secrets
+#      (Secret Manager), les variables d'environnement, le volume du bucket et les limites déjà posés sur le service sont conservés.
+#
+# NE SERT QU'AVEC UN DÉCLENCHEUR : lancé par « gcloud builds submit », SHORT_SHA est vide et l'étiquette « auto- » est invalide
+# (pour une construction manuelle, utiliser cloudbuild.yaml ou deploy-demo.ps1).
+# AUCUN secret ici : les secrets du service viennent de Secret Manager et restent attachés au service ; ce fichier ne les lit pas.
+# $PROJECT_ID et $SHORT_SHA sont fournis par Cloud Build ; les valeurs « _XXX » se changent dans le déclencheur.
+substitutions:
+  _REGION: europe-west1
+  _REPO: ontoforge          # dépôt Artifact Registry (README, étape 2)
+  _SERVICE: ontoforge       # service Cloud Run
+steps:
+  - id: construire
+    name: gcr.io/cloud-builders/docker
+    args: ["build", "-f", "deploy/cloudrun/Dockerfile", "-t", "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/ontoforge:auto-${SHORT_SHA}", "."]
+  - id: envoyer
+    name: gcr.io/cloud-builders/docker
+    args: ["push", "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/ontoforge:auto-${SHORT_SHA}"]
+  - id: deployer
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    entrypoint: gcloud
+    args:
+      - run
+      - services
+      - update
+      - ${_SERVICE}
+      - --project=${PROJECT_ID}
+      - --region=${_REGION}
+      - --image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/ontoforge:auto-${SHORT_SHA}
+images: ["${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/ontoforge:auto-${SHORT_SHA}"]
+options:
+  machineType: E2_HIGHCPU_8
+  logging: CLOUD_LOGGING_ONLY   # exigé quand le déclencheur utilise un compte de service dédié
+timeout: 1800s

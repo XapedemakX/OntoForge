@@ -13,6 +13,10 @@ CSP = ("default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline';
        "connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'")
 
 
+# Politique du dossier de justification HTML (L47) : source unique, reprise par `targets/justification.py`.
+STRICT_CSP = "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+
+
 def _truthy(v: str) -> bool:
     return v.strip().lower() in ("1", "true", "yes", "on")
 
@@ -32,9 +36,11 @@ class SecurityHeaders:
 
         async def wrapped(msg: dict) -> None:
             if msg["type"] == "http.response.start":
+                # L47 : seule la politique stricte exacte du dossier de justification HTML est conservée (égalité, jamais un préfixe) ; toute autre est remplacée
+                own = next((v for k, v in msg.get("headers", []) if k.lower() == b"content-security-policy" and v == STRICT_CSP.encode()), None)
                 h = [(k, v) for k, v in msg.get("headers", []) if k.lower() not in
                      (b"content-security-policy", b"x-content-type-options", b"x-frame-options", b"referrer-policy", b"permissions-policy")]
-                h += [(b"content-security-policy", CSP.encode()), (b"x-content-type-options", b"nosniff"), (b"x-frame-options", b"DENY"),
+                h += [(b"content-security-policy", own or CSP.encode()), (b"x-content-type-options", b"nosniff"), (b"x-frame-options", b"DENY"),
                       (b"referrer-policy", b"same-origin"), (b"permissions-policy", b"camera=(), microphone=(), geolocation=()")]
                 if self.hsts and proto == "https":
                     h.append((b"strict-transport-security", b"max-age=31536000; includeSubDomains"))

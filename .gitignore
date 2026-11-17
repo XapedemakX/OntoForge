@@ -17,3 +17,8 @@ backend/build/
 # Journal local du script de déploiement
 deploy-demo.log
 journal/L45/recette/
+.venv-l46/
+
+
+# Captures d'échec des recettes (L47)
+journal/L47/screens/ko-*

@@ -98,7 +98,9 @@ export type FindingSeverity = 'auto' | 'review' | 'lost' | 'info'
 export interface Finding {
   id: string; rule: string; severity: FindingSeverity; title: string; detail: string; subject: string
   related: string[]; options: Option[]; recommended?: string | null; chosen?: string | null; rationale?: string | null
+  auto_reason?: string | null; root?: string | null   // L47 : motif du reclassement « auto » ; racine de hiérarchie (règles d'héritage)
 }
+export interface DecisionNote { option: string; reason: string; by: string; at: string; via: 'manual' | 'recommended' | 'rule' | 'branch' }
 export interface PGModel {
   target: Target
   meta: { name: string; iri?: string | null; generated_at?: string | null; ontoforge_version: string }
@@ -108,6 +110,7 @@ export interface PGModel {
   materializations: Materialization[]
   findings: Finding[]
   decisions: Record<string, string>
+  decision_notes?: Record<string, DecisionNote>
 }
 
 export interface Project {
@@ -143,7 +146,15 @@ export interface Perimeter { id: string; name: string; description?: string; cla
 export interface PublicSettings { language?: { ui?: string; labels?: string; assistant?: string }; sparql_endpoint?: { url?: string } | null; sparql_endpoints?: { id: string; name?: string; url: string; active?: boolean }[]; active_sparql_endpoint?: string | null; defaults?: { target?: Target } }
 export interface Sample { name: string; title: string; files: unknown }
 export interface ConformanceIssue { level: 'error' | 'warning' | 'info'; code: string; message: string; subject?: string | null; spec_ref?: string | null }
-export interface ConformanceReport { profiles: Record<string, boolean>; issues: ConformanceIssue[] }
+export interface EntityCardInfo { iri: string; kind: 'class' | 'objectProperty' | 'datatypeProperty'; criteria: Record<string, boolean>; missing: string[]; score: number; deprecated: boolean; replaced_by: string[]; status: string | null }
+export interface Completeness { score: number; entities: Record<string, EntityCardInfo>; header: { criteria: Record<string, boolean>; missing: string[]; score: number }; criteria: Record<string, { ok: number; of: number }>; deprecated: string[] }
+export interface ConformanceReport { profiles: Record<string, boolean>; issues: ConformanceIssue[]; completeness?: Completeness | null }
+export type ReleaseLevel = 'major' | 'minor' | 'patch'
+export interface ReleaseChange { level: ReleaseLevel; change: string; collection: string; iri: string | null; field?: string; replaced_by?: string[] }
+export interface ReleasePreview { previous: string | null; current: string | null; proposed: string; level: ReleaseLevel | null; unchanged?: boolean; counts: Record<ReleaseLevel, number>; changes: ReleaseChange[]; truncated: boolean; version_iri: string | null; note: string }
+export interface ReleaseRecord { version: string; at: string; by: string | null; previous: string | null; proposed: string; level: ReleaseLevel; counts: Record<ReleaseLevel, number>; version_iri: string; changes?: ReleaseChange[]; note?: string; downgraded?: boolean }
+export interface OntologyHeader { iri: string; version_iri: string | null; imports: string[]; title: Record<string, string>; description: Record<string, string>; version_info: string | null; created: string | null; modified: string | null; creators: string[]; contributors: string[]; references: string[]; subjects: { value: string; lang: string }[]; sources: string[]; license: string | null; prior_version: string | null }
+export interface MetadataView { header: OntologyHeader; card: { criteria: Record<string, boolean>; missing: string[]; score: number }; fields: Record<string, { property: string; iri: boolean; multi: boolean; by_lang: boolean }> }
 export interface ReasonResult {
   reasoner: string; version: string; status: 'ok' | 'timeout' | 'error'; consistent: boolean | null; duration_ms: number; timeout_s: number; max_memory_mb: number
   dl: { conformant: boolean; violations: string[] }; warnings: string[]; error: string | null
@@ -192,6 +203,25 @@ async function req<T>(method: string, path: string, body?: unknown, form?: FormD
   return (text ? await r.text() : await r.json()) as T
 }
 
+export interface SchemaOptions { singularize: boolean; required_from_sample: boolean; dialect: string; exclude: string[]; choices: Record<string, string> }
+export interface SchemaClass { iri: string; key: string; name: string; source: string; kind: string; parents: string[]; keys: string[][]; assumed_key: boolean
+  props: { name: string; source: string; type: string; required: boolean; many: boolean; enum: string[] | null; facets: Record<string, string> | null; degraded: string | null }[]
+  rels: { name: string; source: string; target: string; required: boolean; many: boolean }[] }
+export interface SchemaPreview { kind: 'sql' | 'csv' | 'json-schema'; dialect: string | null; files: string[]; digest: string; base_iri: string
+  summary: Record<string, number>; classes: SchemaClass[]; conflicts: string[]
+  decisions: { id: string; type: string; subject: string; options: string[]; default: string; chosen: string; message: string }[]
+  notices: { code: string; level: 'info' | 'review' | 'warning'; subject: string | null; message: string }[]
+  ignored: { category: string; count: number; examples: string[]; message: string }[]
+  conformance: { profiles: Record<string, boolean>; errors: { code: string; message: string }[] }; options: SchemaOptions }
+function schemaForm(files: File[], opts: SchemaOptions, base?: string, digest?: string): FormData {
+  const f = new FormData()
+  files.forEach(x => f.append('files', x))
+  f.append('options', JSON.stringify(opts))
+  if (base) f.append('base_iri', base)
+  if (digest) f.append('expect_digest', digest)
+  return f
+}
+
 const p = (id: string) => `/projects/${encodeURIComponent(id)}`
 
 export const api = {
@@ -223,6 +253,11 @@ export const api = {
     const f = new FormData(); f.append('file', file); f.append('kind', kind)
     return req<{ project: Project; warnings: string[]; kind?: string }>('POST', p(id) + '/import', undefined, f)
   },
+  /** L48 : import déterministe SQL / CSV / JSON Schema. Aperçu sans effet (avec ou sans projet), puis application. */
+  schemaPreview: (files: File[], opts: SchemaOptions, base?: string, id?: string) =>
+    req<SchemaPreview>('POST', id ? p(id) + '/import/schema/preview' : '/import/schema/preview', undefined, schemaForm(files, opts, base)),
+  schemaApply: (id: string, files: File[], opts: SchemaOptions, base: string, digest: string) =>
+    req<{ project: Project; merged: { added: Record<string, number>; skipped_count: number }; digest: string }>('POST', p(id) + '/import/schema/apply', undefined, schemaForm(files, opts, base, digest)),
   putOnto: (id: string, o: OntoModel) => req<Project>('PUT', p(id) + '/onto', o),
   putShapes: (id: string, s: ShapesModel) => req<Project>('PUT', p(id) + '/shapes', s),
   dsl: (id: string, text: string, merge: boolean) => req<{ project: Project; errors: { line: number; message: string }[] }>('POST', p(id) + '/dsl', { text, merge }),
@@ -230,11 +265,21 @@ export const api = {
   exportShapes: (id: string) => req<string>('GET', p(id) + '/export/shapes?format=turtle', undefined, undefined, true),
   reason: (id: string, timeout?: number) => req<ReasonResult>('POST', p(id) + '/reason', { reasoner: 'hermit', ...(timeout ? { timeout } : {}) }),
   conformance: (id: string) => req<ConformanceReport>('GET', p(id) + '/conformance'),
+  metadata: (id: string) => req<MetadataView>('GET', p(id) + '/metadata'),
+  releases: (id: string) => req<{ releases: ReleaseRecord[] }>('GET', p(id) + '/releases'),
+  releasePreview: (id: string) => req<ReleasePreview>('GET', p(id) + '/releases/preview'),
+  release: (id: string, version: string) => req<ReleaseRecord>('GET', p(id) + '/releases/' + encodeURIComponent(version)),
+  createRelease: (id: string, body: { version?: string; note?: string }) => req<{ release: ReleaseRecord; project: Project }>('POST', p(id) + '/releases', body),
   shaclGenerate: (id: string, merge: boolean) => req<{ project: Project; notes: string[] }>('POST', p(id) + '/shacl/generate', { merge }),
   shaclGenerateDry: (id: string) => req<{ generated: ShapesModel; notes: string[] }>('POST', p(id) + '/shacl/generate', { merge: false, dry_run: true }),
   shaclValidate: (id: string, file: File) => { const f = new FormData(); f.append('file', file); return req<ShaclReport>('POST', p(id) + '/shacl/validate', undefined, f) },
   analyze: (id: string, t: Target) => req<PGModel>('POST', p(id) + `/analyze?target=${t}`),
-  decide: (id: string, t: Target, d: Record<string, string | null>) => req<PGModel>('PUT', p(id) + `/decisions/${t}`, d),
+  /** Sans `opts` : ancien format plat (choix sans raison). Avec `opts` (L47) : `{decisions, reason, via}` ; la raison tient en une ligne. */
+  decide: (id: string, t: Target, d: Record<string, string | null>, opts?: { reason?: string; via?: 'manual' | 'recommended' | 'rule' | 'branch' }) =>
+    req<PGModel>('PUT', p(id) + `/decisions/${t}`, opts ? { decisions: d, ...opts } : d),
+  decideBranch: (id: string, t: Target, b: { root: string; rule?: string; option?: string; reason?: string; overwrite?: boolean }) =>
+    req<{ model: PGModel; applied: string[]; skipped: string[] }>('POST', p(id) + `/decisions/${t}/branch`, b),
+  justification: (id: string, t: Target, format: 'html' | 'md') => req<string>('GET', p(id) + `/justification/${t}?format=${format}`, undefined, undefined, true),
   acceptRecommended: (id: string, t: Target, includeLost = false) => req<PGModel>('POST', p(id) + `/decisions/${t}/accept-recommended${includeLost ? '?include_lost=true' : ''}`),
   generate: (id: string, t: Target) => req<GenerateResult>('GET', p(id) + `/generate/${t}`),
   generations: (id: string) => req<GenerationRecord[]>('GET', p(id) + '/generations'),

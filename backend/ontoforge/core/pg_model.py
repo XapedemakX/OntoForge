@@ -113,6 +113,19 @@ class Finding(BaseModel):
     recommended: Optional[str] = None  # option id pour la cible courante
     chosen: Optional[str] = None  # option id décidée par l'humain (None = non arbitré)
     rationale: Optional[str] = None  # justification de la recommandation
+    # L47 (D-L47-01) : constat reclassé « auto » par le moteur (une seule option, ou option recommandée sans perte) ; texte = motif.
+    auto_reason: Optional[str] = None
+    # L47 : racine de la hiérarchie de classes du sujet (règles d'héritage), pour l'arbitrage « par branche » ; None hors hiérarchie.
+    root: Optional[str] = None
+
+
+class DecisionNote(BaseModel):
+    """Trace d'une décision humaine (L47, D-L47-02) : option choisie, raison en une ligne, compte, date, geste."""
+    option: str
+    reason: str = ""
+    by: str = ""
+    at: str = ""
+    via: Literal["manual", "recommended", "rule", "branch"] = "manual"
 
 
 class PGMeta(BaseModel):
@@ -132,6 +145,7 @@ class PGModel(BaseModel):
     materializations: list[Materialization] = Field(default_factory=list)
     findings: list[Finding] = Field(default_factory=list)
     decisions: dict[str, str] = Field(default_factory=dict)  # finding id → option id
+    decision_notes: dict[str, DecisionNote] = Field(default_factory=dict)  # L47 : finding id → qui, quand, pourquoi (rétrocompatible : vide)
     model_config = {"populate_by_name": True}
 
     def summary(self) -> dict[str, int]:

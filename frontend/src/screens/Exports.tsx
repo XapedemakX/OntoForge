@@ -21,6 +21,11 @@ export function Exports({ p, target }: ScreenProps) {
   const names = data ? Object.keys(data.files).sort() : []
   useEffect(() => { if (names.length && !names.includes(file)) setFile(names[0]) }, [data])
   const content = data?.files[file] ?? ''
+  const [jerr, setJerr] = useState<unknown>(null)
+  const getJust = async (fmt: 'html' | 'md') => {   // L47 : lecture seule, ouvert au lecteur
+    setJerr(null)
+    try { download(`justification-${p.id}-${target}.${fmt}`, await api.justification(p.id, target, fmt), fmt === 'html' ? 'text/html' : 'text/markdown') } catch (e) { setJerr(e) }
+  }
   return (
     <div className="page" data-safe>
       <div className="page-head"><h1>{t('ex.title')}</h1>
@@ -31,6 +36,12 @@ export function Exports({ p, target }: ScreenProps) {
       {ro && <div className="notice soon" data-testid="gen-readonly"><span><Icon name="lock" /></span><div><b>{t('ex.ro.t')}</b><div>{t('ex.ro.b')}</div></div></div>}
       {ro && (past.data ?? []).length > 0 && <ul className="collab-activity" data-testid="gen-history">
         {(past.data ?? []).slice(0, 10).map((g, i) => <li key={i}><span className="muted">{new Date(g.at).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}</span> <b>{g.target === 'curiosity' ? 'Curiosity' : 'Neo4j'}</b> · {t('ex.files', { n: g.files.length })}</li>)}</ul>}
+      <section className="card" data-testid="justification" style={{ margin: 'var(--s3) 0' }}>
+        <div className="row"><div className="grow"><b>{t('ex.just.t')}</b><div className="muted">{t('ex.just.b')}</div></div>
+          <button className="btn" data-testid="just-html" onClick={() => void getJust('html')}>{t('ex.just.html')}</button>
+          <button className="btn" data-testid="just-md" onClick={() => void getJust('md')}>{t('ex.just.md')}</button></div>
+        <ErrorView error={jerr} what={t('ex.just.what')} />
+      </section>
       <KrakieStatus busy={loading} done={done} label={t('krakie.forge.exports')} doneLabel={t('krakie.done.exports')} />
       <ErrorView error={error?.code === 'read_only' ? null : error} what={t('ex.what')} />
       {data?.missing && data.missing.length > 0 && <div className="notice soon">{t('ex.missing', { list: data.missing.join(', ') })}</div>}

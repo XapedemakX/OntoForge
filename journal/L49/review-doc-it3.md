@@ -1,0 +1,13 @@
+verdict: KO
+bloquants:
+  - [docs/guide/api.md:1134 et api.en.md:1134 ; docs/CONTRACTS.md (« Aperçu sans changement … (pas de nouvelle version proposée) »)] « pas de nouvelle version proposée » est inexact pour l'API. Rejoué : après `POST /releases` sans changement, `GET /releases/preview` renvoie `level: null`, `unchanged: true` **et** `proposed: "1.0.1"` (patch du précédent, `releases.preview` : `bump(previous, level or "patch")`), avec `version_iri` et une note « Aucun changement… (proposé : 1.0.1) ». `POST /releases` sans numéro est alors accepté (201, version 1.0.1, `level: null`). Seul le bouton de l'interface est désactivé (`ConformanceCards.tsx:105`). Un client qui lit le tableau attend pas de `proposed`. → dire : `level: null` et `unchanged: true` quand rien n'a changé (`proposed` reste le correctif suivant ; l'interface ne propose pas de l'enregistrer), et, dans CONTRACTS, la même chose ; ou changer le code pour que `proposed` soit nul (décision du pilote, à tracer).
+vérifié sans écart:
+  - api.md / api.en.md : `level: major|minor|patch|null` + `unchanged`, `release.downgraded` (présent seulement si vrai, dans le dossier de `POST` ; `GET /releases` le renvoie aussi quand il est vrai), annulation : `POST /ops/undo` sur `version <x>` retire la version de `GET /releases`, la réenregistrer est possible, `redo` la remet ; confirmé par l'API (test `test_api_undo_release_removes_entry_…` et rejeu). Les versions fr et en disent la même chose.
+  - utilisateur.md / .en.md : pertes induites (déclarées ou déduites, O02, « En partie », niveau inchangé, reste généré) conformes au code sur les cinq rejeux ; shapes désactivées même avec drapeau, conforme (revue shacl it2) ; annulation de version, 30 versions, numéro abaissé accepté et signalé : conformes.
+  - CONTRACTS §18 : résolution (`objects.resolve`, `data.build_props`), perte totale / partielle, ordre des constats de base (O01, O02, O03, D01, D02, D03, sinon premier O/D), colonne « Entraîne la perte de » (« en partie : … »), `releases-undone.json`, `downgraded?`, `has_keys`, `chains` : exacts par rapport au code.
+non-bloquants:
+  - CONTRACTS §18 : la liste de champs de `GET …/releases/preview` entre accolades n'a toujours pas `unchanged` (demandé en it2).
+  - api.md / api.en.md, ligne `GET /releases` : ajouter `downgraded?` aux champs d'une ligne.
+  - Non documenté : `POST /releases` sans changement est accepté (la version a `level: null`).
+  - Rappel : renuméroter §18 / §19 avec L48 à la fusion.
+skill: technical-documentation : une phrase « pas de X » sur une réponse d'API se vérifie en appelant l'API (ici `proposed` n'est jamais nul), pas en lisant l'interface.

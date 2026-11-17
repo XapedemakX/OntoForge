@@ -34,6 +34,8 @@
   .set-table tr { border-bottom: 1px solid var(--line); padding: 6px 0; }
   .set-table td { border: 0; padding: 2px 8px; }
   .set-table .acts { text-align: left; }
+  .set-table td[data-l]::before { content: attr(data-l) " : "; color: var(--muted); font-size: var(--fs-xs); }
+  .set-table td.empty { display: none; }
 }
 
 .set-retro { margin-top: var(--s5, 24px); font-size: var(--fs-xs); opacity: .55; text-align: center; }

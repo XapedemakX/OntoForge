@@ -15,6 +15,7 @@ from ..core.lang import LABEL_LANG
 from ..localize import gen
 from ..core.pg_model import PGModel
 from ..core.project import GenerationRecord, Project
+from ..mapping import notes as dec_notes
 from ..projects import generations as gen_log, store
 from ..shacl.validate import ShaclBusyError
 from ._common import check_target, dump, load_project, not_available, optional_service, parse_error, service
@@ -57,6 +58,7 @@ def run_analysis(p: Project, target: str, perimeter: Optional[str] = None) -> PG
         LABEL_LANG.reset(token)
     if notes:
         pg.findings.extend(notes)
+    pg.decision_notes = dec_notes.notes_for(p, target)  # L47 : qui, quand, pourquoi (vide pour un ancien projet)
     pg.meta.target_versions = standards.for_project(p)  # L31 : en-têtes et rapport affichent les versions utilisées
     for nt in pg.node_types.values():  # D-L9-02 : icône de la première classe source qui en a une
         nt.icon = next((p.view.icons[c] for c in nt.source if c in p.view.icons), None)
@@ -198,20 +200,90 @@ def analyze(pid: str, target: Optional[str] = Query(None), perimeter: Optional[s
     return _ui(run_analysis(p, _target_or_default(p, target), perimeter))
 
 
+def _parse_decisions(body: dict[str, Any]) -> tuple[dict[str, Optional[str]], Optional[str], dict[str, str], str]:
+    """Corps de `PUT /decisions/{target}` : ancien format plat `{id: option|null}` ou (L47) `{decisions, reason?, reasons?, via?}`.
+
+    Un identifiant de constat n'est jamais « decisions » (il commence par une règle et une IRI) : pas d'ambiguïté."""
+    extended = isinstance(body.get("decisions"), dict)
+    changes = body["decisions"] if extended else body
+    for fid, opt in changes.items():
+        if not isinstance(fid, str) or not (opt is None or isinstance(opt, str)):
+            raise HTTPException(status_code=422, detail="Décisions : attendu {identifiant de constat: identifiant d'option ou null}")
+    if not extended:
+        return changes, None, {}, "manual"
+    reasons = body.get("reasons") or {}
+    if not isinstance(reasons, dict) or any(not isinstance(k, str) for k in reasons):
+        raise HTTPException(status_code=422, detail="Décisions : « reasons » doit être {identifiant de constat: raison}")
+    via = body.get("via", "manual")
+    if via not in dec_notes.VIAS:
+        raise HTTPException(status_code=422, detail=f"Décisions : « via » inconnu (attendu {', '.join(dec_notes.VIAS)})")
+    return changes, body.get("reason"), reasons, via
+
+
+def _apply(p: Project, target: str, changes: dict[str, Optional[str]], *, reason: Any = None, reasons: Optional[dict] = None, via: str = "manual") -> None:
+    try:
+        dec_notes.apply_changes(p, target, changes, reason=reason, reasons=reasons, via=via, now=store.now_iso())
+    except dec_notes.ReasonTooLong:
+        raise HTTPException(status_code=422, detail=f"La raison d'une décision tient en une ligne de {dec_notes.MAX_REASON} caractères au plus.") from None
+    except ValueError:
+        raise HTTPException(status_code=422, detail="La raison d'une décision doit être un texte.") from None
+
+
 @router.put("/decisions/{target}", response_model=PGModel)
-def put_decisions(pid: str, target: str, body: dict[str, Optional[str]] = Body(...)) -> PGModel:
+def put_decisions(pid: str, target: str, body: dict[str, Any] = Body(...)) -> PGModel:
+    """Enregistre des décisions. Corps : `{id de constat: option | null}` (ancien format, sans raison) ou, depuis L47,
+    `{decisions: {…}, reason?: str, reasons?: {id: str}, via?: manual|recommended|rule|branch}` ; la raison tient en une ligne."""
     check_target(target)
+    changes, reason, reasons, via = _parse_decisions(body)
     p = load_project(pid)
-    dec = dict(p.decisions.get(target, {}))
-    for fid, opt in body.items():
-        if opt is None:
-            dec.pop(fid, None)
-        else:
-            dec[fid] = opt
-    p.decisions[target] = dec
+    _apply(p, target, changes, reason=reason, reasons=reasons, via=via)
     pg = run_analysis(p, target)  # 501 avant toute écriture si le moteur manque
     store.save(p)
     return _ui(pg)
+
+
+class BranchRequest(BaseModel):
+    root: str  # IRI de la racine de la hiérarchie
+    rule: Optional[str] = None  # restreint à une règle (C02, C03, C04, C10) ; obligatoire avec `option`
+    option: Optional[str] = None  # option imposée à toute la branche ; absente = recommandation de chaque constat
+    reason: Optional[str] = None
+    overwrite: bool = False  # avec `option` : remplacer aussi les décisions d'un autre compte (ou sans auteur connu) ; sinon elles sont ignorées
+
+
+@router.post("/decisions/{target}/branch")
+def decide_branch(pid: str, target: str, body: BranchRequest) -> dict:
+    """Arbitrage par racine de hiérarchie (L47, P-02) : applique une décision à tous les constats d'une branche.
+
+    Avec `option` : tous les constats de `rule` de la branche qui la proposent ; une décision déjà prise par un autre compte (ou sans auteur
+    connu, ancien format) n'est remplacée qu'avec `overwrite: true` (geste explicite « Imposer ») ; les autres constats vont dans `skipped`.
+    Sans `option` : la recommandation de chaque constat non décidé ; les constats « lost » ne sont jamais acceptés ainsi (D-L14-02)."""
+    check_target(target)
+    if body.option and not body.rule:
+        raise HTTPException(status_code=422, detail="Une option imposée à une branche exige la règle concernée (« rule »).")
+    p = load_project(pid)
+    pg = run_analysis(p, target)
+    branch = [f for f in pg.findings if f.root == body.root and (not body.rule or f.rule == body.rule) and f.options]
+    if not branch:
+        raise HTTPException(status_code=404, detail="Aucun constat d'héritage pour cette racine.")
+    changes: dict[str, Optional[str]] = {}
+    skipped: list[str] = []
+    for f in branch:
+        if body.option:
+            note = pg.decision_notes.get(f.id)
+            foreign = bool(f.chosen) and f.chosen != body.option and (note is None or note.by != dec_notes.current_user())
+            if body.option in {o.id for o in f.options} and not (foreign and not body.overwrite):
+                changes[f.id] = body.option
+            else:
+                skipped.append(f.id)
+        elif f.severity != "lost" and not f.chosen and f.recommended:
+            changes[f.id] = f.recommended
+        else:
+            skipped.append(f.id)
+    if changes:
+        _apply(p, target, changes, reason=body.reason, via="branch")
+        store.save(p)
+        pg = run_analysis(p, target)
+    return {"model": dump(_ui(pg)), "applied": sorted(changes), "skipped": sorted(skipped)}
 
 
 @router.post("/decisions/{target}/accept-recommended", response_model=PGModel)
@@ -221,14 +293,13 @@ def accept_recommended(pid: str, target: str, include_lost: bool = Query(False))
     p = load_project(pid)
     pg = run_analysis(p, target)
     dec = dict(p.decisions.get(target, {}))
-    changed = False
+    changes: dict[str, Optional[str]] = {}
     for f in pg.findings:
         if f.severity in (("review", "lost") if include_lost else ("review",)) and not f.chosen and f.id not in dec and f.recommended:
-            dec[f.id] = f.recommended
-            changed = True
-    if not changed:
+            changes[f.id] = f.recommended
+    if not changes:
         return _ui(pg)
-    p.decisions[target] = dec
+    _apply(p, target, changes, via="recommended")
     store.save(p)
     return _ui(run_analysis(p, target))
 
@@ -251,6 +322,29 @@ def generate(pid: str, target: str, perimeter: Optional[str] = Query(None),
     gen_log.append(p, GenerationRecord(target=target, perimeter=perimeter, at=store.now_iso(), files=sorted(files),
                                           findings_summary=summary, project_updated_at=p.updated_at))
     return {"files": files, "missing": missing}
+
+
+@router.get("/justification/{target}")
+def justification(pid: str, target: str, format: str = Query("html", description="html (autonome, sans script) ou md"),
+                  lang: Optional[str] = Query(None, description="Langue du dossier : fr ou en (défaut : langue de l'interface)")) -> Response:
+    """Dossier de justification de la transposition (L47, P-05) : modèle retenu, perdu, compensé, décisions (qui, quand, pourquoi),
+    recommandations non suivies. Lecture seule : accessible au lecteur ; n'écrit ni projet ni historique de génération."""
+    from ..targets import justification as just
+    check_target(target)
+    if format not in ("html", "md"):
+        raise HTTPException(status_code=422, detail="Format inconnu : attendu html ou md")
+    gl = _gen_lang(lang)
+    p = load_project(pid)
+    pg = run_analysis(p, target)
+    onto = p.onto
+    if gl == "en":
+        localize.localize_pg_for_export(pg, "en")
+    text = just.generate(pg, onto, project_name=p.name, fmt=format, generated_at=store.now_iso(), lang=gl)
+    headers = {"Content-Disposition": f'attachment; filename="justification-{p.id}-{target}.{format}"', "X-Content-Type-Options": "nosniff"}
+    if format == "html":
+        headers["Content-Security-Policy"] = just.CSP
+        return Response(content=text, media_type="text/html; charset=utf-8", headers=headers)
+    return Response(content=text, media_type="text/markdown; charset=utf-8", headers=headers)
 
 
 @router.get("/generations")

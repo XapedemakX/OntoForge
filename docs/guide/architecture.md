@@ -63,7 +63,7 @@ sequenceDiagram
 ```
 
 1. **Concevoir** : `io/rdf_import.parse_ontology` (Turtle, RDF/XML, JSON-LD, N-Triples, N3, TriG) ou `io/dsl.parse_dsl` produit un `OntoModel`. Les constructs non structurés sont conservés dans `OntoModel.unmapped`.
-2. **Vérifier** : `conformance/profiles.check_conformance` (profils DL/EL/QL/RL/RDFS, W01–W07) + `conformance/lint.py` (BP01–BP07, W07) ; raisonneur HermiT optionnel (`reasoner.py`, sous-processus, jamais bloquant).
+2. **Vérifier** : `conformance/profiles.check_conformance` (profils DL/EL/QL/RL/RDFS, W01–W07) + `conformance/lint.py` (BP01–BP07, W07) + `conformance/practices.py` (BP08–BP16, complétude, L49) ; raisonneur HermiT optionnel (`reasoner.py`, sous-processus, jamais bloquant).
 3. **Contraindre** : `shacl/` importe, exporte, génère (`owl_to_shacl.generate_shapes`) et valide (`validate`, sans inférence par défaut — D-034).
 4. **Analyser** : `mapping.engine.analyze` détecte les constats par règle, applique les décisions, construit le `PGModel`.
 5. **Générer** : un générateur par cible, plus GraphQL et le rapport.

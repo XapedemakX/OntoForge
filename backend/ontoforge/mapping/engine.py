@@ -60,6 +60,9 @@ def analyze(onto: OntoModel, shapes: Optional[ShapesModel], target: Target,
             continue
         ctx.findings[f.id] = f
 
+    _reclassify(ctx)
+    _attach_roots(ctx)
+
     # 2. décisions --------------------------------------------------------------------------------
     for g in _decisions.resolve(ctx, decisions):
         ctx.findings[g.id] = g
@@ -73,6 +76,8 @@ def analyze(onto: OntoModel, shapes: Optional[ShapesModel], target: Target,
         p = REGISTRY.get(f.rule)
         if p and p.plan:
             p.plan(ctx, f, opt(f))
+    from .rules import annotations as _annotations
+    _annotations.after_plan(ctx)  # L49 : ce qu'emporte l'exclusion d'une classe dépréciée est un constat, pas une perte silencieuse
     classes.build_nodes(ctx)
     data.build_props(ctx)
     keys.build_uri(ctx)
@@ -93,6 +98,47 @@ def analyze(onto: OntoModel, shapes: Optional[ShapesModel], target: Target,
         ctx.findings.setdefault(f.id, f)
     _finalize(ctx)
     return ctx.pg
+
+
+def _reclassify(ctx: Ctx) -> None:
+    """L47 (D-L47-01) : un constat « review » sans vrai choix passe en « auto » (motif dans `auto_reason`).
+
+    Sans vrai choix = une seule option (règles de `catalog.SINGLE_OPTION_AUTO`, vide pour l'instant) ou option recommandée sans perte
+    (table `catalog.NO_CHOICE`). Un constat « lost » n'est
+    jamais reclassé (D-L14-02). La décision d'un humain sur un tel constat reste appliquée.
+    """
+    from .rules import catalog
+    for f in ctx.findings.values():
+        if f.severity != "review" or not f.options:
+            continue
+        if len({o.id for o in f.options}) == 1:
+            reason = catalog.SINGLE_OPTION_REASON if f.rule in catalog.SINGLE_OPTION_AUTO else None
+        else:
+            nc = catalog.NO_CHOICE.get(f.rule, {}).get(ctx.target)
+            reason = nc[1] if nc and f.recommended == nc[0] and nc[0] in {o.id for o in f.options} else None
+            if reason and ctx.target == "curiosity" and _tightens_curiosity(ctx, f):
+                reason = None
+        if reason:
+            f.severity = "auto"
+            f.auto_reason = reason
+
+
+def _tightens_curiosity(ctx: Ctx, f) -> bool:
+    """Vrai si la validation Curiosity d'un constat O09 renforce le modèle : `exactly n` (n >= 1) contient un minimum, donc exige la donnée
+    et fait sortir le connecteur en code 2. Un `max n` ou une propriété fonctionnelle ne demande aucune donnée de plus."""
+    if f.rule != "O09" or not ctx.is_class(f.subject) or not f.related:
+        return False
+    return any(r.property == f.related[0] and r.kind == "exactly" and (r.n or 0) >= 1
+               for r, _ in ctx.all_restrictions(f.subject))
+
+
+def _attach_roots(ctx: Ctx) -> None:
+    """L47 (P-02) : racine de hiérarchie du sujet des constats d'héritage, pour l'arbitrage par branche (la plus petite IRI si plusieurs racines)."""
+    from .rules import catalog
+    for f in ctx.findings.values():
+        if f.rule in catalog.HIERARCHY_RULES and ctx.is_class(f.subject):
+            roots = [a for a in ctx.ancestors(f.subject) if not ctx.parents(a)]
+            f.root = min(roots) if roots else f.subject
 
 
 def _cycle_notes(ctx: Ctx) -> list:
