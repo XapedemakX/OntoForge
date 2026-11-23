@@ -21,8 +21,8 @@ httptools==0.9.0
 html5rdf==1.2.1
 httpx==0.28.1
 idna==3.20
-owlready2==0.47
-owlrl==7.1.2
+owlready2==0.51
+owlrl==7.6.2
 packaging==26.3
 prettytable==3.18.0
 pycparser==3.12
@@ -31,11 +31,11 @@ pydantic-core==2.27.1
 pyoxigraph==0.5.13
 pyparsing==3.3.3
 pypdf==7.0.0
-pyshacl==0.29.1
+pyshacl==0.40.2
 python-dotenv==1.2.4
 python-multipart==0.0.31
 pyyaml==6.0.2
-rdflib==7.1.1
+rdflib==7.6.0
 starlette==1.3.1
 typing-extensions==4.16.0
 typing-inspection==0.4.4
