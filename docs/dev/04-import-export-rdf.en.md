@@ -58,18 +58,18 @@ Run example (two-triple Turtle, `:A a owl:Class . :x :y :z .`): three warnings, 
 | Direction | Accepted formats | Where |
 |---|---|---|
 | Import | Turtle, N-Triples, N3, TriG, N-Quads, RDF/XML, JSON-LD | `_EXT`, `_FORMAT_ALIASES` in `backend/ontoforge/io/rdf_import.py` |
-| Ontology export | `turtle`, `xml` ("pretty" RDF/XML), `json-ld` (compacted with the model prefixes), `nt` | `backend/ontoforge/io/rdf_export.py::FORMATS` |
+| Ontology export | `turtle`, `xml` ("pretty" RDF/XML), `json-ld` (compacted with the model prefixes), `nt`, `n3`, `trig` | `backend/ontoforge/io/rdf_export.py::FORMATS` |
 
 `backend/ontoforge/io/rdf_export.py::serialize` has two particularities:
 
 - RDF/XML: rdflib's `pretty-xml` output is parsed again and compared to the graph (`isomorphic`); if it is not faithful (known case: `rdf:type` pointing to a blank node), it falls back to plain `xml`.
 - Turtle: a header comment `# OntoForge — export Turtle de <iri>` is added.
 
-The route also accepts `n3` and `trig` (`ONTO_MEDIA`), but `serialize` does not know them: the route answers 500 (defect DF-B02). The shapes export (`backend/ontoforge/shacl/export_shapes.py::serialize_shapes`) passes the format to rdflib and does not have this problem.
+`n3` and `trig` are the rdflib serializers applied to the model graph (TriG: a single graph, the default graph); before L52, `ONTO_MEDIA` advertised them without `serialize` knowing them and the route answered 500 (DF-B02). The test `backend/tests/test_l52_corrections.py::test_b02_every_advertised_format_is_serializable` checks that every `ONTO_MEDIA` format is in `FORMATS`. The shapes export (`backend/ontoforge/shacl/export_shapes.py::serialize_shapes`) passes the format to rdflib and does not have this problem.
 
 ## Input safeguards {#garde-fous}
 
-Every RDF file supplied by the user (ontology, shapes, data to validate) goes through `backend/ontoforge/io/safe_parse.py::parse_into`, never through `Graph.parse` directly:
+Every RDF file supplied by the user (ontology, shapes, data to validate) goes through `backend/ontoforge/io/safe_parse.py::parse_into`, never through `Graph.parse` directly; files loaded into the local triplestore go through the same `check_xml` and `check_jsonld` checks before Oxigraph (chapter [10](10-triplestore-local.en.md#chargement), L52):
 
 | Check | Implementation | Cap / variable |
 |---|---|---|
@@ -125,6 +125,6 @@ rdflib is pinned at 7.1.1 by D-L21-02 (no upgrade without Jerem's decision).
 
 **…reading a new axiom.** Add the field to the model (chapter [03](03-modele-interne.en.md)), fill it in the matching `_Reader` pass (often `axioms` or `anonymous_axioms`) calling `self.use(...)` on every consumed triple, write it in `_Writer.run` of `backend/ontoforge/io/rdf_export.py`, then add a case to the round-trip test in `backend/tests/test_io_import_export.py`. A triple forgotten in `use` stays in `unmapped` and is emitted twice on export.
 
-**…an export format.** Add it to `FORMATS` in `backend/ontoforge/io/rdf_export.py` **and** to `ONTO_MEDIA` in `backend/ontoforge/api/projects.py` (MIME type and extension), otherwise you reproduce DF-B02.
+**…an export format.** Add it to `FORMATS` in `backend/ontoforge/io/rdf_export.py` **and** to `ONTO_MEDIA` in `backend/ontoforge/api/projects.py` (MIME type and extension); the test `test_b02_every_advertised_format_is_serializable` reports an omission.
 
 **…an import format.** Add the extension to `_EXT` and the alias to `_FORMAT_ALIASES`; if the format is XML or JSON-LD, add it to `XML_FORMATS` or `JSONLD_FORMATS` in `backend/ontoforge/io/safe_parse.py` so it goes through the checks.

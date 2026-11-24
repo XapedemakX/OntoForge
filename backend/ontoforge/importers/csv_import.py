@@ -87,8 +87,8 @@ def read_rows(text: str, delim: str, max_rows: int, budget: Budget) -> tuple[lis
             i += 1
         if i < n and text[i] == "\n":
             i += 1
-        if len(row) == 1 and row[0] == "" and (i >= n or True):
-            continue   # ligne vide
+        if len(row) == 1 and row[0] == "":
+            continue   # ligne vide (au milieu comme en fin de fichier)
         rows.append(row)
     return rows, i < n
 

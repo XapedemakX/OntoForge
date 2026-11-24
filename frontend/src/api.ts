@@ -1,4 +1,4 @@
-import { tr } from './i18n'
+import { request } from './lib/http'
 // Client API typé unique d'OntoForge. Les types reflètent backend/ontoforge/core/*.py.
 
 export type LangText = Record<string, string>
@@ -176,8 +176,6 @@ export class ApiError extends Error {
   status: number
   code?: string   // code stable du serveur (ex. last_admin, transfer_required)
   constructor(status: number, message: string) { super(message); this.status = status }
-  /** 501 = module backend pas encore livré */
-  get notReady() { return this.status === 501 }
 }
 
 const BASE = '/api'
@@ -187,19 +185,9 @@ async function req<T>(method: string, path: string, body?: unknown, form?: FormD
   if (form) init.body = form
   else if (body !== undefined) { init.body = JSON.stringify(body); init.headers = { 'Content-Type': 'application/json' } }
   if (extra) init.headers = { ...(init.headers as Record<string, string> | undefined), ...extra }
-  let r: Response
-  try { r = await fetch(BASE + path, init) } catch { throw new ApiError(0, tr('ui.unreachable')) }
-  if (!r.ok) {
-    let detail = tr('ui.http', { s: r.status })
-    let code: string | undefined
-    try {
-      const j = await r.json()
-      code = j.code
-      detail = typeof j.detail === 'string' ? j.detail : Array.isArray(j.detail) ? j.detail.map((d: { msg?: string }) => d.msg).join(' ; ') : detail
-    } catch { /* corps non JSON */ }
-    const err = new ApiError(r.status, detail); err.code = code
-    throw err
-  }
+  const o = await request(BASE + path, init)
+  if (!o.ok) { const err = new ApiError(o.status, o.message); err.code = o.code; throw err }
+  const r = o.res
   return (text ? await r.text() : await r.json()) as T
 }
 
@@ -285,8 +273,9 @@ export const api = {
   generations: (id: string) => req<GenerationRecord[]>('GET', p(id) + '/generations'),
   /** L42 : générer est une écriture (historique) : le zip se télécharge par fetch, qui porte le jeton CSRF et la version ; plus de lien direct. */
   zip: async (id: string, t: Target): Promise<Blob> => {
-    const r = await fetch(BASE + p(id) + `/generate/${t}/zip`)
-    if (!r.ok) { let m = tr('ui.http', { s: r.status }); try { const j = await r.json(); if (typeof j.detail === 'string') m = j.detail } catch { /* corps non JSON */ } throw new ApiError(r.status, m) }
+    const o = await request(BASE + p(id) + `/generate/${t}/zip`)
+    if (!o.ok) throw new ApiError(o.status, o.message)
+    const r = o.res
     return r.blob()
   },
   downloadZip: async (id: string, t: Target) => {

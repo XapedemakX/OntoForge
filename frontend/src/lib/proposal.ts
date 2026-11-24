@@ -1,8 +1,9 @@
 // Proposition de l'assistant, partagée entre l'écran Assistant (L10) et l'éditeur graphique (L9).
 // Contrat : setProposal({projectId, onto, source, items}), useProposal(), acceptItem(id), rejectItem(id), acceptAll(), rejectAll(), clear().
 // L'acceptation applique les opérations via POST /api/projects/{id}/ops (tout ou rien) puis rafraîchit le projet
-// (callback `onProject` fourni à setProposal ou via bindProjectSetter, et évènement window « ontoforge:project »).
+// (callback `onProject` fourni à setProposal ou via bindProjectSetter ; aucun évènement window : L52, DF-F04).
 import { tr } from '../i18n'
+import { request } from './http'
 import { useSyncExternalStore } from 'react'
 import { labelOf, localName, type LangText, type OntoModel, type Project } from '../api'
 
@@ -73,17 +74,16 @@ async function apply(ids: string[]): Promise<boolean> {
   if (!list.length) return false
   state = { ...s, busy: true, error: null }; emit()
   try {
-    const r = await fetch(`/api/projects/${encodeURIComponent(s.projectId)}/ops`, {
+    const o = await request(`/api/projects/${encodeURIComponent(s.projectId)}/ops`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ops, label: list.length === 1 ? tr('ui.assistant.one', { label: list[0].label }) : tr('ui.assistant.many', { n: list.length }) }),
     })
-    if (!r.ok) { let d = tr('ui.http', { s: r.status }); try { const j = await r.json(); if (typeof j.detail === 'string') d = j.detail } catch { /* non JSON */ } throw new Error(d) }
-    const res = await r.json() as { ok: boolean; project: Project; errors: { message: string }[] }
+    if (!o.ok) throw new Error(o.message)
+    const res = await o.res.json() as { ok: boolean; project: Project; errors: { message: string }[] }
     if (!res.ok) throw new Error(res.errors.map(e => e.message).join(' ; ') || tr('ui.refused'))
     state = { ...state!, items: state!.items.filter(i => !chosen.has(i.id)), accepted: state!.accepted + list.length, busy: false, error: null, onto: res.project.onto }
     emit()
     onProject?.(res.project)
-    window.dispatchEvent(new CustomEvent('ontoforge:project', { detail: res.project }))
     return true
   } catch (e) {
     state = { ...state!, busy: false, error: e instanceof Error ? e.message : String(e) }; emit(); return false

@@ -1,5 +1,5 @@
 // Client du requêtage guidé (CONTRACTS §6). Types alignés sur backend/ontoforge/queries/builder.py.
-import { tr } from '../../i18n'
+import { request } from '../../lib/http'
 import { ApiError } from '../../api'
 
 export type FilterKind = 'text_contains' | 'equals' | 'regex' | 'lang' | 'number_range' | 'date_range' | 'in_values'
@@ -50,29 +50,17 @@ export interface OptionValue { value: string; label: string; is_iri: boolean; la
 export interface OptionsResult { kind: string; known_count: number; enumerated: boolean; values: OptionValue[]; truncated: boolean }
 
 async function call<T>(method: string, path: string, body?: unknown): Promise<T> {
-  let r: Response
-  try {
-    r = await fetch('/api' + path, { method, ...(body !== undefined ? { body: JSON.stringify(body), headers: { 'Content-Type': 'application/json' } } : {}) })
-  } catch { throw new ApiError(0, 'Serveur injoignable.') }
-  if (!r.ok) {
-    let d = tr('ui.http', { s: r.status })
-    try { const j = await r.json(); d = typeof j.detail === 'string' ? j.detail : Array.isArray(j.detail) ? j.detail.map((x: { msg?: string }) => x.msg).join(' ; ') : d } catch { /* corps non JSON */ }
-    throw new ApiError(r.status, d)
-  }
-  return r.json() as Promise<T>
+  const o = await request('/api' + path, { method, ...(body !== undefined ? { body: JSON.stringify(body), headers: { 'Content-Type': 'application/json' } } : {}) })
+  if (!o.ok) throw new ApiError(o.status, o.message)
+  return o.res.json() as Promise<T>
 }
 const q = (o: Record<string, string | undefined>) => '?' + Object.entries(o).filter(([, v]) => v !== undefined && v !== '').map(([k, v]) => `${k}=${encodeURIComponent(v!)}`).join('&')
 const P = (id: string) => `/projects/${encodeURIComponent(id)}`
 
 async function formCall<T>(path: string, fd: FormData): Promise<T> {
-  let r: Response
-  try { r = await fetch('/api' + path, { method: 'POST', body: fd }) } catch { throw new ApiError(0, 'Serveur injoignable.') }
-  if (!r.ok) {
-    let d = tr('ui.http', { s: r.status })
-    try { const j = await r.json(); if (typeof j.detail === 'string') d = j.detail } catch { /* corps non JSON */ }
-    throw new ApiError(r.status, d)
-  }
-  return r.json() as Promise<T>
+  const o = await request('/api' + path, { method: 'POST', body: fd })
+  if (!o.ok) throw new ApiError(o.status, o.message)
+  return o.res.json() as Promise<T>
 }
 
 export const qapi = {

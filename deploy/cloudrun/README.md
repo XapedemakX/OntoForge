@@ -82,7 +82,7 @@ gcloud run deploy ontoforge `
 
 - `--allow-unauthenticated` : Google laisse passer tout le monde jusqu'à l'application, qui impose sa propre page de connexion.
   Si une règle d'organisation l'interdit, la commande le dira.
-- `deploy/cloudrun/env.yaml` : variables non secrètes (administrateur, hôtes joignables, plafonds). Ajouter un endpoint SPARQL public à `ONTOFORGE_EGRESS_ALLOW` (séparé par une virgule). Un fichier évite les pièges de séparateurs : avec `gcloud.cmd`, cmd.exe supprime les `^` d'un `--set-env-vars "^@^…"`.
+- `deploy/cloudrun/env.yaml` : variables non secrètes (administrateur, hôtes joignables, plafonds). Les plafonds sont réduits pour le conteneur de 2 Gio : une validation SHACL et un raisonnement OWL RL à la fois (`ONTOFORGE_SHACL_SLOTS`, `ONTOFORGE_OWLRL_SLOTS`), tas HermiT de 768 Mo, fils OWL RL et triplestore local plafonnés à 1024 Mo chacun (`ONTOFORGE_OWLRL_MEMORY_MB`, `ONTOFORGE_LOCAL_STORE_MEMORY_MB` : un fils de requête du triplestore local a besoin d'environ 640 Mo, valeur mesurée le 24/11). Ajouter un endpoint SPARQL public à `ONTOFORGE_EGRESS_ALLOW` (séparé par une virgule). Un fichier évite les pièges de séparateurs : avec `gcloud.cmd`, cmd.exe supprime les `^` d'un `--set-env-vars "^@^…"`.
 - `mount-options=uid=10001;gid=10001` : le bucket appartient à l'utilisateur sans privilèges du conteneur (10001), sinon il appartient à root et l'application ne peut pas écrire (doc Google : « Configure Cloud Storage volume mounts for Cloud Run services »). Les montages de volume imposent l'environnement d'exécution de 2e génération, choisi automatiquement.
 
 La commande affiche l'adresse `https://ontoforge-….run.app` : s'y connecter avec `jerem`.

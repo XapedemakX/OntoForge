@@ -217,3 +217,6 @@ Réponse de Jerem : OntoForge est une démo, la question de la mesure (constats 
 
 ## D-L51-01 (23/11, Jerem) : manuel du développeur
 Deux nouveaux agents, expert dev backend (Opus) et expert dev front et intégration (Sonnet), rédigent un manuel du développeur exhaustif dans `docs/dev/`, bilingue fr/en, publié sur GitHub et non intégré à l'appli. Relecture croisée, puis documentaliste et humaniseur. Lot L51.
+
+## D-L52-01 (24/11, Jerem) : corriger les 20 défauts de L51, Bedrock écarté
+Jerem lance la correction des 20 défauts relevés par L51, avec une documentation problème / résultat par défaut (`journal/L52/corrections.md`). Le fournisseur Bedrock prévu par D-006 est écarté pour le moment. Les points `À CONFIRMER` du manuel sont reportés.

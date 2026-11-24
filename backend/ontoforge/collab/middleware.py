@@ -16,6 +16,7 @@ from typing import Any, Optional
 from starlette.routing import Match
 
 from ..auth.config import AuthConfig
+from ..auth.middleware import localized
 from . import access
 from .access import CollabError, Ctx, Identity
 from .routes import ADMIN_PREFIX, BODY_PROJECT_ROUTES, SETTINGS_PREFIX, classify
@@ -70,7 +71,7 @@ class CollabMiddleware:
         if ident is None:
             if path == "/api/health" or path.startswith("/api/auth"):
                 return await self.app(scope, receive, send)
-            return await _send_json(send, 401, {"detail": "Connexion requise.", "code": "auth_required"})
+            return await _send_json(send, 401, {"detail": localized("Connexion requise."), "code": "auth_required"})
         if (path == SETTINGS_PREFIX or path.startswith(SETTINGS_PREFIX + "/")) and method not in SAFE and not ident.is_admin:
             return await _send_json(send, 403, {"detail": access.msg("Les réglages sont réservés aux administrateurs.", "Settings are reserved for administrators."),
                                                 "code": "admin_only"})
@@ -89,7 +90,7 @@ class CollabMiddleware:
             finally:
                 access.reset_ctx(token)
         if pid is not None and entry is None:   # route avec projet non classée : refus (échec fermé)
-            return await _send_json(send, 403, {"detail": "Route non classée.", "code": "unclassified"})
+            return await _send_json(send, 403, {"detail": localized("Route non classée."), "code": "unclassified"})
         level, action = entry if entry else (body_level, "")
         ctx.action = action or _body_action(template)
         lock = self._locks.setdefault((pid, id(asyncio.get_running_loop())), asyncio.Lock()) if pid is not None and level in ("write", "owner") else None

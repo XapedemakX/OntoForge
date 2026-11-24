@@ -2,6 +2,32 @@
 
 Format : par version, ce qui change pour l'utilisateur, puis le détail par lot. Sources : rapports `journal/L*/rapport*.md`, revues, `journal/decisions.md`. Les lots sont décrits dans `lots/`.
 
+## L52, partie front : un seul client réseau, anglais complet, garde-fous (24 nov. 2026) {#l52-front-client-reseau-garde-fous-24-nov-2026}
+
+Défauts DF-F01, DF-F02 et DF-F04 à DF-F08 de `journal/L51/defauts.md` ; détail problème / correction / résultat dans `journal/L52/corrections-front.md`. DF-F03 et DF-F09 sont dans la partie backend, plus bas. `journal/L52/corrections.md` résume les vingt défauts. Rien ne change dans les écrans, sauf là où le texte ci-dessous le dit.
+
+- Interface anglaise : quand le serveur est injoignable, les écrans de l'assistant, de l'éditeur graphique, des requêtes et du panneau Krakie affichaient « Serveur injoignable » en français. Ils affichent maintenant le message traduit, comme le reste de l'application (DF-F01). Ce message ne cite plus le port 8000 : « Serveur injoignable. Réessayez dans un instant. »
+- Les huit clients qui parlent au serveur partagent désormais le même code pour envoyer la requête et lire l'erreur (`frontend/src/lib/http.ts`). Une erreur de validation renvoyée sous forme de liste est lue partout, et non plus dans quelques écrans (DF-F02). Le serveur renvoie aujourd'hui une chaîne : rien ne change à l'écran, c'est une protection pour la suite.
+- Retrait de deux évènements internes que personne n'écoutait et d'un accesseur inutilisé (DF-F04, DF-F05) ; retrait d'une page de guide citée mais absente de la liste d'ordre (DF-F06).
+- CI : Playwright est épinglé à la version 1.63.0, celle utilisée en local (DF-F07). La CI lance aussi `npm test` (DF-F08).
+- Nouveaux tests : parité des clés et des espaces réservés entre `fr.json` et `en.json`, lecture de `detail`, garde-fous sur les clients API.
+- Développeurs : manuel `docs/dev` (chapitres 01, 02, 15, 17, 18) mis à jour ; `npm test` passe de 4 à 19 tests.
+
+## L52 : correction des défauts relevés par L51, partie backend (24 nov. 2026) {#l52-corrections-backend-24-nov-2026}
+
+Défauts DF-B01 à DF-B11, DF-F03 et DF-F09 de `journal/L51/defauts.md` ; détail problème / correction / résultat dans `journal/L52/corrections-backend.md`. Aucune dépendance ajoutée, aucune montée de version. Les parties backend et front forment un seul lot ; la synthèse des vingt défauts est dans `journal/L52/corrections.md`.
+
+- Requêtes : sur Neo4j, une classe portée par plusieurs types de nœuds qui partagent un label garde ce label. `?v a am:Vehicle` donne `MATCH (v:Vehicle)` sur automaint, au lieu de `MATCH (v)` (tous les nœuds).
+- Export de l'ontologie en N3 et TriG : fonctionne (avant : erreur 500 sur un appel direct).
+- Conformité : le raisonnement OWL RL tourne dans un processus séparé, arrêté au délai (30 s) et plafonné en mémoire ; avant, un calcul abandonné continuait en arrière-plan.
+- Triplestore local : l'inférence suit les mêmes limites que les requêtes (mémoire, CPU, aucune clé transmise) ; un fichier RDF/XML qui déclare des entités XML est refusé (422), comme à l'import d'ontologie.
+- Messages en anglais : les refus « requête trop volumineuse », « jeton CSRF », « origine refusée » et « route non classée » suivent désormais la langue du compte ou de l'interface.
+- HermiT : une valeur non numérique de `ONTOFORGE_HERMIT_TIMEOUT`, `ONTOFORGE_HERMIT_MAX_TIMEOUT`, `ONTOFORGE_HERMIT_MAX_MB` ou `ONTOFORGE_HERMIT_SLOTS` prend la valeur par défaut, avec un avertissement au journal (avant : erreur 500 ou module impossible à charger).
+- Triplestore local (suite de la relecture sécurité) : un RDF/XML dont l'en-tête est mal formé ou dont l'encodage est inconnu est refusé (422) ; un littéral ou une IRI de plus de 16 Mio donne un 413 lisible au lieu d'une erreur 500.
+- Nouvelles variables facultatives : `ONTOFORGE_OWLRL_MEMORY_MB` (2048) et `ONTOFORGE_OWLRL_SLOTS` (2). Sur Cloud Run (`deploy/cloudrun/env.yaml`) : une place OWL RL, fils OWL RL et triplestore local plafonnés à 1024 Mo.
+- Développeurs : README (installation avec `constraints.txt`), docstrings et manuel `docs/dev` (chapitres 01 à 05, 09, 10, 16 à 18) mis à jour ; tests de non-régression dans `backend/tests/test_l52_corrections.py`.
+- Restent ouverts, avec une correction prévue dans un lot à venir : DF-B12 (un sous-motif `FILTER EXISTS`, `FILTER NOT EXISTS` ou `MINUS` réduit à un typage donne du Cypher invalide ou perd une restriction, sans note de perte) et DF-B13 (les plafonds mémoire bornent chaque processus fils, pas leur somme ; le triplestore local n'a pas de nombre de places).
+
 ## L50 : finitions du téléphone et déploiement automatique préparé (17 nov. 2026) {#l50-finitions-telephone-deploiement-automatique-17-nov-2026}
 
 Suite des notes de clôture de L45.

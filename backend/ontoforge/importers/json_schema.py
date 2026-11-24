@@ -202,7 +202,9 @@ class _Ctx:
                 return "prim", prim
             return "unresolved", ref
         base, _, frag = ref.partition("#")
-        other = self.by_base.get(os.path.basename(base).lower()) if not re.match(r"(?i)^[a-z][a-z0-9+.-]*://", base) or True else None
+        # référence vers un autre fichier, URL comprise : cherchée par son nom parmi les fichiers déposés, jamais téléchargée
+        # (L52 : la condition « pas une URL … or True » était toujours vraie ; comportement conservé, voir docs/dev/14)
+        other = self.by_base.get(os.path.basename(base).lower())
         if other is not None:
             ptr = "#" + frag if frag else "#"
             k = other.entities.get(ptr)

@@ -39,14 +39,14 @@ flowchart LR
 Run example (neo4j target): `SELECT ?v ?vin WHERE { ?v a am:Vehicle ; am:vin ?vin . FILTER(STRSTARTS(?vin, "VF")) } ORDER BY ?vin LIMIT 10` gives:
 
 ```cypher
-MATCH (v)
+MATCH (v:Vehicle)
 WHERE v.vin STARTS WITH 'VF'
 RETURN v.uri AS v, v.vin AS vin
 ORDER BY vin
 LIMIT 10
 ```
 
-The `:Vehicle` label is missing: this is defect DF-B06 (a class carried by several node types that share a single label). With `?v a am:Garage`, the pattern is correctly `MATCH (v:Garage)`.
+On the neo4j target, `am:Vehicle` is carried by three node types (`Vehicle`, `ElectricVehicle`, `CombustionVehicle`) that all have the `Vehicle` label (multi-labels): `backend/ontoforge/queries/translate.py::_Translator.node_pat` takes the union of the possible types, each one being "label" or "label and discriminator value", and simplifies it; here it reduces to the single label `:Vehicle`. Several labels give a `WHERE (v:A OR v:B)` condition. Before L52, this case gave `MATCH (v)` (every node, DF-B06). If a possible type had no label (the generator produces none today), the pattern would stay unfiltered with a `[perte]` note.
 
 The route `POST /api/projects/{pid}/queries/translate` (in `backend/ontoforge/api/analysis.py::translate`) recomputes the target's PGModel then calls `translate`.
 
@@ -97,7 +97,7 @@ Safeguards in `backend/ontoforge/queries/endpoint.py`:
 - Variable predicate (`?s ?p ?o`): no property graph equivalent (relationship types are schema); triple ignored with a `[perte]` note.
 - Edge properties (de-reified R01): a property carried by a relationship is not rewritten automatically; `[perte]` note.
 - Curiosity: the output is Query API pseudo-code; the reference documentation is in `CURIOSITY_DOC`. Nothing is run against Curiosity.
-- DF-B06: a class carried by several node types sharing a label can lose its label in Cypher.
+- Sub-pattern reduced to a type test (defect DF-B12, open): a `FILTER EXISTS`, `FILTER NOT EXISTS` or `MINUS` whose sub-pattern holds only the type test of an already printed variable gives `WHERE [NOT] EXISTS { MATCH  }` (`_Translator.exists_pattern`), on both targets, with no `[perte]` note. The Cypher is invalid, and for `NOT EXISTS` and `MINUS` the sub-pattern's class is lost.
 
 ## How to add… {#comment-ajouter}
 

@@ -2,7 +2,7 @@
 
 How OntoForge is tested: backend tests (pytest), the transposition oracle, front-end Node tests, the per-lot Playwright recipes that prove an end-to-end journey, and the documentation screenshot tools. Back to the [index](README.en.md). Generic method: skill `recette-playwright-par-lot`.
 
-State verified on 23 November 2026: in the order of 1600 tests collected by `pytest --collect-only` (Python 3.13.18 venv; the number moves with every chapter or parametrised test added); `node --test`: 4 tests pass.
+State verified on 23 November 2026: in the order of 1600 tests collected by `pytest --collect-only` (Python 3.13.18 venv; the number moves with every chapter or parametrised test added); `node --test`: 19 tests pass.
 
 ## 1. Role {#role}
 
@@ -21,6 +21,10 @@ Three levels:
 | `samples/trap/expected-findings.yaml` | **oracle**: expected findings (rule, subject, severity, recommended option per target) and `must_not` |
 | `backend/tests/test_mapping_oracle.py` | replays the oracle on `samples/trap/trap.ttl` for Curiosity and Neo4j |
 | `frontend/tests/safe_markdown.test.mjs` | Node tests of the safe Markdown renderer (`npm test`) |
+| `frontend/tests/i18n_parity.test.mjs` | parity of `fr.json` and `en.json`: keys, `{x}` placeholders, non-empty values (DF-F08) |
+| `frontend/tests/http_detail.test.mjs` | reading of `detail` (string, list, fallback, code) in `lib/httpDetail.ts` |
+| `frontend/tests/api_clients.test.mjs` | code guards: API clients with no `fetch` nor `detail`, no hard-coded network message, `ontoforge:*` events with a receiver, no dead getter, existing `ORDER` pages |
+| `backend/tests/test_front_guards.py` | runs these three Node files from `pytest` (skipped without Node 22.18 or later) |
 | `tools/recette/*.mjs` | per-lot Playwright recipes; `web_server.mjs`: server that reproduces production |
 | `tools/recette/e2e_api.py` | complete recipe through the API (throwaway backend + small SPARQL server) |
 | `tools/recette/english_scan.mjs` | looks for visible French in the English interface |
@@ -38,7 +42,7 @@ cd backend && PYTHONPATH=$PWD pytest -q tests/test_dev_docs.py tests/test_docs_b
 
 (`pytest` is taken from the venv; `pyproject.toml` sets `testpaths = ["tests"]`.)
 
-**Organisation by file-name prefix** (75 files):
+**Organisation by file-name prefix** (77 files):
 
 | Prefix | Subject |
 |---|---|
@@ -48,7 +52,7 @@ cd backend && PYTHONPATH=$PWD pytest -q tests/test_dev_docs.py tests/test_docs_b
 | `test_store`, `test_versions`, `test_local_store*`, `test_files_editor*`, `test_editing_*`, `test_business_map` | projects, versions, local triplestore, file editor, editing operations |
 | `test_auth`, `test_collab`, `test_l42_*`, `test_l43_*` | accounts, sharing, project versions, administration |
 | `test_sec_*`, `test_security`, `test_netguard`, `test_l41_*` | security (CSRF, origin, limiter, SSRF, headers, hostile RDF) |
-| `test_l47_*`, `test_l48_*`, `test_l49_*` | lot-specific tests (justification, SQL / CSV import, good practices) |
+| `test_l47_*`, `test_l48_*`, `test_l49_*`, `test_l52_*` | lot-specific tests (justification, SQL / CSV import, good practices, regression tests for defects DF-B01 to DF-B11 and DF-F03) |
 | `test_english`, `test_generation_lang` | English version of server messages |
 | `test_docs_bilingual`, `test_help_map`, `test_dev_docs` | documentation |
 
@@ -68,7 +72,7 @@ cd backend && PYTHONPATH=$PWD pytest -q tests/test_dev_docs.py tests/test_docs_b
 
 ## 5. Front-end Node tests {#tests-front}
 
-`cd frontend && npm test` = `node --test tests/*.test.mjs`. A single file: the safe Markdown renderer (`javascript:` links, images, raw HTML). It is also run by `backend/tests/test_sec_front.py::test_sec08_markdown_links_neutralised` if Node and `frontend/node_modules/marked` exist. **There are no component tests** (no Testing Library, no Vitest): screens are covered by recipes. Static checking is `tsc -b` inside `npm run build`.
+`cd frontend && npm test` = `node --test tests/*.test.mjs`. Four files: the safe Markdown renderer (`javascript:` links, images, raw HTML), i18n parity, the reading of `detail` and the API-client guards (the code tests read the sources, no browser). The files are `.ts` imported as-is by Node 22: the tested modules use only erasable syntax and import nothing from the interface (`httpDetail.ts` is split from `http.ts` for that reason). The Markdown renderer is also run by `backend/tests/test_sec_front.py::test_sec08_markdown_links_neutralised` if Node and `frontend/node_modules/marked` exist. **There are no component tests** (no Testing Library, no Vitest): screens are covered by recipes. Static checking is `tsc -b` inside `npm run build`.
 
 ## 6. Playwright recipes {#recettes}
 
@@ -112,7 +116,7 @@ BACKEND_PORT=9150 FRONT_PORT=5150 node tools/recette/mobile_l50.mjs
 node tools/recette/english_scan.mjs                # visible French in the English interface
 ```
 
-Scripts look for `playwright` through `require`, then in `/opt/node22/lib/node_modules/playwright` (version 1.63.0 on the agents' machine). Elsewhere: `npm install --no-save playwright` at the root (CI does it without a version, DF-F07) and `npx playwright install chromium`. The Python interpreter used by `web_server.mjs` is `PYTHON` or `/home/claude/venv/bin/python`.
+Scripts look for `playwright` through `require`, then in `/opt/node22/lib/node_modules/playwright` (version 1.63.0 on the agents' machine). Elsewhere: `npm install --no-save playwright@1.63.0` at the root (CI pins the same version, DF-F07) and `npx playwright install chromium`. The Python interpreter used by `web_server.mjs` is `PYTHON` or `/home/claude/venv/bin/python`.
 
 **Catalogue** (by theme; one script per lot): `e2e_ui` / `e2e_api` (general journey); `l16_assistant`, `l37_aquarium`, `l38_settings_krakie` (Krakie); `l19_local_store`, `l22_files`, `l25_document`, `l36_business_map`; `l27_auth`, `l40_partage`, `l42_admin`, `l43_password` (accounts and collaboration); `l28_docs`, `l33_docs_en`, `english_scan` (documentation and English); `l31_versions`, `l32_hermit`, `l47_justification`, `l48_import`, `l49_bonnes_pratiques`; `mobile_audit`, `mobile_l44`, `mobile_l45`, `mobile_l50` (phone); `tour` (guided tour); `l20_game`, `l30_*` (mini-game, animations).
 
@@ -147,7 +151,7 @@ Scripts look for `playwright` through `require`, then in `/opt/node22/lib/node_m
 - Recipe data: always a temporary folder (`mkdtempSync`), otherwise the examples get polluted.
 - Labels in recipes: read `frontend/src/i18n/fr.json`, do not copy them; `data-testid` attributes are a contract (chapter 15).
 - Recipe ≠ unit test: do not put in a recipe what an API test covers.
-- No i18n parity test and no component tests: DF-F08.
+- No component tests (i18n parity is guarded since L52, DF-F08).
 
 ## 11. How to add… {#comment-ajouter}
 

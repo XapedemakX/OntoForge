@@ -62,13 +62,17 @@ class BodyLimit:
     async def __call__(self, scope: dict, receive: Any, send: Any) -> None:
         if scope["type"] != "http" or scope["method"] in ("GET", "HEAD", "OPTIONS"):
             return await self.app(scope, receive, send)
-        from .auth.middleware import header, send_json
+        from .auth.middleware import header, localized, send_json
+
+        # message traduit seulement au refus (lecture des réglages) ; langue : réglage global, ce filtre passe avant l'authentification
+        def text() -> str:
+            return localized(f"Requête trop volumineuse (plafond {self.max // (1024 * 1024)} Mo).")
+
         cl = header(scope, "content-length")
         if cl.isdigit() and int(cl) > self.max:
-            return await send_json(send, 413, {"detail": f"Requête trop volumineuse (plafond {self.max // (1024 * 1024)} Mo)."})
+            return await send_json(send, 413, {"detail": text()})
         seen = 0
         state = {"started": False, "refused": False}
-        text = f"Requête trop volumineuse (plafond {self.max // (1024 * 1024)} Mo)."
 
         async def counting() -> dict:
             nonlocal seen
@@ -81,7 +85,7 @@ class BodyLimit:
                     state["refused"] = True
                     if not state["started"]:
                         state["started"] = True
-                        await send_json(send, 413, {"detail": text})
+                        await send_json(send, 413, {"detail": text()})
                     return {"type": "http.disconnect"}
             return msg
 

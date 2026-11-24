@@ -1,17 +1,12 @@
-import { tr } from '../i18n'
+import { request } from '../lib/http'
 import type { Project } from '../api'
 import type { AssistantContext } from '../lib/assistantContext'
 import type { AgentAction } from './store'
 
 async function call<T>(path: string, body?: unknown): Promise<T> {
-  let r: Response
-  try { r = await fetch('/api' + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: body !== undefined ? JSON.stringify(body) : undefined }) }
-  catch { throw new Error('Serveur injoignable') }
-  if (!r.ok) {
-    let d = tr('ui.http', { s: r.status })
-    try { const j = await r.json(); d = typeof j.detail === 'string' ? j.detail : Array.isArray(j.detail) ? j.detail.map((x: { msg?: string }) => x.msg).join(' ; ') : d } catch { /* non JSON */ }
-    throw new Error(d)
-  }
+  const o = await request('/api' + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: body !== undefined ? JSON.stringify(body) : undefined })
+  if (!o.ok) throw new Error(o.message)
+  const r = o.res
   return r.json() as Promise<T>
 }
 export interface AgentReply { reply: string; actions: AgentAction[]; warnings: string[]; proposal: unknown | null }

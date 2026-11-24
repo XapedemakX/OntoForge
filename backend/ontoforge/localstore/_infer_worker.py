@@ -1,6 +1,8 @@
 """Processus fils de la matérialisation d'inférence (L19) : owlrl sur un graphe N-Triples lu sur stdin.
 
-Écrit sur stdout les seuls triplets NOUVEAUX et UTILES (N-Triples). Tuable par le parent (délai). Aucun réseau.
+Écrit sur stdout les seuls triplets NOUVEAUX et UTILES (N-Triples). Lancé par `store.py::materialize` via `childproc.run_limited`
+(L52, DF-B07) : délai tenu par la mort du fils, mémoire (RLIMIT_AS) et CPU (RLIMIT_CPU) plafonnés, environnement réduit (aucune clé).
+Aucun réseau.
 Sémantiques : rdfs | owlrl (OWL 2 RL) | both (RDFS + OWL RL). Filtrage : voir `useful()`.
 """
 import sys
@@ -63,4 +65,9 @@ def main() -> None:
     sys.stdout.buffer.write(out.serialize(format="nt", encoding="utf-8"))
 
 
-main()
+if __name__ == "__main__":  # childproc exécute ce script sous le nom __main__ ; un test l'importe sans lancer main()
+    try:
+        main()
+    except MemoryError:
+        sys.stderr.write("MemoryError\n")
+        sys.exit(3)

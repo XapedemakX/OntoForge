@@ -1,5 +1,5 @@
 // Appels API de l'assistant (contrat : docs/CONTRACTS.md §4).
-import { tr } from '../../i18n'
+import { request } from '../../lib/http'
 import type { OntoModel, ShapesModel, Target } from '../../api'
 
 export interface ProviderInfo { id: string; name: string; kind: string; model: string; configured: boolean; default: boolean }
@@ -24,14 +24,9 @@ export interface DocDraft {
 export interface ChatReply { reply: string; proposal: OntoModel | null; warnings: string[] }
 
 async function call<T>(method: string, path: string, body?: unknown, form?: FormData): Promise<T> {
-  let r: Response
-  try { r = await fetch('/api' + path, { method, body: form ?? (body !== undefined ? JSON.stringify(body) : undefined), headers: body !== undefined ? { 'Content-Type': 'application/json' } : undefined }) }
-  catch { throw new Error('Serveur injoignable') }
-  if (!r.ok) {
-    let d = tr('ui.http', { s: r.status })
-    try { const j = await r.json(); d = typeof j.detail === 'string' ? j.detail : Array.isArray(j.detail) ? j.detail.map((x: { msg?: string }) => x.msg).join(' ; ') : d } catch { /* non JSON */ }
-    throw Object.assign(new Error(d), { status: r.status })
-  }
+  const o = await request('/api' + path, { method, body: form ?? (body !== undefined ? JSON.stringify(body) : undefined), headers: body !== undefined ? { 'Content-Type': 'application/json' } : undefined })
+  if (!o.ok) throw Object.assign(new Error(o.message), { status: o.status })
+  const r = o.res
   return r.json() as Promise<T>
 }
 export const aapi = {

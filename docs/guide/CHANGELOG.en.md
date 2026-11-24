@@ -2,6 +2,32 @@
 
 Format: by version, what changes for the user, then the detail per work package. Sources: reports `journal/L*/rapport*.md`, reviews, `journal/decisions.md`. Work packages are described in `lots/`.
 
+## L52, front part: one network client, complete English, guard tests (24 Nov 2026) {#l52-front-client-reseau-garde-fous-24-nov-2026}
+
+Defects DF-F01, DF-F02 and DF-F04 to DF-F08 of `journal/L51/defauts.md`; problem / fix / result detail in `journal/L52/corrections-front.md`. DF-F03 and DF-F09 are in the backend part below. `journal/L52/corrections.md` summarizes all twenty defects. Nothing changes on screen, except where the text below says so.
+
+- English interface: when the server is unreachable, the assistant, graph editor, queries and Krakie panel screens showed "Serveur injoignable" in French. They now show the translated message, like the rest of the application (DF-F01). That message no longer mentions port 8000: "Server unreachable. Try again in a moment."
+- The eight clients that talk to the server now share the same code to send the request and read the error (`frontend/src/lib/http.ts`). A validation error returned as a list is read everywhere, not only on a few screens (DF-F02). The server returns a string today: nothing changes on screen, it is a safeguard for later.
+- Removed two internal events nobody listened to and an unused accessor (DF-F04, DF-F05); removed a guide page named in the order list but absent (DF-F06).
+- CI: Playwright is pinned to version 1.63.0, the one used locally (DF-F07). CI also runs `npm test` (DF-F08).
+- New tests: key and placeholder parity between `fr.json` and `en.json`, reading of `detail`, guards on the API clients.
+- Developers: `docs/dev` manual (chapters 01, 02, 15, 17, 18) updated; `npm test` goes from 4 to 19 tests.
+
+## L52: fixing the defects found in L51, backend part (24 Nov 2026) {#l52-corrections-backend-24-nov-2026}
+
+Defects DF-B01 to DF-B11, DF-F03 and DF-F09 of `journal/L51/defauts.md`; problem / fix / result detail in `journal/L52/corrections-backend.md`. No dependency added, no version upgrade. The backend and front parts are one batch; the summary of the twenty defects is in `journal/L52/corrections.md`.
+
+- Queries: on Neo4j, a class carried by several node types that share a label keeps that label. `?v a am:Vehicle` gives `MATCH (v:Vehicle)` on automaint, instead of `MATCH (v)` (every node).
+- Ontology export as N3 and TriG: works (before: error 500 on a direct call).
+- Conformance: OWL RL reasoning runs in a separate process, stopped at the timeout (30 s) and capped in memory; before, an abandoned computation kept running in the background.
+- Local triplestore: inference follows the same limits as queries (memory, CPU, no key passed on); an RDF/XML file that declares XML entities is refused (422), as in ontology import.
+- English messages: the "request too large", "CSRF token", "origin refused" and "unclassified route" refusals now follow the account or interface language.
+- HermiT: a non-numeric value of `ONTOFORGE_HERMIT_TIMEOUT`, `ONTOFORGE_HERMIT_MAX_TIMEOUT`, `ONTOFORGE_HERMIT_MAX_MB` or `ONTOFORGE_HERMIT_SLOTS` takes the default value, with a warning in the log (before: error 500 or a module that could not load).
+- Local triplestore (after the security review): an RDF/XML file whose header is malformed or whose encoding is unknown is refused (422); a literal or IRI larger than 16 MiB gives a readable 413 instead of an error 500.
+- New optional variables: `ONTOFORGE_OWLRL_MEMORY_MB` (2048) and `ONTOFORGE_OWLRL_SLOTS` (2). On Cloud Run (`deploy/cloudrun/env.yaml`): one OWL RL place, OWL RL and local triplestore children capped at 1024 MB.
+- Developers: README (installation with `constraints.txt`), docstrings and the `docs/dev` manual (chapters 01 to 05, 09, 10, 16 to 18) updated; regression tests in `backend/tests/test_l52_corrections.py`.
+- Still open, with a fix planned in a later batch: DF-B12 (a `FILTER EXISTS`, `FILTER NOT EXISTS` or `MINUS` sub-pattern reduced to a type test gives invalid Cypher or loses a restriction, with no loss note) and DF-B13 (memory caps bound each child process, not their sum; the local triplestore has no slot count).
+
 ## L50: phone finishing touches and automatic deployment prepared (17 Nov 2026) {#l50-finitions-telephone-deploiement-automatique-17-nov-2026}
 
 Follow-up to the L45 closing notes.

@@ -47,9 +47,11 @@ class _Stop(Exception):
     pass
 
 
-def check_xml(data: str | bytes) -> None:
+def check_xml(data: str | bytes, *, strict: bool = False) -> None:
     """Refuse un document XML qui déclare un DOCTYPE. L'analyse s'arrête à la première balise : coût négligeable.
-    Un document mal formé n'est pas jugé ici (rdflib produira son message d'erreur de syntaxe)."""
+    Par défaut, un document mal formé n'est pas jugé ici (rdflib, aussi strict qu'expat, produira son message d'erreur de syntaxe).
+    ``strict=True`` (L52, triplestore local) : échec fermé. Toute erreur d'analyse avant le premier élément, ou un encodage
+    inconnu, est un refus, car le lecteur réel (Oxigraph) est plus tolérant qu'expat et poursuivrait, DOCTYPE compris."""
     p = expat.ParserCreate()
 
     def doctype(*_a: Any) -> None:
@@ -67,7 +69,14 @@ def check_xml(data: str | bytes) -> None:
     except _Stop:
         return
     except expat.ExpatError:
+        if strict:
+            raise UnsafeRdfError("Fichier RDF/XML refusé : son début (déclaration XML, commentaires, DOCTYPE) est mal formé, et il n'est pas "
+                                 "accepté par sécurité. Corrigez l'en-tête du fichier ou exportez-le en Turtle.") from None
         return
+    except LookupError:  # encodage déclaré inconnu
+        if strict:
+            raise UnsafeRdfError("Fichier RDF/XML refusé : l'encodage déclaré dans l'en-tête est inconnu. Enregistrez le fichier en UTF-8.") from None
+        raise  # parse_into : comportement d'avant L52, inchangé
 
 
 def _scan_context(node: Any, depth: int = 0) -> None:

@@ -26,7 +26,7 @@ __all__ = ["model_to_graph", "serialize", "FORMATS"]
 T = _RDF.type
 FORMATS = {"turtle": "turtle", "ttl": "turtle", "xml": "pretty-xml", "rdfxml": "pretty-xml",
            "rdf/xml": "pretty-xml", "pretty-xml": "pretty-xml", "json-ld": "json-ld", "jsonld": "json-ld",
-           "nt": "nt", "ntriples": "nt"}
+           "nt": "nt", "ntriples": "nt", "n3": "n3", "trig": "trig"}  # n3, trig : L52 (DF-B02), sérialiseurs rdflib
 CHAR_IRI = {
     "functional": _OWL.FunctionalProperty, "inverseFunctional": _OWL.InverseFunctionalProperty,
     "transitive": _OWL.TransitiveProperty, "symmetric": _OWL.SymmetricProperty,
@@ -302,7 +302,7 @@ def model_to_graph(m: OntoModel) -> rdflib.Graph:
 def serialize(m: OntoModel, format: str = "turtle") -> str:
     fmt = FORMATS.get(format.lower())
     if not fmt:
-        raise ValueError(f"Format d'export inconnu : {format!r} (turtle, xml, json-ld, nt).")
+        raise ValueError(f"Format d'export inconnu : {format!r} (turtle, xml, json-ld, nt, n3, trig).")
     g = model_to_graph(m)
     if fmt == "json-ld":
         ctx = {p: ns for p, ns in m.meta.prefixes.items() if p}

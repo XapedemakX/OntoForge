@@ -1174,7 +1174,7 @@
   "hist.caracteristique": "Caractéristique",
   "hist.nouvel_element": "Nouvel élément",
   "ui.http": "Erreur {s}",
-  "ui.unreachable": "Serveur injoignable. Vérifiez que le backend tourne sur le port 8000.",
+  "ui.unreachable": "Serveur injoignable. Réessayez dans un instant.",
   "ui.refused": "Opérations refusées",
   "ui.assistant.one": "Assistant : {label}",
   "ui.assistant.many": "Assistant : {n} éléments",

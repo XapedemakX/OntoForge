@@ -1,5 +1,5 @@
 // Types et appels API propres à l'éditeur graphique (contrat : docs/CONTRACTS.md §5).
-import { tr } from '../../i18n'
+import { request } from '../../lib/http'
 import type { Project, Perimeter, OntoModel } from '../../api'
 
 export interface GNode { id: string; label: string; kind: 'class' | 'datatype' | 'individual' | 'thing' | 'anonymous'; icon: string | null; position: { x: number; y: number } | null; abstract: boolean; deprecated: boolean; collapsed: boolean; external?: boolean; equivalent?: boolean; op?: 'and' | 'or' | 'not' }
@@ -28,14 +28,9 @@ export interface ProposalItem {
 
 const BASE = '/api'
 async function call<T>(method: string, path: string, body?: unknown): Promise<T> {
-  let r: Response
-  try { r = await fetch(BASE + path, { method, headers: body !== undefined ? { 'Content-Type': 'application/json' } : undefined, body: body !== undefined ? JSON.stringify(body) : undefined }) }
-  catch { throw new Error('Serveur injoignable') }
-  if (!r.ok) {
-    let d = tr('ui.http', { s: r.status })
-    try { const j = await r.json(); if (typeof j.detail === 'string') d = j.detail } catch { /* non JSON */ }
-    throw Object.assign(new Error(d), { status: r.status })
-  }
+  const o = await request(BASE + path, { method, headers: body !== undefined ? { 'Content-Type': 'application/json' } : undefined, body: body !== undefined ? JSON.stringify(body) : undefined })
+  if (!o.ok) throw Object.assign(new Error(o.message), { status: o.status })
+  const r = o.res
   return r.json() as Promise<T>
 }
 const pp = (id: string) => `/projects/${encodeURIComponent(id)}`

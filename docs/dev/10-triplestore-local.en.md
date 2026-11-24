@@ -54,9 +54,9 @@ sequenceDiagram
 
 ## Loading and inference {#chargement}
 
-`backend/ontoforge/localstore/store.py::load_data`: file size capped, **streamed** reading into a temporary in-memory store (`parse_to_store`, stops as soon as the triple cap is exceeded), total check, replacement of the file's graph, optional inference; if inference fails, the graph's previous content is restored (all or nothing). JSON-LD with a remote context is rejected by Oxigraph's reader (message translated by `_parse_error`).
+`backend/ontoforge/localstore/store.py::load_data`: file size capped, **streamed** reading into a temporary in-memory store (`parse_to_store`, stops as soon as the triple cap is exceeded), total check, replacement of the file's graph, optional inference; if inference fails, the graph's previous content is restored (all or nothing). Before reading, `parse_to_store` applies the guards of `backend/ontoforge/io/safe_parse.py` (since L52, DF-B08). `check_xml(raw, strict=True)` rejects any `DOCTYPE` in RDF/XML, because Oxigraph 0.5.13 would expand internal entities. It fails closed: a document start that expat cannot read up to the first element, or an unknown declared encoding, is also rejected, because Oxigraph is more tolerant than expat and would carry on. Ontology import (`parse_into`) keeps the non-strict mode, rdflib being as strict as expat. `check_jsonld` rejects a remote JSON-LD context and nesting deeper than 200 levels. A refusal gives a 422 and nothing is written. Oxigraph's reader also rejects any remaining remote context itself (message translated by `_parse_error`).
 
-`materialize` computes the owlrl closure (semantics `rdfs`, `owlrl`, `both`) of the ontology, individuals and data, in the `_infer_worker.py` child process, then replaces the inferred graph. The child returns only useful facts about individuals (domain class types, property values; no vocabulary noise and no anonymous objects, which Oxigraph would rename on reload). It reports on stderr the ignored `owl:hasKey` axioms (prp-key too slow in owlrl) and the inferred `owl:sameAs`; these signals become French notes, translated in the response.
+`materialize` computes the owlrl closure (semantics `rdfs`, `owlrl`, `both`) of the ontology, individuals and data, in the `_infer_worker.py` child process, started by `backend/ontoforge/childproc.py::run_limited` like the queries (reduced environment, memory `ONTOFORGE_LOCAL_STORE_MEMORY_MB`, CPU = timeout + 2 s; since L52, DF-B07), then replaces the inferred graph. Timeout exceeded: 504; memory or CPU cap reached (child killed by a signal or `MemoryError`): 413 "memory or computation time limit reached". The child returns only useful facts about individuals (domain class types, property values; no vocabulary noise and no anonymous objects, which Oxigraph would rename on reload). It reports on stderr the ignored `owl:hasKey` axioms (prp-key too slow in owlrl) and the inferred `owl:sameAs`; these signals become French notes, translated in the response.
 
 `POST /store/validate` validates individuals and data (without the TBox; with the inferred graph if `include_inferred`) against the project shapes, with the same `validate` function as chapter 06.
 
@@ -70,7 +70,7 @@ sequenceDiagram
 | `ONTOFORGE_LOCAL_STORE_MAX_VALIDATION_TRIPLES` | 60,000 | triples passed to SHACL validation |
 | `ONTOFORGE_LOCAL_STORE_TIMEOUT_S` | 20 | query timeout (a query may ask for 1 to 120 s); 504 |
 | `ONTOFORGE_LOCAL_STORE_INFERENCE_TIMEOUT_S` | 90 | inference timeout; 504 |
-| `ONTOFORGE_LOCAL_STORE_MEMORY_MB` | 3072 | memory cap of the query child |
+| `ONTOFORGE_LOCAL_STORE_MEMORY_MB` | 3072 (Cloud Run: 1024) | address-space cap of each query and inference child; 413 if inference reaches it. Measured on 24/11: at least 640 MB for a query child (opening the database); 1024 MB is enough for inference at the 30,000 source triple cap (58 s). No limited places: several projects can start children at the same time |
 | `ONTOFORGE_LOCAL_STORE_DIR` | — | local (ephemeral) folder instead of `<project>/triplestore` |
 
 `limits()` reads these variables again on every call (minimum 1, invalid value → default).
@@ -94,7 +94,7 @@ sequenceDiagram
 - Union rebuilt on every write: cost proportional to the content; the price of a correct default graph.
 - In-memory inference: 30,000 source triples at most; beyond that, an endpoint with reasoning.
 - `owl:hasKey` is not applied by local inference (note in the response).
-- The inference child is not started by `childproc.run_limited` (defect DF-B07); **loading** does not go through `io/safe_parse.py` (defect DF-B08, to be confirmed).
+- A literal or IRI larger than 16 MiB makes Oxigraph's reader raise `MemoryError` (maximum size of its buffer), even under the 25 MB upload cap: `parse_to_store` answers 413 "element too large" (L52; before, 500).
 - Anonymous nodes: Oxigraph renames them on every load; do not rely on their labels.
 
 ## How to add… {#comment-ajouter}

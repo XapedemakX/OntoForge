@@ -131,6 +131,6 @@ export function AuthGate({ children }: { children: ReactNode }) {
 
   if (phase === 'loading') return <div className="auth-boot" aria-busy="true" />
   if (phase === 'change') return <ChangePassword user={info?.user ?? ''} onDone={renewed} onLogout={() => void logout()} />
-  if (phase === 'login') return <Login hours={info?.session_hours} onSuccess={s => { apply(s); dispatchEvent(new Event('ontoforge:authed')); try { localStorage.removeItem('ontoforge.lang') } catch { /* ignoré */ } }} />
+  if (phase === 'login') return <Login hours={info?.session_hours} onSuccess={s => { apply(s); try { localStorage.removeItem('ontoforge.lang') } catch { /* ignoré */ } }} />
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }

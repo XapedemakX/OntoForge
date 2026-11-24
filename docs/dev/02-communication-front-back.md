@@ -7,7 +7,7 @@ Comment le navigateur et le serveur se parlent : qui ajoute quel en-tête, ce qu
 ## 1. Rôle {#role}
 
 - Tout passe par HTTP JSON sous le préfixe `/api`. Pas de WebSocket, pas de SSE : la « collaboration » est un sondage (présence toutes les 20 s) plus une concurrence optimiste (`If-Match`).
-- Le front n'a pas de client unique : un `fetch` global est **corrigé au démarrage** (`frontend/src/auth/AuthGate.tsx`) pour ajouter jeton CSRF, version du projet, file d'attente d'écritures et réaction aux 401 / 403 / 409 / 428. Ensuite sept clients, `api.ts` compris (un par zone), formatent les appels et les erreurs.
+- Le front n'a pas de client unique : un `fetch` global est **corrigé au démarrage** (`frontend/src/auth/AuthGate.tsx`) pour ajouter jeton CSRF, version du projet, file d'attente d'écritures et réaction aux 401 / 403 / 409 / 428. Ensuite sept clients, `api.ts` compris (un par zone), formatent les appels, mais tous envoient la requête et lisent l'erreur par `frontend/src/lib/http.ts::request` (L52).
 - Le serveur renvoie du JSON, sauf les exports (texte) et le zip (octets).
 
 ## 2. Fichiers et responsabilités {#fichiers}
@@ -15,7 +15,9 @@ Comment le navigateur et le serveur se parlent : qui ajoute quel en-tête, ce qu
 | Fichier | Responsabilité |
 |---|---|
 | `frontend/src/api.ts::api` | client typé principal (projets, analyse, génération, comptes, versions…) ; types miroirs de `backend/ontoforge/core/*.py` |
-| `frontend/src/api.ts::req` | l'appel de base : URL, corps JSON ou `FormData`, erreur normalisée |
+| `frontend/src/lib/http.ts::request` | **seul point d'envoi** des clients : appelle `fetch` (le `fetch` global, relu à chaque appel), traduit l'erreur réseau (`ui.unreachable`, `status` 0) et lit `detail` (chaîne ou liste de `{loc, msg}`), `code` et le corps JSON ; ne lève jamais, renvoie `{ok, res}` ou `{ok: false, status, message, code, body}` |
+| `frontend/src/lib/httpDetail.ts::detailMessage` | lecture pure de `detail` (testée par `frontend/tests/http_detail.test.mjs`) ; `withLoc` préfixe le champ fautif (Paramètres) |
+| `frontend/src/api.ts::req` | l'appel de base : URL, corps JSON ou `FormData`, puis `request` ; lève `ApiError` |
 | `frontend/src/api.ts::ApiError` | erreur portant `status` et `code` (code stable du serveur) |
 | `frontend/src/auth/AuthGate.tsx` | **remplace `window.fetch`** : CSRF, `If-Match`, `ETag`, file par projet, événements 401 / 403 / 409 / 428 ; porte la session (`GET /api/auth/session`) |
 | `frontend/src/collab/rev.ts` | version connue par projet (`getRev`, `noteRev`, `forceRev`), `queued` (file d'écritures), `conflictFrom` (rejouabilité) |
@@ -178,7 +180,7 @@ Gestionnaires de `backend/ontoforge/main.py::_handlers` :
 | `ShaclBusyError` | 503 `{detail, code: "busy", retry_after}` et `Retry-After` |
 | `RequestValidationError` | 422 `{detail: "Entrée invalide — champ : message ; …", errors}` ; les clés `input`, `ctx` et `url` sont retirées de `errors` (une valeur saisie, un mot de passe par exemple, ne revient jamais) |
 
-Les refus des middlewares (401, 403 `csrf`, `bad_origin`, `admin_only`, `unclassified`, 413, 429) sont écrits directement en JSON par la couche ASGI, sans passer par ces gestionnaires (voir DF-F03 pour la langue).
+Les refus des middlewares (401, 403 `csrf`, `bad_origin`, `admin_only`, `unclassified`, 413, 429) sont écrits directement en JSON par la couche ASGI, sans passer par ces gestionnaires. Leur `detail` est traduit par le même mécanisme (`localize.tr`) grâce à `backend/ontoforge/auth/middleware.py::localized` (L52, DF-F03) : langue du compte quand la session est déjà lue (CSRF, origine, mot de passe provisoire, `unclassified`), sinon réglage global `language.ui` (401 sans session ; 413, car `BodyLimit` passe avant l'authentification). Le 429 et `admin_only` étaient déjà bilingues (`access.msg`). Le `code` ne change jamais : le front s'appuie sur lui, pas sur le texte.
 
 ## 7. Décisions {#decisions}
 
@@ -190,9 +192,9 @@ Les refus des middlewares (401, 403 `csrf`, `bad_origin`, `admin_only`, `unclass
 ## 8. Pièges {#pieges}
 
 - Le `fetch` est modifié globalement, à l'import de `AuthGate.tsx` (garde `window.__ofFetch`). Un test ou un script qui n'importe pas ce module appelle le vrai `fetch` : pas de CSRF, pas de `If-Match`. Toute nouvelle écriture doit passer par `window.fetch` (pas `XMLHttpRequest`, pas `navigator.sendBeacon`).
-- Sept clients, un format : `api.ts::req`, `eapi`, `fapi`, `qapi`, `aapi`, `gapi`, `settingsApi` recopient le même bloc d'erreur. Corriger l'un ne corrige pas les autres. `fapi` ne lève jamais (il renvoie `status`) ; les autres lèvent `ApiError`, `SettingsError` ou une simple `Error`.
-- Messages d'erreur du réseau codés en dur dans quatre clients (`'Serveur injoignable'`), alors que `ui.unreachable` existe : voir `journal/L51/defauts.md` (DF-F01).
-- Messages des couches ASGI en français seulement (CSRF, origine, 413…) : ils ne passent pas par `localize` ; DF-F03.
+- Sept clients, un seul envoi : `api.ts::req`, `eapi`, `fapi`, `qapi`, `aapi`, `gapi`, `settingsApi` (et `lib/proposal.ts`) passent par `lib/http.ts::request` ; il n'y a plus de bloc `fetch` + lecture de `detail` à recopier (DF-F01, DF-F02, corrigés L52). Chaque client garde son type d'erreur : `fapi` ne lève jamais (il renvoie `{status, ok, data}`) ; les autres lèvent `ApiError`, `SettingsError` ou une simple `Error`. `frontend/tests/api_clients.test.mjs` échoue si un client rappelle `fetch` ou relit `detail`, ou si un message réseau français revient en dur.
+- Depuis L52, `detail` en liste de validation est lu par tous les clients (avant, `eapi`, `api.zip`, `formCall` et `lib/proposal.ts` n'acceptaient que la chaîne, `fapi` ne lisait pas `detail` et laissait ses appelants le faire ; `aapi` et `gapi` lisaient déjà la liste). C'est une sécurité : le backend renvoie aujourd'hui une chaîne, sans changement visible. Une erreur réseau de `lib/proposal.ts` affiche `ui.unreachable` au lieu du message du navigateur. Le message affiché à l'utilisateur ne cite plus le port 8000 (conseil de développeur) : le dépannage est au chapitre [01](01-vue-ensemble-demarrage.md#depannage).
+- Le 413 de `BodyLimit` suit le réglage global de langue, pas celui du compte : ce filtre s'exécute avant l'authentification.
 - Rejeu : n'ajoutez une route à `REPLAYABLE` (`rev.ts`) que si rejouer le corps après rechargement ne peut rien écraser.
 - 429 non géré : aucune reprise automatique ; un enchaînement d'appels lourds (analyse, génération) peut afficher une erreur au lieu d'attendre.
 - Ajouter un `GET` qui écrit : trois endroits (voir 4.1).
@@ -204,7 +206,7 @@ Les refus des middlewares (401, 403 `csrf`, `bad_origin`, `admin_only`, `unclass
 
 1. Côté serveur : route et modèle (voir la section « Côté serveur » plus bas) ; si la route porte `{pid}`, la classer dans `backend/ontoforge/collab/routes.py` (une route de projet non classée est refusée en 403 `unclassified`).
 2. Côté front : ajouter la méthode dans le client de la zone, avec son type (miroir du modèle pydantic). Pour un appel général : `frontend/src/api.ts::api`, avec `p(id)` pour l'URL.
-3. Une écriture n'a rien de spécial à porter : CSRF et `If-Match` sont ajoutés par le `fetch` global. Un téléchargement binaire : suivre `api.zip`.
+3. Une écriture n'a rien de spécial à porter : CSRF et `If-Match` sont ajoutés par le `fetch` global. Passer par `lib/http.ts::request` (jamais `fetch` ni lecture de `detail` dans le client). Un téléchargement binaire : suivre `api.zip`.
 4. Texte d'erreur nouveau côté serveur : l'écrire en français et l'ajouter aux tables de traduction (chapitre 12 ou `backend/ontoforge/localize/`), sinon il reste en français en interface anglaise.
 5. Test : un test d'API (`backend/tests/test_api_contract.py` donne le modèle) et, si l'écran change, une recette (chapitre 18).
 

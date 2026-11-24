@@ -1,6 +1,6 @@
 # 05. Conformité OWL 2 : profils, lint et HermiT {#conformite-owl-hermit}
 
-Le backend vérifie une ontologie à trois niveaux : la **syntaxe OWL 2 DL et les profils** (EL, QL, RL, RDFS), les **bonnes pratiques** (lint) et le **raisonnement**. Le raisonnement existe en deux variantes très différentes : OWL RL par owlrl (en mémoire, à chaque contrôle de conformité) et OWL 2 DL par HermiT (sous-processus Java, à la demande). Ce chapitre détaille surtout HermiT.
+Le backend vérifie une ontologie à trois niveaux : la **syntaxe OWL 2 DL et les profils** (EL, QL, RL, RDFS), les **bonnes pratiques** (lint) et le **raisonnement**. Le raisonnement existe en deux variantes très différentes : OWL RL par owlrl (processus fils Python borné, à chaque contrôle de conformité) et OWL 2 DL par HermiT (sous-processus Java, à la demande). Ce chapitre détaille surtout HermiT.
 
 Sources lues : `backend/ontoforge/conformance/profiles.py`, `backend/ontoforge/conformance/lint.py`, `backend/ontoforge/conformance/practices.py`, `backend/ontoforge/conformance/reasoner.py`, `backend/ontoforge/conformance/hermit.py`, `backend/ontoforge/conformance/report.py`, `backend/ontoforge/api/analysis.py`, `backend/ontoforge/assistant/reasoning.py`, `backend/Dockerfile`, `deploy/cloudrun/Dockerfile`, tests `backend/tests/test_conformance_profiles.py`, `backend/tests/test_reason_hermit.py`, `backend/tests/test_reason_hermit_w3c.py`. Exécutions de `run_hermit` dans l'environnement de test (OpenJDK 21.0.12, owlready2 0.47).
 
@@ -25,7 +25,9 @@ Les contrôles travaillent sur le **graphe RDF** reconstruit par `backend/ontofo
 | `backend/ontoforge/conformance/profiles.py` | `check_conformance` (point d'entrée), `dl_issues`, `profile_check`, `rdfs_check`, carte des datatypes `OWL2_DATATYPE_MAP` |
 | `backend/ontoforge/conformance/lint.py` | `lint` : W07 (libellés fr/en, `owl:versionIRI`, préfixes), BP01 à BP07 |
 | `backend/ontoforge/conformance/practices.py` | BP08 à BP16 (définition, statut, dépréciation, version SemVer, en-tête), fiches et score de complétude |
-| `backend/ontoforge/conformance/reasoner.py` | OWL RL par owlrl, contournement du bogue `prp-key`, heuristique des classes insatisfiables `_unsat` |
+| `backend/ontoforge/conformance/reasoner.py` | `reason` : lance OWL RL dans un processus fils (`childproc.run_limited`), places `_SLOTS`, notes de dépassement |
+| `backend/ontoforge/conformance/_owlrl_core.py` | calcul OWL RL (`closure`), contournement du bogue `prp-key` (`apply_prp_key`), heuristique des classes insatisfiables `unsat` ; n'importe que rdflib et owlrl |
+| `backend/ontoforge/conformance/_owlrl_worker.py` | script du processus fils : N-Triples sur stdin, JSON sur stdout |
 | `backend/ontoforge/conformance/hermit.py` | HermiT : localisation, bornes, sous-processus, lecture de la sortie, comparaison, explication heuristique, messages fr/en |
 | `backend/ontoforge/assistant/reasoning.py` | intention Krakie « raisonne » (`matches`, `answer`) |
 
@@ -55,16 +57,16 @@ flowchart TD
   G --> RS[rdfs_check]
   B --> L[lint.lint include_dl=False : W07 BP01-BP07 + practices BP08-BP16]
   B --> C[practices.completeness]
-  B --> R[reasoner.reason : OWL RL dans un fil, 30 s]
+  B --> R[reasoner.reason : OWL RL en processus fils, 30 s]
   R --> W6[W06 si incohérent ou classe insatisfiable]
   B --> T[localize.localize_conformance : messages fr → en si besoin]
 ```
 
 ### OWL RL par owlrl {#owl-rl}
 
-`backend/ontoforge/conformance/reasoner.py::reason` exécute `_owlrl` dans un fil `daemon` et l'attend `timeout` secondes (30 par défaut). Au-delà, il note un dépassement et rend `used = "none"`, `consistent = None`. Le fil n'est pas interrompu pour autant : il continue jusqu'à sa fin (défaut DF-B03).
+`backend/ontoforge/conformance/reasoner.py::reason` sérialise le graphe en N-Triples et le passe à `backend/ontoforge/conformance/_owlrl_worker.py` par `backend/ontoforge/childproc.py::run_limited` (chapitre [16](16-securite.md)) : délai `timeout` (30 s par défaut), CPU = délai + 2 s, mémoire `ONTOFORGE_OWLRL_MEMORY_MB` (2048 Mo), environnement réduit. Au délai, le fils est **tué** : `reason` note « délai de N s dépassé » et rend `used = "none"`, `consistent = None`. Plafond mémoire ou CPU atteint : note « mémoire ou temps de calcul plafonnés », même résultat. `ONTOFORGE_OWLRL_SLOTS` (2, entre 1 et 32, lu à l'import) limite le nombre de calculs simultanés. Sur Cloud Run, le conteneur n'a que 2 Gio : 1 place et 1024 Mo (`deploy/cloudrun/env.yaml`). Au-delà des places, le raisonnement n'est pas lancé et une note invite à relancer ; le contrôle de conformité répond normalement. Avant L52, owlrl tournait dans un fil `daemon` abandonné au délai mais jamais arrêté (DF-B03). Coût du fils mesuré sur automaint : environ 0,25 s de plus par contrôle (0,6 s au lieu de 0,35 s).
 
-`_owlrl` copie le graphe, **retire les axiomes `owl:hasKey`** puis appelle `owlrl.DeductiveClosure(owlrl.OWLRL_Semantics, axiomatic_triples=False, datatype_axioms=False).expand(work)`. La règle `prp-key` est appliquée à part par `apply_prp_key`, puis la fermeture est recalculée. Raison : dans owlrl 7.1.2, la boucle de `prp-key` ignore la dernière propriété de la clé, si bien qu'avec `owl:hasKey (p)` tous les individus du type deviennent `owl:sameAs`. Les incohérences sont lues dans les triplets d'erreur d'owlrl (`ERRNS.error`), les classes insatisfiables par l'heuristique `_unsat` (ancêtre `owl:Nothing`, deux ancêtres disjoints, ou un ancêtre et son complément ; aucun raisonnement sur les restrictions).
+`backend/ontoforge/conformance/_owlrl_core.py::closure` (dans le fils) copie le graphe, **retire les axiomes `owl:hasKey`** puis appelle `owlrl.DeductiveClosure(owlrl.OWLRL_Semantics, axiomatic_triples=False, datatype_axioms=False).expand(work)`. La règle `prp-key` est appliquée à part par `apply_prp_key`, puis la fermeture est recalculée. Raison : dans owlrl 7.1.2, la boucle de `prp-key` ignore la dernière propriété de la clé, si bien qu'avec `owl:hasKey (p)` tous les individus du type deviennent `owl:sameAs`. Les incohérences sont lues dans les triplets d'erreur d'owlrl (`ERRNS.error`), les classes insatisfiables par l'heuristique `unsat` (ancêtre `owl:Nothing`, deux ancêtres disjoints, ou un ancêtre et son complément ; aucun raisonnement sur les restrictions).
 
 ## HermiT en détail {#hermit}
 
@@ -117,9 +119,9 @@ Vérifié : avec `ONTOFORGE_JAVA=nojava`, `availability()` vaut `{'available': F
 | Variable | Défaut | Lecture | Effet |
 |---|---|---|---|
 | `ONTOFORGE_HERMIT_MAX_MB` | 1024 | `configured_memory`, minimum 128, valeur invalide → 1024 | `-Xmx<N>m` du tas Java ; `OutOfMemoryError` dans stderr → `status: error`, message `memory` |
-| `ONTOFORGE_HERMIT_TIMEOUT` | 30 s | `configured_timeout` | délai si la requête n'en donne pas |
-| `ONTOFORGE_HERMIT_MAX_TIMEOUT` | 300 s | `configured_timeout` | plafond du délai demandé ; plancher 1 s |
-| `ONTOFORGE_HERMIT_SLOTS` | 2 | `_SLOTS`, lu **à l'import** du module | nombre de HermiT simultanés ; au-delà, 503 immédiat (pas de file d'attente) |
+| `ONTOFORGE_HERMIT_TIMEOUT` | 30 s | `configured_timeout`, valeur invalide → 30 | délai si la requête n'en donne pas |
+| `ONTOFORGE_HERMIT_MAX_TIMEOUT` | 300 s | `configured_timeout`, valeur invalide → 300 | plafond du délai demandé ; plancher 1 s |
+| `ONTOFORGE_HERMIT_SLOTS` | 2 | `_SLOTS`, lu **à l'import** du module, minimum 1, valeur invalide → 2 | nombre de HermiT simultanés ; au-delà, 503 immédiat (pas de file d'attente) |
 | `ONTOFORGE_JAVA` | — | `locate` | chemin ou nom de l'exécutable Java |
 
 `-Xmx` borne le **tas** Java, pas la mémoire totale du processus (métaespace, piles, code natif s'y ajoutent) : prévoir une marge au-dessus de `ONTOFORGE_HERMIT_MAX_MB` × `ONTOFORGE_HERMIT_SLOTS` dans la mémoire du conteneur. Le délai est appliqué par `backend/ontoforge/conformance/hermit.py::_run_java` : le processus est lancé avec `start_new_session=True` (nouveau groupe de processus). À l'expiration, `os.killpg(pid, SIGKILL)` tue Java et ses éventuels enfants, puis on lit ce qui reste de la sortie (5 s maximum). Le résultat est alors `status: "timeout"`, `consistent: null`, aucun autre résultat retenu.
@@ -188,9 +190,9 @@ La forme complète de la réponse est dans `docs/CONTRACTS.md` §11. Les message
 
 - Deux raisonneurs, deux sémantiques. W06 vient d'OWL RL (incomplet pour OWL 2 DL) ; la carte HermiT est un autre calcul. Une classe peut être insatisfiable pour HermiT sans W06.
 - Monde ouvert. Ni HermiT ni owlrl ne signalent une information absente ; deux noms différents peuvent désigner le même individu.
-- Fil owlrl non interruptible (DF-B03) : sur une grosse ontologie, plusieurs `GET /conformance` successifs empilent des calculs.
+- owlrl est borné en temps et en mémoire (processus fils tué au délai), mais une grosse ontologie peut toujours dépasser 30 s : W06 est alors absent et la note de dépassement le dit.
 - Pas de file d'attente HermiT : la troisième demande simultanée (avec 2 places) reçoit 503 tout de suite.
-- `ONTOFORGE_HERMIT_SLOTS` est lu à l'import : le changer demande un redémarrage. Une valeur non numérique de cette variable ou des délais fait échouer le module ou la route (DF-B04).
+- `ONTOFORGE_HERMIT_SLOTS` est lu à l'import : le changer demande un redémarrage. Une valeur non numérique (ou `nan`, `inf`) d'une variable HermiT est remplacée par sa valeur par défaut, avec un avertissement au journal `ontoforge.conformance.hermit` (`_env_number`) ; avant L52, elle faisait échouer l'import du module ou chaque `POST /reason` (DF-B04).
 - Démarrage de la JVM : plusieurs secondes par appel ; HermiT n'est pas fait pour être lancé à chaque frappe.
 - Explication heuristique : `explanation.items` peut être vide alors que l'ontologie est incohérente (la note le dit).
 

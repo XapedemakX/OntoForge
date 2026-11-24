@@ -128,7 +128,7 @@ The engine reads ontology labels (node type descriptions, "Class X (label)") in 
 - Multiple domain: `ObjectProperty.domain` with two classes means their *intersection* (OWL semantics of two `rdfs:domain` axioms); the union is in `domain_union`.
 - Two views of a restriction: changing `OntClass.restrictions` does not update `super_expressions`, and vice versa. The RDF export emits both lists; an editor must pick one.
 - `OntoModel.children` is linear in the number of classes; `descendants` calls it at each level. On a very large ontology, prefer a reverse index built once (what the engine does in its context, chapter 07).
-- The variable `LABEL_LANG` also exists in `backend/ontoforge/localize/__init__.py` but nobody reads it there (defect DF-B01): the one in `core/lang.py` is what counts.
+- The label language read by the engine is the `LABEL_LANG` variable of `backend/ontoforge/core/lang.py`, and only that one (the duplicate in `localize/__init__.py` was removed in L52, DF-B01).
 
 ## How to add a field {#comment-ajouter}
 

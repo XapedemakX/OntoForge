@@ -26,7 +26,7 @@ Le front est une application monopage (SPA) qui **affiche** ce que calcule le se
 | `frontend/src/ui.tsx` | `useLoad`, `ErrorView`, toasts, `download`, `copy`, enveloppe paresseuse de CodeMirror |
 | `frontend/src/screens/**` | un dossier par écran (voir §3) |
 | `frontend/src/assistant-global/` | panneau Krakie (conversation, actions, contexte), aquarium |
-| `frontend/src/lib/` | `proposal.ts` (store de proposition), `docs.ts` (guide embarqué), `safeMarkdown.ts`, `assistantContext.ts`, `reasonerFlags.ts`, `codeHighlight.ts` |
+| `frontend/src/lib/` | `proposal.ts` (store de proposition), `http.ts` et `httpDetail.ts` (envoi et lecture d'erreur communs aux clients API), `docs.ts` (guide embarqué), `safeMarkdown.ts`, `assistantContext.ts`, `reasonerFlags.ts`, `codeHighlight.ts` |
 | `frontend/src/collab/` | partage, présence, lecture seule, conflits (chapitre 02) |
 | `frontend/src/auth/` | connexion, menu de compte, changement de mot de passe |
 | `frontend/src/tour/` | visite guidée (21 étapes) |
@@ -96,7 +96,7 @@ Pas de Redux ni de contexte global de données. Quatre niveaux :
 | Événements `window` | `CustomEvent` | voir ci-dessous |
 
 **Événements `window`** (nom, émetteur → récepteur) :
-`ontoforge:auth-required` (AuthGate → AuthGate), `ontoforge:must-change`, `ontoforge:conflict` (fetch corrigé → `ConflictDialog`), `ontoforge:readonly`, `ontoforge:reload-project` (Banners → Shell), `of:perimeter` / `of:perimeters` (éditeur ↔ Shell), `ontoforge:endpoint-changed` (Paramètres → Shell), `ontoforge:assistant-open` / `ontoforge:assistant-context` (écrans → panneau Krakie), `ontoforge:open-query` (assistant → Requêtes), `ontoforge:settings-goto`, `ontoforge:tour-menu`, `ontoforge:game`, `of:delete` (inspecteur → éditeur), `of:side-settled`. Émis sans récepteur : `ontoforge:authed`, `ontoforge:project` (DF-F04).
+`ontoforge:auth-required` (AuthGate → AuthGate), `ontoforge:must-change`, `ontoforge:conflict` (fetch corrigé → `ConflictDialog`), `ontoforge:readonly`, `ontoforge:reload-project` (Banners → Shell), `of:perimeter` / `of:perimeters` (éditeur ↔ Shell), `ontoforge:endpoint-changed` (Paramètres → Shell), `ontoforge:assistant-open` / `ontoforge:assistant-context` (écrans → panneau Krakie), `ontoforge:open-query` (assistant → Requêtes), `ontoforge:settings-goto`, `ontoforge:tour-menu`, `ontoforge:game`, `of:delete` (inspecteur → éditeur), `of:side-settled`. Les évènements `ontoforge:authed` et `ontoforge:project`, émis sans récepteur, ont été supprimés en L52 (DF-F04) : le rafraîchissement passe par `bindProjectSetter`, `setP` et le rappel `onProject` ; `api_clients.test.mjs` vérifie que tout évènement `ontoforge:*` émis a un récepteur.
 
 **Contexte de l'assistant** : chaque écran déclare ce qu'il montre (`frontend/src/lib/assistantContext.ts::useAssistantContext`) ; `frontend/src/assistant-global/context.ts::effectiveContext` le rapproche de la route (`ROUTE_SCREEN`) avant l'envoi. Rien n'est envoyé au serveur que l'utilisateur ne voie (`forSend`, modes `full`, `screen`, `none`).
 
@@ -104,7 +104,7 @@ Pas de Redux ni de contexte global de données. Quatre niveaux :
 
 ## 6. Internationalisation {#i18n}
 
-- Dictionnaires **plats** : `frontend/src/i18n/fr.json` et `en.json`, clé `zone.nom` (`nav.ontologie`, `dash.stat.classes`). 2201 clés des deux côtés au 23/11, mêmes espaces réservés `{nom}` (vérifié par script ; aucun test ne le garde, DF-F08).
+- Dictionnaires **plats** : `frontend/src/i18n/fr.json` et `en.json`, clé `zone.nom` (`nav.ontologie`, `dash.stat.classes`). 2201 clés des deux côtés au 23/11, mêmes espaces réservés `{nom}` (gardé depuis L52 par `frontend/tests/i18n_parity.test.mjs` : mêmes clés, mêmes espaces réservés, aucune valeur vide ; DF-F08). Le message d'erreur réseau est la clé `ui.unreachable` partout (DF-F01).
 - `useI18n()` donne `t(clé, params)` dans un composant ; `tr(clé, params)` sert hors composant (`api.ts`, stores). Repli : langue demandée, puis français, puis la clé elle-même.
 - La langue vient de `GET /api/auth/session` (compte) ou de `GET /api/settings` (`language.ui`) quand l'instance n'a pas de comptes (`I18nProvider`) ; avant la connexion, du `localStorage` ou du navigateur. Le serveur traduit lui-même ses messages (chapitre 02 §4.5).
 - Des chunks chargés à la demande ajoutent leurs chaînes par `extendDicts` (le mini-jeu : `frontend/src/game/strings.ts`).
@@ -181,7 +181,7 @@ Décisions D-L44-01 (navigation par onglets, modification limitée) et D-L44-02 
 
 ## 12. Pièges {#pieges}
 
-- Un écran ne doit **pas** appeler `fetch` directement pour une écriture sans passer par un client : c'est le `fetch` global qui ajoute CSRF et version, mais l'erreur et la langue se gèrent dans les clients (chapitre 02 §8).
+- Un écran ne doit **pas** appeler `fetch` directement pour une écriture sans passer par un client : c'est le `fetch` global qui ajoute CSRF et version, mais l'erreur et la langue se gèrent dans les clients, par `lib/http.ts::request` (chapitre 02 §8).
 - `Shell` relit le projet (`api.loadProject`) seulement quand l'identifiant change : un écran qui modifie le projet **doit** appeler `setP` avec la réponse.
 - `lazy` + `Suspense key={def.key + ':' + reloadKey}` : changer la clé démonte l'écran et perd son état local.
 - Les `data-testid` et classes `.cm-*`, `.react-flow__*` sont utilisés par les recettes et la visite guidée (`data-tour`) : les renommer casse `tools/recette/*` et `frontend/src/tour/steps.ts`.

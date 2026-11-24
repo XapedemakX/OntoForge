@@ -18,8 +18,6 @@ import json
 import os
 import re
 import shutil
-import subprocess
-import sys
 import threading
 import unicodedata
 from contextlib import contextmanager
@@ -29,6 +27,7 @@ from typing import Any, Iterator, Optional
 
 import pyoxigraph as ox
 
+from .. import childproc
 from ..projects import store as project_store
 
 G_ONTOLOGY = "urn:ontoforge:graph:ontology"
@@ -318,7 +317,20 @@ def parse_to_store(raw: bytes, filename: str) -> tuple[ox.Store, ox.RdfFormat]:
     """Lit un fichier RDF EN FLUX dans un magasin mémoire temporaire (validation + comptage avant tout écrit sur disque) : l'analyse
     s'arrête dès que le plafond de triplets est dépassé, au lieu de matérialiser un Turtle compact qui en produirait des millions."""
     import itertools
+
+    from ..io import safe_parse
     fmt = detect_format(filename, raw)
+    # L52 (DF-B08) : mêmes gardes que l'import d'ontologie (io/safe_parse.py) : tout DOCTYPE refusé en RDF/XML (Oxigraph développe
+    # les entités internes), contexte JSON-LD distant et imbrication excessive refusés. La taille est bornée par load_data.
+    try:
+        if fmt == ox.RdfFormat.RDF_XML:
+            safe_parse.check_xml(raw, strict=True)  # échec fermé : Oxigraph est plus tolérant qu'expat (revue secu L52 it1)
+        elif fmt == ox.RdfFormat.JSON_LD:
+            safe_parse.check_jsonld(raw)
+    except safe_parse.UnsafeRdfError as exc:
+        if fmt == ox.RdfFormat.JSON_LD and "distant" in str(exc):  # message historique du triplestore pour un contexte distant
+            raise _parse_error(ValueError("remote context"), filename) from None
+        raise StoreError(f"« {filename} » : {exc}", 422) from None
     cap = limits()["max_triples"]
     tmp = ox.Store()
     n = 0
@@ -334,6 +346,8 @@ def parse_to_store(raw: bytes, filename: str) -> tuple[ox.Store, ox.RdfFormat]:
             tmp.bulk_extend(chunk)
     except (SyntaxError, ValueError, OSError) as exc:
         raise _parse_error(exc, filename) from None
+    except MemoryError:  # L52 (revue secu) : le lecteur d'Oxigraph refuse un élément de plus de 16 Mio (taille maximale de son tampon)
+        raise StoreError(f"« {filename} » : un élément du fichier (littéral ou IRI) est trop gros pour le lecteur RDF (16 Mio au plus).", 413) from None
     return tmp, fmt
 
 
@@ -434,13 +448,19 @@ def materialize(store: ox.Store, semantics: str) -> dict[str, Any]:
                          "qui matérialise en mémoire. Réduisez les données ou utilisez un endpoint avec raisonnement.".replace(",", " "), 413)
     nt = b"".join(_dump_nt(store, g) for g in sources)
     worker = Path(__file__).with_name("_infer_worker.py")
+    timeout = lim["inference_timeout_s"]
+    # L52 (DF-B07) : même isolement que les requêtes (runner.py) et SHACL : environnement réduit, mémoire (RLIMIT_AS) et CPU plafonnés
     try:
-        proc = subprocess.run([sys.executable, "-I", str(worker), semantics], input=nt, capture_output=True,
-                              timeout=lim["inference_timeout_s"], cwd="/")
-    except subprocess.TimeoutExpired:
-        raise StoreError(f"Inférence {semantics} interrompue après {lim['inference_timeout_s']} s (graphe trop gros ou trop riche pour owlrl).", 504) from None
+        proc = childproc.run_limited(worker, nt, timeout=timeout, mem_mb=lim["query_memory_mb"], cpu_s=int(timeout) + 2, fsize=0,
+                                     args=[semantics])
+    except childproc.TimeoutExpired:
+        raise StoreError(f"Inférence {semantics} interrompue après {timeout} s (graphe trop gros ou trop riche pour owlrl).", 504) from None
     if proc.returncode != 0:
-        raise StoreError("Échec de l'inférence : " + proc.stderr.decode("utf-8", "replace").strip().splitlines()[-1][:200], 500)
+        if proc.returncode < 0 or b"MemoryError" in proc.stderr:
+            raise StoreError(f"Inférence {semantics} interrompue : mémoire ou temps de calcul plafonnés (graphe trop gros ou trop riche "
+                             "pour owlrl). Réduisez les données ou utilisez un endpoint avec raisonnement.", 413)
+        tail = (proc.stderr.decode("utf-8", "replace").strip().splitlines() or ["erreur inconnue"])[-1][:200]
+        raise StoreError("Échec de l'inférence : " + tail, 500)
     n_inf = _replace_graph(store, G_INFERRED, proc.stdout)
     notes = []
     m = re.search(rb"NOTE hasKey (\d+)", proc.stderr)

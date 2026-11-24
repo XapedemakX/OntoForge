@@ -16,6 +16,7 @@ disjointes, sameAs/differentFrom) avec une heuristique syntaxique ; la réponse 
 """
 from __future__ import annotations
 
+import logging
 import os
 import re
 import shutil
@@ -36,7 +37,26 @@ DEFAULT_TIMEOUT = 30.0
 MAX_TIMEOUT = 300.0
 DEFAULT_MAX_MB = 1024
 _LINE = re.compile(r"^([A-Za-z]+)\( ((?:<[^>]+>\s*)+) \)$", re.M)
-_SLOTS = threading.BoundedSemaphore(int(os.environ.get("ONTOFORGE_HERMIT_SLOTS", "2")))
+log = logging.getLogger(__name__)
+
+
+def _env_number(name: str, default, cast=float):
+    """Valeur numérique d'une variable d'environnement ; valeur absente → défaut, valeur invalide → défaut + avertissement
+    au journal (L52, DF-B04 : avant, une valeur non numérique faisait échouer l'import du module ou chaque POST /reason)."""
+    raw = os.environ.get(name)
+    if raw is None or not raw.strip():
+        return default
+    try:
+        v = cast(raw)
+    except ValueError:
+        v = None
+    if v is None or v != v or v in (float("inf"), float("-inf")):  # NaN, infini : refusés aussi
+        log.warning("%s=%r n'est pas un nombre valide : valeur par défaut %s utilisée.", name, raw, default)
+        return default
+    return v
+
+
+_SLOTS = threading.BoundedSemaphore(max(1, _env_number("ONTOFORGE_HERMIT_SLOTS", 2, int)))
 
 
 class HermitUnavailable(Exception):
@@ -61,18 +81,15 @@ class Setup:
 
 def configured_timeout(requested: Optional[float] = None) -> float:
     """Délai en secondes : demande > ONTOFORGE_HERMIT_TIMEOUT > 30 ; plafonné par ONTOFORGE_HERMIT_MAX_TIMEOUT (300)."""
-    cap = float(os.environ.get("ONTOFORGE_HERMIT_MAX_TIMEOUT", MAX_TIMEOUT))
-    base = float(os.environ.get("ONTOFORGE_HERMIT_TIMEOUT", DEFAULT_TIMEOUT))
+    cap = _env_number("ONTOFORGE_HERMIT_MAX_TIMEOUT", MAX_TIMEOUT)
+    base = _env_number("ONTOFORGE_HERMIT_TIMEOUT", DEFAULT_TIMEOUT)
     t = float(requested) if requested else base
     return max(1.0, min(t, cap))
 
 
 def configured_memory() -> int:
     """Plafond du tas Java (Mo) : ONTOFORGE_HERMIT_MAX_MB, 1024 par défaut."""
-    try:
-        return max(128, int(os.environ.get("ONTOFORGE_HERMIT_MAX_MB", DEFAULT_MAX_MB)))
-    except ValueError:
-        return DEFAULT_MAX_MB
+    return max(128, _env_number("ONTOFORGE_HERMIT_MAX_MB", DEFAULT_MAX_MB, int))
 
 
 def locate() -> Setup:

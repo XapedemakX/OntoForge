@@ -1,8 +1,9 @@
 """Table exhaustive des routes qui portent un identifiant de projet : (méthode, modèle de chemin) -> (niveau, action du journal).
 
 Niveaux : ``read`` (propriétaire, éditeur, lecteur), ``write`` (propriétaire, éditeur), ``owner`` (propriétaire seul).
-Une route avec ``{pid}`` absente de cette table est refusée (403) : le cloisonnement échoue fermé. ``tests/test_collab_routes.py``
-parcourt toutes les routes de l'application et échoue si l'une n'est ni classée ici, ni déclarée sans projet (ci-dessous).
+Une route avec ``{pid}`` absente de cette table est refusée (403) : le cloisonnement échoue fermé.
+``tests/test_collab.py::test_every_route_is_classified`` parcourt toutes les routes de
+l'application et échoue si l'une n'est ni classée ici, ni déclarée sans projet (ci-dessous).
 """
 from __future__ import annotations
 

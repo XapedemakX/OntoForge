@@ -22,7 +22,7 @@ export function resolveGuideImage(href: string): { url: string; w?: number; h?: 
 
 export type Lang = 'fr' | 'en'
 /** Ordre d'affichage ; les autres fichiers du dossier suivent par ordre alphabétique. */
-const ORDER = ['utilisateur', 'deploiement', 'limites', 'contribuer', 'api', 'architecture', 'regles', 'glossaire', 'changelog']
+const ORDER = ['utilisateur', 'limites', 'contribuer', 'api', 'architecture', 'regles', 'glossaire', 'changelog']
 const FILES: Record<string, Partial<Record<Lang, () => Promise<string>>>> = {}
 for (const [path, load] of Object.entries(RAW)) {
   const m = /\/([^/]+?)(\.en)?\.md$/.exec(path); if (!m) continue

@@ -39,14 +39,14 @@ flowchart LR
 Exemple exécuté (cible neo4j) : `SELECT ?v ?vin WHERE { ?v a am:Vehicle ; am:vin ?vin . FILTER(STRSTARTS(?vin, "VF")) } ORDER BY ?vin LIMIT 10` donne :
 
 ```cypher
-MATCH (v)
+MATCH (v:Vehicle)
 WHERE v.vin STARTS WITH 'VF'
 RETURN v.uri AS v, v.vin AS vin
 ORDER BY vin
 LIMIT 10
 ```
 
-Le label `:Vehicle` manque : c'est le défaut DF-B06 (une classe portée par plusieurs types de nœuds qui partagent un seul label). Avec `?v a am:Garage`, le motif est bien `MATCH (v:Garage)`.
+Sur la cible neo4j, `am:Vehicle` est portée par trois types de nœuds (`Vehicle`, `ElectricVehicle`, `CombustionVehicle`) qui ont tous le label `Vehicle` (multi-labels) : `backend/ontoforge/queries/translate.py::_Translator.node_pat` fait l'union des types possibles, chacun valant « label » ou « label et valeur du discriminant », et la simplifie ; ici elle se réduit au seul label `:Vehicle`. Plusieurs labels donnent une condition `WHERE (v:A OR v:B)`. Avant L52, ce cas donnait `MATCH (v)` (tous les nœuds, DF-B06). Si un type possible n'avait pas de label (le générateur n'en produit pas aujourd'hui), le motif resterait non filtré avec une note `[perte]`.
 
 La route `POST /api/projects/{pid}/queries/translate` (dans `backend/ontoforge/api/analysis.py::translate`) recalcule le PGModel de la cible puis appelle `translate`.
 
@@ -97,7 +97,7 @@ Garde-fous de `backend/ontoforge/queries/endpoint.py` :
 - Prédicat variable (`?s ?p ?o`) : pas d'équivalent en property graph (les types de relation sont du schéma) ; triplet ignoré avec une note `[perte]`.
 - Propriétés d'arête (R01 dé-réifié) : une propriété portée par une relation n'est pas réécrite automatiquement ; note `[perte]`.
 - Curiosity : la sortie est du pseudo-code de la Query API ; la documentation de référence est dans `CURIOSITY_DOC`. Rien n'est exécuté contre Curiosity.
-- DF-B06 : une classe portée par plusieurs types de nœuds partageant un label peut perdre son label en Cypher.
+- Sous-motif réduit à un typage (défaut DF-B12, ouvert) : `FILTER EXISTS`, `FILTER NOT EXISTS` ou `MINUS` dont le sous-motif ne contient que le typage d'une variable déjà imprimée donnent `WHERE [NOT] EXISTS { MATCH  }` (`_Translator.exists_pattern`), sur les deux cibles, sans note `[perte]`. Le Cypher est invalide, et pour `NOT EXISTS` et `MINUS` la classe du sous-motif est perdue.
 
 ## Comment ajouter… {#comment-ajouter}
 

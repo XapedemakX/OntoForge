@@ -372,6 +372,10 @@ PHRASES.update({
     "HermiT non utilisé : owlready2 absent.": "HermiT not used: owlready2 is missing.",
     "OWL RL : délai de ": "OWL RL: time limit of ",
     " s dépassé, raisonnement abandonné.": " s exceeded, reasoning abandoned.",
+    "OWL RL indisponible : ": "OWL RL unavailable: ",
+    "OWL RL : mémoire ou temps de calcul plafonnés, raisonnement abandonné.": "OWL RL: memory or computation time limit reached, reasoning abandoned.",
+    "OWL RL : trop de raisonnements en cours, raisonnement non lancé ; relancez le contrôle dans quelques secondes.":
+        "OWL RL: too many reasoning runs in progress, reasoning not started; run the check again in a few seconds.",
     "HermiT : délai de ": "HermiT: time limit of ",
     " s dépassé, résultat ignoré.": " s exceeded, result ignored.",
     "HermiT : aucune sortie exploitable (": "HermiT: no usable output (",
@@ -721,7 +725,30 @@ PHRASES.update({
     "Inférence ": "Inference ",
     " interrompue après ": " stopped after ",
     " s (graphe trop gros ou trop riche pour owlrl).": " s (graph too large or too rich for owlrl).",
+    " interrompue : mémoire ou temps de calcul plafonnés (graphe trop gros ou trop riche pour owlrl). Réduisez les données ou utilisez un endpoint avec raisonnement.":
+        " stopped: memory or computation time limit reached (graph too large or too rich for owlrl). Reduce the data or use an endpoint with reasoning.",
     "Échec de l'inférence : ": "Inference failed: ",
+    " : un élément du fichier (littéral ou IRI) est trop gros pour le lecteur RDF (16 Mio au plus).": ": an element of the file (literal or IRI) is too large for the RDF reader (16 MiB at most).",
+    # refus écrits par les couches ASGI (security.BodyLimit, auth/middleware.py, collab/middleware.py) : L52, DF-F03
+    "Requête trop volumineuse (plafond ": "Request too large (limit ",
+    "Connexion requise.": "Sign-in required.",
+    "Session terminée : reconnectez-vous.": "Session ended: sign in again.",
+    "Changez d'abord votre mot de passe provisoire.": "First change your temporary password.",
+    "Origine refusée.": "Origin refused.",
+    "Jeton CSRF absent ou invalide : rechargez la page.": "Missing or invalid CSRF token: reload the page.",
+    "Route non classée.": "Unclassified route.",
+    # io/safe_parse.py (refus de sécurité), repris par l'import et par le triplestore local (L52, DF-B08)
+    "Fichier RDF/XML refusé : il déclare un DOCTYPE ou des entités XML, qui ne sont pas acceptés par sécurité. Réexportez le fichier sans entités (RDF/XML sans DOCTYPE) ou en Turtle.":
+        "RDF/XML file refused: it declares a DOCTYPE or XML entities, which are not accepted for security reasons. Export the file again without entities (RDF/XML without DOCTYPE) or as Turtle.",
+    "Fichier RDF/XML refusé : son début (déclaration XML, commentaires, DOCTYPE) est mal formé, et il n'est pas accepté par sécurité. Corrigez l'en-tête du fichier ou exportez-le en Turtle.":
+        "RDF/XML file refused: its beginning (XML declaration, comments, DOCTYPE) is malformed, and it is not accepted for security reasons. Fix the file header or export it as Turtle.",
+    "Fichier RDF/XML refusé : l'encodage déclaré dans l'en-tête est inconnu. Enregistrez le fichier en UTF-8.":
+        "RDF/XML file refused: the encoding declared in the header is unknown. Save the file as UTF-8.",
+    "Fichier JSON-LD refusé : imbrication trop profonde.": "JSON-LD file refused: nesting too deep.",
+    "Fichier JSON-LD refusé : « @import » charge un contexte distant, ce qui n'est pas autorisé.":
+        "JSON-LD file refused: “@import” loads a remote context, which is not allowed.",
+    "Fichier JSON-LD refusé : le contexte « @context » est une référence distante. Remplacez-la par le contexte intégré au fichier (objet JSON), ou convertissez en Turtle.":
+        "JSON-LD file refused: the “@context” is a remote reference. Replace it with the context embedded in the file (JSON object), or convert to Turtle.",
     "Inférence inconnue « ": "Unknown inference “",
     "(attendu : none, rdfs, owlrl, both)": "(expected: none, rdfs, owlrl, both)",
     "owl:hasKey ignoré (": "owl:hasKey ignored (",

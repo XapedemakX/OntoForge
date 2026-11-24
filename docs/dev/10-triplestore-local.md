@@ -54,9 +54,9 @@ sequenceDiagram
 
 ## Chargement et inférence {#chargement}
 
-`backend/ontoforge/localstore/store.py::load_data` : taille du fichier plafonnée, lecture **en flux** dans un magasin mémoire temporaire (`parse_to_store`, arrêt dès que le plafond de triplets est dépassé), vérification du total, remplacement du graphe du fichier, inférence éventuelle ; si l'inférence échoue, l'ancien contenu du graphe est restauré (tout ou rien). Le JSON-LD à contexte distant est refusé par le lecteur d'Oxigraph (message traduit par `_parse_error`).
+`backend/ontoforge/localstore/store.py::load_data` : taille du fichier plafonnée, lecture **en flux** dans un magasin mémoire temporaire (`parse_to_store`, arrêt dès que le plafond de triplets est dépassé), vérification du total, remplacement du graphe du fichier, inférence éventuelle ; si l'inférence échoue, l'ancien contenu du graphe est restauré (tout ou rien). Avant la lecture, `parse_to_store` applique les gardes de `backend/ontoforge/io/safe_parse.py` (depuis L52, DF-B08). `check_xml(raw, strict=True)` refuse tout `DOCTYPE` en RDF/XML, car Oxigraph 0.5.13 développerait les entités internes. Il échoue fermé : un début de document qu'expat ne sait pas lire jusqu'au premier élément, ou un encodage déclaré inconnu, est aussi refusé, parce qu'Oxigraph est plus tolérant qu'expat et poursuivrait. L'import d'ontologie (`parse_into`) garde le mode non strict, rdflib étant aussi strict qu'expat. `check_jsonld` refuse un contexte JSON-LD distant et une imbrication de plus de 200 niveaux. Un refus donne un 422 et rien n'est écrit. Le lecteur d'Oxigraph refuse aussi lui-même un contexte distant restant (message traduit par `_parse_error`).
 
-`materialize` calcule la fermeture owlrl (sémantiques `rdfs`, `owlrl`, `both`) de l'ontologie, des individus et des données, dans le processus fils `_infer_worker.py`, puis remplace le graphe inféré. Le fils ne renvoie que les faits utiles sur les individus (types de classes du domaine, valeurs de propriétés ; ni bruit de vocabulaire ni objets anonymes, qu'Oxigraph renommerait au rechargement). Il signale sur stderr les `owl:hasKey` ignorés (prp-key trop lente dans owlrl) et les `owl:sameAs` déduits ; ces signaux deviennent des notes en français, traduites à la réponse.
+`materialize` calcule la fermeture owlrl (sémantiques `rdfs`, `owlrl`, `both`) de l'ontologie, des individus et des données, dans le processus fils `_infer_worker.py`, lancé par `backend/ontoforge/childproc.py::run_limited` comme les requêtes (environnement réduit, mémoire `ONTOFORGE_LOCAL_STORE_MEMORY_MB`, CPU = délai + 2 s ; depuis L52, DF-B07), puis remplace le graphe inféré. Délai dépassé : 504 ; plafond mémoire ou CPU atteint (fils tué par un signal ou `MemoryError`) : 413 « mémoire ou temps de calcul plafonnés ». Le fils ne renvoie que les faits utiles sur les individus (types de classes du domaine, valeurs de propriétés ; ni bruit de vocabulaire ni objets anonymes, qu'Oxigraph renommerait au rechargement). Il signale sur stderr les `owl:hasKey` ignorés (prp-key trop lente dans owlrl) et les `owl:sameAs` déduits ; ces signaux deviennent des notes en français, traduites à la réponse.
 
 `POST /store/validate` valide les individus et les données (sans la TBox ; avec le graphe inféré si `include_inferred`) contre les shapes du projet, par la même fonction `validate` que le chapitre 06.
 
@@ -70,7 +70,7 @@ sequenceDiagram
 | `ONTOFORGE_LOCAL_STORE_MAX_VALIDATION_TRIPLES` | 60 000 | triplets passés à la validation SHACL |
 | `ONTOFORGE_LOCAL_STORE_TIMEOUT_S` | 20 | délai d'une requête (la requête peut demander de 1 à 120 s) ; 504 |
 | `ONTOFORGE_LOCAL_STORE_INFERENCE_TIMEOUT_S` | 90 | délai de l'inférence ; 504 |
-| `ONTOFORGE_LOCAL_STORE_MEMORY_MB` | 3072 | plafond mémoire du fils de requête |
+| `ONTOFORGE_LOCAL_STORE_MEMORY_MB` | 3072 (Cloud Run : 1024) | plafond d'espace d'adressage de chaque fils de requête et d'inférence ; 413 si l'inférence l'atteint. Mesuré le 24/11 : 640 Mo au moins pour un fils de requête (ouverture de la base) ; 1024 Mo suffisent à l'inférence au plafond de 30 000 triplets sources (58 s). Aucune place limitée : plusieurs projets peuvent lancer des fils en même temps |
 | `ONTOFORGE_LOCAL_STORE_DIR` | — | dossier local (éphémère) à la place de `<projet>/triplestore` |
 
 `limits()` relit ces variables à chaque appel (minimum 1, valeur invalide → défaut).
@@ -94,7 +94,7 @@ sequenceDiagram
 - Union recalculée à chaque écriture : coût proportionnel au contenu ; c'est le prix d'un graphe par défaut correct.
 - Inférence en mémoire : 30 000 triplets sources au plus ; pour plus, un endpoint avec raisonnement.
 - `owl:hasKey` n'est pas appliquée par l'inférence locale (note dans la réponse).
-- Le fils d'inférence n'est pas lancé par `childproc.run_limited` (défaut DF-B07) ; **le chargement** ne passe pas par `io/safe_parse.py` (défaut DF-B08, à confirmer).
+- Un littéral ou une IRI de plus de 16 Mio fait lever `MemoryError` au lecteur d'Oxigraph (taille maximale de son tampon), même sous le plafond d'envoi de 25 Mo : `parse_to_store` répond 413 « élément trop gros » (L52 ; avant, 500).
 - Nœuds anonymes : Oxigraph les renomme à chaque chargement ; ne pas compter sur leurs étiquettes.
 
 ## Comment ajouter… {#comment-ajouter}

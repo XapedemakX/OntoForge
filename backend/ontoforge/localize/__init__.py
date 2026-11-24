@@ -4,7 +4,8 @@ Le moteur de transposition produit du français (c'est la langue source des règ
 Quand ``settings.language.ui`` vaut ``en``, les réponses d'API sont traduites ici, à la frontière HTTP :
 - catalogue de règles et justifications de profils : tables ``catalog_en`` / ``profile_en`` (clé = SHA-1[:6] du texte français) ;
 - messages composés (détails, validations, notes) : table de fragments ``phrases.PHRASES`` appliquée du plus long au plus court.
-Un texte sans traduction reste en français (jamais d'erreur) ; ``tests/test_localize_en.py`` garde la couverture sur l'exemple automaint.
+Un texte sans traduction reste en français (jamais d'erreur). Couverture sur l'exemple automaint : ``tests/test_english.py``
+(``test_analysis_texts_have_no_french_in_english``, ``test_conformance_and_error_messages_in_english``) et ``tests/test_generation_lang.py``.
 """
 from __future__ import annotations
 
@@ -16,8 +17,7 @@ from typing import Any, Optional
 from . import catalog_en, datatype_en, profile_en
 from .phrases import PHRASES, REGEXES
 
-# Langue des libellés lus par le moteur de mapping (descriptions de types de nœuds, « Classe X (libellé) »…).
-LABEL_LANG: ContextVar[str] = ContextVar("label_lang", default="fr")
+# La langue des libellés lus par le moteur (LABEL_LANG) est dans core/lang.py, pas ici (DF-B01, L52).
 
 _EXACT: dict[str, str] = {**catalog_en.EN, **profile_en.EN}
 _PROFIL = re.compile(r"^(?P<head>.*?) — Profil (?P<t>curiosity|neo4j) : (?P<prof>.*)$", re.S)

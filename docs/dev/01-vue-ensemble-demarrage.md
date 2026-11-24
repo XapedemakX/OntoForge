@@ -100,7 +100,7 @@ npm ci
 npm run dev                                              # http://localhost:5173, proxy /api -> :8000
 ```
 
-Vérifié le 23/11 : uvicorn (port 8099) et `vite` (port 5199, `ONTOFORGE_API=http://127.0.0.1:8099`) ; `GET /api/health` répond identiquement des deux côtés, `GET /api/auth/session` passe par le proxy. `ONTOFORGE_API` change la cible du proxy. Le README racine propose `pip install -e ".[dev]"` sans `-c constraints.txt` : préférer la forme ci-dessus (DF-F09).
+Vérifié le 23/11 : uvicorn (port 8099) et `vite` (port 5199, `ONTOFORGE_API=http://127.0.0.1:8099`) ; `GET /api/health` répond identiquement des deux côtés, `GET /api/auth/session` passe par le proxy. `ONTOFORGE_API` change la cible du proxy. Le README racine installe de la même façon, avec `-c constraints.txt` (versions épinglées, comme la CI et les images ; corrigé en L52, DF-F09).
 
 Le fournisseur `mock` rend l'assistant déterministe, sans clé. Sans `ONTOFORGE_DATA`, le dossier de données par défaut est `./data` (relatif au dossier de lancement, le dossier backend/data est ignoré par git) ; l'image Docker fixe `/data`. Hors Docker, définissez-le pour ne pas polluer le dépôt.
 
@@ -111,7 +111,7 @@ Pour tester l'authentification en local : `ONTOFORGE_AUTH=password`, `ONTOFORGE_
 ```bash
 cd backend && pytest -q                                  # de l'ordre de 1600 tests ; ONTOFORGE_RATE_LIMIT=0 posé par conftest.py
 cd frontend && npm run build                             # tsc -b puis vite build (23 s ici)
-cd frontend && npm test                                  # node --test tests/*.test.mjs (4 tests)
+cd frontend && npm test                                  # node --test tests/*.test.mjs (19 tests)
 node tools/recette/e2e_ui.mjs                            # recette UI (front construit avant)
 ```
 

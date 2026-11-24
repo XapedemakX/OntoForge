@@ -1174,7 +1174,7 @@
   "hist.caracteristique": "Characteristic",
   "hist.nouvel_element": "New item",
   "ui.http": "Error {s}",
-  "ui.unreachable": "Server unreachable. Check that the backend is running on port 8000.",
+  "ui.unreachable": "Server unreachable. Try again in a moment.",
   "ui.refused": "Operations refused",
   "ui.assistant.one": "Assistant: {label}",
   "ui.assistant.many": "Assistant: {n} items",

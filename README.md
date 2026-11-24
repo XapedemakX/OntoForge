@@ -49,7 +49,7 @@ L'exemple trap est l'ontologie « piège » de test. Elle exerce les 66 règles 
 
 ## Développement sans Docker
 ```bash
-cd backend && python -m venv .venv && . .venv/bin/activate && pip install -e ".[dev]"
+cd backend && python -m venv .venv && . .venv/bin/activate && pip install -c constraints.txt -e ".[dev]"
 ONTOFORGE_LLM_PROVIDER=mock uvicorn ontoforge.main:app --port 8000
 cd ../frontend && npm install && npm run dev   # http://localhost:5173, proxy /api → :8000
 ```

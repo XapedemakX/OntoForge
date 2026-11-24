@@ -1,4 +1,4 @@
-import { tr } from '../../i18n'
+import { jsonOrEmpty, request } from '../../lib/http'
 import type { Project } from '../../api'
 
 export type Sev = 'error' | 'warning' | 'info'
@@ -20,13 +20,9 @@ const base = (id: string) => `/api/projects/${encodeURIComponent(id)}`
 const enc = (path: string) => path.split('/').map(encodeURIComponent).join('/')
 
 async function call<T>(method: string, url: string, body?: unknown, extra?: Record<string, string>): Promise<Reply<T>> {
-  let r: Response
-  try {
-    r = await fetch(url, { method, ...(body !== undefined ? { body: JSON.stringify(body), headers: { 'Content-Type': 'application/json', ...extra } } : extra ? { headers: extra } : {}) })
-  } catch { return { status: 0, ok: false, data: { detail: tr('ui.unreachable') } as Reply<T>['data'] } }
-  let data: unknown = {}
-  try { data = await r.json() } catch { /* corps vide */ }
-  return { status: r.status, ok: r.ok, data: data as Reply<T>['data'] }
+  const o = await request(url, { method, ...(body !== undefined ? { body: JSON.stringify(body), headers: { 'Content-Type': 'application/json', ...extra } } : extra ? { headers: extra } : {}) })
+  if (!o.ok) return { status: o.status, ok: false, data: (o.status === 0 ? { detail: o.message } : o.body ?? {}) as Reply<T>['data'] }
+  return { status: o.res.status, ok: true, data: (await jsonOrEmpty(o.res)) as Reply<T>['data'] }
 }
 
 export const fapi = {

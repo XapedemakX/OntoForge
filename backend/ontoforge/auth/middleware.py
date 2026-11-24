@@ -76,6 +76,20 @@ async def send_json(send: Any, status: int, body: dict, headers: Optional[list[t
     await send({"type": "http.response.body", "body": data})
 
 
+def localized(text: str, lang: Optional[str] = None) -> str:
+    """Message d'un refus écrit par une couche ASGI, dans la langue de la requête (L52, DF-F03) : même mécanisme que
+    ``main.py::_http_error`` (``localize.tr`` vers l'anglais), car ces réponses ne passent pas par les gestionnaires d'exceptions.
+    ``lang`` : langue du compte si elle est déjà connue ; sinon ``localize.ui_lang()`` (compte de la requête, puis réglage global)."""
+    try:
+        from .. import localize
+        lang = lang if lang in ("fr", "en") else localize.ui_lang()
+        if lang != "en":
+            return text
+        return localize.tr(text, "en") or text
+    except Exception:  # noqa: BLE001 - une traduction n'échoue jamais
+        return text
+
+
 class AuthMiddleware:
     def __init__(self, app: Any, cfg: AuthConfig, accounts: Any = None) -> None:
         self.app, self.cfg, self.accounts = app, cfg, accounts
@@ -89,19 +103,21 @@ class AuthMiddleware:
             return await self.app(scope, receive, send)
         s = current_session(scope, self.cfg)
         if s is None:
-            return await send_json(send, 401, {"detail": "Connexion requise.", "code": "auth_required"})
+            return await send_json(send, 401, {"detail": localized("Connexion requise."), "code": "auth_required"})
         acc = None
         if self.accounts is not None:   # L42 : compte supprimé, désactivé ou mot de passe changé = session coupée sur-le-champ
             acc = self.accounts.session_ok(s.user, s.gen)
             if acc is None:
-                return await send_json(send, 401, {"detail": "Session terminée : reconnectez-vous.", "code": "auth_required"})
+                return await send_json(send, 401, {"detail": localized("Session terminée : reconnectez-vous."), "code": "auth_required"})
             if acc.must_change:
-                return await send_json(send, 403, {"detail": "Changez d'abord votre mot de passe provisoire.", "code": "password_change_required"})
+                return await send_json(send, 403, {"detail": localized("Changez d'abord votre mot de passe provisoire.", acc.lang),
+                                                   "code": "password_change_required"})
         if csrf_required(scope["method"], scope["path"]):
+            lang = acc.lang if acc is not None else None
             if not origin_ok(scope):
-                return await send_json(send, 403, {"detail": "Origine refusée.", "code": "bad_origin"})
+                return await send_json(send, 403, {"detail": localized("Origine refusée.", lang), "code": "bad_origin"})
             if not sess.csrf_ok(s, header(scope, "x-csrf-token")):
-                return await send_json(send, 403, {"detail": "Jeton CSRF absent ou invalide : rechargez la page.", "code": "csrf"})
+                return await send_json(send, 403, {"detail": localized("Jeton CSRF absent ou invalide : rechargez la page.", lang), "code": "csrf"})
         scope.setdefault("state", {})["auth_user"] = s.user
         from .. import localize
         tok = localize.REQUEST_LANG.set(acc.lang if acc is not None else None)   # langue du compte pour toute la requête

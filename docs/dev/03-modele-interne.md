@@ -128,7 +128,7 @@ Le moteur lit les libellés d'ontologie (descriptions des types de nœuds, « Cl
 - Domaine multiple : `ObjectProperty.domain` avec deux classes signifie leur *intersection* (sémantique OWL de deux axiomes `rdfs:domain`) ; l'union est dans `domain_union`.
 - Deux vues d'une restriction : modifier `OntClass.restrictions` ne met pas à jour `super_expressions`, et inversement. L'export RDF émet les deux listes ; un éditeur doit choisir l'une ou l'autre.
 - `OntoModel.children` est linéaire sur le nombre de classes ; `descendants` l'appelle à chaque niveau. Sur une très grande ontologie, préférer un index inverse construit une fois (ce que fait le moteur dans son contexte, chapitre 07).
-- La variable `LABEL_LANG` existe aussi dans `backend/ontoforge/localize/__init__.py` mais n'y est lue par personne (défaut DF-B01) : c'est celle de `core/lang.py` qui compte.
+- La langue des libellés lus par le moteur est la variable `LABEL_LANG` de `backend/ontoforge/core/lang.py`, et elle seule (le doublon de `localize/__init__.py` a été retiré en L52, DF-B01).
 
 ## Comment ajouter un champ {#comment-ajouter}
 

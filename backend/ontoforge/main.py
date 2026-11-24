@@ -1,7 +1,7 @@
 """OntoForge API — point d'entrée FastAPI. Les routers sont dans ``ontoforge.api``.
 
 Variables de déploiement (L27) : ONTOFORGE_AUTH, ONTOFORGE_PUBLIC, ONTOFORGE_STATIC_DIR, ONTOFORGE_MAX_BODY_MB, ONTOFORGE_CORS_ORIGINS
-(voir docs/guide/deploiement.md).
+(voir docs/dev/17-build-ci-deploiement.md et deploy/cloudrun/README.md ; sécurité : docs/dev/16-securite.md).
 """
 import os
 

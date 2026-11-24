@@ -1,4 +1,4 @@
-import { tr } from '../../i18n'
+import { request } from '../../lib/http'
 import type { VersionGap, VersionKey, VersionRow } from '../../api'
 // Client API des paramètres (L8 + endpoints SPARQL L15). Contrat : docs/CONTRACTS.md §4 et §6.
 // Les secrets ne sont jamais relus : seuls has_key / key_last4 / has_secret sont exposés.
@@ -28,15 +28,9 @@ export class SettingsError extends Error {
   get notReady() { return this.status === 404 || this.status === 501 }
 }
 async function sreq<T>(method: string, path: string, body?: unknown): Promise<T> {
-  let r: Response
-  try {
-    r = await fetch('/api/settings' + path, { method, headers: body !== undefined ? { 'Content-Type': 'application/json' } : undefined, body: body !== undefined ? JSON.stringify(body) : undefined })
-  } catch { throw new SettingsError(0, tr('ui.unreachable')) }
-  if (!r.ok) {
-    let d = tr('ui.http', { s: r.status })
-    try { const j = await r.json(); d = typeof j.detail === 'string' ? j.detail : Array.isArray(j.detail) ? j.detail.map((x: { loc?: string[]; msg?: string }) => (x.loc?.slice(-1)[0] ? x.loc.slice(-1)[0] + ' : ' : '') + x.msg).join(' ; ') : d } catch { /* non JSON */ }
-    throw new SettingsError(r.status, d)
-  }
+  const o = await request('/api/settings' + path, { method, headers: body !== undefined ? { 'Content-Type': 'application/json' } : undefined, body: body !== undefined ? JSON.stringify(body) : undefined }, { withLoc: true })
+  if (!o.ok) throw new SettingsError(o.status, o.message)
+  const r = o.res
   return r.json() as Promise<T>
 }
 

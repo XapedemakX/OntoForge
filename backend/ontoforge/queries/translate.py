@@ -831,8 +831,22 @@ class _Translator:
                 dp = next(r.disc_prop for r in nv.types if r.disc_prop)
                 conds.append(f"{nv.name}.{_cy_ident(dp)} = {_cy_str(discs[0])}" if len(discs) == 1 else
                              f"{nv.name}.{_cy_ident(dp)} IN [{', '.join(_cy_str(d) for d in discs)}]")
-        elif len(labels) > 1:
-            conds.append("(" + " OR ".join(f"{nv.name}:{_cy_ident(l)}" for l in labels) + ")")
+        elif labels:
+            # Plusieurs types de nœuds (L52, DF-B06). Le motif est l'union des types : chaque référence vaut « label » ou
+            # « label ET discriminant ». Une référence sans discriminant absorbe celles de même label qui en ont un.
+            # Cas multi-labels Neo4j : Vehicle, ElectricVehicle et CombustionVehicle portent tous le label Vehicle → (v:Vehicle).
+            plain = sorted({r.label for r in nv.types if r.label and not r.disc_value})
+            terms = [f"{nv.name}:{_cy_ident(l)}" for l in plain]
+            for r in sorted({r for r in nv.types if r.label and r.disc_value and r.label not in plain},
+                            key=lambda r: (r.label, r.disc_prop or "", r.disc_value or "")):
+                terms.append(f"({nv.name}:{_cy_ident(r.label)} AND {nv.name}.{_cy_ident(r.disc_prop)} = {_cy_str(r.disc_value)})")
+            if any(not r.label for r in nv.types):  # référence sans label (jamais produite aujourd'hui) : pas de filtre sûr
+                self.lost(f"?{nv.sparql or nv.name} : un des types de nœuds possibles n'a pas de label, motif non filtré "
+                          "(sur-ensemble possible).")
+            elif len(terms) == 1 and len(plain) == 1:
+                lab = ":" + _cy_ident(plain[0])
+            elif terms:
+                conds.append("(" + " OR ".join(terms) + ")")
         if nv.empty:
             conds.append("false")  # classe absente / types incompatibles : aucun résultat (jamais un sur-ensemble)
         props = ""
@@ -1618,15 +1632,15 @@ def translate(sparql: str, pg: PGModel, onto: Optional[OntoModel] = None) -> Tra
         res.supported = False
     res.query_form = t.form
     if res.cypher is not None:
-        if t.curiosity_ok or True:
-            try:
-                res.curiosity = t.curiosity(mods)
-                if not t.curiosity_ok and res.curiosity:
-                    res.curiosity += "\n// Traduction partielle : voir les notes [curiosity]."
-            except _Unsupported as e:
-                t.note("curiosity", f"Non traduit en Query API : {e}.")
-            except Exception as e:  # noqa: BLE001
-                t.note("curiosity", f"Erreur interne (Curiosity) : {type(e).__name__}: {e}.")
+        # Query API Curiosity toujours tentée ; si une partie n'est pas exprimable (curiosity_ok faux), elle est marquée partielle
+        try:
+            res.curiosity = t.curiosity(mods)
+            if not t.curiosity_ok and res.curiosity:
+                res.curiosity += "\n// Traduction partielle : voir les notes [curiosity]."
+        except _Unsupported as e:
+            t.note("curiosity", f"Non traduit en Query API : {e}.")
+        except Exception as e:  # noqa: BLE001
+            t.note("curiosity", f"Erreur interne (Curiosity) : {type(e).__name__}: {e}.")
         try:
             res.graphql = t.graphql(mods)
         except Exception as e:  # noqa: BLE001

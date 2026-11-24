@@ -49,7 +49,7 @@ The trap sample is the test "trap" ontology. It exercises the 66 transposition r
 
 ## Development without Docker
 ```bash
-cd backend && python -m venv .venv && . .venv/bin/activate && pip install -e ".[dev]"
+cd backend && python -m venv .venv && . .venv/bin/activate && pip install -c constraints.txt -e ".[dev]"
 ONTOFORGE_LLM_PROVIDER=mock uvicorn ontoforge.main:app --port 8000
 cd ../frontend && npm install && npm run dev   # http://localhost:5173, proxy /api → :8000
 ```

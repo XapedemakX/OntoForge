@@ -1,4 +1,4 @@
-"""Lancement des processus fils isolés (L41 : L39-02, L39-03) : validation SHACL et requêtes du triplestore local.
+"""Lancement des processus fils isolés (L41 : L39-02, L39-03) : validation SHACL, requêtes et inférence du triplestore local, raisonnement OWL RL du contrôle de conformité (L52).
 
 - Plafonds (mémoire, CPU, taille de fichier) posés par le fils LUI-MÊME avant d'exécuter son script : un lanceur ``python -I -c``
   appelle ``resource.setrlimit`` puis ``runpy.run_path``. Pas de ``preexec_fn`` (dangereux dans un processus à plusieurs fils :
@@ -24,6 +24,7 @@ _LAUNCHER = (
     "runpy.run_path(script, run_name='__main__')\n"
 )
 _ENV_KEEP = ("PATH", "LANG", "LC_ALL", "PYTHONPATH")
+TimeoutExpired = subprocess.TimeoutExpired  # levée par run_limited au délai (le fils est alors tué)
 
 
 def minimal_env() -> dict[str, str]:

@@ -29,8 +29,6 @@ export async function runChat(opts: {
   }
 }
 
-const notify = (p: Project) => window.dispatchEvent(new CustomEvent('ontoforge:project', { detail: p }))
-
 /** Applique l'action (clic de l'utilisateur). Renvoie vrai si appliquée. */
 export async function applyAction(pid: string, msgId: string, idx: number, a: AgentAction, setP: (p: Project) => void): Promise<boolean> {
   patchAction(pid, msgId, idx, { status: 'busy', error: undefined })
@@ -38,14 +36,14 @@ export async function applyAction(pid: string, msgId: string, idx: number, a: Ag
     if (a.kind === 'ops') {
       const r = await gapi.ops(pid, a.payload.ops, 'Assistant : ' + a.summary.slice(0, 80))
       if (!r.ok) throw new Error(r.errors.map(e => e.message).join(' ; ') || tr('ui.refused'))
-      setP(r.project); notify(r.project)
+      setP(r.project)
     } else if (a.kind === 'shapes') {
       const r = await gapi.shapes(pid, a.payload.patches)
-      setP(r.project); notify(r.project)
+      setP(r.project)
     } else if (a.kind === 'versions') {   // L31 : le serveur a recalculé la mise à jour ; rien n'est appliqué avant ce clic
       await api.putVersions(pid, a.payload.patch)
       const pr = await api.getProject(pid)
-      setP(pr); notify(pr)
+      setP(pr)
     }
     patchAction(pid, msgId, idx, { status: 'applied' })
     setLastApplied(pid, `${msgId}:${idx}`)
@@ -62,10 +60,10 @@ export async function undoAction(pid: string, msgId: string, idx: number, setP: 
       const before = (a.payload.before ?? {}) as Partial<Record<VersionKey, string>>
       await api.putVersions(pid, Object.fromEntries(Object.keys(a.payload.patch).map(k => [k, before[k as VersionKey] ?? null])))
       const pr = await api.getProject(pid)
-      setP(pr); notify(pr)
+      setP(pr)
     } else {
       const r = await gapi.undo(pid)
-      setP(r.project); notify(r.project)
+      setP(r.project)
     }
     patchAction(pid, msgId, idx, { status: 'undone' }); setLastApplied(pid, null)
     return true
