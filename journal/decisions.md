@@ -220,3 +220,9 @@ Deux nouveaux agents, expert dev backend (Opus) et expert dev front et intégrat
 
 ## D-L52-01 (24/11, Jerem) : corriger les 20 défauts de L51, Bedrock écarté
 Jerem lance la correction des 20 défauts relevés par L51, avec une documentation problème / résultat par défaut (`journal/L52/corrections.md`). Le fournisseur Bedrock prévu par D-006 est écarté pour le moment. Les points `À CONFIRMER` du manuel sont reportés.
+
+## D-L53-01 (24/11, Jerem) : corriger DF-B12 et DF-B13
+Jerem : « corrige les défauts ». Lot L53 : DF-B12 (traduction de EXISTS / NOT EXISTS / MINUS réduits à un typage), DF-B13 (somme des plafonds mémoire des processus fils sur Cloud Run) et l'installation sans contraintes de deux jobs CI. Les autres choix de `journal/L52/corrections.md` restent ouverts.
+
+## D-L53-02 (24/11, Jerem) : borner le disque du triplestore local par un plafond total et une purge
+Sur Cloud Run, le disque du conteneur est en mémoire et compte dans les 2 Gio de l'instance ; les bases du triplestore local n'étaient jamais vidées. Question posée avec quatre options (plafond total, purge des bases inactives, les deux, instance de 4 Gio). Jerem : « Les deux ». Plafond d'espace total (refus 413 au-delà) et purge des bases inactives, les deux réglables ; le budget disque entre dans la somme du README, d'env.yaml et du test.

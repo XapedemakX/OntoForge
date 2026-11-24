@@ -2,6 +2,32 @@
 
 Format: by version, what changes for the user, then the detail per work package. Sources: reports `journal/L*/rapport*.md`, reviews, `journal/decisions.md`. Work packages are described in `lots/`.
 
+## L53: fixing defects DF-B12 to DF-B18, Cloud Run caps and CI (24 Nov 2026) {#l53-corrections-24-nov-2026}
+
+Defects DF-B12, DF-B13, DF-B14, DF-B15, DF-B17 and DF-B18 from `journal/L51/defauts.md`, plus the CI anomaly noted in L52; DF-B16 remains open. Problem / fix / result detail in `journal/L53/corrections-b12.md` (queries) and `journal/L53/corrections-b13.md` (caps, CI), summary for Jerem in `journal/L53/corrections.md`. No dependency added, no version bump.
+
+- Queries: `FILTER EXISTS`, `FILTER NOT EXISTS` and `MINUS` whose sub-pattern is only a type test now give valid Cypher that keeps the class. On Neo4j: `WHERE NOT v:ElectricVehicle`. On Curiosity: a discriminator test, in the Cypher and in the C# pseudo-code. Before: `EXISTS { MATCH  }`, rejected by Neo4j, with no loss note.
+- The C# pseudo-code no longer filters the wrong way round: "vehicles that are not electric" used to return the electric vehicles.
+- Guided "has no …" queries (negated filter on a property) give valid Cypher: `NOT EXISTS { MATCH (v) WHERE v.vin IS NOT NULL AND … }`.
+- Losses: a type combination the PG cannot hold (for example "electric vehicle that is also a combustion vehicle") is still reported as a loss, as at top level. A class or property missing from the PG under "has no …" now returns nothing: it no longer widens the result.
+- C# pseudo-code: an untranslated `EXISTS` / `NOT EXISTS` sub-pattern now marks the output "Traduction partielle".
+- A `MINUS` sharing no variable with the rest of the query no longer removes anything, as SPARQL specifies (DF-B14; before: no result).
+- A `FILTER` on a variable of an `OPTIONAL` is placed after the `OPTIONAL MATCH` (`WITH * WHERE …`): the Cypher used to be invalid (DF-B15).
+- Safeguard: Cypher containing an empty `MATCH` is never shown; the query is marked as not translated, with a note. Text inside strings is ignored.
+- `OPTIONAL` variables: `MINUS` and `[NOT] EXISTS` on a variable that may stay unbound follow SPARQL (row kept by `MINUS`, sub-pattern evaluated over the whole graph by `EXISTS`), or are reported as a loss when no exact form exists. In C#, a filter on an optional node marks the output partial.
+- An `OPTIONAL` or a `BIND` written inside a sub-pattern stays inside it (DF-B18; before: an extra `OPTIONAL MATCH` in the main query, or invalid Cypher).
+- DF-B16 (false loss on a relationship to a subtype, on Neo4j) is recorded for a later batch.
+- No other translation changes: the fixtures, the competency questions (automaint, trap) and the test queries were compared before and after (one exception: the C# of a guided "without …" query is now marked partial).
+- Local triplestore: the number of simultaneous child processes is bounded (variable `ONTOFORGE_LOCAL_STORE_SLOTS`, 2 by default), queries and inference together, all projects together. When the places are taken, the API answers 503 with `Retry-After: 5`, as for SHACL; a refused load with inference is not saved. Before, four loads with inference on four projects started four children at once; now it is one or two, depending on the setting.
+- Cloud Run: the caps in `deploy/cloudrun/env.yaml` are measured, and their worst-case sum fits in the 2 GiB: 1933 MB (server 175, SHACL 1 × 320 MB (before: 2048), OWL RL 1 × 256, HermiT 1 place (before: 2) with a 192 MB heap (before: 768), local triplestore children 1 × 640, one file load in the server 124, in-memory disk 64, one request body 12 with `ONTOFORGE_MAX_BODY_MB` at 12 instead of 32). Loading a file now has its own places (one on Cloud Run, 503 with `Retry-After` when taken). It is capped at 50,000 triples and 5 MB per project on Cloud Run (before: 1,000,000 triples and 25 MB, about 1 GB for the server). A test reads the file back and rejects any sum above 2048 MB.
+- Demo update: `deploy-demo.ps1` and the Cloud Build trigger now apply `env.yaml`, 2 Gi, one instance and the secrets (before: the image only, so the new caps would not have been applied). The README gives the check command. The L53 deployment must apply `env.yaml`.
+- Local triplestore on Cloud Run, decision by Jerem: total disk space cap (64 MB, 413 refusal beyond, compaction margin) AND purge of inactive databases (30 min). The purge deletes the loaded data files (the ontology and individuals come back by themselves); the triplestore panel shows a clear message until a file is reloaded. The instance disk is in memory: these databases count in the 2 GiB.
+- Interface: after a failed action in the triplestore panel (503 "busy", 413), the inference checkbox and the semantics selector take the real server state back.
+- CI: the `audit-dependances` (dev extra) and `recettes` jobs install the backend with `-c backend/constraints.txt`, like the `backend` job; before, they resolved unconstrained versions.
+- Simultaneous queries: SPARQL parsing goes through a single lock (`queries/sparql_lock.py`, DF-B17). Before, two simultaneous queries could randomly return "invalid SPARQL" (422) on a valid query, and the local triplestore's `SERVICE` / `FROM` check could be silently skipped. Measured cost: about 5 ms per parse, no noticeable difference. The guard test covers the whole server, not only direct calls; the pySHACL case is documented.
+- Developers: `docs/dev` manual (chapters 05, 06, 09, 10, 16, 17) and `deploy/cloudrun/README.md` updated with the measurements and the calculation; tests in `backend/tests/test_l53_b12.py`, `test_l53_b13.py` and `test_l53_b17.py`.
+- User guide: the local triplestore section gives the online demo limits (5 MB, 50,000 triples, 64 MB in total, purge after 30 minutes of inactivity, 503 when busy).
+
 ## L52, front part: one network client, complete English, guard tests (24 Nov 2026) {#l52-front-client-reseau-garde-fous-24-nov-2026}
 
 Defects DF-F01, DF-F02 and DF-F04 to DF-F08 of `journal/L51/defauts.md`; problem / fix / result detail in `journal/L52/corrections-front.md`. DF-F03 and DF-F09 are in the backend part below. `journal/L52/corrections.md` summarizes all twenty defects. Nothing changes on screen, except where the text below says so.

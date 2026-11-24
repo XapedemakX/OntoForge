@@ -4,12 +4,14 @@
 # Trois étapes, mêmes réglages que deploy/cloudrun/deploy-demo.ps1 :
 #   1. construction de l'image (deploy/cloudrun/Dockerfile) ;
 #   2. envoi dans Artifact Registry (explicite : « images: » n'envoie qu'après la dernière étape, trop tard pour la 3) ;
-#   3. mise à jour du service Cloud Run avec la nouvelle image seulement (« run services update --image ») : les secrets
-#      (Secret Manager), les variables d'environnement, le volume du bucket et les limites déjà posés sur le service sont conservés.
+#   3. mise à jour du service Cloud Run : nouvelle image ET réglages du dépôt (L53) : deploy/cloudrun/env.yaml (places et plafonds des processus
+#      fils, dont la somme au pire suppose 2 Gi et une instance), --memory 2Gi, --max-instances 1. Les secrets sont redonnés par leurs noms
+#      (mêmes que l'étape 5 du README) parce que la documentation de --env-vars-file n'a pas pu être consultée pour savoir s'il retire les variables
+#      issues de Secret Manager ; le volume du bucket n'est pas touché.
 #
 # NE SERT QU'AVEC UN DÉCLENCHEUR : lancé par « gcloud builds submit », SHORT_SHA est vide et l'étiquette « auto- » est invalide
 # (pour une construction manuelle, utiliser cloudbuild.yaml ou deploy-demo.ps1).
-# AUCUN secret ici : les secrets du service viennent de Secret Manager et restent attachés au service ; ce fichier ne les lit pas.
+# AUCUN secret ici : seulement les NOMS des secrets de Secret Manager (aucune valeur) ; ce fichier ne lit pas leur contenu.
 # $PROJECT_ID et $SHORT_SHA sont fournis par Cloud Build ; les valeurs « _XXX » se changent dans le déclencheur.
 substitutions:
   _REGION: europe-west1
@@ -33,6 +35,10 @@ steps:
       - --project=${PROJECT_ID}
       - --region=${_REGION}
       - --image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/ontoforge:auto-${SHORT_SHA}
+      - --memory=2Gi
+      - --max-instances=1
+      - --env-vars-file=deploy/cloudrun/env.yaml
+      - --set-secrets=ONTOFORGE_SECRET_KEY=ontoforge-secret-key:latest,ONTOFORGE_AUTH_USERS=ontoforge-auth-users:latest
 images: ["${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/ontoforge:auto-${SHORT_SHA}"]
 options:
   machineType: E2_HIGHCPU_8

@@ -88,7 +88,8 @@ def _endpoint(eid: Optional[str], inline: Optional[InlineEndpoint] = None):
 
 
 def _ep_error(exc: ep_mod.EndpointError) -> HTTPException:
-    return HTTPException(status_code=exc.status, detail=str(exc))
+    return HTTPException(status_code=exc.status, detail=str(exc),
+                         headers={"Retry-After": str(exc.retry_after)} if exc.retry_after else None)
 
 
 def _executor(p: Any, eid: Optional[str], inline: Optional[Union[LocalEndpoint, InlineEndpoint]]) -> tuple[str, Callable[[str, int], ep_mod.QueryResult]]:

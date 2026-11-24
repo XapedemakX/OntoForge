@@ -741,9 +741,9 @@ def guided_from_sparql(sparql: str, onto: OntoModel) -> tuple[Optional[GuidedQue
     Renvoie (None, raison) si la requête dépasse ce que le constructeur sait exprimer."""
     from rdflib import Literal, URIRef, Variable
     from rdflib.paths import SequencePath
-    from rdflib.plugins.sparql import prepareQuery
+    from . import sparql_lock  # analyseur rdflib non réentrant (L53, DF-B17)
     try:
-        alg = prepareQuery(sparql).algebra
+        alg = sparql_lock.prepare_query(sparql).algebra
     except Exception as e:  # noqa: BLE001
         return None, f"SPARQL illisible : {type(e).__name__}"
     limit = offset = None

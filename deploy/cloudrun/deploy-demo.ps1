@@ -16,7 +16,13 @@ gcloud.cmd builds submit --project $PROJECT --config deploy/cloudrun/cloudbuild.
 if ($LASTEXITCODE -ne 0) { throw "La construction a échoué : voir les lignes ci-dessus." }
 
 Write-Host "3/3  Mise à jour du service Cloud Run…" -ForegroundColor Cyan
-gcloud.cmd run services update ontoforge --project $PROJECT --region $REGION --image $IMAGE
+# L53 : applique aussi deploy/cloudrun/env.yaml (places et plafonds des processus fils), 2 Gi et une instance : le calcul de la somme au pire
+# (README, « Plafonds et somme au pire ») suppose ces réglages. Mêmes options que l'étape 5 du README ; les deux secrets sont redonnés tels quels
+# parce que la documentation de --env-vars-file n'a pas pu être consultée pour savoir s'il retire les variables issues de Secret Manager.
+gcloud.cmd run services update ontoforge --project $PROJECT --region $REGION --image $IMAGE `
+  --memory 2Gi --max-instances 1 `
+  --env-vars-file deploy/cloudrun/env.yaml `
+  --set-secrets "ONTOFORGE_SECRET_KEY=ontoforge-secret-key:latest,ONTOFORGE_AUTH_USERS=ontoforge-auth-users:latest"
 if ($LASTEXITCODE -ne 0) { throw "La mise à jour du service a échoué : voir les lignes ci-dessus." }
 
-Write-Host "Terminé : https://ontoforge.ajlx.fr (image $TAG)" -ForegroundColor Green
+Write-Host "Terminé : https://ontoforge.ajlx.fr (image $TAG). Contrôle des réglages : voir deploy/cloudrun/README.md, section 7." -ForegroundColor Green

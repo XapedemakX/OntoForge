@@ -82,10 +82,37 @@ gcloud run deploy ontoforge `
 
 - `--allow-unauthenticated` : Google laisse passer tout le monde jusqu'à l'application, qui impose sa propre page de connexion.
   Si une règle d'organisation l'interdit, la commande le dira.
-- `deploy/cloudrun/env.yaml` : variables non secrètes (administrateur, hôtes joignables, plafonds). Les plafonds sont réduits pour le conteneur de 2 Gio : une validation SHACL et un raisonnement OWL RL à la fois (`ONTOFORGE_SHACL_SLOTS`, `ONTOFORGE_OWLRL_SLOTS`), tas HermiT de 768 Mo, fils OWL RL et triplestore local plafonnés à 1024 Mo chacun (`ONTOFORGE_OWLRL_MEMORY_MB`, `ONTOFORGE_LOCAL_STORE_MEMORY_MB` : un fils de requête du triplestore local a besoin d'environ 640 Mo, valeur mesurée le 24/11). Ajouter un endpoint SPARQL public à `ONTOFORGE_EGRESS_ALLOW` (séparé par une virgule). Un fichier évite les pièges de séparateurs : avec `gcloud.cmd`, cmd.exe supprime les `^` d'un `--set-env-vars "^@^…"`.
+- `deploy/cloudrun/env.yaml` : variables non secrètes (administrateur, hôtes joignables, plafonds). Les plafonds sont réglés pour le conteneur de 2 Gio : une place par famille de processus fils (SHACL, OWL RL, HermiT, triplestore local), chacune plafonnée de façon que la somme au pire tienne dans 2048 Mo (calcul ci-dessous, section « Plafonds et somme au pire »). Ajouter un endpoint SPARQL public à `ONTOFORGE_EGRESS_ALLOW` (séparé par une virgule). Un fichier évite les pièges de séparateurs : avec `gcloud.cmd`, cmd.exe supprime les `^` d'un `--set-env-vars "^@^…"`.
 - `mount-options=uid=10001;gid=10001` : le bucket appartient à l'utilisateur sans privilèges du conteneur (10001), sinon il appartient à root et l'application ne peut pas écrire (doc Google : « Configure Cloud Storage volume mounts for Cloud Run services »). Les montages de volume imposent l'environnement d'exécution de 2e génération, choisi automatiquement.
 
 La commande affiche l'adresse `https://ontoforge-….run.app` : s'y connecter avec `jerem`.
+
+### Plafonds et somme au pire (L53, DF-B13)
+
+Le conteneur a 2048 Mo et une seule instance. Chaque plafond (`ONTOFORGE_*_MEMORY_MB`, `ONTOFORGE_HERMIT_MAX_MB`) borne UN processus fils ; le risque est la somme de tous les fils vivants en même temps. Le calcul se fait donc avec toutes les places prises : serveur + (places × plafond) pour chaque famille. Si la somme dépasse 2048 Mo, Cloud Run arrête l'instance (déni de service).
+
+| Famille | Places | Plafond | Au pire | Mesure du 24/11 (jeux du dépôt) |
+|---|---|---|---|---|
+| Serveur au repos (processus Python) | 1 | — | 175 | mesuré 121 à 146 Mo (application chargée, un projet) ; 175 retenus |
+| SHACL (`ONTOFORGE_SHACL_SLOTS`, `ONTOFORGE_SHACL_MEMORY_MB`) | 1 | 320 | 320 | trap : 64 Mo suffisent (38 Mo résidents, inférence `both` comprise) ; 42 000 triplets de données : 192 Mo suffisent, 124 Mo résidents |
+| OWL RL du contrôle de conformité (`ONTOFORGE_OWLRL_SLOTS`, `ONTOFORGE_OWLRL_MEMORY_MB`) | 1 | 256 | 256 | 7 000 triplets (10 s) : 96 Mo suffisent (52 Mo résidents) ; à 22 000 triplets le délai de 30 s tombe avant tout plafond mémoire (104 Mo résidents) |
+| HermiT (`ONTOFORGE_HERMIT_SLOTS`, `ONTOFORGE_HERMIT_MAX_MB`) | 1 | tas 192 + JVM 150 = 342 | 342 | trap : tas de 128 Mo suffisant (172 Mo résidents) ; automaint avec ses données (4 700 triplets) : tas de 128 Mo suffisant (225 Mo résidents) ; JVM seule (tas de 32 Mo) : 130 Mo résidents |
+| Triplestore local, fils de requête et d'inférence (`ONTOFORGE_LOCAL_STORE_SLOTS`, `ONTOFORGE_LOCAL_STORE_MEMORY_MB`) | 1 | 640 | 640 | requête agrégée sur une base de 50 000 triplets : 10 essais sur 10 à 608 Mo et à 640 Mo, 8 sur 10 à 512 Mo (échecs de création de fils de RocksDB, au hasard) ; 640 Mo pour 1 000 000 triplets (312 Mo sur disque), 32 Mo résidents ; inférence `both` à 31 000 triplets sources : 576 Mo suffisent (92 Mo résidents) ; 640 Mo laissent environ 30 Mo au-dessus du dernier échec |
+| Triplestore local, chargement d'un fichier **dans le serveur** (`ONTOFORGE_LOCAL_STORE_LOAD_SLOTS`, `ONTOFORGE_LOCAL_STORE_MAX_TRIPLES`, `ONTOFORGE_LOCAL_STORE_MAX_UPLOAD_MB`) | 1 | (50 000 + 20 000) triplets × 1,7 Mo / 1 000 + fichier 5 Mo | 124 | l'analyse et l'écriture se font dans le processus du serveur : +101 Mo pour 50 000 triplets, +164 Mo pour 100 000, +249 Mo pour 200 000 (mesuré le 24/11, pic résident au-dessus du serveur au repos) ; 20 000 triplets = un bloc d'analyse au-delà du plafond ; une place, 503 avec `Retry-After: 5` si prise |
+| Triplestore local, disque en mémoire (`ONTOFORGE_LOCAL_STORE_TOTAL_MB`) | — | 64 | 64 | environ 470 octets par triplet sur disque (union comprise), pic de compaction jusqu'à 1,24 fois la taille finale ; 50 000 triplets font environ 24 Mo |
+| Corps de requête (`ONTOFORGE_MAX_BODY_MB`) | 1 | 12 | 12 | un envoi est reçu en entier (tampon, donc mémoire) avant que le gestionnaire prenne une place de chargement : 12 Mo couvrent le plus gros envoi permis (document de l'assistant 10 Mo, imports de schémas 10 Mo cumulés ; défaut sans réglage : 32 Mo). Plusieurs envois simultanés occupent chacun jusqu'à 12 Mo avant leur 503 : ils sont pris sur la marge (environ 9 envois) |
+| **Total au pire** | | | **1933** | marge de 115 Mo sous 2048 |
+
+Lecture :
+- Le plafond est un plafond d'**espace d'adressage** (`RLIMIT_AS`) pour les fils Python, donc supérieur à la mémoire réellement utilisée : la somme réelle mesurée est bien plus basse (de l'ordre de 0,7 Gio avec tous les fils au maximum). Le calcul garde le plafond, pas la mesure, pour que la garantie tienne quel que soit le contenu des fichiers.
+- Le tas HermiT (`-Xmx`) ne couvre pas la JVM elle-même (métaespace, piles, code natif) : 150 Mo sont ajoutés (130 Mo mesurés pour une JVM presque vide, `-Xmx32m`).
+- Plus de places par famille ou un plafond plus haut demande de refaire la somme. Le test `test_b13_cloudrun_env_sum_at_worst_fits_in_2_gib` (backend/tests/test_l53_b13.py) lit `env.yaml`, refait cette somme (fils, chargement, disque) et échoue si elle dépasse 2048 Mo.
+- Une seule place pour le triplestore local signifie qu'une seule requête ou inférence tourne à la fois sur toute l'instance (tous projets), et un seul chargement de fichier à la fois ; les autres reçoivent 503 avec `Retry-After: 5`, comme pour SHACL. Le plafond de 50 000 triplets par projet (au lieu de 1 000 000) borne la mémoire du serveur pendant un chargement ; au-delà, 413.
+- Un jeu de données plus gros que les mesures ci-dessus déclenche le message « mémoire ou temps de calcul plafonnés » au lieu d'arrêter l'instance : c'est le but des plafonds.
+- Le système de fichiers de l'instance est **en mémoire** (documentation Cloud Run, contrat d'exécution du conteneur : « It is an in-memory file system, so writing to it uses the instance's memory ») : les bases du triplestore local, dans `/tmp/ontoforge-triplestore` (`ONTOFORGE_LOCAL_STORE_DIR`), comptent dans les 2 Gio. Deux garde-fous, tous deux réglables (décision D-L53-02) :
+  - **Plafond total** `ONTOFORGE_LOCAL_STORE_TOTAL_MB` (64 sur Cloud Run, 0 = sans plafond ailleurs) : avant chaque chargement, la taille du dossier est calculée. Si cette taille, plus le coût estimé du fichier (500 octets par triplet), le tout majoré de 25 % pour les compactions de RocksDB, dépasse le plafond, le chargement est refusé (413, message qui dit l'espace utilisé et propose de vider un autre projet ou d'attendre la purge). La création de la base d'un projet vérifie aussi qu'il reste de la place.
+  - **Purge des bases inactives** `ONTOFORGE_LOCAL_STORE_IDLE_MIN` (30 sur Cloud Run, 0 = jamais) : une base non utilisée depuis ce nombre de minutes est supprimée, sous le verrou d'écriture de son projet pris sans attendre (une base en cours d'usage est laissée). Il n'y a pas de tâche de fond : la purge se fait au prochain usage du triplestore par n'importe quel projet. **La purge fait perdre les fichiers de données chargés** ; l'ontologie et les individus du projet sont recréés à la demande. L'utilisateur le voit : le panneau du triplestore affiche un message (« N fichier(s) de données chargé(s) … ont été supprimé(s) après 30 min d'inactivité … rechargez vos fichiers ») jusqu'à ce qu'un fichier soit rechargé.
+  Les fichiers temporaires de HermiT (`/tmp/ontoforge-hermit-*`) sont aussi en mémoire, petits et supprimés après usage : couverts par la marge de 115 Mo.
 
 ## 6. Domaine `ontoforge.ajlx.fr` (facultatif)
 
@@ -106,17 +133,24 @@ En une commande, depuis la racine du dépôt : `.\deploy\cloudrun\deploy-demo.ps
 gcloud run services update ontoforge --region $REGION --image $IMAGE
 ```
 
-(`services update` ne change que l'image ; l'étape 5 complète n'est utile que si les secrets, `env.yaml` ou le volume changent.) Les projets et comptes restent dans le bucket.
+Depuis L53, `deploy-demo.ps1` et le déclencheur (§8) appliquent aussi `deploy/cloudrun/env.yaml` : `services update … --image … --memory 2Gi --max-instances 1 --env-vars-file deploy/cloudrun/env.yaml --set-secrets "…"`, mêmes options que l'étape 5. Les deux secrets sont redonnés par leurs noms : la documentation de `--env-vars-file` n'a pas pu être consultée (accès refusé), donc on ne sait pas s'il retire les variables issues de Secret Manager. Ainsi le résultat ne dépend pas de ce point. L'étape 5 complète reste utile pour le volume du bucket ou un changement de secret. Les projets et comptes restent dans le bucket.
+
+**À contrôler après la première mise à jour de L53** (lecture seule ; ne montre aucune valeur de secret, seulement les noms) :
+
+```powershell
+gcloud run services describe ontoforge --region $REGION --format="yaml(spec.template.spec.containers[0].env,spec.template.spec.containers[0].resources,spec.template.metadata.annotations)"
+```
+
+Attendu : `ONTOFORGE_SECRET_KEY` et `ONTOFORGE_AUTH_USERS` présents avec `valueFrom.secretKeyRef` ; `ONTOFORGE_SHACL_MEMORY_MB: 320`, `ONTOFORGE_LOCAL_STORE_SLOTS: 1`, `ONTOFORGE_LOCAL_STORE_TOTAL_MB: 64`, `ONTOFORGE_LOCAL_STORE_IDLE_MIN: 30` ; `memory: 2Gi` ; `autoscaling.knative.dev/maxScale: '1'`. Si une variable manque ou si un secret a disparu, refaire l'étape 5.
 
 ## 8. Déploiement automatique à chaque push sur main
 
 Objectif : dès qu'un commit arrive sur la branche `main` de GitHub, Cloud Build construit l'image et met le service à jour, sans lancer `deploy-demo.ps1`.
-Le fichier de construction est `deploy/cloudrun/cloudbuild-trigger.yaml` (construire, envoyer dans Artifact Registry, `gcloud run services update --image`,
-comme `deploy-demo.ps1`). Il ne contient aucun secret : les secrets restent attachés au service (étape 3) et ne passent jamais par Cloud Build.
+Le fichier de construction est `deploy/cloudrun/cloudbuild-trigger.yaml` (construire, envoyer dans Artifact Registry, `gcloud run services update` avec l'image, `env.yaml`, 2 Gi, une instance, comme `deploy-demo.ps1`). Il ne contient aucune valeur de secret, seulement leurs noms : le contenu reste dans Secret Manager et ne passe jamais par Cloud Build. À VÉRIFIER au premier essai : le compte de service de construction n'a pas de rôle sur Secret Manager (§8.2) ; si Cloud Run refuse la mise à jour, lire le message d'erreur et contrôler les rôles existants : le compte de construction doit avoir `roles/run.developer` sur le service et `roles/iam.serviceAccountUser` sur `ontoforge-run` (§8.2) ; le compte d'exécution `ontoforge-run` doit avoir `roles/secretmanager.secretAccessor` sur les deux secrets (étape 3, c'est lui qui lit les secrets). **Ne jamais donner l'accès aux secrets au compte de construction, ni `roles/run.admin`.** À VÉRIFIER aussi : la documentation cite `roles/run.admin` comme rôle de référence pour déployer, sans dire que `roles/run.developer` suffit pour poser des références de secrets. Repli : retirer `--set-secrets` du déclencheur SEULEMENT (les secrets restent ceux posés par `deploy-demo.ps1`, étape 5), puis contrôler le résultat avec la commande du §7.
 `deploy-demo.ps1` continue de marcher : les deux chemins peuvent coexister.
 
-> Ce que cette section ne fait pas : elle ne crée ni le service, ni le bucket, ni les secrets (étapes 1 à 5, à faire avant, une fois). Elle ne change pas
-> `env.yaml` : `services update --image` ne touche qu'à l'image, donc une modification de `env.yaml` ou des secrets se déploie toujours à la main (étape 5).
+> Ce que cette section ne fait pas : elle ne crée ni le service, ni le bucket, ni les secrets (étapes 1 à 5, à faire avant, une fois). Depuis L53, chaque
+> déploiement applique `env.yaml` ; un changement de secret ou de volume se fait toujours à la main (étape 5).
 
 Les commandes ci-dessous sont à lancer par toi, dans PowerShell, après les variables de l'étape 0. Aucune n'a été exécutée par l'équipe.
 

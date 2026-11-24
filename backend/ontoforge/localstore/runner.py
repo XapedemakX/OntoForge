@@ -31,9 +31,10 @@ def _has_service(sparql: str) -> bool:
     if re.search(r"(?<![\w?$:])SERVICE(?![\w:-])", stripped, re.I):
         return True
     try:
-        from rdflib.plugins.sparql import algebra, parser
+        from rdflib.plugins.sparql import algebra
+        from ..queries import sparql_lock  # analyseur rdflib non réentrant (L53, DF-B17)
         found: list[bool] = []
-        algebra.traverse(algebra.translateQuery(parser.parseQuery(sparql)).algebra,
+        algebra.traverse(sparql_lock.translate_parsed(sparql).algebra,
                          visitPost=lambda n: found.append(True) if getattr(n, "name", "") in ("Service", "ServiceGraphPattern") else None)
         return bool(found)
     except Exception:  # noqa: BLE001 - une requête illisible est déjà refusée par query_form
@@ -52,9 +53,9 @@ def guard(sparql: str) -> str:
 def dataset_clause(sparql: str) -> Optional[dict[str, list[str]]]:
     """Jeu de données déclaré par la requête (`FROM` / `FROM NAMED`, SPARQL 1.1 §13.2) ou None. Le fils fusionne plusieurs `FROM`
     en ensemble (Oxigraph 0.5.13 les fusionne en multi-ensemble) et ignore le graphe par défaut matérialisé."""
-    from rdflib.plugins.sparql import parser
+    from ..queries import sparql_lock  # analyseur rdflib non réentrant (L53, DF-B17)
     try:
-        q = parser.parseQuery(sparql)[1]  # CompValue.get renvoie le nom de la clé quand elle manque : tester la présence
+        q = sparql_lock.parse_query(sparql)[1]  # CompValue.get renvoie le nom de la clé quand elle manque : tester la présence
         clauses = q["datasetClause"] if "datasetClause" in q else None
     except Exception:  # noqa: BLE001 - déjà refusé par query_form
         return None
@@ -84,7 +85,10 @@ def run_local(p: Any, sparql: str, limit: int = 100, timeout_s: Optional[float] 
     with st.lock(p.id).read():
         try:
             # plafonds posés par le fils lui-même, environnement minimal, aucune écriture de fichier (base en lecture seule) : L41
-            proc = childproc.run_limited(WORKER, payload.encode("utf-8"), timeout=timeout, mem_mb=lim["query_memory_mb"], cpu_s=int(timeout) + 2, fsize=0)
+            with st.child_slot():  # L53 (DF-B13) : nombre de fils borné (ONTOFORGE_LOCAL_STORE_SLOTS), 503 sans attendre si plein
+                proc = childproc.run_limited(WORKER, payload.encode("utf-8"), timeout=timeout, mem_mb=lim["query_memory_mb"], cpu_s=int(timeout) + 2, fsize=0)
+        except st.StoreBusy as exc:
+            raise EndpointError(str(exc), 503, retry_after=exc.retry_after) from None
         except subprocess.TimeoutExpired:
             raise EndpointError(f"Délai dépassé ({timeout:.0f} s) : la requête a été interrompue sur le triplestore local.", 504) from None
     ms = int((time.perf_counter() - t0) * 1000)

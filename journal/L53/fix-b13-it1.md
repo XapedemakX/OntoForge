@@ -1,0 +1,34 @@
+# L53-b13 : correction, itération 1
+
+Pilote : secu. Réponses aux relectures `review-deploiement-b13-it1.md` (KO, B1 et B2), `review-devback-b13-it1.md` (OK) et `review-devfront-b13-it1.md` (OK), et à D-L53-02 (Jerem : « Les deux »). Détail et mesures : `journal/L53/corrections-b13.md`, section « Itération 1 ».
+
+## Bloquants de la relecture déploiement
+
+| # | Constat | Réponse |
+|---|---|---|
+| B1 | `deploy-demo.ps1` et `cloudbuild-trigger.yaml` ne font que `services update --image` : `env.yaml` n'est jamais appliqué | **Corrigé.** Les deux ajoutent `--memory 2Gi --max-instances 1 --env-vars-file deploy/cloudrun/env.yaml --set-secrets "…"`, mêmes options et mêmes noms de secrets que l'étape 5 du README. Documentation gcloud (`--env-vars-file` retire-t-il les variables de Secret Manager ?) : la page a été demandée deux fois, la seconde a été refusée (« permission not answered »), sans contournement ; le point n'est donc pas confirmé et les secrets sont redonnés par leur nom pour que le résultat n'en dépende pas. README §7 : commande de contrôle `gcloud run services describe … --format="yaml(env, resources, annotations)"` que Jerem lancera (noms seulement, aucune valeur) avec la liste de ce qu'il doit y lire ; §8 : le déclencheur applique `env.yaml`, point À VÉRIFIER sur `--set-secrets` pour le compte de construction (repli indiqué). Test de garde `test_b13_deploy_scripts_apply_env_yaml_and_the_2_gib_settings` (présence des options dans les deux fichiers, mêmes secrets que le README, `--max-instances` à 1). Aucune commande gcloud lancée, aucun identifiant touché. `corrections-b13.md` dit que le déploiement de L53 doit appliquer `env.yaml`. |
+| B2 | Le chargement d'un fichier s'analyse et s'écrit dans le serveur, sans place ni plafond (environ 1 Go pour 990 000 triplets) | **Corrigé.** (1) `ONTOFORGE_LOCAL_STORE_LOAD_SLOTS` (4 par défaut, 1 sur Cloud Run) : `store.load_slot()` prise par `POST /store/load` avant la lecture du fichier, 503 + `Retry-After: 5` si pleine (`test_b13_load_slots_give_503_when_busy`). (2) Sur Cloud Run `ONTOFORGE_LOCAL_STORE_MAX_TRIPLES=50000` et `ONTOFORGE_LOCAL_STORE_MAX_UPLOAD_MB=5` (avant : 1 000 000 et 25). (3) Mesure faite ici (application complète, chargement par l'API) : +101 Mo (50 000 triplets), +164 Mo (100 000), +249 Mo (200 000) au-dessus du serveur au repos (121 à 146 Mo). Coût compté : (50 000 + 20 000) × 1,7 Mo / 1 000 + 5 Mo = 124 Mo (20 000 = un bloc d'analyse au-delà du plafond). (4) `test_b13_cloudrun_env_sum_at_worst_fits_in_2_gib` calcule maintenant serveur (valeur mesurée, justifiée dans le test), fils, chargement et disque. |
+
+## D-L53-02 : plafond de disque total et purge (Jerem : « Les deux »)
+
+- **Plafond total** `ONTOFORGE_LOCAL_STORE_TOTAL_MB` (64 sur Cloud Run, 0 = aucun) : `check_disk_budget` (taille du dossier mesurée à chaque chargement et à la création d'une base) refuse en 413 quand `(taille + 500 octets × triplets) × 1,25` dépasse le plafond. 500 octets par triplet : 470 mesurés (union comprise) ; 1,25 : le pic de compaction mesuré va de 1,06 à 1,24 fois la taille finale. `test_b13_disk_cap_refuses_a_load_that_does_not_fit`.
+- **Purge** `ONTOFORGE_LOCAL_STORE_IDLE_MIN` (30 sur Cloud Run, 0 = jamais) : `purge_idle`, appelée par `ensure` et `load_data`, supprime les bases inactives sous `lock(pid).try_write()` (sans attendre : une base en usage est laissée). Message clair : `stats` renvoie `purged` (fichiers perdus, message en français ou en anglais selon l'interface) ; le panneau l'affiche jusqu'au rechargement d'un fichier. Documenté dans `docs/dev/10` et README. Tests : purge avec message, fr et en (`test_b13_idle_databases_are_purged_with_a_clear_message`), base en usage jamais supprimée (`…never_deletes_a_database_in_use`), chargements, lectures et purges en même temps (`test_b13_purge_and_loads_run_concurrently_without_error`).
+- Le budget (64 Mo) entre dans la somme du README, d'`env.yaml` et du test. Le « À VÉRIFIER » du système de fichiers en mémoire est levé : la documentation Cloud Run (contrat d'exécution) le confirme, citation dans le README.
+- **Somme au pire : 1985 Mo** = 175 serveur + 320 SHACL + 256 OWL RL + 342 HermiT (tas 192 + JVM 150) + 704 fils du triplestore + 124 chargement + 64 disque ; marge de 63 Mo sous 2048. Pour payer le chargement et le disque, le plafond des fils du triplestore passe de 768 à 704 Mo (plancher mesuré 640 pour une base de 1 000 000 triplets, bases de 50 000 triplets au plus sur Cloud Run).
+
+## Non-bloquants
+
+| Point | Réponse |
+|---|---|
+| devback 1 : test `test_b13_query_children_are_capped_and_overflow_gives_503` fragile | Corrigé comme proposé : délai des faux fils 90 s, attente de trois réponses exactement (échéance 90 s, message clair), chauffe avant le départ (analyseur SPARQL et création des cinq magasins), `assert not any(t.is_alive()…) and g.now == 0` après les `join`. |
+| devback 2 et 3 : exclusions du test de garde DF-B17, pySHACL | Corrigé : test fondé sur `ast`, tous les fichiers du serveur (`__init__.py` et `conformance/_owlrl_core.py` compris), seuls quatre scripts de fils exclus par leur nom ; refuse `prepareUpdate`, `translateUpdate`, `processUpdate`, les imports renommés, `from rdflib.plugins.sparql` hors de trois fichiers (algèbre seulement), `.query(` hors d'Oxigraph et `Graph.update(`. `test_b17_guard_sees_what_it_claims_to_see` vérifie le test de garde lui-même. Cas pySHACL : `test_b17_pyshacl_in_the_server_does_not_reach_the_sparql_parser` (zéro appel mesuré), documenté au chapitre 09. **Rectificatif it2 : la formulation « ce test échoue si cela change » était trop forte** : le compteur de cette version ne voyait aucun appel de `Graph.query` (devback it2, B1) et le test ne pouvait pas échouer ; corrigé en it2 (points d'entrée de la grammaire + témoin positif), voir `fix-b13-it2.md`. |
+| devback 4 : parité 09 fr / en | Puce DF-B17 placée au même endroit (après DF-B12) dans les deux fichiers. |
+| devback 5 : phrase fausse du journal | Corrigée dans `corrections-b13.md` (le test exclut les scripts de fils, il ne les couvre pas). |
+| devback 6 : imports dans `sparql_lock.py` | Gardés tels quels : aucun effet mesuré ; la garde ne change pas. |
+| devfront 1 : état affiché après un échec de `act` | Corrigé : `LocalStorePanel.tsx` relit `storeStats` dans le `catch` et applique case et sémantique ; message de purge affiché ; test `frontend/tests/local_store_panel.test.mjs`. `npm test` : 22 passés ; `npm run build` : réussi. Aucune dépendance installée ou modifiée. |
+| devfront 2 et 3 : `Retry-After` lu, 503 sans corps | Non traité (non bloquant, hors du lot). |
+| deploy, remarques : « À VÉRIFIER » tmpfs, plancher OWL RL à 256 | « À VÉRIFIER » levé ; 256 est le plancher du code, noté au README. |
+
+## Vérifications
+
+Suite complète : 1666 passés (backend) ; frontend 22 passés, build réussi.

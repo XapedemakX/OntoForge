@@ -23,9 +23,10 @@ TEMP_ID = "temporaire"  # identifiant de l'endpoint saisi à la volée (api/quer
 class EndpointError(Exception):
     """Erreur lisible (message français, sans secret). `status` = code HTTP proposé pour l'API."""
 
-    def __init__(self, message: str, status: int = 502):
+    def __init__(self, message: str, status: int = 502, retry_after: Optional[int] = None):
         super().__init__(message)
         self.status = status
+        self.retry_after = retry_after  # secondes, pour l'en-tête `Retry-After` d'un 503 « occupé » (L53)
 
 
 def make_client(timeout: float) -> httpx.Client:
@@ -65,12 +66,12 @@ def _scan(q: str):
 
 def query_form(sparql: str) -> str:
     """SELECT | ASK | CONSTRUCT | DESCRIBE. Lève EndpointError pour une mise à jour ou une syntaxe invalide."""
-    from rdflib.plugins.sparql import parser
+    from . import sparql_lock  # analyseur rdflib non réentrant (L53, DF-B17)
     try:
-        parsed = parser.parseQuery(sparql)
+        parsed = sparql_lock.parse_query(sparql)
     except Exception as exc:  # noqa: BLE001
         try:
-            parser.parseUpdate(sparql)
+            sparql_lock.parse_update(sparql)
         except Exception:  # noqa: BLE001
             raise EndpointError(f"SPARQL invalide : {str(exc).splitlines()[0][:200]}", 422) from None
         raise EndpointError("Requête refusée : seules les requêtes en lecture (SELECT, ASK, CONSTRUCT, DESCRIBE) "

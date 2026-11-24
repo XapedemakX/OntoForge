@@ -17,7 +17,8 @@ router = APIRouter(prefix="/api/projects/{pid}/store", tags=["local-store"])
 
 
 def _err(exc: st.StoreError) -> HTTPException:
-    return HTTPException(status_code=exc.status, detail=str(exc))
+    retry = getattr(exc, "retry_after", None)
+    return HTTPException(status_code=exc.status, detail=str(exc), headers={"Retry-After": str(retry)} if retry else None)
 
 
 def _sample_file(p: Any, sample: str) -> tuple[str, bytes]:
@@ -43,6 +44,8 @@ def _loc(s: dict[str, Any]) -> dict[str, Any]:
     """Notes d'inférence dans la langue de l'interface (le texte est stocké en français)."""
     if s.get("inference") and s["inference"].get("notes"):
         s["inference"] = {**s["inference"], "notes": localize.tr_deep(s["inference"]["notes"], localize.ui_lang())}
+    if s.get("purged"):
+        s["purged"] = {**s["purged"], "message": localize.tr(s["purged"]["message"], localize.ui_lang())}
     return s
 
 
@@ -65,12 +68,14 @@ def load(pid: str, file: Optional[UploadFile] = File(None), sample: Optional[str
     inference = inference or None
     try:
         if file is not None and file.filename:
-            cap = st.limits()["max_upload_mb"] * 1024 * 1024
-            raw = file.file.read(cap + 1)
-            return _loc(st.load_data(pid, p, raw, file.filename, inference=inference))
+            with st.load_slot():  # L53 : lecture, analyse et écriture se font dans le serveur ; places bornées (503 + Retry-After)
+                cap = st.limits()["max_upload_mb"] * 1024 * 1024
+                raw = file.file.read(cap + 1)
+                return _loc(st.load_data(pid, p, raw, file.filename, inference=inference))
         if sample:
             fname, raw = _sample_file(p, sample)
-            return _loc(st.load_data(pid, p, raw, fname, source="sample", inference=inference))
+            with st.load_slot():
+                return _loc(st.load_data(pid, p, raw, fname, source="sample", inference=inference))
         return _loc(st.refresh(pid, p, inference))
     except st.StoreError as exc:
         raise _err(exc) from None

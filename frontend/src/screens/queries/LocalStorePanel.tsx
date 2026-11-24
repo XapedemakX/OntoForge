@@ -23,7 +23,11 @@ export function LocalStorePanel({ pid, version }: { pid: string; version: string
 
   const act = async (name: string, f: () => Promise<StoreStats>) => {
     setBusy(name); setErr(null); setShacl(null)
-    try { apply(await f()) } catch (e) { setErr((e as Error).message) } finally { setBusy(null) }
+    try { apply(await f()) } catch (e) {
+      setErr((e as Error).message)
+      // L53 : le serveur peut avoir refusé (503, 413) ou annulé l'opération : la case d'inférence et la sémantique reprennent l'état RÉEL du serveur
+      try { apply(await qapi.storeStats(pid)) } catch { /* l'erreur d'origine reste affichée */ }
+    } finally { setBusy(null) }
   }
   const inf = (): Semantics | 'none' => (infer ? sem : 'none')
   const validate = async () => {
@@ -59,6 +63,7 @@ export function LocalStorePanel({ pid, version }: { pid: string; version: string
         <Button size="sm" variant="ghost" icon="trash-can" disabled={!!busy || !st?.exists} data-testid="local-clear" onClick={() => void act('clear', () => qapi.storeClear(pid))}>{t('q.local.clear')}</Button>
       </div>
       {st?.inference && <p className="muted tiny" data-testid="local-inf-info">{t('q.local.inf.info', { n: n(st.inference.triples), s: st.inference.semantics === 'both' ? 'RDFS + OWL RL' : st.inference.semantics === 'rdfs' ? 'RDFS' : 'OWL RL' })}{st.inference.stale ? ' ' + t('q.local.inf.stale') : ''}{(st.inference.notes ?? []).map((x, i) => <span key={i}> {x}</span>)}</p>}
+      {st?.purged && <p className="muted tiny" data-testid="local-purged" role="status"><Icon name="clock" /> {st.purged.message}</p>}
       {err && <p className="qtmp-ko" role="alert">{err}</p>}
       {shacl && (
         <div className="qlocal-shacl" role="status" data-testid="local-shacl">

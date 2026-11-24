@@ -44,6 +44,9 @@ export interface StoreStats {
   inference: { semantics: Semantics; triples: number; source_triples: number; stale: boolean; notes?: string[] } | null
   demo: { sample: string; file: string } | null
   limits: { max_triples: number; max_upload_mb: number; max_inference_triples: number; query_timeout_s: number }
+  /** L53 : disque éphémère (Cloud Run) : taille utilisée et plafonds ; `purged` : la base a été supprimée après inactivité (message déjà traduit par le serveur). */
+  disk?: { used_mb: number; total_mb: number; idle_min: number }
+  purged?: { at: string; files: string[]; message: string }
 }
 export interface ShaclCheck { conforms: boolean; validated_triples: number; warnings?: string[]; results: { focus: string; path?: string | null; severity: string; message?: string | null }[] }
 export interface OptionValue { value: string; label: string; is_iri: boolean; lang?: string | null; source?: string }

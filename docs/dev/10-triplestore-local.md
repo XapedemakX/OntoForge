@@ -50,7 +50,7 @@ sequenceDiagram
 - Synchronisation paresseuse : `ensure` compare une empreinte SHA-1 de l'ontologie (`signature`) à celle de `meta.json` ; si elle a changé, il réécrit les graphes ontologie et individus, et marque l'inférence `stale`.
 - Verrou : `_RWLock` par projet (`lock(pid)`), plusieurs lecteurs ou un seul écrivain. La suppression d'un projet (`drop`) attend les requêtes en cours.
 - Ouverture courte : `_with_store` ouvre la base, appelle la fonction, refait l'union après une écriture, puis supprime la seule référence et appelle `gc.collect()` : Oxigraph ne referme RocksDB qu'à la destruction de l'objet. Le traceback d'une exception est effacé pour la même raison (il garderait la base ouverte).
-- Processus fils : délai tenu pour de vrai (le fils est tué), plafonds posés par `backend/ontoforge/childproc.py::run_limited` (chapitre [06](06-shacl.md#flux-validation)).
+- Processus fils : délai tenu pour de vrai (le fils est tué), plafonds posés par `backend/ontoforge/childproc.py::run_limited` (chapitre [06](06-shacl.md#flux-validation)). Nombre de fils borné depuis L53 (DF-B13) : `store.py::child_slot` (un `BoundedSemaphore` pris sans attendre, `ONTOFORGE_LOCAL_STORE_SLOTS`, 2 par défaut, entre 1 et 32, lu à l'import) entoure chaque lancement de fils, **requêtes et inférence ensemble, tous projets confondus**. Plein : `StoreBusy` (sous-classe de `StoreError`, 503, `retry_after = 5`), rendu en `Retry-After: 5` par `api/queries.py::_ep_error` et `api/local_store.py::_err` ; une inférence refusée annule le chargement (tout ou rien, le graphe précédent est rétabli). La place est prise juste avant le lancement et rendue après (même sur délai ou erreur), jamais pendant l'attente du verrou du projet.
 
 ## Chargement et inférence {#chargement}
 
@@ -64,16 +64,22 @@ sequenceDiagram
 
 | Variable | Défaut | Effet |
 |---|---|---|
-| `ONTOFORGE_LOCAL_STORE_MAX_TRIPLES` | 1 000 000 | triplets dans le magasin ; au-delà, 413 |
-| `ONTOFORGE_LOCAL_STORE_MAX_UPLOAD_MB` | 25 | taille d'un fichier chargé ; 413 |
+| `ONTOFORGE_LOCAL_STORE_MAX_TRIPLES` | 1 000 000 (Cloud Run : 50 000) | triplets dans le magasin ; au-delà, 413 |
+| `ONTOFORGE_LOCAL_STORE_MAX_UPLOAD_MB` | 25 (Cloud Run : 5) | taille d'un fichier chargé ; 413 |
 | `ONTOFORGE_LOCAL_STORE_MAX_INFERENCE_TRIPLES` | 30 000 | triplets sources de l'inférence (owlrl matérialise en mémoire) ; 413 |
 | `ONTOFORGE_LOCAL_STORE_MAX_VALIDATION_TRIPLES` | 60 000 | triplets passés à la validation SHACL |
 | `ONTOFORGE_LOCAL_STORE_TIMEOUT_S` | 20 | délai d'une requête (la requête peut demander de 1 à 120 s) ; 504 |
 | `ONTOFORGE_LOCAL_STORE_INFERENCE_TIMEOUT_S` | 90 | délai de l'inférence ; 504 |
-| `ONTOFORGE_LOCAL_STORE_MEMORY_MB` | 3072 (Cloud Run : 1024) | plafond d'espace d'adressage de chaque fils de requête et d'inférence ; 413 si l'inférence l'atteint. Mesuré le 24/11 : 640 Mo au moins pour un fils de requête (ouverture de la base) ; 1024 Mo suffisent à l'inférence au plafond de 30 000 triplets sources (58 s). Aucune place limitée : plusieurs projets peuvent lancer des fils en même temps |
+| `ONTOFORGE_LOCAL_STORE_MEMORY_MB` | 3072 (Cloud Run : 640) | plafond d'espace d'adressage de chaque fils de requête et d'inférence ; 413 si l'inférence l'atteint. Mesuré le 24/11 : ouvrir la base demande 576 Mo pour 4 700 triplets (512 Mo échouent) et 640 Mo pour 1 000 000 triplets, le plafond du magasin (32 Mo résidents) ; l'inférence à 31 000 triplets sources tient en 576 Mo (92 Mo résidents). Ce plancher laisse peu de mémoire de travail : la valeur Cloud Run de 640 Mo est le plus bas réglage qui a passé 10 essais sur 10 (requête agrégée sur une base de 50 000 triplets ; 608 Mo aussi, 512 Mo échouent 2 fois sur 10) |
+| `ONTOFORGE_LOCAL_STORE_SLOTS` | 2 (Cloud Run : 1) | nombre de fils simultanés, requêtes et inférence ensemble, tous projets ; entre 1 et 32, valeur invalide → 2 ; plein : 503 avec `Retry-After: 5` |
+| `ONTOFORGE_LOCAL_STORE_LOAD_SLOTS` | 4 (Cloud Run : 1) | chargements de fichiers simultanés (analyse et écriture dans le **serveur**, environ 1,7 Mo de mémoire pour 1 000 triplets) ; entre 1 et 8 ; plein : 503 avec `Retry-After: 5` (`load_slot`, prise par la route avant la lecture du fichier) |
+| `ONTOFORGE_LOCAL_STORE_TOTAL_MB` | 0 = sans plafond (Cloud Run : 64) | plafond de la taille totale du dossier `ONTOFORGE_LOCAL_STORE_DIR` (disque en mémoire sur Cloud Run) ; un chargement dont `(taille du dossier + 500 octets × triplets) × 1,25` le dépasserait est refusé : 413 « Espace du triplestore local plein ». Sans effet quand le triplestore vit dans le dossier du projet |
+| `ONTOFORGE_LOCAL_STORE_IDLE_MIN` | 0 = jamais (Cloud Run : 30) | minutes d'inactivité au bout desquelles la base d'un projet est supprimée (`purge_idle`). **Les fichiers de données chargés sont perdus** ; l'ontologie et les individus reviennent à la demande. `stats` renvoie alors `purged` (fichiers perdus, message traduit) jusqu'au rechargement d'un fichier |
 | `ONTOFORGE_LOCAL_STORE_DIR` | — | dossier local (éphémère) à la place de `<projet>/triplestore` |
 
-`limits()` relit ces variables à chaque appel (minimum 1, valeur invalide → défaut).
+`limits()` relit ces variables à chaque appel (minimum 1, valeur invalide → défaut ; 0 permis pour `TOTAL_MB` et `IDLE_MIN`). `LOAD_SLOTS` et `SLOTS` sont lues à l'import.
+
+Disque éphémère (D-L53-02) : `purge_idle` s'exécute au début de `ensure` et de `load_data` (donc avant toute requête locale), sans tâche de fond. Pour chaque base ancienne, elle prend `lock(pid).try_write()` : si une requête, un chargement ou une inférence tient le verrou, la base est laissée et sera purgée plus tard. L'horloge d'usage (`touch`) est mise à jour par `ensure` ; `stats` ne la met pas à jour (une page ouverte ne maintient pas une base en vie). `clear`, `drop` et `purge` oublient aussi l'avis de purge. L'horloge est relue une seconde fois une fois le verrou obtenu : un usage qui commence entre la lecture et le verrou sauve la base ; `stats` refait `exists` sous le verrou de lecture. Le graphe inféré entre dans le plafond : `materialize` contrôle `check_disk_budget` (triplets inférés moins ceux déjà présents) AVANT de remplacer le graphe inféré, refus 413 tout ou rien (l'ancien graphe est gardé ; un chargement qui demandait l'inférence restaure son fichier). Le contrôle n'est pas atomique entre projets (deux calculs de taille peuvent se croiser) : sur Cloud Run, une seule place de chargement et une seule d'inférence les mettent en série, le reste tient dans la marge de 1,25. Limite connue : la place de chargement est tenue pendant l'attente du verrou du projet (le fichier analysé occupe la mémoire du serveur pendant ce temps), donc une requête longue sur un projet fait répondre 503 aux autres chargements ; acceptable pour une démo à un compte. Le test `test_b13_purge_and_loads_run_concurrently_without_error` fait tourner chargements, lectures et purges ensemble et vérifie l'état final des bases.
 
 ## Librairies {#librairies}
 
@@ -96,6 +102,7 @@ sequenceDiagram
 - `owl:hasKey` n'est pas appliquée par l'inférence locale (note dans la réponse).
 - Un littéral ou une IRI de plus de 16 Mio fait lever `MemoryError` au lecteur d'Oxigraph (taille maximale de son tampon), même sous le plafond d'envoi de 25 Mo : `parse_to_store` répond 413 « élément trop gros » (L52 ; avant, 500).
 - Nœuds anonymes : Oxigraph les renomme à chaque chargement ; ne pas compter sur leurs étiquettes.
+- `guard`, `_has_service` et `dataset_clause` de `localstore/runner.py` analysent la requête avec rdflib dans le processus du serveur : ces appels passent par `queries/sparql_lock.py` (L53, DF-B17), parce que l'analyseur n'est pas réentrant. Avant, deux requêtes simultanées pouvaient échouer en 422, et `_has_service` (second filet sur `SERVICE`) et `dataset_clause` (lecture des `FROM`), qui avalent les erreurs d'analyse, étaient sautés en silence.
 
 ## Comment ajouter… {#comment-ajouter}
 

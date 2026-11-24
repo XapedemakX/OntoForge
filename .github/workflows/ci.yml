@@ -62,7 +62,7 @@ jobs:
       - name: Audit de développement (informatif)
         continue-on-error: true
         run: |
-          pip install -e "backend[dev]"
+          pip install -c backend/constraints.txt -e "backend[dev]"
           pip freeze --exclude-editable > /tmp/gel.txt
           pip-audit -r /tmp/gel.txt --no-deps --disable-pip
 
@@ -106,7 +106,7 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - name: Installer le backend
-        run: pip install -e "backend[dev]"
+        run: pip install -c backend/constraints.txt -e "backend[dev]"
       - name: Build du front
         working-directory: frontend
         run: |

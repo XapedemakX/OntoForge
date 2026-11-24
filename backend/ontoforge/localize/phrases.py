@@ -704,6 +704,19 @@ PHRASES.update({
 PHRASES.update({
     "Requête refusée : SERVICE (requête fédérée) n'est pas autorisé sur le triplestore local, qui n'a aucun accès réseau.":
         "Query refused: SERVICE (federated query) is not allowed on the local triplestore, which has no network access.",
+    "Trop de requêtes ou d'inférences en cours sur le triplestore local : réessayez dans quelques secondes.":
+        "Too many queries or inferences running on the local triplestore: try again in a few seconds.",
+    "Espace du triplestore local plein : ": "Local triplestore space full: ",
+    " Mo utilisés sur ": " MB used out of ",
+    " Mo, ce chargement en demande environ ": " MB, this load needs about ",
+    " de plus. Videz le triplestore d'un autre projet, ou attendez la purge des bases inactives (au bout de ":
+        " more. Empty another project's triplestore, or wait for inactive databases to be purged (after ",
+    " fichier(s) de données chargé(s) dans ce triplestore ont été supprimé(s) après ": " data file(s) loaded in this triplestore were deleted after ",
+    " min d'inactivité, pour libérer la mémoire de l'instance. L'ontologie et les individus du projet sont recréés à la demande ; rechargez vos fichiers de données.":
+        " min of inactivity, to free the instance's memory. The project's ontology and individuals are recreated on demand; reload your data files.",
+    "Le triplestore de ce projet a été supprimé après ": "This project's triplestore was deleted after ",
+    " min d'inactivité, pour libérer la mémoire de l'instance ; il est recréé à la demande.":
+        " min of inactivity, to free the instance's memory; it is recreated on demand.",
     "Délai dépassé (": "Time limit exceeded (",
     " s) : la requête a été interrompue sur le triplestore local.": " s): the query was stopped on the local triplestore.",
     "La requête a été arrêtée sur le triplestore local (": "The query was stopped on the local triplestore (",

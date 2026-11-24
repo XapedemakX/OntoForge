@@ -208,6 +208,13 @@ class _Translator:
         self.form = "select"
         self.curiosity_ok = True
         self.graphql_ok = True
+        # sous-motif EXISTS / NOT EXISTS / MINUS en cours (L53, DF-B12) :
+        # (nœuds extérieurs, typages capturés, "exists" | "minus", variables SPARQL liées à l'extérieur)
+        self._sub_ctx: Optional[tuple[set, dict[str, list[list[ClassRef]]], str, set]] = None
+        self._opt_keys: set = set()  # nœuds liés seulement par un OPTIONAL, pendant le rendu des FILTER tardifs (DF-B15)
+        self._sub_vars: set = set()  # variables propres à un sous-motif (retirées après son rendu, DF-B18)
+        self.select_star = False  # SELECT * : les variables propres à un sous-motif ne sont pas projetées (§18.2.1)
+        self._sub_cs: dict[int, tuple[str, list[list[ClassRef]], bool]] = {}  # id(sous-motif) → filtre de type C#
 
     # ---- notes ----
     def note(self, level: str, text: str) -> None:
@@ -335,7 +342,11 @@ class _Translator:
             return
         if p == RDF_TYPE:
             k = self.node_for(s, block)
-            if isinstance(o, URIRef):
+            if isinstance(o, URIRef) and self._sub_ctx and k in self._sub_ctx[0]:
+                # typage, dans un sous-motif, d'une variable liée à l'extérieur : condition sur ce nœud, pas un nouveau
+                # type (L53, DF-B12 : avant, le type extérieur était modifié et la classe du sous-motif perdue)
+                self._sub_ctx[1].setdefault(k, []).append(self.resolve_class(str(o)))
+            elif isinstance(o, URIRef):
                 self.add_type(k, self.resolve_class(str(o)))
             else:
                 self.lost(f"Type variable (?{o}) : traduit par labels(n) en Cypher, sans correspondance IRI.")
@@ -421,6 +432,10 @@ class _Translator:
                                        "traversée (pas d'équivalent Query API).")
             else:
                 self.prop_vars[ov] = (k, prop)
+                if self._sub_ctx and not block.optional:
+                    # dans EXISTS / MINUS, le triplet exige la valeur (L53, DF-B12) : NOT EXISTS { ?v :p ?x } = « sans :p »
+                    pn = f"{nv.name}.{_cy_ident(prop.name)}"
+                    block.cy_conds.append(f"size({pn}) > 0" if prop.is_list else f"{pn} IS NOT NULL")
                 if prop.is_list:
                     self.info(f"{prop.name} est une liste (D04) : chaque valeur SPARQL = un élément ; utiliser "
                               f"UNWIND {nv.name}.{prop.name} pour retrouver une ligne par valeur.")
@@ -577,6 +592,20 @@ class _Translator:
         elif name == "Join":
             self.pattern(node.p1, block)
             self.pattern(node.p2, block)
+        elif name == "LeftJoin" and self._sub_ctx:
+            # DF-B18 (L53) : un OPTIONAL dans un sous-motif reste dans le sous-motif. Il ne change pas l'existence d'une
+            # solution (EXISTS / NOT EXISTS) ; pour MINUS, il ne compte que s'il lie une variable de l'extérieur.
+            self.pattern(node.p1, block)
+            kind, outer_vars = self._sub_ctx[2], self._sub_ctx[3]
+            # variables par parcours de l'algèbre (`_vars` manque sous EXISTS, traduit à part par translateGroupGraphPattern)
+            q_vars = self.cond_vars(node.p2) - self.cond_vars(node.p1)
+            if kind == "minus" and q_vars & outer_vars:
+                self.lost("OPTIONAL dans un MINUS qui lie une variable du motif principal "
+                          f"({', '.join('?' + v for v in sorted(q_vars & outer_vars))}) : non traduit, ignoré "
+                          "(l'exclusion peut être plus large).")
+            else:
+                self.info("OPTIONAL dans un sous-motif EXISTS / NOT EXISTS / MINUS : sans effet sur le résultat, ignoré.")
+            self._sub_vars |= q_vars - outer_vars  # variables de la partie ignorée : propres au sous-motif
         elif name == "LeftJoin":
             self.pattern(node.p1, block)
             opt = Block(optional=True)
@@ -588,14 +617,25 @@ class _Translator:
         elif name == "Filter":
             self.pattern(node.p, block)
             block.conds.append(node.expr)
+        elif name == "Extend" and self._sub_ctx and str(node.var) in self._sub_ctx[3]:
+            # DF-B18 (L53) : BIND d'un sous-motif sur une variable du motif principal : non traduit
+            self.pattern(node.p, block)
+            self.lost(f"BIND ?{node.var} dans un sous-motif EXISTS / NOT EXISTS / MINUS sur une variable du motif "
+                      "principal : non traduit, ignoré.")
         elif name == "Extend":
             self.pattern(node.p, block)
-            self.alias[str(node.var)] = self.expr(node.expr)
+            self.alias[str(node.var)] = self.expr(node.expr)  # dans un sous-motif : local (restauré par sub_condition)
             self.curiosity_ok = False
             self.note("curiosity", f"BIND ?{node.var} : calculer la valeur en C# sur les nœuds résultats.")
         elif name == "Minus":
             self.pattern(node.p1, block)
-            block.conds.append(("minus", node.p2))
+            shared = set(getattr(node.p1, "_vars", None) or ()) & set(getattr(node.p2, "_vars", None) or ())
+            if not shared and getattr(node.p2, "_vars", None) is not None:
+                # SPARQL 1.1 §8.3.3 : sans variable partagée, MINUS ne retire rien (L53, DF-B14)
+                self.info("MINUS sans variable partagée avec le motif principal : n'exclut rien (SPARQL 1.1, §8.3.3), "
+                          "condition retirée.")
+            else:
+                block.conds.append(("minus", node.p2))
         elif name == "Graph":
             self.lost("GRAPH (graphes nommés) : pas de notion de graphe nommé dans le PG — le motif est traduit sur "
                       "tout le graphe ; compenser par une propriété `graph`/`source` sur les nœuds si nécessaire.")
@@ -751,8 +791,7 @@ class _Translator:
         if name == "Builtin_CONCAT":
             return "(" + " + ".join(self.expr(x) for x in e.arg) + ")"
         if name in ("Builtin_EXISTS", "Builtin_NOTEXISTS"):
-            inner = self.exists_pattern(e.graph)
-            return ("" if name == "Builtin_EXISTS" else "NOT ") + "EXISTS { " + inner + " }"
+            return self.exists_pattern(e.graph, negated=name == "Builtin_NOTEXISTS")
         if name in ("Builtin_isIRI", "Builtin_isURI", "Builtin_isLITERAL", "Builtin_isBLANK", "Builtin_isNUMERIC"):
             self.lost(f"{name[8:]}() : distinction IRI/littéral sans objet en property graph — remplacé par true.")
             return "true"
@@ -799,15 +838,197 @@ class _Translator:
                     f"s + CASE WHEN s = '' THEN '' ELSE {_cy_str(sep)} END + x)")
         raise _Unsupported(f"agrégat {kind}")
 
-    def exists_pattern(self, graph) -> str:
+    def exists_pattern(self, graph, negated: bool = False) -> str:
+        """FILTER [NOT] EXISTS { … } → condition Cypher complète (L53, DF-B12)."""
         from rdflib.plugins.sparql.algebra import translateGroupGraphPattern, traverse, translatePath
         alg = translateGroupGraphPattern(traverse(graph, translatePath))
+        return self.sub_condition(alg, negated, id(graph))
+
+    def sub_condition(self, alg, negated: bool, sid: int, kind: str = "exists") -> str:
+        """Sous-motif d'EXISTS, NOT EXISTS (`kind="exists"`) ou MINUS (`kind="minus"`, toujours nié) → condition Cypher.
+
+        Le sous-motif ne déborde pas (DF-B18) : nœuds, propriétés, BIND et blocs qu'il crée sont retirés après son rendu.
+        Un nœud d'OPTIONAL non lié (null) suit SPARQL : MINUS garde la ligne (domaines disjoints, §18.5) ; EXISTS /
+        NOT EXISTS évalue alors le sous-motif sur tout le graphe (§18.6) — forme exacte pour un typage seul, sinon
+        note [perte]."""
+        snap = (set(self.nodes), dict(self.prop_vars), dict(self.alias), len(self.blocks))
+        try:
+            cond, info = self._sub_core(alg, negated, sid, kind)
+        finally:
+            self._sub_vars |= {k for k in self.nodes if k not in snap[0]} | (set(self.prop_vars) - set(snap[1])) | \
+                (set(self.alias) - set(snap[2]))
+            for k in [k for k in self.nodes if k not in snap[0]]:
+                del self.nodes[k]
+            self.prop_vars, self.alias = snap[1], snap[2]
+            del self.blocks[snap[3]:]
+        touched = info.get("touched", set()) if info else set()
+        opt = touched & self._opt_keys
+        if not opt or cond == "false":
+            return cond
+        names = ", ".join("?" + (self.nodes[k].sparql or self.nodes[k].name) for k in sorted(opt))
+        if kind == "minus":
+            if touched == opt and len(opt) == 1:
+                k = next(iter(opt))
+                self.info(f"MINUS sur {names} liée par OPTIONAL : ligne gardée quand la variable n'est pas liée "
+                          "(domaines disjoints, SPARQL 1.1 §18.5).")
+                return f"({self.nodes[k].name} IS NULL OR {cond})"
+            self.lost(f"MINUS sur {names} liée par OPTIONAL et sur d'autres variables : traduit pour la variable liée "
+                      "seulement (SPARQL 1.1 §18.5, compatibilité sur les seules variables liées).")
+            return cond
+        cap = info.get("captured", {})
+        if info.get("only_types") and len(cap) == 1 and next(iter(cap)) in opt:
+            k = next(iter(cap))
+            self._fresh += 1
+            u = f"_any{self._fresh}"
+            preds = [self.type_predicate(k, refs, name=u) for refs in cap[k]]
+            if all(preds):
+                anywhere = f"EXISTS {{ MATCH ({u}) WHERE {' AND '.join(preds)} }}"
+                self.info(f"EXISTS sur {names} liée par OPTIONAL : quand la variable n'est pas liée, le sous-motif est "
+                          "évalué sur tout le graphe (SPARQL 1.1 §18.6) → CASE WHEN … IS NULL.")
+                return (f"CASE WHEN {self.nodes[k].name} IS NULL THEN {'NOT ' if negated else ''}{anywhere} "
+                        f"ELSE {cond} END")
+        self.lost(f"Sous-motif EXISTS / NOT EXISTS sur {names} liée par OPTIONAL : quand la variable n'est pas liée, "
+                  "SPARQL évalue le sous-motif sur tout le graphe (§18.6) ; traduit pour la variable liée seulement.")
+        return cond
+
+    def _sub_core(self, alg, negated: bool, sid: int, kind: str) -> tuple[str, dict]:
+        """Sous-motif d'EXISTS, NOT EXISTS ou MINUS → condition Cypher, jamais un `MATCH` vide (L53, DF-B12).
+
+        - Typage d'un nœud déjà lié à l'extérieur : prédicat de label ou de discriminant (`v:ElectricVehicle`,
+          `NOT v:ElectricVehicle`), qui respecte les labels posés au chargement ; le type extérieur n'est pas modifié.
+        - Sous-motif avec un nouveau motif : `[NOT] EXISTS { MATCH … WHERE … }` (les prédicats de type y sont ajoutés).
+        - Sous-motif sans nouveau motif mais avec des conditions : ancré sur un nœud extérieur, `EXISTS { MATCH (v) WHERE … }`.
+        - Rien de traduisible : note [perte] et condition `false` (jamais un sur-ensemble)."""
+        outer = set(self.nodes)
         sub = Block()
-        before = set(self.nodes)
-        self.pattern(alg, sub)
-        self.curiosity_ok = self.curiosity_ok and self._simple_exists(sub, before)
-        pats, where = self.render_block(sub, set(before), force_labels=False)
-        return "MATCH " + ", ".join(pats) + (f" WHERE {where}" if where else "")
+        captured: dict[str, list[list[ClassRef]]] = {}
+        outer_vars = {k for k in outer if not k.startswith(("<", "_:"))} | set(self.prop_vars) | set(self.alias)
+        prev, self._sub_ctx = self._sub_ctx, (outer, captured, kind, outer_vars)
+        try:
+            self.pattern(alg, sub)
+        finally:
+            self._sub_ctx = prev
+        pats, where = self.render_block(sub, set(outer), force_labels=False)
+        only_types = not pats and not where and bool(captured)
+        info = {"touched": (set(sub.nodes) & outer) | set(captured), "captured": captured, "only_types": only_types}
+        bare = [self.type_predicate(k, refs, null_safe=only_types) for k, lst in captured.items() for refs in lst]
+        if any(b is None for b in bare):  # type sans label : aucun filtre sûr
+            return "false", info
+        for k, lst in captured.items():
+            self._check_sub_types(k, lst)
+        # Sous négation, une perte qui rend le sous-motif insatisfiable (classe absente, propriété absente, nœud du
+        # sous-motif vide) ne doit pas devenir « vrai » : la condition entière vaut false (revue query L53 it1).
+        unsat = any(not refs for lst in captured.values() for refs in lst) or \
+            any(self.nodes[k].empty for k in sub.nodes if k not in outer) or "false" in sub.cy_conds
+        if negated and unsat:
+            self.lost("Sous-motif NOT EXISTS / MINUS insatisfiable à cause d'un élément absent du PG : condition "
+                      "remplacée par false (aucun résultat plutôt qu'un résultat élargi).")
+            return "false", info
+        nots = "NOT " if negated else ""
+        if only_types:
+            if len(captured) == 1:
+                k = next(iter(captured))
+                self._sub_cs[sid] = (k, captured[k], negated)
+                if len(self.node_types(k)) != 1:
+                    self.curiosity_ok = False
+            else:
+                self.curiosity_ok = False
+            if "false" in bare:
+                return "false", info  # classe absente : EXISTS faux (sous négation : traité plus haut)
+            pred = bare[0] if len(bare) == 1 else "(" + " AND ".join(bare) + ")"
+            return nots + pred, info
+        self.curiosity_ok = self.curiosity_ok and not captured and self._simple_exists(sub, set(outer))
+        conds = bare + ([where] if where else [])
+        if not pats:
+            anchor = next((k for k in sub.nodes if k in outer), None) or next(iter(captured), None)
+            if anchor is None:
+                self.lost("Sous-motif EXISTS / NOT EXISTS / MINUS sans motif traduisible : condition remplacée par "
+                          "false (aucun résultat plutôt qu'un motif vide invalide).")
+                return "false", info
+            pats = [f"({self.nodes[anchor].name})"]
+        return nots + "EXISTS { MATCH " + ", ".join(pats) + (" WHERE " + " AND ".join(conds) if conds else "") + " }", info
+
+    def _compatible(self, a: ClassRef, b: ClassRef) -> bool:
+        """Deux références de classe peuvent-elles désigner le même nœud PG ? Même type de nœud (et même valeur de
+        discriminant si les deux en ont une), ou un type qui porte le label de l'autre (multi-labels neo4j)."""
+        if a.node_type == b.node_type:
+            return not (a.disc_value and b.disc_value) or a.disc_value == b.disc_value
+        def labels(nt: str) -> list[str]:
+            n = self.pg.node_types.get(nt)
+            return (n.labels if n and n.labels else [nt])
+        return (a.label in labels(b.node_type)) or (b.label in labels(a.node_type))
+
+    def _check_sub_types(self, key: str, lst: list[list[ClassRef]]) -> None:
+        """Typage de sous-motif incompatible avec les types PG du nœud extérieur (ou entre eux) : intersection non
+        représentable, même perte que add_type au niveau principal (revue query L53 it1)."""
+        nv = self.nodes[key]
+        cands = list(nv.types)
+        if not cands or nv.empty:
+            return
+        for refs in lst:
+            if not refs:
+                return  # classe absente : perte déjà signalée
+            new = [r for r in refs if any(self._compatible(r, c) for c in cands)]
+            if not new:
+                self.lost(f"?{nv.sparql or nv.name} : typage du sous-motif incompatible avec ses autres types dans le PG "
+                          "(intersection non représentable) : SPARQL admet une instance des deux classes, le PG non ; "
+                          "sous NOT EXISTS / MINUS le résultat peut être plus large.")
+                return
+            cands = new
+
+    def type_predicate(self, key: str, refs: list[ClassRef], null_safe: bool = False,
+                       name: Optional[str] = None) -> Optional[str]:
+        """« ?key a C » sur un nœud déjà apparié → prédicat Cypher : union des types possibles de C, chacun « label »
+        ou « label ET discriminant » (même règle que node_pat). `null_safe` : discriminant absent = faux, pour que
+        `NOT …` garde les nœuds sans discriminant. None : un type sans label (pas de filtre sûr, note [perte]).
+        `name` : autre identifiant (nœud quelconque du graphe, cas d'une variable d'OPTIONAL non liée)."""
+        n = name or self.nodes[key].name
+        if not refs:
+            return "false"  # classe absente du PG : note [perte] déjà posée par resolve_class
+        if any(not r.label for r in refs):
+            self.lost(f"?{self.nodes[key].sparql or n} : un des types de nœuds possibles n'a pas de label, typage du "
+                      "sous-motif non traduisible (condition remplacée par false).")
+            return None
+        plain = sorted({r.label for r in refs if not r.disc_value})
+        terms = [f"{n}:{_cy_ident(lab)}" for lab in plain]
+        for r in sorted({r for r in refs if r.disc_value and r.label not in plain},
+                        key=lambda r: (r.label, r.disc_prop or "", r.disc_value or "")):
+            d = f"{n}.{_cy_ident(r.disc_prop)} = {_cy_str(r.disc_value)}"
+            terms.append(f"({n}:{_cy_ident(r.label)} AND {f'coalesce({d}, false)' if null_safe else d})")
+        return terms[0] if len(terms) == 1 else "(" + " OR ".join(terms) + ")"
+
+    def cs_type_check(self, key: str, lst: list[list[ClassRef]], negated: bool) -> str:
+        """Même condition en C# (Query API) sur le nœud courant n : décidée par le type du nœud, ou test du discriminant."""
+        tb = next(iter(self.node_types(key))) if len(self.node_types(key)) == 1 else None
+        if tb is None:
+            self.curiosity_ok = False
+            raise _Unsupported("typage d'un nœud aux types multiples dans EXISTS / MINUS")
+        parts = []
+        for refs in lst:
+            match = [r for r in refs if r.node_type == tb]
+            if not match and any(self._compatible(r, t) for r in refs for t in self.nodes[key].types):
+                # autre type de nœud qui porte le label du nœud (sous-type multi-labels, nœud atteint par une relation) :
+                # le type seul ne tranche pas (revue curiosity L53 it2)
+                self.curiosity_ok = False
+                raise _Unsupported("typage par un sous-type d'un autre type de nœud dans EXISTS / MINUS")
+            if not match:
+                parts.append("false")
+            elif any(not r.disc_value for r in match):
+                parts.append("true")
+            else:
+                dp = match[0].disc_prop
+                acc = self.cs_access(tb, self.ix.prop(tb, dp), dp)
+                vals = sorted({r.disc_value for r in match})
+                parts.append(f"{acc} == {_cs_str(vals[0])}" if len(vals) == 1 else
+                             f"new[] {{ {', '.join(_cs_str(v) for v in vals)} }}.Contains({acc})")
+        if "false" in parts:
+            body = "false"
+        else:
+            parts = [x for x in parts if x != "true"]
+            body = "true" if not parts else parts[0] if len(parts) == 1 else "(" + " && ".join(parts) + ")"
+        if negated:
+            body = {"true": "false", "false": "true"}.get(body) or f"!({body})"
+        return body
 
     def _simple_exists(self, sub: Block, before: set) -> bool:
         return len(sub.rels) == 1 and not sub.conds
@@ -873,7 +1094,8 @@ class _Translator:
         inv = r.choices[0].inverse if r.choices else False
         return f"<-{body}-" if inv else f"-{body}->"
 
-    def render_block(self, block: Block, printed: set, force_labels: bool = True) -> tuple[list[str], str]:
+    def render_block(self, block: Block, printed: set, force_labels: bool = True,
+                     skip: Optional[list] = None) -> tuple[list[str], str]:
         pats: list[str] = []
         conds: list[str] = []
         tail: Optional[str] = None
@@ -896,21 +1118,41 @@ class _Translator:
         if unwind:
             self._unwinds = getattr(self, "_unwinds", []) + unwind
         conds += [c for c in block.cy_conds if not c.startswith("__UNWIND__")]
-        for c in block.conds:
+        conds += self.render_conds([c for c in block.conds if not any(c is x for x in (skip or []))])
+        return pats, " AND ".join(conds)
+
+    def render_conds(self, items: list) -> list[str]:
+        conds: list[str] = []
+        for c in items:
             try:
                 if isinstance(c, tuple) and c[0] == "minus":
-                    from rdflib.plugins.sparql.algebra import translateGroupGraphPattern  # noqa: F401
-                    sub = Block()
-                    before = set(self.nodes)
-                    self.pattern(c[1], sub)
-                    sp, sw = self.render_block(sub, set(before), force_labels=False)
-                    conds.append("NOT EXISTS { MATCH " + ", ".join(sp) + (f" WHERE {sw}" if sw else "") + " }")
-                    self.info("MINUS → NOT EXISTS { … } (équivalent quand les motifs partagent des variables).")
+                    conds.append(self.sub_condition(c[1], True, id(c[1]), kind="minus"))
+                    self.info("MINUS → NOT EXISTS { … } (les deux motifs partagent au moins une variable).")
                 else:
                     conds.append(self.expr(c))
             except _Unsupported as e:
                 self.lost(f"FILTER non traduit ({e}) : condition ignorée.")
-        return pats, " AND ".join(conds)
+        return conds
+
+    @staticmethod
+    def cond_vars(c, depth: int = 0) -> set[str]:
+        """Variables SPARQL citées par une condition (expression d'algèbre, EXISTS compris, ou MINUS)."""
+        if isinstance(c, tuple) and len(c) == 2 and c[0] == "minus":
+            return {str(v) for v in (getattr(c[1], "_vars", None) or ())}
+        out: set[str] = set()
+        if depth > 60:
+            return out
+        if isinstance(c, Variable):
+            out.add(str(c))
+        elif isinstance(c, str):
+            pass
+        elif isinstance(c, dict):
+            for v in c.values():
+                out |= _Translator.cond_vars(v, depth + 1)
+        elif isinstance(c, (list, tuple, set)) or type(c).__name__ == "ParseResults":
+            for v in c:
+                out |= _Translator.cond_vars(v, depth + 1)
+        return out
 
     def has_aggregate(self) -> bool:
         return getattr(self, "_aggs", None) is not None
@@ -994,7 +1236,11 @@ class _Translator:
         lines: list[str] = []
         self._unwinds = []
         main = self.blocks[0]
-        pats, where = self.render_block(main, printed)
+        # DF-B15 (L53) : un FILTER qui cite une variable liée seulement par un OPTIONAL se place après l'OPTIONAL MATCH
+        opt_keys = {k for b in self.blocks[1:] for k in b.nodes} - set(main.nodes)
+        post = [c for c in main.conds if any(v in opt_keys or (v in self.prop_vars and self.prop_vars[v][0] in opt_keys)
+                                             for v in self.cond_vars(c))] if opt_keys else []
+        pats, where = self.render_block(main, printed, skip=post)
         for u in self._unwinds:
             lines.append(f"UNWIND {u}")
         if pats:
@@ -1018,6 +1264,17 @@ class _Translator:
                 continue
             bp, bw = self.render_block(b, printed)
             lines.append("OPTIONAL MATCH " + ", ".join(bp) + (f" WHERE {bw}" if bw else ""))
+        if post:
+            self._opt_keys = opt_keys
+            try:
+                pw = self.render_conds(post)
+            finally:
+                self._opt_keys = set()
+            if pw:
+                self.info("FILTER sur une variable liée par OPTIONAL → WITH * WHERE … après l'OPTIONAL MATCH (la "
+                          "variable n'existe pas avant).")
+                lines.append("WITH *")
+                lines.append("WHERE " + " AND ".join(pw))
         # projection
         pv = mods["pv"]
         if pv is None:
@@ -1057,6 +1314,15 @@ class _Translator:
                 expr = self.node_id(v) or self.nodes[v].name
             elif v in self.prop_vars or v in self.alias:
                 expr = self.var_cy(v)
+            elif v in self._sub_vars and self.select_star:
+                # SPARQL 1.1 §18.2.1 : hors de portée, pas de colonne avec SELECT * (rdflib la projette)
+                self.info(f"?{v} n'apparaît que dans un sous-motif EXISTS / NOT EXISTS / MINUS : hors de portée "
+                          "(SPARQL 1.1 §18.2.1), pas de colonne pour SELECT *.")
+                continue
+            elif v in self._sub_vars:
+                expr = "null"  # nommée dans le SELECT : non liée, comme en SPARQL
+                self.info(f"?{v} n'apparaît que dans un sous-motif EXISTS / NOT EXISTS / MINUS : non liée (null), "
+                          "comme en SPARQL.")
             else:
                 expr = "null"
                 self.lost(f"?{v} n'est liée par aucun élément traduit : renvoyée à null.")
@@ -1191,6 +1457,7 @@ class _Translator:
         used_rels = {id(r) for _, _, r in path}
         pre: list[str] = []
         counter = [0]
+        written: set[str] = set()  # nœuds dont les filtres sont écrits (chaîne ou sous-ensemble)
 
         def tname(k: str) -> Optional[str]:
             t = self.node_types(k)
@@ -1255,13 +1522,24 @@ class _Translator:
         # conditions FILTER portant sur un seul nœud → .Where(lambda) ; sinon note
         node_filters: dict[str, list[str]] = {}
         for c in main.conds:
-            if isinstance(c, tuple):
-                self.note("curiosity", "MINUS : calculer l'ensemble à exclure puis filtrer (!set.Contains(n.UID)).")
-                continue
             try:
-                ks, cs = self.cs_expr(c)
+                if isinstance(c, tuple):
+                    tc = self._sub_cs.get(id(c[1]))
+                    if not tc:  # L53 : l'exclusion n'est pas faite, la sortie C# est donc partielle
+                        self.curiosity_ok = False
+                        self.note("curiosity", "MINUS : calculer l'ensemble à exclure puis filtrer (!set.Contains(n.UID)).")
+                        continue
+                    ks, cs = {tc[0]}, self.cs_type_check(*tc)
+                else:
+                    ks, cs = self.cs_expr(c)
             except _Unsupported as e:
+                self.curiosity_ok = False  # finitions L53 : un FILTER non traduit rend la sortie partielle
                 self.note("curiosity", f"FILTER non traduit en Query API ({e}) : filtrer en C# après la traversée.")
+                continue
+            if len(ks) == 1 and cs == "true":
+                continue  # condition toujours vraie sur ce type de nœud
+            if len(ks) == 1 and cs == "false":
+                node_filters.setdefault(next(iter(ks)), []).append(".Where(n => false)  // aucun résultat (type du nœud)")
                 continue
             if len(ks) == 1:
                 node_filters.setdefault(next(iter(ks)), []).append(f".Where(n => {cs})  // À VÉRIFIER : accesseurs")
@@ -1279,6 +1557,7 @@ class _Translator:
             ty = tname(y)
             lines = [f"var {vname} = Q().StartAt(N.{ty}.Type)" if ty else f"var {vname} = Q().StartAt(/* type ? */)"]
             lines += ["    " + f for f in filters(y) + node_filters.get(y, [])]
+            written.add(y)
             for nb, r2 in adj.get(y, []):
                 if r2 is r or nb in visited:
                     continue
@@ -1302,6 +1581,7 @@ class _Translator:
         chain_set = set(chain)
         for i, k in enumerate(chain):
             body += filters(k) + node_filters.get(k, [])
+            written.add(k)
             for nb, r in adj.get(k, []):
                 if id(r) in used_rels or nb in chain_set:
                     if nb in chain_set and id(r) not in used_rels:
@@ -1312,6 +1592,11 @@ class _Translator:
             if i < len(path):
                 a, b, r = path[i]
                 body.append(step_code(a, b, r))
+        # revue curiosity L53 it2 : un filtre sur un nœud hors de la traversée (OPTIONAL…) n'est pas écrit
+        for k in sorted(set(node_filters) - written):
+            self.curiosity_ok = False
+            self.note("curiosity", f"Filtre sur ?{self.nodes[k].sparql or self.nodes[k].name} (hors de la traversée, "
+                                   "par exemple OPTIONAL) non écrit : à appliquer en C# sur les voisins.")
         # blocs optionnels, NOT EXISTS
         if len(self.blocks) > 1:
             self.note("curiosity", "OPTIONAL : pas de jointure externe dans la Query API — lire les voisins optionnels "
@@ -1461,6 +1746,10 @@ class _Translator:
         if name == "Builtin_NOW":
             return set(), "DateTimeOffset.UtcNow"
         if name in ("Builtin_EXISTS", "Builtin_NOTEXISTS"):
+            tc = self._sub_cs.get(id(e.graph))
+            if tc:  # sous-motif réduit au typage d'un nœud (L53, DF-B12)
+                return {tc[0]}, self.cs_type_check(*tc)
+            self.curiosity_ok = False  # revue curiosity L53 it1 : un EXISTS non traduit rend la sortie partielle
             raise _Unsupported("EXISTS / NOT EXISTS → calculer l'ensemble puis set.Contains(n.UID)")
         if name == "Function":
             if len(e.expr) == 1:
@@ -1609,11 +1898,17 @@ def _init_ns(onto: Optional[OntoModel]) -> dict[str, str]:
     return ns
 
 
+_SPARQL_SKIP = re.compile(r'#[^\n]*|"(?:[^"\\]|\\.)*"|\'(?:[^\'\\]|\\.)*\'|<[^<>\s]*>')  # commentaires, chaînes, IRI
+_SELECT_STAR = re.compile(r"\bSELECT\s+(?:DISTINCT\s+|REDUCED\s+)?\*", re.I)
+_CY_STRINGS = re.compile(r"'(?:[^'\\]|\\.)*'|`(?:[^`]|``)*`")  # littéraux et identifiants entre accents graves
+_EMPTY_MATCH = re.compile(r"\bMATCH\s*(?:WHERE\b|\}|,|$)", re.M)  # MATCH suivi de rien, de WHERE, de } ou d'une virgule
+
+
 def translate(sparql: str, pg: PGModel, onto: Optional[OntoModel] = None) -> TranslationResult:
     res = TranslationResult(sparql=sparql)
     try:
-        from rdflib.plugins.sparql import prepareQuery
-        pq = prepareQuery(sparql, initNs=_init_ns(onto))
+        from . import sparql_lock  # analyseur rdflib non réentrant (L53, DF-B17)
+        pq = sparql_lock.prepare_query(sparql, initNs=_init_ns(onto))
     except Exception as e:  # noqa: BLE001 — jamais d'exception vers l'appelant
         res.supported = False
         res.lossy = True
@@ -1621,6 +1916,7 @@ def translate(sparql: str, pg: PGModel, onto: Optional[OntoModel] = None) -> Tra
                      f"{type(e).__name__}: {str(e)[:300]}"]
         return res
     t = _Translator(pg, onto)
+    t.select_star = bool(_SELECT_STAR.search(_SPARQL_SKIP.sub(" ", sparql)))
     mods: dict = {}
     try:
         res.cypher, mods = t.run(pq.algebra)
@@ -1631,6 +1927,11 @@ def translate(sparql: str, pg: PGModel, onto: Optional[OntoModel] = None) -> Tra
         t.lost(f"Erreur interne du traducteur ({type(e).__name__}: {e}) — requête non traduite.")
         res.supported = False
     res.query_form = t.form
+    if res.cypher is not None and _EMPTY_MATCH.search(_CY_STRINGS.sub("''", res.cypher)):
+        # garde générique (L53, DF-B12) : un MATCH sans motif est du Cypher invalide, il n'est jamais renvoyé
+        t.lost("Traduction refusée : le Cypher produit contenait un MATCH sans motif (invalide) ; requête non traduite.")
+        res.cypher = None
+        res.supported = False
     if res.cypher is not None:
         # Query API Curiosity toujours tentée ; si une partie n'est pas exprimable (curiosity_ok faux), elle est marquée partielle
         try:

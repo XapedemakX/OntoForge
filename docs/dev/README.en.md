@@ -55,7 +55,7 @@ Each chapter also exists in French (`NN-subject.md`, same anchors).
 - Examples: a path or symbol that does not exist yet (file to create, hypothetical name) is prefixed with `exemple:` inside the backquotes (`exemple:frontend/src/screens/Nouveau.tsx`); patterns containing `<n>`, `*`, `…`, `{x}` or a space are not checked either.
 - Anchors: every level-1 or level-2 heading carries a `{#id}` anchor; the anchor is not translated. Internal links point to these anchors (`02-communication-front-back.en.md#if-match`).
 - What is not verified is marked `À CONFIRMER` (to be confirmed) and listed in §5 [Open points](#points-ouverts); an external API not confirmed in the code is marked `À VÉRIFIER`.
-- References: `D-xxx` refers to `journal/decisions.md`; `DF-Fxx` / `DF-Bxx` to `journal/L51/defauts.md` (code defects noted while writing; their L52 fix is described in `journal/L52/`); `SEC-xx` to security findings summarised in chapter 16 (audit reports are not published).
+- References: `D-xxx` refers to `journal/decisions.md`; `DF-Fxx` / `DF-Bxx` to `journal/L51/defauts.md` (code defects noted while writing; their L52 and L53 fixes are described in `journal/L52/` and `journal/L53/`; DF-B16 remains open); `SEC-xx` to security findings summarised in chapter 16 (audit reports are not published).
 - Versions: read from `backend/pyproject.toml`, `backend/constraints.txt`, `frontend/package.json`.
 - Nothing sensitive: no secret, no cloud project identifier, no exploitable vulnerability detail.
 - Language: the manual is in French and English; code, file names and identifiers stay as in the repository (interface keys are in French, function names in English).

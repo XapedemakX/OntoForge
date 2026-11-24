@@ -50,7 +50,7 @@ sequenceDiagram
 - Lazy synchronization: `ensure` compares a SHA-1 digest of the ontology (`signature`) with the one in `meta.json`; if it changed, it rewrites the ontology and individuals graphs, and marks the inference `stale`.
 - Lock: one `_RWLock` per project (`lock(pid)`), several readers or a single writer. Deleting a project (`drop`) waits for running queries.
 - Short opening: `_with_store` opens the database, calls the function, rebuilds the union after a write, then deletes the only reference and calls `gc.collect()`: Oxigraph only closes RocksDB when the object is destroyed. An exception's traceback is cleared for the same reason (it would keep the database open).
-- Child process: the timeout is really enforced (the child is killed), caps set by `backend/ontoforge/childproc.py::run_limited` (chapter [06](06-shacl.en.md#flux-validation)).
+- Child process: the timeout is really enforced (the child is killed), caps set by `backend/ontoforge/childproc.py::run_limited` (chapter [06](06-shacl.en.md#flux-validation)). The number of children is bounded since L53 (DF-B13): `store.py::child_slot` (a `BoundedSemaphore` taken without waiting, `ONTOFORGE_LOCAL_STORE_SLOTS`, 2 by default, between 1 and 32, read at import) wraps every child launch, **queries and inference together, all projects together**. When full: `StoreBusy` (a `StoreError` subclass, 503, `retry_after = 5`), rendered as `Retry-After: 5` by `api/queries.py::_ep_error` and `api/local_store.py::_err`; a refused inference cancels the load (all or nothing, the previous graph is restored). The place is taken just before the launch and released after (also on timeout or error), never while waiting for the project lock.
 
 ## Loading and inference {#chargement}
 
@@ -64,16 +64,22 @@ sequenceDiagram
 
 | Variable | Default | Effect |
 |---|---|---|
-| `ONTOFORGE_LOCAL_STORE_MAX_TRIPLES` | 1,000,000 | triples in the store; beyond, 413 |
-| `ONTOFORGE_LOCAL_STORE_MAX_UPLOAD_MB` | 25 | size of a loaded file; 413 |
+| `ONTOFORGE_LOCAL_STORE_MAX_TRIPLES` | 1,000,000 (Cloud Run: 50,000) | triples in the store; beyond, 413 |
+| `ONTOFORGE_LOCAL_STORE_MAX_UPLOAD_MB` | 25 (Cloud Run: 5) | size of a loaded file; 413 |
 | `ONTOFORGE_LOCAL_STORE_MAX_INFERENCE_TRIPLES` | 30,000 | inference source triples (owlrl materializes in memory); 413 |
 | `ONTOFORGE_LOCAL_STORE_MAX_VALIDATION_TRIPLES` | 60,000 | triples passed to SHACL validation |
 | `ONTOFORGE_LOCAL_STORE_TIMEOUT_S` | 20 | query timeout (a query may ask for 1 to 120 s); 504 |
 | `ONTOFORGE_LOCAL_STORE_INFERENCE_TIMEOUT_S` | 90 | inference timeout; 504 |
-| `ONTOFORGE_LOCAL_STORE_MEMORY_MB` | 3072 (Cloud Run: 1024) | address-space cap of each query and inference child; 413 if inference reaches it. Measured on 24/11: at least 640 MB for a query child (opening the database); 1024 MB is enough for inference at the 30,000 source triple cap (58 s). No limited places: several projects can start children at the same time |
+| `ONTOFORGE_LOCAL_STORE_MEMORY_MB` | 3072 (Cloud Run: 640) | address-space cap of each query and inference child; 413 if inference reaches it. Measured on 24/11: opening the database needs 576 MB for 4,700 triples (512 MB fails) and 640 MB for 1,000,000 triples, the store cap (32 MB resident); inference at 31,000 source triples fits in 576 MB (92 MB resident). This floor leaves little working memory: the Cloud Run value of 640 MB is the lowest setting that passed 10 runs out of 10 (aggregate query on a 50,000-triple database; 608 MB too, 512 MB fails 2 runs out of 10) |
+| `ONTOFORGE_LOCAL_STORE_SLOTS` | 2 (Cloud Run: 1) | number of simultaneous children, queries and inference together, all projects; between 1 and 32, invalid value → 2; when full: 503 with `Retry-After: 5` |
+| `ONTOFORGE_LOCAL_STORE_LOAD_SLOTS` | 4 (Cloud Run: 1) | simultaneous file loads (parsing and writing in the **server**, about 1.7 MB of memory per 1,000 triples); between 1 and 8; when full: 503 with `Retry-After: 5` (`load_slot`, taken by the route before the file is read) |
+| `ONTOFORGE_LOCAL_STORE_TOTAL_MB` | 0 = no cap (Cloud Run: 64) | cap on the total size of the `ONTOFORGE_LOCAL_STORE_DIR` folder (in-memory disk on Cloud Run); a load for which `(folder size + 500 bytes × triples) × 1.25` would exceed it is refused: 413 "Local triplestore space full". No effect when the triplestore lives in the project folder |
+| `ONTOFORGE_LOCAL_STORE_IDLE_MIN` | 0 = never (Cloud Run: 30) | minutes of inactivity after which a project's database is deleted (`purge_idle`). **Loaded data files are lost**; the ontology and individuals come back on demand. `stats` then returns `purged` (lost files, translated message) until a file is reloaded |
 | `ONTOFORGE_LOCAL_STORE_DIR` | — | local (ephemeral) folder instead of `<project>/triplestore` |
 
-`limits()` reads these variables again on every call (minimum 1, invalid value → default).
+`limits()` reads these variables again on every call (minimum 1, invalid value → default; 0 allowed for `TOTAL_MB` and `IDLE_MIN`). `LOAD_SLOTS` and `SLOTS` are read at import.
+
+Ephemeral disk (D-L53-02): `purge_idle` runs at the start of `ensure` and `load_data` (so before any local query), with no background task. For each old database it takes `lock(pid).try_write()`: if a query, a load or an inference holds the lock, the database is left and purged later. The usage clock (`touch`) is updated by `ensure`; `stats` does not update it (an open page does not keep a database alive). `clear`, `drop` and `purge` also forget the purge notice. The clock is read a second time once the lock is held: a use that starts between the read and the lock saves the database; `stats` redoes `exists` under the read lock. The inferred graph counts toward the cap: `materialize` calls `check_disk_budget` (inferred triples minus those already there) BEFORE replacing the inferred graph, all-or-nothing 413 refusal (the old graph is kept; a load that asked for inference restores its file). The check is not atomic across projects (two size computations can cross): on Cloud Run a single load place and a single inference place serialize them, the rest fits in the 1.25 margin. Known limit: the load place is held while waiting for the project lock (the parsed file occupies server memory meanwhile), so a long query on one project makes the other loads answer 503; acceptable for a one-account demo. The test `test_b13_purge_and_loads_run_concurrently_without_error` runs loads, reads and purges together and checks the final state of the databases.
 
 ## Libraries {#librairies}
 
@@ -96,6 +102,7 @@ sequenceDiagram
 - `owl:hasKey` is not applied by local inference (note in the response).
 - A literal or IRI larger than 16 MiB makes Oxigraph's reader raise `MemoryError` (maximum size of its buffer), even under the 25 MB upload cap: `parse_to_store` answers 413 "element too large" (L52; before, 500).
 - Anonymous nodes: Oxigraph renames them on every load; do not rely on their labels.
+- `guard`, `_has_service` and `dataset_clause` in `localstore/runner.py` parse the query with rdflib in the server process: these calls go through `queries/sparql_lock.py` (L53, DF-B17), because the parser is not reentrant. Before, two simultaneous queries could fail with 422, and `_has_service` (second safety net on `SERVICE`) and `dataset_clause` (reading `FROM`), which swallow parse errors, were silently skipped.
 
 ## How to add… {#comment-ajouter}
 

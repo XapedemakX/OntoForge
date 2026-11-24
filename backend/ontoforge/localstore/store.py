@@ -19,6 +19,7 @@ import os
 import re
 import shutil
 import threading
+import time
 import unicodedata
 from contextlib import contextmanager
 from datetime import datetime, timezone
@@ -59,6 +60,13 @@ def _env_int(name: str, default: int) -> int:
         return default
 
 
+def _env_nonneg(name: str, default: int) -> int:
+    try:
+        return max(0, int(os.environ.get(name, default)))
+    except ValueError:
+        return default
+
+
 def limits() -> dict[str, int]:
     """Plafonds (variables d'environnement `ONTOFORGE_LOCAL_STORE_*`)."""
     return {
@@ -69,7 +77,67 @@ def limits() -> dict[str, int]:
         "query_timeout_s": _env_int("ONTOFORGE_LOCAL_STORE_TIMEOUT_S", 20),
         "inference_timeout_s": _env_int("ONTOFORGE_LOCAL_STORE_INFERENCE_TIMEOUT_S", 90),
         "query_memory_mb": _env_int("ONTOFORGE_LOCAL_STORE_MEMORY_MB", 3072),
+        # L53 (D-L53-02) : disque éphémère (en mémoire sur Cloud Run), 0 = sans plafond ni purge (hors Cloud Run)
+        "total_mb": _env_nonneg("ONTOFORGE_LOCAL_STORE_TOTAL_MB", 0),
+        "idle_min": _env_nonneg("ONTOFORGE_LOCAL_STORE_IDLE_MIN", 0),
     }
+
+
+# ------------------------------------------------------------------------------------ places des processus fils
+
+class StoreBusy(StoreError):
+    """Toutes les places des processus fils du triplestore local sont prises : 503 avec `Retry-After` (L53, DF-B13)."""
+
+    retry_after = 5
+
+    def __init__(self) -> None:
+        super().__init__("Trop de requêtes ou d'inférences en cours sur le triplestore local : réessayez dans quelques secondes.", 503)
+
+
+def _slot_count() -> int:
+    try:
+        return max(1, min(32, int(os.environ.get("ONTOFORGE_LOCAL_STORE_SLOTS", "2"))))
+    except ValueError:
+        return 2
+
+
+# Une seule famille de places pour les requêtes ET l'inférence, tous projets confondus : chaque fils peut prendre `query_memory_mb`
+# d'espace d'adressage, la somme est donc places × plafond. Même modèle que ONTOFORGE_SHACL_SLOTS (shacl/validate.py).
+_SLOTS = threading.BoundedSemaphore(_slot_count())
+
+
+@contextmanager
+def child_slot() -> Iterator[None]:
+    """Réserve une place pour un processus fils (requête ou inférence) ; lève `StoreBusy` sans attendre si elles sont toutes prises."""
+    if not _SLOTS.acquire(blocking=False):
+        raise StoreBusy()
+    try:
+        yield
+    finally:
+        _SLOTS.release()
+
+
+def _load_slot_count() -> int:
+    try:
+        return max(1, min(8, int(os.environ.get("ONTOFORGE_LOCAL_STORE_LOAD_SLOTS", "4"))))
+    except ValueError:
+        return 4
+
+
+# L53 (B2 de la relecture déploiement) : un chargement analyse et écrit DANS le processus du serveur (environ 1,7 Mo de mémoire pour
+# 1 000 triplets, mesuré le 24/11) : places bornées, comme les fils. Prise par la route avant la lecture du fichier.
+_LOAD_SLOTS = threading.BoundedSemaphore(_load_slot_count())
+
+
+@contextmanager
+def load_slot() -> Iterator[None]:
+    """Réserve une place de chargement (lecture + analyse + écriture d'un fichier dans le serveur) ; `StoreBusy` (503) sans attendre si pleine."""
+    if not _LOAD_SLOTS.acquire(blocking=False):
+        raise StoreBusy()
+    try:
+        yield
+    finally:
+        _LOAD_SLOTS.release()
 
 
 # ----------------------------------------------------------------------------- verrou lecteurs/écrivain
@@ -107,6 +175,22 @@ class _RWLock:
                 self._c.notify_all()
 
 
+    @contextmanager
+    def try_write(self) -> Iterator[bool]:
+        """Verrou d'écriture pris SANS attendre : rend False (et ne prend rien) si une lecture ou une écriture est en cours."""
+        with self._c:
+            ok = not self._writer and not self._readers
+            if ok:
+                self._writer = True
+        try:
+            yield ok
+        finally:
+            if ok:
+                with self._c:
+                    self._writer = False
+                    self._c.notify_all()
+
+
 _LOCKS: dict[str, _RWLock] = {}
 _LOCKS_GUARD = threading.Lock()
 
@@ -142,10 +226,94 @@ def purge(pid: str) -> None:
     """Supprime le triplestore d'un projet supprimé quand il vit hors du dossier du projet."""
     if ephemeral():
         shutil.rmtree(root(pid), ignore_errors=True)
+        with _USE_GUARD:
+            _LAST_USE.pop(pid, None)
+            _PURGED.pop(pid, None)
 
 
 def db_path(pid: str) -> Path:
     return root(pid) / "db"
+
+
+# ------------------------------------------------------------------ disque éphémère : plafond total et purge (L53, D-L53-02)
+# Sur Cloud Run le système de fichiers de l'instance est en mémoire : les bases de `ONTOFORGE_LOCAL_STORE_DIR` comptent dans les 2 Gio.
+# Deux garde-fous réglables, actifs seulement quand le dossier est local et éphémère :
+# - `ONTOFORGE_LOCAL_STORE_TOTAL_MB` : taille totale du dossier ; un chargement qui la ferait dépasser est refusé (413) ;
+# - `ONTOFORGE_LOCAL_STORE_IDLE_MIN` : une base non utilisée depuis ce nombre de minutes est supprimée (les fichiers chargés sont perdus ;
+#   l'ontologie et les individus sont recréés à la demande par `ensure`).
+_ONTOLOGY_ESTIMATE = 10_000  # triplets (ontologie + individus d'un projet courant : 4 700 pour automaint)
+BYTES_PER_TRIPLE = 500   # mesuré le 24/11 : 470 octets par triplet sur disque pour des littéraux de 25 caractères, union comprise
+COMPACTION_MARGIN = 1.25  # la taille monte transitoirement pendant les compactions de RocksDB (1,06 à 1,24 fois la taille finale mesurée)
+_LAST_USE: dict[str, float] = {}
+_PURGED: dict[str, dict[str, Any]] = {}
+_USE_GUARD = threading.Lock()
+
+
+def touch(pid: str) -> None:
+    """Note l'usage du triplestore d'un projet (horloge de la purge) et efface l'avis de purge dès qu'un fichier est rechargé ailleurs."""
+    with _USE_GUARD:
+        _LAST_USE[pid] = time.monotonic()
+
+
+def dir_size_mb() -> float:
+    """Taille totale (Mo) du dossier éphémère des triplestores ; 0 s'il n'est pas utilisé."""
+    d = local_dir()
+    if d is None or not d.is_dir():
+        return 0.0
+    total = 0
+    for base, _, files in os.walk(d):
+        for name in files:
+            try:
+                total += os.path.getsize(os.path.join(base, name))
+            except OSError:
+                pass
+    return total / 1048576
+
+
+def check_disk_budget(extra_triples: int) -> None:
+    """413 si le chargement de `extra_triples` triplets ferait dépasser `ONTOFORGE_LOCAL_STORE_TOTAL_MB` (marge de compaction comprise)."""
+    lim = limits()
+    cap = lim["total_mb"]
+    if not ephemeral() or not cap:
+        return
+    used = dir_size_mb()
+    need = extra_triples * BYTES_PER_TRIPLE / 1048576
+    if (used + need) * COMPACTION_MARGIN > cap:
+        raise StoreError(f"Espace du triplestore local plein : {used:.0f} Mo utilisés sur {cap} Mo, ce chargement en demande environ {need:.0f} de plus. "
+                         f"Videz le triplestore d'un autre projet, ou attendez la purge des bases inactives (au bout de {lim['idle_min'] or 'N'} min).", 413)
+
+
+def purge_idle(skip: Optional[str] = None) -> list[str]:
+    """Supprime les bases inactives depuis `ONTOFORGE_LOCAL_STORE_IDLE_MIN` minutes (sauf `skip`). Chaque suppression se fait sous le verrou
+    d'écriture du projet, pris SANS attendre : une base en cours d'usage est laissée. Appelée avant chaque création, chargement ou lecture ;
+    pas de tâche de fond. Rend les identifiants purgés."""
+    idle = limits()["idle_min"]
+    d = local_dir()
+    if not idle or d is None or not d.is_dir():
+        return []
+    now, purged = time.monotonic(), []
+    for entry in sorted(d.iterdir()):
+        pid = entry.name
+        if pid == skip or not entry.is_dir():
+            continue
+        with _USE_GUARD:
+            last = _LAST_USE.setdefault(pid, now)  # base sans horloge (redémarrage, copie) : l'attente commence maintenant
+        if now - last < idle * 60:
+            continue
+        with lock(pid).try_write() as ok:
+            if not ok:
+                continue
+            with _USE_GUARD:  # horloge relue sous le verrou : un usage qui vient de commencer sauve la base (it2)
+                if time.monotonic() - _LAST_USE.get(pid, now) < idle * 60:
+                    continue
+            meta = _meta_read(pid)
+            gc.collect()
+            shutil.rmtree(entry, ignore_errors=True)
+            with _USE_GUARD:
+                _LAST_USE.pop(pid, None)
+                _PURGED[pid] = {"at": now_iso(), "files": [f.get("name", "") for f in meta.get("files", [])], "idle_min": idle}
+            purged.append(pid)
+    return purged
 
 
 def exists(pid: str) -> bool:
@@ -277,10 +445,14 @@ def _sync_ontology(pid: str, p: Any, store: ox.Store, meta: dict[str, Any]) -> N
 
 def ensure(pid: str, p: Any) -> None:
     """Crée le triplestore s'il n'existe pas (ontologie + individus du projet) ; resynchronise l'ontologie si le projet a changé."""
+    purge_idle(skip=pid)
+    touch(pid)
     with lock(pid).write():
         meta = _meta_read(pid)
         if exists(pid) and meta.get("ontology_signature") == signature(p):
             return
+        if not exists(pid):
+            check_disk_budget(_ONTOLOGY_ESTIMATE)  # nouvelle base : de la place pour l'ontologie et les individus
         _with_store(pid, lambda store: _sync_ontology(pid, p, store, meta))
         meta["created_at"] = meta.get("created_at") or now_iso()
         _meta_write(pid, meta)
@@ -369,6 +541,7 @@ def load_data(pid: str, p: Any, raw: bytes, filename: str, *, source: str = "upl
     ensure(pid, p)
     with lock(pid).write():
         meta = _meta_read(pid)
+        check_disk_budget(n_new)
 
         def work(store: ox.Store) -> None:
             others = _total(store) - _count(store, graph)
@@ -391,6 +564,8 @@ def load_data(pid: str, p: Any, raw: bytes, filename: str, *, source: str = "upl
 
         _with_store(pid, work)
         _meta_write(pid, meta)
+    with _USE_GUARD:
+        _PURGED.pop(pid, None)  # de nouvelles données : l'avis de purge n'a plus d'objet
     return stats(pid, p)
 
 
@@ -417,6 +592,9 @@ def clear(pid: str) -> None:
     with lock(pid).write():
         gc.collect()
         shutil.rmtree(root(pid), ignore_errors=True)
+    with _USE_GUARD:
+        _LAST_USE.pop(pid, None)
+        _PURGED.pop(pid, None)
 
 
 # ---------------------------------------------------------------------------------------------- inférence
@@ -451,8 +629,9 @@ def materialize(store: ox.Store, semantics: str) -> dict[str, Any]:
     timeout = lim["inference_timeout_s"]
     # L52 (DF-B07) : même isolement que les requêtes (runner.py) et SHACL : environnement réduit, mémoire (RLIMIT_AS) et CPU plafonnés
     try:
-        proc = childproc.run_limited(worker, nt, timeout=timeout, mem_mb=lim["query_memory_mb"], cpu_s=int(timeout) + 2, fsize=0,
-                                     args=[semantics])
+        with child_slot():  # L53 (DF-B13) : places partagées avec les requêtes ; StoreBusy (503) remonte telle quelle
+            proc = childproc.run_limited(worker, nt, timeout=timeout, mem_mb=lim["query_memory_mb"], cpu_s=int(timeout) + 2, fsize=0,
+                                         args=[semantics])
     except childproc.TimeoutExpired:
         raise StoreError(f"Inférence {semantics} interrompue après {timeout} s (graphe trop gros ou trop riche pour owlrl).", 504) from None
     if proc.returncode != 0:
@@ -461,6 +640,9 @@ def materialize(store: ox.Store, semantics: str) -> dict[str, Any]:
                              "pour owlrl). Réduisez les données ou utilisez un endpoint avec raisonnement.", 413)
         tail = (proc.stderr.decode("utf-8", "replace").strip().splitlines() or ["erreur inconnue"])[-1][:200]
         raise StoreError("Échec de l'inférence : " + tail, 500)
+    # it2 (budget disque) : le graphe inféré entre dans le plafond total. Contrôle AVANT le remplacement : refus 413 tout ou rien (l'ancien
+    # graphe inféré est conservé ; un chargement qui l'a demandé restaure son fichier).
+    check_disk_budget(max(0, proc.stdout.count(b"\n") - _count(store, G_INFERRED)))
     n_inf = _replace_graph(store, G_INFERRED, proc.stdout)
     notes = []
     m = re.search(rb"NOTE hasKey (\d+)", proc.stderr)
@@ -499,9 +681,22 @@ def demo_for(p: Any) -> Optional[dict[str, str]]:
 def stats(pid: str, p: Any) -> dict[str, Any]:
     lim = limits()
     base = {"limits": lim, "demo": demo_for(p), "engine": "pyoxigraph " + ox.__version__, "ephemeral": ephemeral()}
+    if ephemeral():
+        base["disk"] = {"used_mb": round(dir_size_mb(), 1), "total_mb": lim["total_mb"], "idle_min": lim["idle_min"]}
+        gone = _PURGED.get(pid)
+        if gone:
+            n = len(gone["files"])
+            base["purged"] = {"at": gone["at"], "files": gone["files"], "message": (
+                f"{n} fichier(s) de données chargé(s) dans ce triplestore ont été supprimé(s) après {gone['idle_min']} min d'inactivité, pour libérer la "
+                "mémoire de l'instance. L'ontologie et les individus du projet sont recréés à la demande ; rechargez vos fichiers de données."
+                if n else
+                f"Le triplestore de ce projet a été supprimé après {gone['idle_min']} min d'inactivité, pour libérer la mémoire de l'instance ; "
+                "il est recréé à la demande.")}
     if not exists(pid):
         return {"exists": False, "triples": 0, "graphs": [], "inference": None, "ontology_stale": False, **base}
     with lock(pid).read():
+        if not exists(pid):  # purgée entre le test et le verrou (it2)
+            return {"exists": False, "triples": 0, "graphs": [], "inference": None, "ontology_stale": False, **base}
         meta = _meta_read(pid)
         total, inferred = _with_store(pid, lambda store: (_total(store), _count(store, G_INFERRED)), readonly=True)
     graphs = [{"graph": G_ONTOLOGY, "kind": "ontology", "name": "ontology", "triples": meta.get("ontology_triples", 0)},

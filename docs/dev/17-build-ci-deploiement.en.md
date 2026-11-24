@@ -68,7 +68,7 @@ flowchart LR
 | `frontend` | Node 22, `npm ci`, `npm run build` | yes |
 | `recettes` | manual: build, Playwright and Chromium installation, `tools/recette/e2e_ui.mjs`, `tools/recette/e2e_api.py`; screenshots as an artifact | manual |
 
-Good to know: the `recettes` job creates a link `/home/claude/venv/bin/python` to the CI interpreter because the scripts hard-code it (chapter 18); Playwright is installed there at version 1.63.0, the agents' one (`npm install --no-save playwright@1.63.0`, DF-F07 fixed in L52): raising it is a decision to trace, together with the local version. The `frontend` job runs `npm test` after the build (fr/en parity, API clients, Markdown renderer; DF-F08). The documentation tests (`backend/tests/test_dev_docs.py`, `test_docs_bilingual.py`) run with `pytest`.
+Good to know: every backend install in `ci.yml` goes through `-c backend/constraints.txt` (the `backend` job, the `audit-dependances` job for the dev extra and the `recettes` job; before L53 the last two installed without constraints, so with versions that neither the images nor the tests had seen); resolution is checked with `pip install --dry-run -c backend/constraints.txt -e "backend[dev]"` in a throwaway Python 3.12 environment. The `recettes` job creates a link `/home/claude/venv/bin/python` to the CI interpreter because the scripts hard-code it (chapter 18); Playwright is installed there at version 1.63.0, the agents' one (`npm install --no-save playwright@1.63.0`, DF-F07 fixed in L52): raising it is a decision to trace, together with the local version. The `frontend` job runs `npm test` after the build (fr/en parity, API clients, Markdown renderer; DF-F08). The documentation tests (`backend/tests/test_dev_docs.py`, `test_docs_bilingual.py`) run with `pytest`.
 
 Dependabot (`.github/dependabot.yml`): reports every Monday 6:00 (pip, npm), monthly (docker, actions); groups `semantique` (rdflib, pyshacl, owlrl, pyoxigraph, owlready2), `web`, `tests`, `codemirror`, `graphes`; **no major bump**, no merge without Jerem's approval (D-L21-02).
 
@@ -86,12 +86,32 @@ flowchart LR
   CR --> DOM[domain ontoforge.ajlx.fr]
 ```
 
-- First install: steps 0 to 6 of `deploy/cloudrun/README.md` (services, image repository, bucket, service account, secrets, `gcloud run deploy`, domain). Service settings: one instance maximum, 1 CPU, 2 Gi, port 8080, 300 s timeout; secrets (`ONTOFORGE_SECRET_KEY`, `ONTOFORGE_AUTH_USERS`) mounted from Secret Manager; non-secret variables from `deploy/cloudrun/env.yaml` (administrator, outbound hosts; caps reduced for 2 Gi: `ONTOFORGE_SHACL_SLOTS` 1, `ONTOFORGE_HERMIT_MAX_MB` 768, `ONTOFORGE_OWLRL_SLOTS` 1, `ONTOFORGE_OWLRL_MEMORY_MB` 1024, `ONTOFORGE_LOCAL_STORE_MEMORY_MB` 1024; each cap bounds one child process, not the sum, see chapter [16](16-securite.en.md)); Cloud Storage volume on `/data` with `uid=10001,gid=10001`.
-- Update: `services update --image` changes **only the image**; a change to `env.yaml`, secrets or the volume needs the full `gcloud run deploy`.
+- First install: steps 0 to 6 of `deploy/cloudrun/README.md` (services, image repository, bucket, service account, secrets, `gcloud run deploy`, domain). Service settings: one instance maximum, 1 CPU, 2 Gi, port 8080, 300 s timeout; secrets (`ONTOFORGE_SECRET_KEY`, `ONTOFORGE_AUTH_USERS`) mounted from Secret Manager; non-secret variables from `deploy/cloudrun/env.yaml` (administrator, outbound hosts; caps and places set for 2 Gi, whose worst-case sum fits in 2048 MB: see the calculation below and chapter [16](16-securite.en.md)); Cloud Storage volume on `/data` with `uid=10001,gid=10001`.
+- Update: since L53, `deploy-demo.ps1` and the trigger apply `env.yaml`, `--memory 2Gi`, `--max-instances 1` and the secrets (same options as `gcloud run deploy`, README §7 and §8), because the worst-case sum depends on them; a volume change still needs the full `gcloud run deploy`. The test `test_b13_deploy_scripts_apply_env_yaml_and_the_2_gib_settings` checks that these options are present in both files. Check after deployment: `gcloud run services describe` (README §7).
 - Automatic deployment (README §8): a Cloud Build trigger on a push to `main` runs build / push / update (`cloudbuild-trigger.yaml`) with a minimal-role service account and **manual approval required**. `SHORT_SHA` only exists with a trigger: this file is not for `gcloud builds submit`.
 - State: the instance keeps nothing on its disk; projects and settings are in the bucket; the local triplestore lives in `/tmp/ontoforge-triplestore` (variable `ONTOFORGE_LOCAL_STORE_DIR`, set in `deploy/cloudrun/Dockerfile`, read by `backend/ontoforge/localstore/store.py::local_dir`; lost when the instance stops).
 - Costs and shutdown: section "Coûts et arrêt" of the deployment README.
 - The commands of README section 8 were not executed by the agent team (the README says so); the rest of the deployment is operated by Jerem from Windows (`À CONFIRMER`: no execution log in the repository). The cloud project identifiers are in the operator's scripts, not in this manual.
+
+### Caps and worst-case sum {#plafonds-somme}
+
+2048 MB container, one instance. Each cap bounds ONE child; the calculation takes all places at the same time (server + places × cap per family). Measurements of 24/11, on the repository samples ("trap", automaint and its data repeated for large volumes), peak resident memory and smallest address-space cap that succeeds:
+
+| Family (variables) | Places × cap | Worst case (MB) | Measurement |
+|---|---|---|---|
+| Server at rest | — | 175 | measured 121 to 146 MB (application loaded, one project), 175 kept |
+| SHACL (`ONTOFORGE_SHACL_SLOTS`, `ONTOFORGE_SHACL_MEMORY_MB`) | 1 × 320 | 320 | "trap": 64 MB is enough, 38 MB resident (`both` inference included); 42,000 data triples: 192 MB is enough (128 MB fails), 124 MB resident |
+| OWL RL (`ONTOFORGE_OWLRL_SLOTS`, `ONTOFORGE_OWLRL_MEMORY_MB`) | 1 × 256 | 256 | 7,000 triples (10 s): 96 MB is enough, 52 MB resident; at 22,000 triples the 30 s timeout hits before any memory cap (104 MB resident) |
+| HermiT (`ONTOFORGE_HERMIT_SLOTS`, `ONTOFORGE_HERMIT_MAX_MB`) | 1 × (192 + 150) | 342 | "trap": 128 MB heap is enough (172 MB resident); automaint with 4,700 triples: 128 MB heap is enough (225 MB resident); nearly empty JVM (`-Xmx32m`): 130 MB resident, hence 150 MB of JVM counted outside the heap |
+| Local triplestore, query and inference children (`ONTOFORGE_LOCAL_STORE_SLOTS`, `ONTOFORGE_LOCAL_STORE_MEMORY_MB`) | 1 × 640 | 640 | opening a 50,000-triple database: 10 runs out of 10 at 608 and 640 MB, 8 out of 10 at 512 MB; 640 MB for 1,000,000 triples (312 MB on disk), 32 MB resident; `both` inference at 31,000 source triples: 576 MB is enough, 92 MB resident; 640 MB leaves about 30 MB above the last failure |
+| Local triplestore, loading a file in the **server** (`ONTOFORGE_LOCAL_STORE_LOAD_SLOTS`, `ONTOFORGE_LOCAL_STORE_MAX_TRIPLES`, `ONTOFORGE_LOCAL_STORE_MAX_UPLOAD_MB`) | 1 × ((50,000 + 20,000) triples × 1.7 MB / 1,000 + 5 MB) | 124 | parsing and writing happen in the server process: +101 MB for 50,000 triples, +164 MB for 100,000, +249 MB for 200,000 (resident peak above the idle server); 20,000 triples = one parsing block beyond the cap; 5 MB = the file read into memory |
+| Local triplestore, in-memory disk (`ONTOFORGE_LOCAL_STORE_TOTAL_MB`) | — | 64 | about 470 bytes per triple on disk (union included), compaction peak up to 1.24 times the final size |
+| Request body (`ONTOFORGE_MAX_BODY_MB`) | 1 × 12 | 12 | an upload is received whole before a place is taken; 12 MB covers the largest allowed upload (10 MB document); further simultaneous uploads come out of the margin |
+| **Total** | | **1933** | 115 MB margin |
+
+The test `test_b13_cloudrun_env_sum_at_worst_fits_in_2_gib` reads `env.yaml` back, redoes this calculation (server, children, loading in the server, disk, request body) and fails above 2048 MB; it also checks that the purge is on. The cap (address space) is higher than the memory used: the sum of the measured resident peaks is about 0.7 GiB. Before L53 (DF-B13), the `env.yaml` values already allowed 3 × 1024 MB at worst with the local triplestore alone on three projects, not counting loading or disk.
+
+**In-memory disk** (D-L53-02, Jerem: total cap AND purge). A Cloud Run instance's file system is in memory (Cloud Run documentation, container runtime contract): the local triplestore, in `/tmp/ontoforge-triplestore`, counts in the 2 GiB. `backend/ontoforge/localstore/store.py`: `ONTOFORGE_LOCAL_STORE_TOTAL_MB` (64 on Cloud Run; 0 = no cap) refuses a load (413) when `(folder size + 500 bytes × file triples) × 1.25` exceeds the cap (`check_disk_budget`; 1.25 = RocksDB compaction margin); `ONTOFORGE_LOCAL_STORE_IDLE_MIN` (30 on Cloud Run; 0 = never) deletes inactive databases (`purge_idle`, called by `ensure` and `load_data`, under the project lock's `try_write`: a database in use is left alone; no background task). The purge loses the loaded data files (the ontology and individuals come back on demand); `stats` returns `purged` with a translated message, which the triplestore panel shows until a file is reloaded. Both apply only when `ONTOFORGE_LOCAL_STORE_DIR` is set (ephemeral folder). Loads have their own places (`ONTOFORGE_LOCAL_STORE_LOAD_SLOTS`, 4 by default, 1 on Cloud Run): `load_slot`, taken by the `POST /store/load` route before the file is read, 503 with `Retry-After: 5` when full.
 
 ## 7. GitHub publication {#publication}
 
@@ -119,7 +139,7 @@ The team protocol wants only the `git` agent to push, after green tests, review 
 - `nginx.conf` sets no compression (`À CONFIRMER`: image default) whereas production compresses (Starlette GZip): the weight of the entry (642 kB) is mostly felt in local Docker.
 - Security headers exist in **two copies** (`frontend/security-headers.conf` and `backend/ontoforge/security.py::CSP`): change them together; the test compares them.
 - nginx `include`: `add_header` is not inherited by a `location` that declares one, hence `include …/ontoforge-security-headers.conf` in **every** block.
-- `services update --image` does not pick up `env.yaml`.
+- Before L53, `services update --image` did not pick up `env.yaml`; the update scripts now apply it (guard test). Any other deployment path must do the same.
 - CI uses Python 3.12, the agents' venv 3.13: any behaviour difference is `À CONFIRMER`.
 - `/api`: nginx hides the backend's security headers (`proxy_hide_header`) so as not to double them, then sets its own.
 
