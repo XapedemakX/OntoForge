@@ -1,0 +1,104 @@
+# 10. Local triplestore (pyoxigraph) {#triplestore-local}
+
+Each project can have an embedded triplestore, with no external server. The ontology, individuals and data files are loaded into it. It is queried in SPARQL from guided querying (chapter [09](09-requetes.en.md)), RDFS or OWL RL inference is materialized in it, and its content is validated against the shapes.
+
+Sources read: `backend/ontoforge/localstore/store.py`, `backend/ontoforge/localstore/runner.py`, `backend/ontoforge/localstore/_worker.py`, `backend/ontoforge/localstore/_infer_worker.py`, `backend/ontoforge/api/local_store.py`, `backend/ontoforge/api/queries.py`, `docs/CONTRACTS.md` §6.1, tests `backend/tests/test_local_store.py`, `backend/tests/test_local_store_review.py`, `backend/tests/test_local_store_union.py`.
+
+## Files {#fichiers}
+
+| File | Responsibility |
+|---|---|
+| `backend/ontoforge/localstore/store.py` | content and persistence: named graphs, per-project readers / writer lock, synchronization with the ontology (`ensure`), loading (`load_data`), inference (`materialize`), union (`rebuild_union`), statistics, caps (`limits`) |
+| `backend/ontoforge/localstore/runner.py` | `run_local`: runs a query in a child process; `guard` (read-only, `SERVICE` rejected); `dataset_clause` (`FROM`, `FROM NAMED`) |
+| `backend/ontoforge/localstore/_worker.py` | query child process: opens the database **read-only** (`Store.read_only`), imports only pyoxigraph |
+| `backend/ontoforge/localstore/_infer_worker.py` | inference child process: owlrl on N-Triples received on stdin, returns only new and useful facts (`useful`) |
+| `backend/ontoforge/api/local_store.py` | routes `/api/projects/{pid}/store`: `GET /stats`, `POST /load`, `DELETE`, `POST /validate` |
+
+## Layout {#disposition}
+
+On disk: `$ONTOFORGE_DATA/projects/<id>/triplestore/{db/, meta.json}` (Oxigraph RocksDB database and metadata). With `ONTOFORGE_LOCAL_STORE_DIR`, the triplestore lives in `<folder>/<id>` (instance local disk): on Cloud Run, `/data` is a Cloud Storage mount on which RocksDB (locks, `mmap`, renames) must not live. That folder is ephemeral and rebuilt on demand.
+
+| Named graph | Content |
+|---|---|
+| `urn:ontoforge:graph:ontology` | TBox of the project ontology (without individuals), regenerated on every synchronization |
+| `urn:ontoforge:graph:individuals` | editor individuals, with their linked anonymous nodes |
+| `urn:ontoforge:graph:data:<name>` | one imported data file (name normalized by `slug`); all graphs of the file are flattened into it |
+| `urn:ontoforge:graph:inferred` | triples materialized by owlrl, disposable |
+| default graph | **deduplicated union** of the named graphs, rebuilt on every write (`rebuild_union`, D-L19-01) |
+
+D-L19-01: Oxigraph 0.5.13 serves `use_default_graph_as_union` and multiple `FROM` as a multiset (a triple present in two graphs counts twice), unlike SPARQL 1.1 §13. The store therefore materializes the union as a set, and the child merges multiple `FROM` itself (`dataset_clause`).
+
+## Query flow {#flux-requete}
+
+```mermaid
+sequenceDiagram
+  participant A as api/queries.py (endpoint kind=local)
+  participant R as runner.run_local
+  participant S as store
+  participant W as _worker.py (child)
+  A->>R: sparql, limit, timeout_s
+  R->>R: guard: query_form (UPDATE → 403, syntax → 422); SERVICE → 403
+  R->>R: force_limit (limit + 1)
+  R->>S: ensure(pid, p): creates or resynchronizes if the ontology digest changed
+  R->>S: lock(pid).read()
+  R->>W: childproc.run_limited (memory, CPU, no file writes, minimal environment)
+  W->>W: Store.read_only(path); query; truncated cells
+  W-->>R: JSON {form, columns, rows, truncated} or {error}
+  R-->>A: QueryResult (same shape as a remote endpoint)
+```
+
+- Lazy synchronization: `ensure` compares a SHA-1 digest of the ontology (`signature`) with the one in `meta.json`; if it changed, it rewrites the ontology and individuals graphs, and marks the inference `stale`.
+- Lock: one `_RWLock` per project (`lock(pid)`), several readers or a single writer. Deleting a project (`drop`) waits for running queries.
+- Short opening: `_with_store` opens the database, calls the function, rebuilds the union after a write, then deletes the only reference and calls `gc.collect()`: Oxigraph only closes RocksDB when the object is destroyed. An exception's traceback is cleared for the same reason (it would keep the database open).
+- Child process: the timeout is really enforced (the child is killed), caps set by `backend/ontoforge/childproc.py::run_limited` (chapter [06](06-shacl.en.md#flux-validation)).
+
+## Loading and inference {#chargement}
+
+`backend/ontoforge/localstore/store.py::load_data`: file size capped, **streamed** reading into a temporary in-memory store (`parse_to_store`, stops as soon as the triple cap is exceeded), total check, replacement of the file's graph, optional inference; if inference fails, the graph's previous content is restored (all or nothing). JSON-LD with a remote context is rejected by Oxigraph's reader (message translated by `_parse_error`).
+
+`materialize` computes the owlrl closure (semantics `rdfs`, `owlrl`, `both`) of the ontology, individuals and data, in the `_infer_worker.py` child process, then replaces the inferred graph. The child returns only useful facts about individuals (domain class types, property values; no vocabulary noise and no anonymous objects, which Oxigraph would rename on reload). It reports on stderr the ignored `owl:hasKey` axioms (prp-key too slow in owlrl) and the inferred `owl:sameAs`; these signals become French notes, translated in the response.
+
+`POST /store/validate` validates individuals and data (without the TBox; with the inferred graph if `include_inferred`) against the project shapes, with the same `validate` function as chapter 06.
+
+## Caps {#plafonds}
+
+| Variable | Default | Effect |
+|---|---|---|
+| `ONTOFORGE_LOCAL_STORE_MAX_TRIPLES` | 1,000,000 | triples in the store; beyond, 413 |
+| `ONTOFORGE_LOCAL_STORE_MAX_UPLOAD_MB` | 25 | size of a loaded file; 413 |
+| `ONTOFORGE_LOCAL_STORE_MAX_INFERENCE_TRIPLES` | 30,000 | inference source triples (owlrl materializes in memory); 413 |
+| `ONTOFORGE_LOCAL_STORE_MAX_VALIDATION_TRIPLES` | 60,000 | triples passed to SHACL validation |
+| `ONTOFORGE_LOCAL_STORE_TIMEOUT_S` | 20 | query timeout (a query may ask for 1 to 120 s); 504 |
+| `ONTOFORGE_LOCAL_STORE_INFERENCE_TIMEOUT_S` | 90 | inference timeout; 504 |
+| `ONTOFORGE_LOCAL_STORE_MEMORY_MB` | 3072 | memory cap of the query child |
+| `ONTOFORGE_LOCAL_STORE_DIR` | — | local (ephemeral) folder instead of `<project>/triplestore` |
+
+`limits()` reads these variables again on every call (minimum 1, invalid value → default).
+
+## Libraries {#librairies}
+
+| Library | Version | Why |
+|---|---|---|
+| pyoxigraph | 0.5.13 | embedded SPARQL 1.1 Query engine (Oxigraph, RocksDB); evaluation in `docs/veille/triplestore-embarque.md` |
+| owlrl | 7.1.2 | RDFS / OWL RL inference in the child |
+| rdflib | 7.1.1 | ontology export, SPARQL parsing for the safeguards, graph passed to validation (`to_rdflib`) |
+
+## Decisions {#decisions}
+
+- D-L19-01: default graph = materialized deduplicated union; multiple `FROM` merged as a set.
+- L41 (L39-02, L39-03): queries in a capped child process.
+
+## Pitfalls and limits {#pieges}
+
+- No SPARQL writes: the triplestore is filled through `POST /store/load`, never through `INSERT`.
+- Union rebuilt on every write: cost proportional to the content; the price of a correct default graph.
+- In-memory inference: 30,000 source triples at most; beyond that, an endpoint with reasoning.
+- `owl:hasKey` is not applied by local inference (note in the response).
+- The inference child is not started by `childproc.run_limited` (defect DF-B07); **loading** does not go through `io/safe_parse.py` (defect DF-B08, to be confirmed).
+- Anonymous nodes: Oxigraph renames them on every load; do not rely on their labels.
+
+## How to add… {#comment-ajouter}
+
+**…an inference semantics.** Add it to `SEMANTICS`, handle it in `_infer_worker.py` (and in its `useful` filter), and offer it in the `POST /store/load` route (`inference`).
+
+**…a file format.** Add it to `FORMATS` and `FORMAT_NAMES` (pyoxigraph format), and to `detect_format` if the content can reveal it. Route the content through the checks of `backend/ontoforge/io/safe_parse.py` if it is XML or JSON-LD.

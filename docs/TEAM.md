@@ -18,6 +18,8 @@
 | deploy | Déploiement (Cloud Run, ontoforge.ajlx.fr) | .claude/agents/deploiement.md | skills/deploiement-cloud-run-powershell |
 | secu | Cybersécurité (vulnérabilités, OWASP, secrets, dépendances) | .claude/agents/cybersecurite.md | skills/audit-securite-cve-cwe |
 | mobile | Application mobile (téléphone et tablette : navigation, information progressive, graphe au doigt) — modèle Opus | .claude/agents/appli-mobile.md | skills/audit-mobile-refonte |
+| devback | Expert dev backend : manuel du développeur, revue du code backend — modèle Opus | .claude/agents/expert-dev-backend.md | skills/technical-documentation |
+| devfront | Expert dev front et intégration : manuel du développeur, revue du code front, build, tests — modèle Sonnet | .claude/agents/expert-dev-frontend.md | skills/technical-documentation |
 
 ## Cycle d'un lot
 1. **Contrat** — `lots/Lx.md` (chef) : objectif, livrables, fichiers possédés par agent, critères d'acceptation vérifiables (commandes de test, entrées → sorties attendues), relecteurs.
@@ -75,6 +77,7 @@ Au minimum : au démarrage, à chaque verdict de revue (avec `to` = pilote), à 
 | Documentation | doc (exactitude) | humain (style), puis doc vérifie que le sens n'a pas bougé |
 | Livraison | chef + git (CI verte, tag) | — |
 | Déploiement / sécurité réseau | deploy + secu + query (SSRF) + scout (connexion) | doc |
+| Manuel du développeur (docs/dev) | devback ↔ devfront (croisé) | doc, humain |
 | Front, écrans, CSS (tout ce qui change l'interface, y compris sur téléphone) | mobile + scout (UX) + secu si CSP/cookies/auth | doc, humain |
 | Tout lot qui touche aux entrées utilisateur, fichiers, appels sortants, secrets, authentification ou à l'assistant LLM | secu (revue-securite.md) + expert du domaine | doc |
 

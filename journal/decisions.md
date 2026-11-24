@@ -214,3 +214,6 @@ Réponse de Jerem à Q-L49-1 : l'ajout d'une classe, d'une relation, d'un attrib
 
 ## D-L47-04 (17/11, Jerem) : Q-L47-1 close en l'état
 Réponse de Jerem : OntoForge est une démo, la question de la mesure (constats ou décisions groupées) est close sans changement. Mesure automaint conservée telle quelle : Neo4j 19 constats (8 décisions groupées), Curiosity 41 (9).
+
+## D-L51-01 (23/11, Jerem) : manuel du développeur
+Deux nouveaux agents, expert dev backend (Opus) et expert dev front et intégration (Sonnet), rédigent un manuel du développeur exhaustif dans `docs/dev/`, bilingue fr/en, publié sur GitHub et non intégré à l'appli. Relecture croisée, puis documentaliste et humaniseur. Lot L51.
